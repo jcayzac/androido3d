@@ -1,4 +1,5 @@
 syntax: glob
+.DS_Store
 eclipse_workspace
 android/docs
 android/build
