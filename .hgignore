@@ -3,6 +3,7 @@ eclipse_workspace
 android/docs
 android/build
 android/out
+android/apps/o3d/project/libs
 android/apps/san-angeles
 android/apps/two-libs
 android/apps/unit-tests
