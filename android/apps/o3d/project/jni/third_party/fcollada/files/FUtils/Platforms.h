@@ -1,15 +1,15 @@
 /*
-	Copyright (C) 2005-2007 Feeling Software Inc.
-	Portions of the code are:
-	Copyright (C) 2005-2007 Sony Computer Entertainment America
-	
-	MIT License: http://www.opensource.org/licenses/mit-license.php
+  Copyright (C) 2005-2007 Feeling Software Inc.
+  Portions of the code are:
+  Copyright (C) 2005-2007 Sony Computer Entertainment America
+
+  MIT License: http://www.opensource.org/licenses/mit-license.php
 */
 /*
-	Based on the FS Import classes:
-	Copyright (C) 2005-2006 Feeling Software Inc
-	Copyright (C) 2005-2006 Autodesk Media Entertainment
-	MIT License: http://www.opensource.org/licenses/mit-license.php
+  Based on the FS Import classes:
+  Copyright (C) 2005-2006 Feeling Software Inc
+  Copyright (C) 2005-2006 Autodesk Media Entertainment
+  MIT License: http://www.opensource.org/licenses/mit-license.php
 */
 
 #ifndef _FU_PLATFORMS_H_
@@ -19,7 +19,7 @@
 #ifdef WIN32
 // Disable the "private member not available for export" warning,
 // because I don't feel like writing interfaces
-#pragma warning(disable:4251) 
+#pragma warning(disable:4251)
 #ifdef FCOLLADA_INTERNAL
 #define FCOLLADA_EXPORT __declspec(dllexport)
 #define FCOLLADA_LOCAL
@@ -58,8 +58,8 @@
 #ifdef WIN32
 
 #pragma warning(disable:4702)
-#ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
-#define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
+#ifndef _WIN32_WINNT    // Allow use of features specific to Windows XP or later.
+#define _WIN32_WINNT 0x0501 // Change this to the appropriate value to target other versions of Windows.
 #endif
 
 #include <windows.h>
@@ -74,7 +74,7 @@
 #include <wchar.h>
 #include <stdint.h>
 #else // __APPLE__
-#if defined(LINUX) || defined(__PPU__)
+#if defined(LINUX) || defined(__PPU__) || defined(__ANDROID__)
 #include <ctype.h>
 #include <wctype.h>
 #include <unistd.h>
@@ -85,9 +85,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-#else // OTHER... 
+#else // OTHER...
 #error "Unsupported platform."
-#endif // LINUX || __PPU__
+#endif // LINUX || __PPU__ || __ANDROID__
 #endif // __APPLE__
 
 #endif // WIN32
@@ -95,7 +95,7 @@
 // begin Google change (by piman@)
 // Comment out int* and uint* definitions, they conflict with Chrome's
 // definitions. Instead use the same as <base/basictypes.h>
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__ANDROID__)
 #include <base/basictypes.h>
 #else
 // end Google change
@@ -135,7 +135,7 @@ typedef uint8_t byte;
 // end Google change
 
 // Important functions that some OSes have missing!
-#if defined(__APPLE__) || defined (LINUX)
+#if defined(__APPLE__) || defined (LINUX) || defined(__ANDROID__)
 inline char* strlower(char* str) { char* it = str; while (*it != 0) { *it = tolower(*it); ++it; } return str; }
 inline wchar_t* wcslwr(wchar_t* str) { wchar_t* it = str; while (*it != 0) { *it = towlower(*it); ++it; } return str; }
 inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 = *s2; while (c1 != 0 && c2 != 0) { if (c1 >= 'a' && c1 <= 'z') c1 -= 'a' + 'A'; if (c2 >= 'a' && c2 <= 'z') c2 -= 'a' + 'A'; if (c2 < c1) return -1; else if (c2 > c1) return 1; c1 = *(++s1); c2 = *(++s2); } return 0; }
@@ -149,7 +149,7 @@ inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 
 #elif defined(__PPU__)
 #define glClearDepth glClearDepthf
 
-#endif // __APPLE__ and LINUX
+#endif // __APPLE__ and LINUX and __ANDROID__
 
 // Cross-platform needed functions
 #ifdef WIN32
@@ -157,14 +157,14 @@ inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 
 #define snprintf _snprintf
 #define vsnwprintf _vsnwprintf
 #if _MSC_VER >= 1500
-	// VC 9 doesn't like it when you define vsnprintf to be _vsnprintf
-	#define snwprintf _snwprintf_s
+  // VC 9 doesn't like it when you define vsnprintf to be _vsnprintf
+  #define snwprintf _snwprintf_s
 #elif _MSC_VER >= 1400 // VC 8
-	#define snwprintf _snwprintf_s
-	#define vsnprintf _vsnprintf
+  #define snwprintf _snwprintf_s
+  #define vsnprintf _vsnprintf
 #else
-	#define snwprintf _snwprintf
-	#define vsnprintf _vsnprintf
+  #define snwprintf _snwprintf
+  #define vsnprintf _vsnprintf
 #endif // _MSC_VER
 
 #define strlower _strlwr
@@ -181,55 +181,55 @@ inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 
 // fstring and character definition
 #ifdef UNICODE
 
-	#define fchar wchar_t
-	#define FC(a) L ## a
+  #define fchar wchar_t
+  #define FC(a) L ## a
 
-	#define fstrlen wcslen
-	#define fstrcmp wcscmp
-	#define fstrncpy wcsncpy
-	#define fstrrchr wcsrchr
-	#define fstrchr wcschr
-	#define fsnprintf snwprintf
-	#define fvsnprintf vsnwprintf
-	#define fstrup _wcsupr
+  #define fstrlen wcslen
+  #define fstrcmp wcscmp
+  #define fstrncpy wcsncpy
+  #define fstrrchr wcsrchr
+  #define fstrchr wcschr
+  #define fsnprintf snwprintf
+  #define fvsnprintf vsnwprintf
+  #define fstrup _wcsupr
 
-	#ifdef __PPU__
-		#define fstricmp wcscmp		// [claforte] TODO: Implement __PPU__ version of wcsicmp
-	#elif defined(WIN32)
-		#define fstricmp _wcsicmp
-	#else
-		#define fstricmp wcsicmp
-	#endif // !__PPU__
+  #ifdef __PPU__
+    #define fstricmp wcscmp   // [claforte] TODO: Implement __PPU__ version of wcsicmp
+  #elif defined(WIN32)
+    #define fstricmp _wcsicmp
+  #else
+    #define fstricmp wcsicmp
+  #endif // !__PPU__
 
-	#ifdef WIN32
-		#define fstrlower _wcslwr
-	#else
-		#define fstrlower wcslwr
-	#endif // WIN32
+  #ifdef WIN32
+    #define fstrlower _wcslwr
+  #else
+    #define fstrlower wcslwr
+  #endif // WIN32
 
-	#ifdef WIN32
-		#define fchdir _tchdir
-	#else // WIN32
-		#define fchdir(a) chdir(FUStringConversion::ToString(a).c_str())
-	#endif // !WIN32
+  #ifdef WIN32
+    #define fchdir _tchdir
+  #else // WIN32
+    #define fchdir(a) chdir(FUStringConversion::ToString(a).c_str())
+  #endif // !WIN32
 
 #else // UNICODE
 
-	typedef char fchar;
-	#define FC(a) a
+  typedef char fchar;
+  #define FC(a) a
 
-	#define fstrlen strlen
-	#define fstrcmp strcmp
-	#define fstricmp _stricmp
-	#define fstrncpy strncpy
-	#define fstrrchr strrchr
-	#define fstrchr strchr
-	#define fstrlower strlower
-	#define fsnprintf snprintf
-	#define fvsnprintf vsnprintf
-	#define fstrup _strupr
+  #define fstrlen strlen
+  #define fstrcmp strcmp
+  #define fstricmp _stricmp
+  #define fstrncpy strncpy
+  #define fstrrchr strrchr
+  #define fstrchr strchr
+  #define fstrlower strlower
+  #define fsnprintf snprintf
+  #define fvsnprintf vsnprintf
+  #define fstrup _strupr
 
-	#define fchdir chdir
+  #define fchdir chdir
 
 #endif // UNICODE
 
@@ -240,8 +240,8 @@ inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 
 #ifdef WIN32
 //#pragma warning(disable:4324) // Don't bother me about forcing the padding of aligned structure.
 /** Alignment macro for classes and structures.
-	Only supported in MSVS 2005 for now.
-	@param byteCount The number of bytes to align to.*/
+  Only supported in MSVS 2005 for now.
+  @param byteCount The number of bytes to align to.*/
 //#define ALIGN_STRUCT(byteCount) __declspec(align(byteCount))
 #define ALIGN_STRUCT(byteCount)
 #else // !WIN32
@@ -252,9 +252,9 @@ inline int wcsicmp(const wchar_t* s1, const wchar_t* s2) { wchar_t c1 = *s1, c2 
 #define DEPRECATED(versionNumber, alternative) __declspec(deprecated("[" #versionNumber "] This function is now deprecated. Please use '" #alternative "' instead."))
 #else
 /** Deprecated macro for functions.
-	Only supported in MSVS 2005 for now.
-	@param versionNumber The version of FCollada that officially deprecated this function.
-	@param alternative The function or class to use instead. */
+  Only supported in MSVS 2005 for now.
+  @param versionNumber The version of FCollada that officially deprecated this function.
+  @param alternative The function or class to use instead. */
 #define DEPRECATED(versionNumber, alternative)
 #endif // WIN32 && MSVS2005
 

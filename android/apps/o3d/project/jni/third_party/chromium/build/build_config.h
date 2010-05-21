@@ -32,6 +32,8 @@
 #elif defined(__OpenBSD__)
 #define OS_OPENBSD 1
 #define TOOLKIT_GTK
+#elif defined(__ANDROID__)
+#define OS_ANDROID 1
 #else
 #error Please add support for your platform in build/build_config.h
 #endif
@@ -50,7 +52,7 @@
 // For access to standard POSIXish features, use OS_POSIX instead of a
 // more specific macro.
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FREEBSD) || \
-    defined(OS_OPENBSD)
+    defined(OS_OPENBSD) || defined(OS_ANDROID)
 #define OS_POSIX 1
 // Use base::DataPack for name/value pairs.
 #define USE_BASE_DATA_PACK 1
@@ -106,6 +108,8 @@
 // other projects using base who manage their own dependencies and make sure
 // short wchar works for them.
 #define WCHAR_T_IS_UTF16
+#elif defined(OS_ANDROID)
+#define WCHAR_T_IS_UTF16  // ???
 #else
 #error Please add support for your compiler in build/build_config.h
 #endif
