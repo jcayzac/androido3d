@@ -32,6 +32,9 @@ namespace base {
 using stdext::hash_map;
 using stdext::hash_set;
 }
+#elif defined(__ANDROID__)
+
+
 #elif defined(COMPILER_GCC)
 // This is a hack to disable the gcc 4.4 warning about hash_map and hash_set
 // being deprecated.  We can get rid of this when we upgrade to VS2008 and we

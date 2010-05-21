@@ -29,72 +29,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+// GzCompressor compresses a byte stream using gzip compression
+// calling the client's ProcessBytes() method with the compressed stream
+//
 
-// This file declares STL functional classes in a cross-compiler way.
+#ifndef O3D_IMPORT_CROSS_GZ_COMPRESSOR_H_
+#define O3D_IMPORT_CROSS_GZ_COMPRESSOR_H_
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#include "base/basictypes.h"
+#include "zlib.h"
+#include "import/cross/memory_stream.h"
 
-#include <build/build_config.h>
-
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class GzCompressor : public StreamProcessor {
  public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
+  explicit GzCompressor(StreamProcessor *callback_client);
+  virtual ~GzCompressor();
+
+  virtual Status ProcessBytes(MemoryReadStream *stream,
+                              size_t bytes_to_process);
+
+  // Must call when all bytes to compress have been sent (with ProcessBytes)
+  virtual void Close(bool success);
+
+ private:
+  Status CompressBytes(MemoryReadStream *stream,
+                       size_t bytes_to_process,
+                       bool flush);
+
+  z_stream strm_;  // low-level zlib state
+  bool initialized_;
+  bool stream_is_closed_;
+  StreamProcessor *callback_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(GzCompressor);
 };
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#endif  // O3D_IMPORT_CROSS_GZ_COMPRESSOR_H_

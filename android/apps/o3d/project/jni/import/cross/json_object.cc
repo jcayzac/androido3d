@@ -29,72 +29,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// This file defines the JSON Object class.
 
-// This file declares STL functional classes in a cross-compiler way.
+#include "import/cross/json_object.h"
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-
-#include <build/build_config.h>
-
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
+O3D_OBJECT_BASE_DEFN_CLASS("o3djs.JSONObject", JSONObject, ParamObject);
+
+JSONObject::JSONObject(ServiceLocator* service_locator)
+    : ParamObject(service_locator) {
+}
+
+void JSONObject::AddProperty(const String& name, JSONValue* value) {
+  std::pair<NameValueMap::iterator, bool> result = properties_.insert(
+      std::pair<String, JSONValue::Ref>(name, JSONValue::Ref(value)));
+  DCHECK(result.second);
+}
+
+void JSONObject::Serialize(StructuredWriter* writer) const {
+  writer->WritePropertyName("object");
+  writer->OpenObject();
+  for (NameValueMap::const_iterator it(properties_.begin());
+       it != properties_.end();
+       ++it) {
+    if (it->second->exists()) {
+      writer->WritePropertyName(it->first);
+      it->second->Serialize(writer);
+    }
   }
-};
+  writer->CloseObject();
+}
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_

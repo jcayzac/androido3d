@@ -30,71 +30,69 @@
  */
 
 
-// This file declares STL functional classes in a cross-compiler way.
+// Tests functionality of the MemoryBuffer class
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#include "core/cross/client.h"
+#include "tests/common/win/testing_common.h"
+#include "core/cross/error.h"
+#include "import/cross/memory_buffer.h"
 
-#include <build/build_config.h>
-
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
+// Test fixture for RawData testing.
+class MemoryBufferTest : public testing::Test {
 };
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
+// Test RawData
+TEST_F(MemoryBufferTest, Basic) {
+  int i;
+  MemoryBuffer<int> buffer;
+  // Check that initially the buffer is not allocated
+  ASSERT_EQ(0U, buffer.GetLength());
 
-}  // namespace base
+  // Allocate and check the length is good
+  const int kBufferLength = 1024;
+  buffer.Allocate(kBufferLength);
+  ASSERT_EQ(kBufferLength, static_cast<int>(buffer.GetLength()));
+
+  // Once allocated, the initial contents should be zero
+  // Check that the buffer contents are zeroed out
+  bool buffer_is_cleared = true;
+  for (i = 0; i < kBufferLength; ++i) {
+    if (buffer[i] != 0) {
+      buffer_is_cleared = false;
+      break;
+    }
+  }
+  ASSERT_TRUE(buffer_is_cleared);
+
+  // Write some values and check that they're OK
+  for (i = 0; i < kBufferLength; ++i) {
+    buffer[i] = i;
+  }
+  bool buffer_values_good = true;
+  for (i = 0; i < kBufferLength; ++i) {
+    if (buffer[i] != i) {
+      buffer_values_good = false;
+      break;
+    }
+  }
+  ASSERT_TRUE(buffer_values_good);
+
+  // Now, clear the buffer and check that it worked
+  buffer.Clear();
+  buffer_is_cleared = true;
+  for (i = 0; i < kBufferLength; ++i) {
+    if (buffer[i] != 0) {
+      buffer_is_cleared = false;
+      break;
+    }
+  }
+  ASSERT_TRUE(buffer_is_cleared);
+
+  // Deallocate the buffer and verify its length
+  buffer.Deallocate();
+  ASSERT_EQ(0U, buffer.GetLength());
+}
+
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
-
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_

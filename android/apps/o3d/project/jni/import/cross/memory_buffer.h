@@ -30,71 +30,49 @@
  */
 
 
-// This file declares STL functional classes in a cross-compiler way.
+// A MemoryBuffer object represents an array of type T.
+// Please note that T is really intended to be used
+// for integral types (char, int, float, double)
+// It's very useful when used as a stack-based object or
+// member variable, offering a cleaner, more direct alternative,
+// in some cases, to using smart-pointers in conjunction with operator new
+//
+// Example usage:
+//
+// MemoryBuffer<int> buffer(1024);
+// for (int i = 0; i < 1024; ++i) {
+//   buffer[i] = i;
+// }
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#ifndef O3D_IMPORT_CROSS_MEMORY_BUFFER_H_
+#define O3D_IMPORT_CROSS_MEMORY_BUFFER_H_
 
-#include <build/build_config.h>
+#include <string.h>
+#include <stdlib.h>
+#include <vector>
 
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
+#include "base/basictypes.h"
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
+// Allocates an array of type T
+
+template <class T>
+class MemoryBuffer {
  public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
+  MemoryBuffer() {};
+  explicit MemoryBuffer(size_t num_elems) : vector_(num_elems, 0) { }
+
+  void Allocate(size_t num_elems) { AllocateClear(num_elems); }
+  void AllocateClear(size_t num_elems) { vector_.assign(num_elems, 0); }
+  void Deallocate() { vector_.clear(); }
+  void Clear() { AllocateClear(vector_.size()); }  // sets to all zero values
+  void Resize(size_t n) { vector_.resize(n); }
+  size_t GetLength() { return vector_.size(); }
+  operator T *() { return &vector_[0]; }
+
+ private:
+  std::vector<T> vector_;
+
+  DISALLOW_COPY_AND_ASSIGN(MemoryBuffer);
 };
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
-
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#endif  // O3D_IMPORT_CROSS_MEMORY_BUFFER_H_

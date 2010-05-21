@@ -29,72 +29,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+// TarGzProcessor processes a gzipped tar stream (tar.gz)
+// compressed byte stream
+//
 
-// This file declares STL functional classes in a cross-compiler way.
+#include "import/cross/targz_processor.h"
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#include <assert.h>
+#include "import/cross/memory_stream.h"
 
-#include <build/build_config.h>
+#define CHUNK 16384
 
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// The |gz_decompressor_| processes a compressed byte stream, calling back
+// into |tar_processor_| with the decompressed byte stream
+// Finally, |tar_processor_| calls back to |callback_client| with file header
+// and file data callbacks...
+//
+TarGzProcessor::TarGzProcessor(ArchiveCallbackClient *callback_client)
+    : ArchiveProcessor(callback_client),
+      tar_processor_(callback_client),
+      gz_decompressor_(&tar_processor_) {
+}
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+StreamProcessor::Status TarGzProcessor::ProcessBytes(MemoryReadStream *stream,
+                                                     size_t bytes_to_process) {
+  return gz_decompressor_.ProcessBytes(stream, bytes_to_process);
+}
 
-}  // namespace base
+void TarGzProcessor::Close(bool success) {
+  gz_decompressor_.Close(success);
+}
+
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
-
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_

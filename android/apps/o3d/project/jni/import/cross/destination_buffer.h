@@ -30,71 +30,54 @@
  */
 
 
-// This file declares STL functional classes in a cross-compiler way.
+// This file declares the DestinationBuffer class.
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#ifndef O3D_IMPORT_CROSS_DESTINATION_BUFFER_H_
+#define O3D_IMPORT_CROSS_DESTINATION_BUFFER_H_
 
-#include <build/build_config.h>
+#include "core/cross/buffer.h"
 
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
+// DestinationBuffer is a used for serialization only and is not part of the
+// normal O3D plugin. It is used for Skinning to distinguish between a normal
+// VertexBuffer that needs to have its contents serialized and a
+// DestinationBuffer that only needs to know its structure but not its
+// contents.
+class DestinationBuffer : public VertexBuffer {
  public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
+  typedef SmartPointer<DestinationBuffer> Ref;
+
+  ~DestinationBuffer();
+
+ protected:
+  // Overridden from Buffer.
+  virtual bool ConcreteAllocate(size_t size_in_bytes);
+
+  // Overridden from Buffer.
+  virtual bool ConcreteLock(AccessMode access_mode, void **buffer_data);
+
+  // Overridden from Buffer.
+  virtual bool ConcreteUnlock();
+
+  explicit DestinationBuffer(ServiceLocator* service_locator);
+
+ protected:
+  // Frees the buffer if it exists.
+  void ConcreteFree();
+
+ private:
+  friend class IClassManager;
+  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+
+  scoped_array<char> buffer_;  // The actual data for this buffer.
+
+  O3D_OBJECT_BASE_DECL_CLASS(DestinationBuffer, VertexBuffer);
+  DISALLOW_COPY_AND_ASSIGN(DestinationBuffer);
 };
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
 
-}  // namespace base
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
+#endif  // O3D_IMPORT_CROSS_DESTINATION_BUFFER_H_
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_

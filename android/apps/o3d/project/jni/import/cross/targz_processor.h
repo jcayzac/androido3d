@@ -29,72 +29,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+// TarGzProcessor processes a gzipped tar stream (tar.gz)
+// compressed byte stream
+//
 
-// This file declares STL functional classes in a cross-compiler way.
+#ifndef O3D_IMPORT_CROSS_TARGZ_PROCESSOR_H_
+#define O3D_IMPORT_CROSS_TARGZ_PROCESSOR_H_
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#include "base/basictypes.h"
+#include "import/cross/archive_processor.h"
+#include "import/cross/gz_decompressor.h"
+#include "import/cross/tar_processor.h"
+#include "zlib.h"
 
-#include <build/build_config.h>
-
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class TarGzProcessor : public ArchiveProcessor  {
  public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
+  explicit TarGzProcessor(ArchiveCallbackClient *callback_client);
+
+  virtual Status ProcessBytes(MemoryReadStream *stream,
+                              size_t bytes_to_process);
+
+  virtual void Close(bool success);
+
+ private:
+  TarProcessor   tar_processor_;
+  GzDecompressor gz_decompressor_;
+
+  DISALLOW_COPY_AND_ASSIGN(TarGzProcessor);
 };
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#endif  // O3D_IMPORT_CROSS_TARGZ_PROCESSOR_H_

@@ -29,72 +29,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// ThreadedStreamProcessor forwards data from one thread to
+// another processor that will run on a new thread owned by the
+// ThreadedStreamProcessor.
 
-// This file declares STL functional classes in a cross-compiler way.
+#ifndef O3D_IMPORT_CROSS_THREADED_STREAM_PROCESSOR_H_
+#define O3D_IMPORT_CROSS_THREADED_STREAM_PROCESSOR_H_
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#include "base/basictypes.h"
+#include "base/thread.h"
+#include "import/cross/memory_stream.h"
 
-#include <build/build_config.h>
-
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
+class ThreadedStreamProcessor : public StreamProcessor {
  public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
+  explicit ThreadedStreamProcessor(StreamProcessor *receiver);
+  virtual ~ThreadedStreamProcessor();
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
+  virtual Status ProcessBytes(MemoryReadStream *stream,
+                              size_t bytes_to_process);
 
-}  // namespace base
+  virtual void Close(bool success);
+
+  void StartThread();
+  void StopThread();
+
+ private:
+  static void ForwardBytes(ThreadedStreamProcessor* processor,
+                           const uint8* data, size_t size);
+
+  static void ForwardClose(ThreadedStreamProcessor* processor, bool success);
+
+  StreamProcessor* receiver_;
+  ::base::Thread thread_;
+  Status status_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadedStreamProcessor);
+};
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#endif  //  O3D_IMPORT_CROSS_THREADED_STREAM_PROCESSOR_H_

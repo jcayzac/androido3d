@@ -29,72 +29,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "import/cross/destination_buffer.h"
 
-// This file declares STL functional classes in a cross-compiler way.
-
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-
-#include <build/build_config.h>
-
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
+O3D_OBJECT_BASE_DEFN_CLASS(
+    "o3djs.DestinationBuffer", DestinationBuffer, VertexBuffer);
+
+DestinationBuffer::DestinationBuffer(ServiceLocator* service_locator)
+    : VertexBuffer(service_locator),
+      buffer_() {
+}
+
+DestinationBuffer::~DestinationBuffer() {
+  ConcreteFree();
+}
+
+void DestinationBuffer::ConcreteFree() {
+  buffer_.reset();
+}
+
+bool DestinationBuffer::ConcreteAllocate(size_t size_in_bytes) {
+  ConcreteFree();
+
+  buffer_.reset(new char[size_in_bytes]);
+
+  return true;
+}
+
+bool DestinationBuffer::ConcreteLock(AccessMode access_mode,
+                                     void **buffer_data) {
+  if (!buffer_.get()) {
+    return false;
   }
-};
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
+  *buffer_data = reinterpret_cast<void*>(buffer_.get());
+  return true;
+}
 
-}  // namespace base
+bool DestinationBuffer::ConcreteUnlock() {
+  return buffer_.get() != NULL;
+}
+
+ObjectBase::Ref DestinationBuffer::Create(ServiceLocator* service_locator) {
+  return ObjectBase::Ref(new DestinationBuffer(service_locator));
+}
+
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_

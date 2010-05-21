@@ -1,6 +1,6 @@
 #ifndef __stl_config__android_h
 #define __stl_config__android_h
-
+#error "got here"
 #define _STLP_PLATFORM "Android"
 
 // The Android C library is mostly glibc-like

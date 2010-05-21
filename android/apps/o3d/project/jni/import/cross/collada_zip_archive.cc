@@ -30,71 +30,51 @@
  */
 
 
-// This file declares STL functional classes in a cross-compiler way.
+// A basic C++ wrapper for a collada zip file
+// it looks for the first .dae file in the archive and is able to resolve
+// partial pathnames (from the image URI's in the collada file) to files in the
+// archive
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#include "base/string_util.h"
+#include "import/cross/collada_zip_archive.h"
 
-#include <build/build_config.h>
+using std::vector;
+using std::string;
 
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
+ColladaZipArchive::ColladaZipArchive(const std::string &zip_filename,
+                                     int *result)
+  : ZipArchive(zip_filename, result) {
+  if (result && (*result == UNZ_OK)) {
+    // look through the archive and locate the first file with a .dae extension
+    vector<ZipFileInfo> infolist;
+    GetInformationList(&infolist);
+
+    bool dae_found = false;
+    for (vector<ZipFileInfo>::size_type i = 0; i < infolist.size(); ++i) {
+      const char *name = infolist[i].name.c_str();
+      int length = strlen(name);
+
+      if (length > 4) {
+        const char *suffix = name + length - 4;
+        if (!base::strcasecmp(suffix, ".dae")) {
+          dae_pathname_ = name;
+          dae_directory_ = dae_pathname_;
+          RemoveLastPathComponent(&dae_directory_);
+          dae_found = true;
+          break;
+        }
+      }
+    }
+
+    if (!dae_found && result) *result = -1;
   }
-};
+}
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
-
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+// Convert paths relative to the collada file to archive paths
+char  *ColladaZipArchive::GetColladaAssetData(const string &filename,
+                                              size_t *size) {
+  return GetRelativeFileData(filename, dae_directory_, size);
+}
+}  // end namespace o3d

@@ -30,71 +30,28 @@
  */
 
 
-// This file declares STL functional classes in a cross-compiler way.
+// This file contains the declaration of class FileOutputStreamProcessor.
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#ifndef O3D_IMPORT_CROSS_FILE_OUTPUT_STREAM_PROCESSOR_H_
+#define O3D_IMPORT_CROSS_FILE_OUTPUT_STREAM_PROCESSOR_H_
 
-#include <build/build_config.h>
+#include "import/cross/memory_stream.h"
 
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
+// A StringReader accepts binary data and writes it to a file.
+class FileOutputStreamProcessor : public StreamProcessor {
  public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
+  explicit FileOutputStreamProcessor(FILE* file);
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
+  virtual Status ProcessBytes(MemoryReadStream *stream,
+                              size_t bytes_to_process);
+  virtual void Close(bool success);
 
-}  // namespace base
+ private:
+  FILE* file_;
+  DISALLOW_COPY_AND_ASSIGN(FileOutputStreamProcessor);
+};
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#endif  // O3D_IMPORT_CROSS_FILE_OUTPUT_STREAM_PROCESSOR_H_

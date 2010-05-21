@@ -11,6 +11,13 @@
 
 #include "base/basictypes.h"
 
+// TODO(gman): Remove this hack
+#if defined(__ANDROID__)
+namespace std {
+  typedef basic_string<wchar_t> wstring;
+};
+#endif
+
 //
 // Optional message capabilities
 // -----------------------------

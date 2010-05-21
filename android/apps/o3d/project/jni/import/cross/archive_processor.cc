@@ -29,72 +29,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+#include <sys/stat.h>
 
-// This file declares STL functional classes in a cross-compiler way.
+#include "import/cross/archive_processor.h"
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#include "base/logging.h"
+#include "import/cross/memory_buffer.h"
+#include "zlib.h"
 
-#include <build/build_config.h>
+const int kChunkSize = 16384;
 
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+StreamProcessor::Status ArchiveProcessor::ProcessEntireStream(
+    MemoryReadStream *stream) {
+  Status status;
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
+  // decompress until deflate stream ends or error
+  do {
+    int remaining = stream->GetRemainingByteCount();
 
-}  // namespace base
+    int process_this_time = remaining < kChunkSize ? remaining : kChunkSize;
+    status = ProcessBytes(stream, process_this_time);
+  } while (status == IN_PROGRESS);
+
+  return status;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+StreamProcessor::Status ArchiveProcessor::ProcessFile(const char *filename) {
+  struct stat file_info;
+  int result = stat(filename, &file_info);
+  if (result != 0) return FAILURE;
+
+  int file_length = file_info.st_size;
+  if (file_length == 0) return FAILURE;
+
+  MemoryBuffer<uint8> buffer;
+  buffer.Allocate(file_length);
+  uint8 *p = buffer;
+
+  // Test by reading in a tar.gz file and sending through the
+  // progressive streaming system
+  FILE *fp = fopen(filename, "rb");
+  if (!fp) return FAILURE;  // can't open file!
+  fread(p, sizeof(uint8), file_length, fp);
+  fclose(fp);
+
+  MemoryReadStream stream(p, file_length);
+
+  return ProcessEntireStream(&stream);
+}
+
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
-
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_

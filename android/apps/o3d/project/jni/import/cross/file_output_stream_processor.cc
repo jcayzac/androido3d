@@ -30,71 +30,32 @@
  */
 
 
-// This file declares STL functional classes in a cross-compiler way.
+// This file contains the declaration of class FileOutputStreamProcessor.
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#include <stdio.h>
+#include "base/logging.h"
+#include "import/cross/file_output_stream_processor.h"
 
-#include <build/build_config.h>
-
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
+FileOutputStreamProcessor::FileOutputStreamProcessor(FILE* file)
+    : file_(file) {
+  DCHECK(file != NULL);
+}
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
+StreamProcessor::Status FileOutputStreamProcessor::ProcessBytes(
+    MemoryReadStream *stream,
+    size_t bytes_to_process) {
+  DCHECK(file_ != NULL);
+  size_t num_written = fwrite(stream->GetDirectMemoryPointer(),
+                              1,
+                              bytes_to_process,
+                              file_);
+  return num_written == bytes_to_process ? IN_PROGRESS : FAILURE;
+}
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
+void FileOutputStreamProcessor::Close(bool success) {
+  fclose(file_);
+  file_ = NULL;
+}
 
-}  // namespace base
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
-
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_

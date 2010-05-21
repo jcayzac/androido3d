@@ -30,71 +30,36 @@
  */
 
 
-// This file declares STL functional classes in a cross-compiler way.
+// This file contains the declaration of class IArchiveGenerator.
 
-#ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
-#define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#ifndef O3D_IMPORT_CROSS_IARCHIVE_GENERATOR_H_
+#define O3D_IMPORT_CROSS_IARCHIVE_GENERATOR_H_
 
-#include <build/build_config.h>
+#include "core/cross/types.h"
 
-#if defined(__ANDROID__)
-#include <functional>
-#include <utility>
 namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
+class MemoryReadStream;
+
+class IArchiveGenerator {
  public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
+  virtual ~IArchiveGenerator() {
   }
+
+  // Call AddFile() for each file entry, followed by calls to AddFileBytes()
+  // for the file's data
+  virtual bool AddFile(const String& file_name,
+                       size_t file_size) = 0;
+
+  // Call with the file's data (after calling AddFile)
+  // may be called one time will all the file's data, or multiple times
+  // until all the data is provided
+  virtual int AddFileBytes(MemoryReadStream* stream, size_t n) = 0;
+
+  // Must be called to finish the archiving operation.
+  virtual void Close(bool success) = 0;
 };
 
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
-#include <ext/functional>
-namespace o3d {
-namespace base {
-using __gnu_cxx::select1st;
-using __gnu_cxx::select2nd;
-}  // namespace base
-}  // namespace o3d
-#elif defined(COMPILER_MSVC)
-#include <functional>
-#include <utility>
-namespace o3d {
-namespace base {
 
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
-}  // namespace base
-}  // namespace o3d
-#else
-#error Unsupported compiler
-#endif
-
-#endif  // O3D_BASE_CROSS_STD_FUNCTIONAL_H_
+#endif  // O3D_IMPORT_CROSS_IARCHIVE_GENERATOR_H_
