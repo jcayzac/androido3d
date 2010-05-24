@@ -34,6 +34,18 @@ using stdext::hash_set;
 }
 #elif defined(__ANDROID__)
 
+namespace base {
+
+// TODO(gman): Fix these incomplete definitions
+template <typename Key, typename Data>
+class hash_map : public std::map<Key, Data> {
+};
+
+template <typename Key>
+class hash_set : public std::set<Key> {
+};
+
+}
 
 #elif defined(COMPILER_GCC)
 // This is a hack to disable the gcc 4.4 warning about hash_map and hash_set
