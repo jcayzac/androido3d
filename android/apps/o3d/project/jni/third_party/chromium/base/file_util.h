@@ -14,6 +14,9 @@
 #include <windows.h>
 #elif defined(OS_POSIX)
 #include <sys/stat.h>
+#if defined(__ANDROID__)
+#include <fcntl.h>
+#endif
 #endif
 
 #include <stdio.h>

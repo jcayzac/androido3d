@@ -344,7 +344,18 @@ class FilePath {
 
 // Provide a hash function so that hash_sets and maps can contain FilePath
 // objects.
-#if defined(COMPILER_GCC)
+#if defined(__ANDROID__)
+namespace std {
+
+template<>
+struct hash<FilePath> {
+  std::size_t operator()(const FilePath& f) const {
+    return hash<FilePath::StringType>()(f.value());
+  }
+};
+
+}  // namespace std
+#elif defined(COMPILER_GCC)
 namespace __gnu_cxx {
 
 template<>

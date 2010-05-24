@@ -47,6 +47,10 @@
 #  include <stl/_cwchar.h>
 #endif
 
+#if defined(__ANDROID__)
+#  include <wchar.h>
+#endif
+
 _STLP_BEGIN_NAMESPACE
 
 template <class _Tp> class allocator;

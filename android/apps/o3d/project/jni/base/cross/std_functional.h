@@ -42,23 +42,8 @@
 #include <utility>
 namespace o3d {
 namespace base {
-
-template <class Pair>
-class select1st : public std::unary_function<Pair, typename Pair::first_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.first;
-  }
-};
-
-template <class Pair>
-class select2nd : public std::unary_function<Pair, typename Pair::second_type> {
- public:
-  const result_type &operator()(const argument_type &value) const {
-    return value.second;
-  }
-};
-
+using std::select1st;
+using std::select2nd;
 }  // namespace base
 }  // namespace o3d
 #elif defined(COMPILER_GCC)
