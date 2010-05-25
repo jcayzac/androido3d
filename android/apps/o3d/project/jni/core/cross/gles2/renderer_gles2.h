@@ -155,6 +155,8 @@ class RendererGLES2 : public Renderer {
 #elif defined(GLES2_BACKEND_GLES2_COMMAND_BUFFERS)
 #error RendererGLES2::IsCurrent() Not implemented.
 #endif
+#elif defined(OS_ANDROID)
+    return true;
 #else
     Error: must port RendererGLES2::IsCurrent() to your platform.
 #endif

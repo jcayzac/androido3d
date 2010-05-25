@@ -35,7 +35,9 @@
 #include <cmath>
 #include "core/cross/texture.h"
 #include "core/cross/bitmap.h"
+#if !defined(O3D_NO_CANVAS)
 #include "core/cross/canvas.h"
+#endif
 #include "core/cross/renderer.h"
 #include "core/cross/client_info.h"
 #include "core/cross/error.h"
@@ -190,6 +192,7 @@ void Texture2D::DrawImage(const Bitmap& src_img,
                       components);
 }
 
+#if !defined(O3D_NO_CANVAS)
 void Texture2D::DrawImage(const Canvas& src_img,
                           int src_x, int src_y,
                           int src_width, int src_height,
@@ -256,6 +259,7 @@ void Texture2D::DrawImage(const Canvas& src_img,
                       dst_width, dst_height,
                       components);
 }
+#endif  // !defined(O3D_NO_CANVAS)
 
 void Texture2D::SetFromBitmap(const Bitmap& bitmap) {
   DCHECK(bitmap.image_data());
@@ -567,6 +571,7 @@ void TextureCUBE::DrawImage(const Bitmap& src_img, int src_mip,
                       components);
 }
 
+#if !defined(O3D_NO_CANVAS)
 void TextureCUBE::DrawImage(const Canvas& src_img,
                             int src_x, int src_y,
                             int src_width, int src_height,
@@ -635,6 +640,7 @@ void TextureCUBE::DrawImage(const Canvas& src_img,
                       dst_width, dst_height,
                       components);
 }
+#endif  // !defined(O3D_NO_CANVAS)
 
 void TextureCUBE::SetFromBitmap(CubeFace face, const Bitmap& bitmap) {
   DCHECK(bitmap.image_data());

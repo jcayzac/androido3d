@@ -35,7 +35,9 @@
 #include "core/cross/client.h"
 #include "core/cross/draw_context.h"
 #include "core/cross/effect.h"
+#if !defined(O3D_NO_IPC)
 #include "core/cross/message_queue.h"
+#endif
 #include "core/cross/pack.h"
 #include "core/cross/shape.h"
 #include "core/cross/transform.h"
@@ -89,6 +91,7 @@ Client::Client(ServiceLocator* service_locator)
 #endif
       rendergraph_root_(NULL),
       id_(IdManager::CreateId()) {
+#if !defined(O3D_NO_IPC)
   // Create and initialize the message queue to allow external code to
   // communicate with the Client via RPC calls.
   message_queue_.reset(new MessageQueue(service_locator_));
@@ -97,6 +100,7 @@ Client::Client(ServiceLocator* service_locator)
     LOG(ERROR) << "Client failed to initialize the message queue";
     message_queue_.reset(NULL);
   }
+#endif
 }
 
 // Frees up all the resources allocated by the Client factory methods but
@@ -186,16 +190,18 @@ bool Client::Tick() {
 
   counter_manager_.AdvanceCounters(1.0f, seconds_elapsed);
 
-  // Processes any incoming message found in the message queue.  Note that this
-  // call does not block if no new messages are found.
   bool message_check_ok = true;
   bool has_new_texture = false;
+#if !defined(O3D_NO_IPC)
+  // Processes any incoming message found in the message queue.  Note that this
+  // call does not block if no new messages are found.
 
   if (message_queue_.get()) {
     profiler_->ProfileStart("CheckForNewMessages");
     message_check_ok = message_queue_->CheckForNewMessages(&has_new_texture);
     profiler_->ProfileStop("CheckForNewMessages");
   }
+#endif
 
   event_manager_.ProcessQueue();
   event_manager_.ProcessQueue();
@@ -525,6 +531,7 @@ String Client::ToDataURL() {
   return data_url;
 }
 
+#if !defined(O3D_NO_IPC)
 String Client::GetMessageQueueAddress() const {
   if (message_queue_.get()) {
     return message_queue_->GetSocketAddress();
@@ -532,7 +539,9 @@ String Client::GetMessageQueueAddress() const {
     O3D_ERROR(service_locator_) << "Message queue not initialized";
     return String("");
   }
+
 }
+#endif  // !defined(O3D_NO_IPC)
 
 void Client::SetOffscreenRenderingSurfaces(
     RenderSurface::Ref surface,

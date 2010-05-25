@@ -43,7 +43,9 @@
 
 #elif defined(GLES2_BACKEND_NATIVE_GLES2)
 
+#if !defined(OS_ANDROID) && !defined(__ANDROID__)
 #include <EGL/egl.h>
+#endif
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 

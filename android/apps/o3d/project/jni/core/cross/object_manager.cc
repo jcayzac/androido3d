@@ -116,9 +116,9 @@ void ObjectManager::UnregisterObject(ObjectBase *object) {
 }
 
 bool ObjectManager::DestroyPack(Pack* pack) {
-  PackRefArray::iterator iter = find(pack_array_.begin(),
-                                     pack_array_.end(),
-                                     pack);
+  PackRefArray::iterator iter = std::find(pack_array_.begin(),
+                                          pack_array_.end(),
+                                          pack);
   DLOG_ASSERT(iter != pack_array_.end()) << "Destruction of unknown pack.";
   if (iter != pack_array_.end()) {
     pack_array_.erase(iter);

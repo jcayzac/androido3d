@@ -36,11 +36,15 @@
 #include "core/cross/pack.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/draw_context.h"
+#if !defined(O3D_NO_ARCHIVE_REQUEST)
 #include "import/cross/archive_request.h"
+#endif
 #include "import/cross/raw_data.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
+#if !defined(O3D_NO_FILE_REQUEST)
 #include "core/cross/file_request.h"
+#endif
 #include "core/cross/image_utils.h"
 #include "core/cross/render_node.h"
 #include "core/cross/iclass_manager.h"
@@ -98,6 +102,7 @@ ObjectBase* Pack::CreateObjectByClass(const ObjectBase::Class* type) {
 }
 
 // Creates a new FileRequest object.
+#if !defined(O3D_NO_FILE_REQUEST)
 FileRequest *Pack::CreateFileRequest(const String& type) {
   FileRequest *request = FileRequest::Create(service_locator(),
                                              this,
@@ -107,8 +112,10 @@ FileRequest *Pack::CreateFileRequest(const String& type) {
   }
   return request;
 }
+#endif  // !defined(O3D_NO_FILE_REQUEST)
 
 // Creates a new ArchiveRequest object.
+#if !defined(O3D_NO_ARCHIVE_REQUEST)
 ArchiveRequest *Pack::CreateArchiveRequest() {
   ArchiveRequest *request = ArchiveRequest::Create(service_locator(),
                                                    this);
@@ -116,7 +123,9 @@ ArchiveRequest *Pack::CreateArchiveRequest() {
     RegisterObject(request);
   }
   return request;
+  return NULL;
 }
+#endif  // !defined(O3D_NO_ARCHIVE_REQUEST)
 
 // Creates a Texture object from a file in the current render context format.
 Texture* Pack::CreateTextureFromFile(const String& uri,

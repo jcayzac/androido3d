@@ -161,12 +161,14 @@ class Texture2D : public Texture {
   //   dest_y: y-coordinate of the starting pixel in the dest image.
   //   dest_width: width of the dest image.
   //   dest_height: height of the dest image.
+#if !defined(O3D_NO_CANVAS)
   void DrawImage(const Canvas& source_img,
                  int source_x, int source_y,
                  int source_width, int source_height,
                  int dest_mip,
                  int dest_x, int dest_y,
                  int dest_width, int dest_height);
+#endif  // !defined(O3D_NO_CANVAS)
 
 
   // Sets the contents of the texture from a Bitmap.
@@ -372,12 +374,14 @@ class TextureCUBE : public Texture {
   //   dest_y: y-coordinate of the starting pixel in the dest image.
   //   dest_width: width of the dest image.
   //   dest_height: height of the dest image.
+#if !defined(O3D_NO_CANVAS)
   void DrawImage(const Canvas& source_img,
                  int source_x, int source_y,
                  int source_width, int source_height,
                  CubeFace face, int dest_mip,
                  int dest_x, int dest_y, int dest_width,
                  int dest_height);
+#endif  // !defined(O3D_NO_CANVAS)
 
   // Sets the contents of the texture from a Bitmap.
   void SetFromBitmap(CubeFace face, const Bitmap& bitmap);

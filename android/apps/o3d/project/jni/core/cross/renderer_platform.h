@@ -63,6 +63,7 @@
 #include "core/mac/display_window_mac.h"
 #elif defined(OS_LINUX)
 #include "core/linux/display_window_linux.h"
+#elif defined(OS_ANDROID)
 #else
 #error Platform not recognized.
 #endif

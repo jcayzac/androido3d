@@ -19,7 +19,7 @@
 #define _STLP_HAS_NO_NEW_C_HEADERS 1
 
 // Don't use wchar.h etc
-#define _STLP_NO_WCHAR_T 1
+//#define _STLP_NO_WCHAR_T 1
 
 // Don't have (working) native wide character support.
 #define _STLP_NO_NATIVE_WIDE_FUNCTIONS 1
@@ -71,12 +71,14 @@
 #define _STLP_NATIVE_CPP_RUNTIME_HEADER(header) <../../usr/include/header>
 
 #ifdef __cplusplus
+// Hack to prevent including buggy stl_pair.h system header, introduced in Android 1.6 NDK
+#ifndef _CPP_UTILITY
+#define _CPP_UTILITY 1
+#endif
+#define __SGI_STL_INTERNAL_PAIR_H 1
 #include <stddef.h>
 //inline void* operator new(size_t, void* p) { return p; }
 //inline void* operator new[](size_t, void* p) { return p; }
-// Hack to prevent including buggy stl_pair.h system header, introduced in Android 1.6 NDK
-#define _CPP_UTILITY 1
-#define __SGI_STL_INTERNAL_PAIR_H 1
 #endif
 
 #endif /* __stl_config__android_h */

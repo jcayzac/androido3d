@@ -160,9 +160,9 @@ TransformArray Transform::GetChildren() const {
 // Removes a child transform from the child_array_.  Returns true if the
 // operation succeeds.
 bool Transform::RemoveChild(Transform *child) {
-  TransformRefArray::iterator end = remove(child_array_.begin(),
-                                           child_array_.end(),
-                                           Transform::Ref(child));
+  TransformRefArray::iterator end = std::remove(child_array_.begin(),
+                                                child_array_.end(),
+                                                Transform::Ref(child));
 
   // child should never be in the child array more than once.
   DLOG_ASSERT(std::distance(end, child_array_.end()) <= 1);

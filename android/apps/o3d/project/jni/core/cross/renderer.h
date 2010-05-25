@@ -35,6 +35,10 @@
 #ifndef O3D_CORE_CROSS_RENDERER_H_
 #define O3D_CORE_CROSS_RENDERER_H_
 
+#if defined(__ANDROID__)
+#include "third_party/stlport/stlport/utility"
+#endif
+
 #include <utility>
 #include <vector>
 

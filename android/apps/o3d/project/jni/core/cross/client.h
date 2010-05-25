@@ -446,7 +446,9 @@ class Client {
   String GetScreenshotAsDataURL();
 
   // MessageQueue that allows external code to communicate with the Client.
+#if !defined(O3D_NO_IPC)
   scoped_ptr<MessageQueue> message_queue_;
+#endif
 
   ServiceLocator* service_locator_;
   ServiceDependency<ObjectManager> object_manager_;

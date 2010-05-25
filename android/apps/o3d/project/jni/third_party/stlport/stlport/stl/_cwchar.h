@@ -47,8 +47,9 @@ typedef _BSD_WINT_T_ wint_t;
 #    endif /* __OpenBSD__ */
 #  elif defined (__MWERKS__) && defined (N_PLAT_NLM)
 #    include <wchar.h>
-#  elif !defined (ANDROID)
-// Android doesn't have a working wchar.h
+#  elif defined (__ANDROID__)
+#    include _STLP_NATIVE_C_HEADER(wchar.h)
+#  else
 #    include _STLP_NATIVE_C_HEADER(wchar.h)
 
 #    if defined (__sun) && (defined (_XOPEN_SOURCE) || (_XOPEN_VERSION - 0 == 4))
@@ -128,7 +129,7 @@ _STLP_STATIC_ASSERT(((wchar_t)-1 > 0) && (WCHAR_MIN < 0))
 #      undef WCHAR_MIN
 #      define WCHAR_MIN 0
 #      undef WCHAR_MAX
-#      define WCHAR_MAX UINT_MAX 
+#      define WCHAR_MAX UINT_MAX
 #    endif
 #  endif
 

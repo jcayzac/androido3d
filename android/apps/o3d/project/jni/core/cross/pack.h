@@ -180,12 +180,16 @@ class Pack : public NamedObject {
   //  type: what type of file load will occur after download
   // Returns:
   //  A pointer to the newly created FileRequest, or NULL if creation failed.
+#if !defined(O3D_NO_FILE_REQUEST)
   FileRequest* CreateFileRequest(const String& type);
+#endif  // !defined(O3D_NO_FILE_REQUEST)
 
   // Creates a new ArchiveRequest object.  The object is owned by the Client.
   // Returns:
   //  A pointer to the newly created ArchiveRequest, or NULL if creation failed.
+#if !defined(O3D_NO_ARCHIVE_REQUEST)
   ArchiveRequest* CreateArchiveRequest();
+#endif  // !defined(O3D_NO_ARCHIVE_REQUEST)
 
   // Creates a new Texture object from a local file. If the file doesn't exist,
   // or won't load, NULL is returned. The file formats supported are JPEG, PNG,

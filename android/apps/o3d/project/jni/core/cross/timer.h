@@ -75,6 +75,10 @@ class ElapsedTimeTimer {
   TimeStamp windows_timer_frequency_;
 #endif
 
+#ifdef __ANDROID__
+  typedef uint64_t TimeStamp;
+#endif
+
   // The value of the tick count from the windows performance counter from the
   // last time GetElapsedTime was called.
   TimeStamp last_time_;

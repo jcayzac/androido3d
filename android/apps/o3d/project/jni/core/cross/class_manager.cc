@@ -35,9 +35,11 @@
 #include "core/cross/bitmap.h"
 #include "core/cross/bounding_box.h"
 #include "core/cross/buffer.h"
+#if !defined(O3D_NO_CANVAS)
 #include "core/cross/canvas.h"
 #include "core/cross/canvas_paint.h"
 #include "core/cross/canvas_shader.h"
+#endif
 #include "core/cross/class_manager.h"
 #include "core/cross/clear_buffer.h"
 #include "core/cross/counter.h"
@@ -141,9 +143,11 @@ ClassManager::ClassManager(ServiceLocator* service_locator)
 
   // Other Objects.
   AddTypedClass<Bitmap>();
+#if !defined(O3D_NO_CANVAS)
   AddTypedClass<Canvas>();
   AddTypedClass<CanvasLinearGradient>();
   AddTypedClass<CanvasPaint>();
+#endif
   AddTypedClass<ClearBuffer>();
   AddTypedClass<Counter>();
   AddTypedClass<Curve>();

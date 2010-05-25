@@ -75,7 +75,7 @@ class RenderSurfaceGLES2 : public RenderSurface {
 
  protected:
   // The platform specific part of GetBitmap.
-  virtual Bitmap::Ref PlatformSpecificGetBitmap() const;
+  virtual bool PlatformSpecificGetIntoBitmap(Bitmap::Ref bitmap) const;
 
  private:
   GLenum cube_face_;
