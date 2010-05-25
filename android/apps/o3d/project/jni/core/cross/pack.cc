@@ -123,7 +123,6 @@ ArchiveRequest *Pack::CreateArchiveRequest() {
     RegisterObject(request);
   }
   return request;
-  return NULL;
 }
 #endif  // !defined(O3D_NO_ARCHIVE_REQUEST)
 

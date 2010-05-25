@@ -59,6 +59,7 @@ namespace o3d {
 // that (the compiler won't protect you like it would in a std::map).
 // TODO: see if that could be made safer without adding extra copies.
 #if defined(__ANDROID__)
+// TODO(gman): Remove this when we can get vector_map to compile on Android.
 #include <map>
 template <typename Key, typename Data, typename Compare = std::less<Key> >
 class vector_map : public std::map<Key, Data, Compare> {
