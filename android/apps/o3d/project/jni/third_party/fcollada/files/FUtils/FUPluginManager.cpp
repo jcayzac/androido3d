@@ -7,6 +7,7 @@
 */
 
 #include "StdAfx.h"
+#include "FCollada.h"
 #include "FUPlugin.h"
 #include "FUPluginManager.h"
 #include "FUFileManager.h"
@@ -185,9 +186,7 @@ void FUPluginManager::LoadPlugins(const FUObjectType& pluginType)
 {
 	for (PluginLibraryList::iterator it = loadedLibraries.begin(); it != loadedLibraries.end(); ++it)
 	{
-#ifndef _DEBUG
-		try
-#endif // _DEBUG
+    _FTRY
 		{
 			DEBUG_OUT("Loading plug-in: %s\n", TO_STRING((*it)->filename).c_str());
 			FUAssert((*it)->createPlugin != NULL && (*it)->getPluginType != NULL && (*it)->getPluginCount != NULL, continue);
@@ -205,13 +204,11 @@ void FUPluginManager::LoadPlugins(const FUObjectType& pluginType)
 				}
 			}
 		}
-#ifndef _DEBUG
-		catch (...)
+    _FCATCH_ALL
 		{
 			fm::string _filename = TO_STRING((*it)->filename);
 			ERROR_OUT("Unhandled exception when loading plugin: %s.", _filename.c_str());
 		}
-#endif // _DEBUG
 	}
 }
 

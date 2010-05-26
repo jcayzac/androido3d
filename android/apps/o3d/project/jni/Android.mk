@@ -403,7 +403,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE    := fcollada
 #LOCAL_CFLAGS    := -DLINUX -D__linux__ -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include -I$(LOCAL_PATH)/third_party/fcollada/files -I$(LOCAL_PATH)/third_party/stlport/stlport -I$(LOCAL_PATH)/third_party/chromium
-LOCAL_CFLAGS    := -D__ANDROID__ -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include -I$(LOCAL_PATH)/third_party/fcollada/files -I$(LOCAL_PATH)/third_party/stlport/stlport -I$(LOCAL_PATH)/third_party/chromium
+LOCAL_CFLAGS    := -D__ANDROID__ -DFCOLLADA_EXCEPTION=0 -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include -I$(LOCAL_PATH)/third_party/fcollada/files -I$(LOCAL_PATH)/third_party/stlport/stlport -I$(LOCAL_PATH)/third_party/chromium
 LOCAL_SRC_FILES := $(addprefix third_party/fcollada/files/, \
   FArchiveXML/FAXAnimationExport.cpp \
   FArchiveXML/FAXAnimationImport.cpp \

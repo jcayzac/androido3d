@@ -33,12 +33,19 @@
 	rather than crash your application. Force this #define to 0 only if your platform does not
 	support exception handling.
 */
+
+#ifndef FCOLLADA_EXCEPTION
 #ifdef _DEBUG
 #define	FCOLLADA_EXCEPTION 0
+#else
+#define FCOLLADA_EXCEPTION 1
+#endif
+#endif
+
+#if FCOLLADA_EXCEPTION == 0
 #define _FTRY 
 #define _FCATCH_ALL for (int x = 0; x != 0;)
 #else
-#define FCOLLADA_EXCEPTION 1
 #define _FTRY try
 #define _FCATCH_ALL catch (...) 
 #endif

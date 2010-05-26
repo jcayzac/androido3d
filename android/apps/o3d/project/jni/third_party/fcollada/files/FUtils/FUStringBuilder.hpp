@@ -26,6 +26,26 @@
 #define SAFE_DELETE_ARRAY(ptr) if (ptr != NULL) { delete [] ptr; ptr = NULL; }
 #endif
 
+#ifdef __ANDROID__
+template <class FloatType>
+void FloatToString(FloatType f, char* sz)
+{
+  static const int digitCount = 6;
+  char buffer[digitCount];
+  snprintf(buffer, digitCount, "%*e", digitCount, f);
+  strcpy(sz, buffer);
+}
+
+template <class FloatType>
+void FloatToString(FloatType f, wchar_t* sz)
+{
+  static const int digitCount = 6;
+  wchar_t buffer[digitCount];
+  swprintf(buffer, digitCount, L"%*e", digitCount, f);
+  wcscpy(sz, buffer);
+}
+#else 
+
 template <class Char, class FloatType>
 void FloatToString(FloatType f, Char* sz)
 {
@@ -82,6 +102,7 @@ void FloatToString(FloatType f, Char* sz)
 	if (buffer[-1] == '.') --buffer;
 	(*buffer) = 0;
 }
+#endif //__ANDROID__
 
 template <class Char>
 FUStringBuilderT<Char>::FUStringBuilderT(const String& sz)
