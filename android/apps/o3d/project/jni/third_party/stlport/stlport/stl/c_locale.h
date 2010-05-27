@@ -76,10 +76,10 @@ typedef char mbstate_t;
 #  endif /* ROOT65 */
 #else /* __sgi */
 #  include <stddef.h>
-#  if !defined (ANDROID)
+//#  if !defined (ANDROID)
 /* The Android wchar.h header is broken, and tries to redefine wchar_t. */
 #    include <wchar.h>
-#  endif
+//#  endif
 #  include <ctype.h>
 #endif /* __sgi */
 

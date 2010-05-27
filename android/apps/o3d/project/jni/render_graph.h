@@ -21,6 +21,19 @@ class DrawPassInfo {
   DrawPassInfo();
   ~DrawPassInfo();
 
+  /**
+   * A class to manage a draw pass.
+   * @constructor
+   * @param {!o3d.Pack} pack Pack to manage created objects.
+   * @param {!o3d.DrawContext} drawContext The DrawContext for this draw pass.
+   * @param {o3d.DrawList.SortMethod} sortMethod How to sort this draw pass's
+   *     DrawElements.
+   * @param {!o3d.DrawList} opt_drawList The DrawList for this draw pass. If not
+   *     passed in one will be created.
+   * @param {!o3d.RenderNode} opt_parent The RenderNode to parent this draw pass
+   *     under. If not passed the draw pass will not be parented.
+   * @return {!o3djs.rendergraph.DrawPassInfo}
+   */
   bool Initialize(
       o3d::Pack* pack,
       o3d::DrawList::SortMethod sort_method,
@@ -98,6 +111,20 @@ class ViewInfo {
   ViewInfo();
   ~ViewInfo();
 
+  /**
+   * @param {!o3d.Pack} pack Pack to manage created objects.
+   * @param {!o3d.Transform} treeRoot root Transform of tree to render.
+   * @param {!o3d.RenderNode} opt_parent RenderNode to build this view under.
+   * @param {!o3djs.math.Vector4} opt_clearColor color to clear view.
+   * @param {number} opt_priority Optional base priority for created objects.
+   * @param {!o3djs.math.Vector4} opt_viewport viewport settings for view.
+   * @param {!o3d.DrawList} opt_performanceDrawList DrawList to use for
+   *     performanceDrawPass.
+   * @param {!o3d.DrawList} opt_zOrderedDrawList DrawList to use for
+   *     zOrderedDrawPass.
+   * @param {!o3d.DrawContext} opt_drawContext Optional DrawContext to
+   *     use. If not passed in one is created.
+   */
   bool Initialize(
       o3d::Pack* pack,
       o3d::Transform* tree_root,
@@ -109,12 +136,42 @@ class ViewInfo {
       o3d::DrawList* z_ordered_draw_list,
       o3d::DrawContext* draw_context);
 
+  /**
+   * Creates a draw pass in this ViewInfo.
+   *
+   * @param {o3d.DrawList.SortMethod} sortMethod How to sort this draw pass's
+   *     DrawElements.
+   * @param {!o3d.DrawContext} opt_drawContext The DrawContext for this draw pass.
+   *     If not passed in the default DrawContext for this ViewInfo will be used.
+   * @param {number} opt_priority The priority for this draw pass. If not passed
+   *     in the priority will be the next priority for this ViewInfo.
+   * @param {!o3d.RenderNode} opt_parent The RenderNode to parent this draw pass
+   *     under. If not passed in the draw pass will be parented under the
+   *     ViewInfo's viewport RenderNode.
+   * @param {!o3d.DrawList} opt_drawList The DrawList for this draw pass. If not
+   *     passed in one will be created.
+   * @return {!o3djs.rendergraph.DrawPassInfo}
+   */
   DrawPassInfo* CreateDrawPass(
       o3d::DrawList::SortMethod sort_method,
       o3d::DrawContext* draw_context,
       float priority,
       o3d::RenderNode* parent,
       o3d::DrawList* draw_list);
+
+  /**
+   * Creates a basic render graph setup to draw opaque and transparent
+   * 3d objects.
+   * @param {!o3d.Pack} pack Pack to manage created objects.
+   * @param {!o3d.Transform} treeRoot root Transform of tree to render.
+   * @param {!o3d.RenderNode} opt_parent RenderNode to build this view under.
+   * @return {!o3djs.rendergraph.ViewInfo} A ViewInfo object with info about
+   *     everything created.
+   */
+  static ViewInfo* CreateBasicView(
+      o3d::Pack* pack,
+      o3d::Transform* tree_root,
+      o3d::RenderNode* parent);
 
   const std::vector<DrawPassInfo*>& draw_pass_infos() const {
     return draw_pass_infos_;

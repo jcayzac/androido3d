@@ -175,5 +175,18 @@ DrawPassInfo* ViewInfo::CreateDrawPass(
   return draw_pass_info;
 }
 
+ViewInfo* ViewInfo::CreateBasicView(
+      o3d::Pack* pack,
+      o3d::Transform* tree_root,
+      o3d::RenderNode* parent) {
+  ViewInfo* view_info = new ViewInfo();
+  if (!view_info->Initialize(
+      pack, tree_root, parent, NULL, 0.0f, NULL, NULL, NULL, NULL)) {
+    delete view_info;
+    return NULL;
+  }
+  return view_info;
+}
+
 }  // namespace o3d_utils
 
