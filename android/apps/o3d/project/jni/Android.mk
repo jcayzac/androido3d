@@ -351,8 +351,13 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := libxml
 LOCAL_CFLAGS    := \
   -DLINUX \
+  -D__ANDROID__ \
   -DUNICODE \
+  -DFCOLLADA_EXCEPTION=0 \
   -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include \
+  -I$(LOCAL_PATH)/third_party/fcollada/files \
+  -I$(LOCAL_PATH)/third_party/stlport/stlport \
+  -I$(LOCAL_PATH)/third_party/chromium \
 
 LOCAL_SRC_FILES := $(addprefix third_party/fcollada/files/, \
   LibXML/DOCBparser.c \
@@ -776,7 +781,7 @@ LOCAL_SRC_FILES := \
   shader_builder.cpp \
 
 # LOCAL_STATIC_LIBRARIES := o3dcore fcollada libxml libpng libjpeg zlib stdport
-LOCAL_STATIC_LIBRARIES := o3dimport o3drenderer o3dcore fcollada libxml libpng libjpeg zlib stdport
+LOCAL_STATIC_LIBRARIES := libxml o3dimport o3drenderer o3dcore fcollada libpng libjpeg zlib stdport
 
 include $(BUILD_SHARED_LIBRARY)
 
