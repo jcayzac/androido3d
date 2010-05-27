@@ -56,7 +56,9 @@
 #include "core/cross/param_array.h"
 #include "core/cross/param_operation.h"
 #include "core/cross/primitive.h"
+#if !defined(O3D_NO_GPU2D)
 #include "core/cross/processed_path.h"
+#endif
 #include "core/cross/render_surface_set.h"
 #include "core/cross/sampler.h"
 #include "core/cross/shape.h"
@@ -162,7 +164,9 @@ ClassManager::ClassManager(ServiceLocator* service_locator)
   AddTypedClass<ParamArray>();
   AddTypedClass<ParamObject>();
   AddTypedClass<Primitive>();
+#if !defined(O3D_NO_GPU2D)
   AddTypedClass<ProcessedPath>();
+#endif
   AddTypedClass<RenderFrameCounter>();
   AddTypedClass<RenderNode>();
   AddTypedClass<RenderSurfaceSet>();

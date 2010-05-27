@@ -53,12 +53,16 @@
 #include "core/cross/skin.h"
 #include "core/cross/stream.h"
 #include "import/cross/collada.h"
+#if !defined(O3D_IMPORT_NO_CONDITIONER)
 #include "import/cross/collada_conditioner.h"
+#endif
 #include "import/cross/collada_zip_archive.h"
 #include "import/cross/destination_buffer.h"
 #include "import/cross/file_output_stream_processor.h"
 #include "utils/cross/file_path_utils.h"
+#if !defined(O3D_IMPORT_NO_DXT_DECOMPRESSION)
 #include "third_party/libtxc_dxtn/files/txc_dxtn.h"
+#endif
 
 #define COLLADA_NAMESPACE "collada"
 #define COLLADA_NAMESPACE_SEPARATOR "."
@@ -312,6 +316,7 @@ bool Collada::ImportZIP(const FilePath& filename, Transform* parent,
 
         if (fc_status) {
           if (options_.condition_document) {
+            #if !defined(O3D_IMPORT_NO_CONDITIONER)
             ColladaConditioner conditioner(service_locator_);
             if (conditioner.ConditionDocument(doc, collada_zip_archive_)) {
               status = ImportDAEDocument(doc,
@@ -319,6 +324,9 @@ bool Collada::ImportZIP(const FilePath& filename, Transform* parent,
                                          parent,
                                          animation_input);
             }
+            #else
+            CHECK(false) << "no conditioner";
+            #endif  // !defined(O3D_IMPORT_NO_CONDITIONER)
           } else {
             status = ImportDAEDocument(doc, fc_status, parent, animation_input);
           }
@@ -355,10 +363,14 @@ bool Collada::ImportDAE(const FilePath& filename,
     std::wstring filename_w = FilePathToWide(filename);
     bool fc_status = FCollada::LoadDocumentFromFile(doc, filename_w.c_str());
     if (options_.condition_document) {
+      #if !defined(O3D_IMPORT_NO_CONDITIONER)
       ColladaConditioner conditioner(service_locator_);
       if (conditioner.ConditionDocument(doc, NULL)) {
         status = ImportDAEDocument(doc, fc_status, parent, animation_input);
       }
+      #else
+        CHECK(false) << "no conditioner";
+      #endif  // !defined(O3D_IMPORT_NO_CONDITIONER)
     } else {
       status = ImportDAEDocument(doc, fc_status, parent, animation_input);
     }
@@ -1701,6 +1713,8 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
     }
 
     bool inserted_original_data = false;
+
+    #if !defined(O3D_IMPORT_NO_DXT_DECOMPRESSION)
     bool is_dds = uri.MatchesExtension(UTF8ToFilePathStringType(".dds"));
 
     if (is_dds &&
@@ -1839,6 +1853,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
         tex->RemoveParam(uri_param);
       }
     }
+    #endif  // !defined(O3D_IMPORT_NO_DXT_DECOMPRESSION)
 
     if (options_.keep_original_data && !inserted_original_data) {
       // Cache the original data by URI so we can recover it later.

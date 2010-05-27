@@ -53,14 +53,12 @@
 #endif  // defined(RENDERER_GL)
 
 #if defined(RENDERER_GLES2)
-#include <GL/glew.h>
-#if defined(OS_WIN)
-#include <GL/wglew.h>
-#endif
 #endif  // defined(RENDERER_GLES2)
 
+#if !defined(O3D_IMPORT_NO_CG)
 #include <Cg/cg.h>
 #include <Cg/cgGL.h>
+#endif
 #include <FCollada.h>
 #include <FCDocument/FCDocument.h>
 #include <FCDocument/FCDocumentTools.h>

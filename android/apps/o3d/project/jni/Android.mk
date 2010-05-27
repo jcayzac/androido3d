@@ -349,7 +349,11 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := libxml
-LOCAL_CFLAGS    := -DLINUX -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include
+LOCAL_CFLAGS    := \
+  -DLINUX \
+  -DUNICODE \
+  -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include \
+
 LOCAL_SRC_FILES := $(addprefix third_party/fcollada/files/, \
   LibXML/DOCBparser.c \
   LibXML/HTMLparser.c \
@@ -402,8 +406,15 @@ include $(CLEAR_VARS)
 # DLLEntry.cpp \
 
 LOCAL_MODULE    := fcollada
-#LOCAL_CFLAGS    := -DLINUX -D__linux__ -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include -I$(LOCAL_PATH)/third_party/fcollada/files -I$(LOCAL_PATH)/third_party/stlport/stlport -I$(LOCAL_PATH)/third_party/chromium
-LOCAL_CFLAGS    := -D__ANDROID__ -DFCOLLADA_EXCEPTION=0 -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include -I$(LOCAL_PATH)/third_party/fcollada/files -I$(LOCAL_PATH)/third_party/stlport/stlport -I$(LOCAL_PATH)/third_party/chromium
+LOCAL_CFLAGS    := \
+  -D__ANDROID__ \
+  -DUNICODE \
+  -DFCOLLADA_EXCEPTION=0 \
+  -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include \
+  -I$(LOCAL_PATH)/third_party/fcollada/files \
+  -I$(LOCAL_PATH)/third_party/stlport/stlport \
+  -I$(LOCAL_PATH)/third_party/chromium \
+
 LOCAL_SRC_FILES := $(addprefix third_party/fcollada/files/, \
   FArchiveXML/FAXAnimationExport.cpp \
   FArchiveXML/FAXAnimationImport.cpp \
@@ -581,6 +592,7 @@ LOCAL_CPP_EXTENSION := .cc
 LOCAL_CFLAGS    := \
   -D__ANDROID__ \
   -DO3D_NO_CANVAS \
+  -DO3D_NO_GPU2D \
   -DO3D_NO_IPC \
   -DO3D_NO_ARCHIVE_REQUEST \
   -DO3D_NO_FILE_REQUEST \
@@ -713,17 +725,58 @@ LOCAL_SRC_FILES := $(addprefix core/cross/gles2/, \
 
 include $(BUILD_STATIC_LIBRARY)
 
+#### o3dimport
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE    := o3dimport
+LOCAL_CPP_EXTENSION := .cc
+LOCAL_CFLAGS    := \
+  -D__ANDROID__ \
+  -DRENDERER_GLES2 \
+  -DGLES2_BACKEND_NATIVE_GLES2 \
+  -DO3D_IMPORT_NO_CG \
+  -DO3D_IMPORT_NO_CONDITIONER \
+  -DO3D_IMPORT_NO_DXT_DECOMPRESSION \
+  -DFCOLLADA_EXCEPTION=0 \
+  -DUNICODE \
+  -I$(LOCAL_PATH)/third_party/stlport/stlport \
+  -I$(LOCAL_PATH)/third_party/fcollada/files/LibXML/include \
+  -I$(LOCAL_PATH)/third_party/fcollada/files \
+  -I$(LOCAL_PATH)/third_party/chromium \
+  -I$(LOCAL_PATH)/third_party/zlib \
+  -I$(LOCAL_PATH)/third_party \
+  -I$(LOCAL_PATH) \
+
+LOCAL_SRC_FILES := $(addprefix import/cross/, \
+  collada.cc \
+  collada.h \
+  collada_zip_archive.cc \
+  collada_zip_archive.h \
+  )
+
+include $(BUILD_STATIC_LIBRARY)
+
 # second lib, which will depend on and include the first one
 #
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := libo3djni
-LOCAL_CFLAGS    := -Werror
-LOCAL_SRC_FILES := gl_code.cpp
+LOCAL_CFLAGS    := \
+  -Werror \
+  -D__ANDROID__ \
+  -I$(LOCAL_PATH)/third_party/stlport/stlport \
+  -I$(LOCAL_PATH)/third_party/chromium \
+
 LOCAL_LDLIBS    := -llog -lGLESv2
+LOCAL_SRC_FILES := \
+  gl_code.cpp \
+  render_graph.cpp \
+  shader_builder.cpp \
 
 # LOCAL_STATIC_LIBRARIES := o3dcore fcollada libxml libpng libjpeg zlib stdport
-LOCAL_STATIC_LIBRARIES := fcollada o3drenderer o3dcore libpng libjpeg zlib stdport
+LOCAL_STATIC_LIBRARIES := o3dimport o3drenderer o3dcore fcollada libxml libpng libjpeg zlib stdport
 
 include $(BUILD_SHARED_LIBRARY)
 
