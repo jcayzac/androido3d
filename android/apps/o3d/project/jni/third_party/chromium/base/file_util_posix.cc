@@ -86,7 +86,7 @@ int CountFilesCreatedAfter(const FilePath& path,
   DIR* dir = opendir(path.value().c_str());
   if (dir) {
 #if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_FREEBSD) && \
-    !defined(OS_OPENBSD)
+    !defined(OS_OPENBSD) && !defined(OS_ANDROID)
   #error Port warning: depending on the definition of struct dirent, \
          additional space for pathname may be needed
 #endif
@@ -411,6 +411,9 @@ bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
 
 bool CreateNewTempDirectory(const FilePath::StringType& prefix,
                             FilePath* new_temp_path) {
+#if (OS_ANDROID)
+  return false;
+#else
   FilePath tmpdir;
   if (!GetTempDir(&tmpdir))
     return false;
@@ -423,6 +426,7 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
     return false;
   *new_temp_path = FilePath(dtemp);
   return true;
+#endif
 }
 
 bool CreateDirectory(const FilePath& full_path) {
@@ -630,7 +634,7 @@ bool FileEnumerator::ReadDirectory(std::vector<DirectoryEntryInfo>* entries,
     return false;
 
 #if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_FREEBSD) && \
-    !defined(OS_OPENBSD)
+    !defined(OS_OPENBSD) && !defined(OS_ANDROID)
   #error Port warning: depending on the definition of struct dirent, \
          additional space for pathname may be needed
 #endif

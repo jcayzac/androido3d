@@ -31,12 +31,24 @@ LOCAL_SRC_FILES := \
   render_graph.cpp \
   shader_builder.cpp \
 
-LOCAL_STATIC_LIBRARIES := stlport libxml o3dimport o3drenderer o3dcore fcollada libpng libjpeg zlib base
+LOCAL_STATIC_LIBRARIES := \
+  o3dcore \
+  o3drenderer \
+  o3dimport \
+  o3dutils \
+  fcollada \
+  libxml \
+  libjpeg \
+  libpng \
+  zlib \
+  base \
+  stlport \
 
 include $(BUILD_SHARED_LIBRARY)
 
 include $(MY_PATH)/core/Android.mk
 include $(MY_PATH)/import/Android.mk
+include $(MY_PATH)/utils/Android.mk
 include $(MY_PATH)/third_party/stlport/Android.mk
 include $(MY_PATH)/third_party/fcollada/files/Android.mk
 include $(MY_PATH)/third_party/libjpeg/Android.mk

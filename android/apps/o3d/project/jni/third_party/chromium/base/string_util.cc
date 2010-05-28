@@ -773,6 +773,9 @@ bool LowerCaseEqualsASCII(const string16& a, const char* b) {
 }
 #endif
 
+// Android std::string::const_iterator IS const char* so
+// these conflict with the definitions using const char*
+#if !defined(OS_ANDROID)
 bool LowerCaseEqualsASCII(std::string::const_iterator a_begin,
                           std::string::const_iterator a_end,
                           const char* b) {
@@ -784,13 +787,18 @@ bool LowerCaseEqualsASCII(std::wstring::const_iterator a_begin,
                           const char* b) {
   return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
+#endif  // !defined(OS_ANDROID)
 
 #if !defined(WCHAR_T_IS_UTF16)
+// Android std::wstring::const_iterator IS const wchar_t* so
+// these conflict with the definitions using const wchar_t*
+#if !defined(OS_ANDROID)
 bool LowerCaseEqualsASCII(string16::const_iterator a_begin,
                           string16::const_iterator a_end,
                           const char* b) {
   return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
+#endif  // !defined(OS_ANDROID)
 #endif
 
 bool LowerCaseEqualsASCII(const char* a_begin,

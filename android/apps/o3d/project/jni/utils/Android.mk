@@ -4,7 +4,7 @@ LOCAL_PATH      := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := o3dimport
+LOCAL_MODULE    := o3dutils
 LOCAL_CPP_EXTENSION := .cc
 LOCAL_CFLAGS    := \
   -D__ANDROID__ \
@@ -13,7 +13,6 @@ LOCAL_CFLAGS    := \
   -DO3D_IMPORT_NO_CG \
   -DO3D_IMPORT_NO_CONDITIONER \
   -DO3D_IMPORT_NO_DXT_DECOMPRESSION \
-  -DO3D_NO_TEMP_FILES \
   -DFCOLLADA_EXCEPTION=0 \
   -DUNICODE \
   -I$(LOCAL_PATH)/../third_party/stlport/stlport \
@@ -24,10 +23,21 @@ LOCAL_CFLAGS    := \
   -I$(LOCAL_PATH)/../third_party \
   -I$(LOCAL_PATH)/.. \
 
+LOCAL_REMOVED   := \
+  temporary_file.cc \
+
 LOCAL_SRC_FILES := $(addprefix cross/, \
-  collada.cc \
-  collada_zip_archive.cc \
-  raw_data.cc \
+  base64.cc \
+  dataurl.cc \
+  file_path_utils.cc \
+  file_text_reader.cc \
+  file_text_writer.cc \
+  json_writer.cc \
+  string_reader.cc \
+  string_writer.cc \
+  structured_writer.h \
+  text_reader.cc \
+  text_writer.cc \
   )
 
 include $(BUILD_STATIC_LIBRARY)

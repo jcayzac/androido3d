@@ -4,7 +4,10 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := stlport
 
-LOCAL_CFLAGS := -I$(LOCAL_PATH)/stlport -I$(LOCAL_PATH)/src -D__ANDROID__
+LOCAL_CFLAGS := \
+  -D__ANDROID__ \
+  -I$(LOCAL_PATH)/stlport \
+  -I$(LOCAL_PATH)/src \
 
 LOCAL_CPP_EXTENSION := .cpp
 

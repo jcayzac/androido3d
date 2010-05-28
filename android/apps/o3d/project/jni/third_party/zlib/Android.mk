@@ -6,6 +6,8 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE    := zlib
 LOCAL_CFLAGS    := \
+  -D__ANDROID__ \
+  -DUNICODE \
   -I$(LOCAL_PATH)/../.. \
 
 LOCAL_SRC_FILES := \

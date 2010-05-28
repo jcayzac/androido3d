@@ -300,6 +300,7 @@ String RawData::StringValue() const {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void RawData::Flush() {
+  #if !defined(O3D_NO_TEMP_FILES)
   // Only create the temp file if it doesn't already exist
   if (data_.get() && temp_filepath_.empty()) {
     if (GetTempFilePathFromURI(uri_, &temp_filepath_)) {
@@ -317,6 +318,7 @@ void RawData::Flush() {
       }
     }
   }
+  #endif
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

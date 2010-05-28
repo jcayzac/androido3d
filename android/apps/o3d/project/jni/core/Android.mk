@@ -14,14 +14,15 @@ LOCAL_CFLAGS    := \
   -DO3D_NO_ARCHIVE_REQUEST \
   -DO3D_NO_FILE_REQUEST \
   -DO3D_PLUGIN_VERSION=\"0.1.43.0\" \
-  -DCHROME_PNG_WRITE_SUPPORT \
-  -DPNG_USER_CONFIG \
   -I$(LOCAL_PATH)/../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/../third_party/libjpeg \
   -I$(LOCAL_PATH)/../third_party/libpng \
   -I$(LOCAL_PATH)/../third_party/chromium \
   -I$(LOCAL_PATH)/../third_party \
   -I$(LOCAL_PATH)/.. \
+
+#  -DCHROME_PNG_WRITE_SUPPORT \
+#  -DPNG_USER_CONFIG \
 
 # unused by Android version of O3D.
 #  canvas.cc \
@@ -67,6 +68,7 @@ LOCAL_SRC_FILES := $(addprefix cross/, \
   ierror_status.cc \
   image_utils.cc \
   material.cc \
+  math_utilities.cc \
   matrix4_axis_rotation.cc \
   matrix4_composition.cc \
   matrix4_scale.cc \
@@ -77,6 +79,7 @@ LOCAL_SRC_FILES := $(addprefix cross/, \
   pack.cc \
   param.cc \
   param_array.cc \
+  param_cache.cc \
   param_object.cc \
   param_operation.cc \
   precompile.cc \

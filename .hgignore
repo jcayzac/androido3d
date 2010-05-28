@@ -1,5 +1,9 @@
 syntax: glob
 .DS_Store
+*.vpj
+*.vpw
+*.vpwhist
+*.vtg
 eclipse_workspace
 android/docs
 android/build

@@ -5,6 +5,10 @@ LOCAL_PATH      := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := libjpeg
+LOCAL_CFLAGS    := \
+  -D__ANDROID__ \
+  -DUNICODE \
+
 LOCAL_SRC_FILES := \
   jcapimin.c \
   jcapistd.c \

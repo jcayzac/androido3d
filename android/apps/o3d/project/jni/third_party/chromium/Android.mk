@@ -95,16 +95,11 @@ LOCAL_REMOVED := \
   cpu.cc \
   data_pack.cc \
   debug_on_start.cc \
-  debug_util.cc \
-  debug_util_posix.cc \
   dynamic_annotations.cc \
   event_recorder.cc \
   event_recorder_stubs.cc \
   field_trial.cc \
   file_descriptor_shuffle.cc \
-  file_path.cc \
-  file_util.cc \
-  file_util_posix.cc \
   file_version_info.cc \
   global_descriptors_posix.cc \
   histogram.cc \
@@ -116,8 +111,6 @@ LOCAL_REMOVED := \
   json_reader.cc \
   json_writer.cc \
   lazy_instance.cc \
-  lock.cc \
-  lock_impl_posix.cc \
   md5.cc \
   memory_debug.cc \
   non_thread_safe.cc \
@@ -148,7 +141,6 @@ LOCAL_REMOVED := \
   string16.cc \
   string_escape.cc \
   string_piece.cc \
-  string_util.cc \
   string_util_icu.cc \
   sys_info_posix.cc \
   system_monitor.cc \
@@ -175,7 +167,15 @@ LOCAL_REMOVED := \
   word_iterator.cc \
 
 LOCAL_SRC_FILES := $(addprefix base/, \
+  debug_util.cc \
+  debug_util_android.cc \
+  file_path.cc \
+  file_util.cc \
+  file_util_posix.cc \
+  lock.cc \
+  lock_impl_posix.cc \
   logging.cc \
+  string_util.cc \
   )
 
 include $(BUILD_STATIC_LIBRARY)
