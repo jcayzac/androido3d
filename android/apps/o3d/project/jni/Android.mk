@@ -31,7 +31,7 @@ LOCAL_SRC_FILES := \
   render_graph.cpp \
   shader_builder.cpp \
 
-LOCAL_STATIC_LIBRARIES := stdport libxml o3dimport o3drenderer o3dcore fcollada libpng libjpeg zlib base
+LOCAL_STATIC_LIBRARIES := stlport libxml o3dimport o3drenderer o3dcore fcollada libpng libjpeg zlib base
 
 include $(BUILD_SHARED_LIBRARY)
 
