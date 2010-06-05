@@ -17,7 +17,7 @@ LOCAL_CFLAGS    := \
   -I$(LOCAL_PATH)/../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/../third_party/libjpeg \
   -I$(LOCAL_PATH)/../third_party/libpng \
-  -I$(LOCAL_PATH)/../third_party/chromium \
+  -I$(LOCAL_PATH)/../third_party/loggingshim \
   -I$(LOCAL_PATH)/../third_party \
   -I$(LOCAL_PATH)/.. \
 
@@ -94,6 +94,7 @@ LOCAL_SRC_FILES := $(addprefix cross/, \
   sampler.cc \
   semantic_manager.cc \
   service_locator.cc \
+  shape.cc \
   skin.cc \
   standard_param.cc \
   state.cc \
@@ -126,7 +127,7 @@ LOCAL_CFLAGS    := \
   -I$(LOCAL_PATH)/../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/../third_party/libjpeg \
   -I$(LOCAL_PATH)/../third_party/libpng \
-  -I$(LOCAL_PATH)/../third_party/chromium \
+  -I$(LOCAL_PATH)/../third_party/loggingshim \
   -I$(LOCAL_PATH)/../third_party \
   -I$(LOCAL_PATH)/.. \
 

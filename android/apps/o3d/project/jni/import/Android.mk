@@ -19,7 +19,7 @@ LOCAL_CFLAGS    := \
   -I$(LOCAL_PATH)/../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/../third_party/fcollada/files/LibXML/include \
   -I$(LOCAL_PATH)/../third_party/fcollada/files \
-  -I$(LOCAL_PATH)/../third_party/chromium \
+  -I$(LOCAL_PATH)/../third_party/loggingshim \
   -I$(LOCAL_PATH)/../third_party/zlib \
   -I$(LOCAL_PATH)/../third_party \
   -I$(LOCAL_PATH)/.. \

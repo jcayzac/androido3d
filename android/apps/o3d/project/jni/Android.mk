@@ -23,7 +23,7 @@ LOCAL_CFLAGS    := \
   -Werror \
   -D__ANDROID__ \
   -I$(LOCAL_PATH)/third_party/stlport/stlport \
-  -I$(LOCAL_PATH)/third_party/chromium \
+  -I$(LOCAL_PATH)/third_party/loggingshim \
 
 LOCAL_LDLIBS    := -llog -lGLESv2
 LOCAL_SRC_FILES := \
@@ -41,8 +41,9 @@ LOCAL_STATIC_LIBRARIES := \
   libjpeg \
   libpng \
   zlib \
-  base \
+  loggingshim \
   stlport \
+
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -54,5 +55,10 @@ include $(MY_PATH)/third_party/fcollada/files/Android.mk
 include $(MY_PATH)/third_party/libjpeg/Android.mk
 include $(MY_PATH)/third_party/libpng/Android.mk
 include $(MY_PATH)/third_party/zlib/Android.mk
-include $(MY_PATH)/third_party/chromium/Android.mk
+include $(MY_PATH)/third_party/loggingshim/Android.mk
 
+#libgame
+
+include $(CLEAR_VARS)
+
+include $(MY_PATH)/game/Android.mk

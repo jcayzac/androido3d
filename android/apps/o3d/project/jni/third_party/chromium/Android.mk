@@ -20,7 +20,6 @@ LOCAL_REMOVED := \
   crypto/signature_verifier_mac.cc \
   crypto/signature_verifier_nss.cc \
   crypto/signature_verifier_win.cc \
-  third_party/dmg_fp/dtoa.cc \
   third_party/dmg_fp/g_fmt.cc \
   third_party/nspr/prtime.cc \
   third_party/nss/sha512.cc \
@@ -54,7 +53,6 @@ LOCAL_REMOVED := \
   clipboard_util.cc \
   debug_util_win.cc \
   file_util_icu.cc \
-  file_util_linux.cc \
   file_util_win.cc \
   hmac_mac.cc \
   hmac_nss.cc \
@@ -88,7 +86,6 @@ LOCAL_REMOVED := \
   atomicops_internals_x86_gcc.cc \
   at_exit.cc \
   base_paths.cc \
-  base_switches.cc \
   bzip2_error_handler.cc \
   command_line.cc \
   condition_variable_posix.cc \
@@ -119,7 +116,6 @@ LOCAL_REMOVED := \
   path_service.cc \
   pe_image.cc \
   pickle.cc \
-  platform_file_posix.cc \
   platform_thread_posix.cc \
   profiler.cc \
   process_posix.cc \
@@ -149,7 +145,6 @@ LOCAL_REMOVED := \
   thread_collision_warner.cc \
   thread_local_posix.cc \
   thread_local_storage_posix.cc \
-  time.cc \
   time_format.cc \
   time_posix.cc \
   timer.cc \
@@ -167,15 +162,24 @@ LOCAL_REMOVED := \
   word_iterator.cc \
 
 LOCAL_SRC_FILES := $(addprefix base/, \
+  third_party/dmg_fp/dtoa.cc \
+  base_switches.cc \
+  command_line.cc \
   debug_util.cc \
   debug_util_android.cc \
   file_path.cc \
   file_util.cc \
+  file_util_linux.cc \
   file_util_posix.cc \
   lock.cc \
   lock_impl_posix.cc \
   logging.cc \
+  platform_file_posix.cc \
+  safe_strerror_posix.cc \
   string_util.cc \
+  time.cc \
+  utf_string_conversions.cc \
+  utf_string_conversion_utils.cc \
   )
 
 include $(BUILD_STATIC_LIBRARY)

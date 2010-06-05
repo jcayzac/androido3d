@@ -25,7 +25,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 // Linux/glibc doesn't natively have setproctitle().
 #include "base/setproctitle_linux.h"
 #endif
