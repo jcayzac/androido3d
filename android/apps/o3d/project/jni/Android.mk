@@ -25,7 +25,7 @@ LOCAL_CFLAGS    := \
   -I$(LOCAL_PATH)/third_party/stlport/stlport \
   -I$(LOCAL_PATH)/third_party/loggingshim \
 
-LOCAL_LDLIBS    := -llog -lGLESv2
+LOCAL_LDLIBS    := -llog -lGLESv2 -lz
 LOCAL_SRC_FILES := \
   gl_code.cpp \
   render_graph.cpp \

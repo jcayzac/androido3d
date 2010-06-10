@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "timegm_hack.h"
 
 namespace base {
 
@@ -147,7 +148,7 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
 // FreeBSD 6 has CLOCK_MONOLITHIC but defines _POSIX_MONOTONIC_CLOCK to -1.
 #if (defined(OS_POSIX) &&                                               \
      defined(_POSIX_MONOTONIC_CLOCK) && _POSIX_MONOTONIC_CLOCK >= 0) || \
-    defined(OS_FREEBSD)
+    defined(OS_FREEBSD) || defined(OS_ANDROID)
 
 // static
 TimeTicks TimeTicks::Now() {
@@ -166,7 +167,8 @@ TimeTicks TimeTicks::Now() {
   return TimeTicks(absolute_micro);
 }
 
-#else  // _POSIX_MONOTONIC_CLOCK
+
+#else  
 #error No usable tick clock function on this platform.
 #endif  // _POSIX_MONOTONIC_CLOCK
 

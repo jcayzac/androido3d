@@ -17,6 +17,8 @@ LOCAL_CFLAGS    := \
 LOCAL_SRC_FILES := $(addprefix base/, \
   third_party/dmg_fp/dtoa.cc \
   third_party/dmg_fp/g_fmt.cc \
+  third_party/icu/icu_utf.cc \
+  third_party/nspr/prtime.cc \
   at_exit.cc \
   dynamic_annotations.cc \
   file_path.cc \
