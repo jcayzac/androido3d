@@ -3,14 +3,9 @@
 // found in the LICENSE file.
 
 #include "shader_builder.h"
-
-namespace o3d {
+#include "o3d/core/cross/material.h"
 
 #if 0
-class Material;
-
-}
-
 namespace o3d_utils {
 
 class GLSLShaderBuilder {
@@ -483,46 +478,25 @@ class GLSLShaderBuilder {
       matrixLoadOrder();
   };
 
-
-
-  /**
-   * The name of the parameter on a material if it"s a collada standard
-   * material.
-   *
-   * NOTE: This parameter is just a string attached to a material. It has no
-   *     meaning to the plugin, it is passed from the conditioner to the
-   *     javascript libraries so that they can build collada like effects.
-   *
-   * @type {string}
-   */
-  o3djs.effect.COLLADA_LIGHTING_TYPE_PARAM_NAME = "collada.lightingType";
-
-  /**
-   * The collada standard lighting types.
-   * @type {!Object}
-   */
-  o3djs.effect.COLLADA_LIGHTING_TYPES = {phong: 1,
-                                         lambert: 1,
-                                         blinn: 1,
-                                         constant: 1};
-
-  /**
-   * The FCollada standard materials sampler parameter name prefixes.
-   * @type {!Array.<string>}
-   */
-  o3djs.effect.COLLADA_SAMPLER_PARAMETER_PREFIXES = ["emissive",
-                                                     "ambient",
-                                                     "diffuse",
-                                                     "specular",
-                                                     "bump"];
-
   /**
    * Check if lighting type is a collada lighting type.
    * @param {string} lightingType Lighting type to check.
    * @return {boolean} true if it"s a collada lighting type.
    */
-  o3djs.effect.isColladaLightingType = function(lightingType) {
-    return o3djs.effect.COLLADA_LIGHTING_TYPES[lightingType.toLowerCase()] == 1;
+  bool isColladaLightingType(const std::string& lightingType) {
+    static const char* COLLADA_LIGHTING_TYPES[] = {
+      "phong",
+      "lambert",
+      "blinn",
+      "constant",
+    };
+
+    for (size_t ii = 0; ii < arraysize(COLLADA_LIGHTING_TYPES); ++ii) {
+      if (stricmp(lightingType.c_str(), COLLADA_LIGHTING_TYPES[ii]) == 0) {
+        return true;
+      }
+    }
+    return false;
   };
 
   /**
@@ -531,11 +505,25 @@ class GLSLShaderBuilder {
    * @return {string} The lighting type or "" if it"s not a collada standard
    *     material.
    */
-  o3djs.effect.getColladaLightingType = function(material) {
-    var lightingTypeParam = material.getParam(
-        o3djs.effect.COLLADA_LIGHTING_TYPE_PARAM_NAME);
+  std::string getColladaLightingType(o3d::Material* material) {
+    /**
+     * The name of the parameter on a material if it"s a collada standard
+     * material.
+     *
+     * NOTE: This parameter is just a string attached to a material. It has no
+     *     meaning to the plugin, it is passed from the conditioner to the
+     *     javascript libraries so that they can build collada like effects.
+     *
+     * @type {string}
+     */
+    static const char* COLLADA_LIGHTING_TYPE_PARAM_NAME "collada.lightingType";
+
+    o3d::ParamString* lightingTypeParam =
+        material->GetParam<ParamString>(COLLADA_LIGHTING_TYPE_PARAM_NAME);
     if (lightingTypeParam) {
-      var lightingType = lightingTypeParam.value.toLowerCase();
+      std::string lightingType(lightingTypeParam.value());
+      std::transform(lightingType.begin(), lightingType.end(),
+                     lightingType.begin(), toLower());
       if (o3djs.effect.isColladaLightingType(lightingType)) {
         return lightingType;
       }
@@ -549,23 +537,468 @@ class GLSLShaderBuilder {
    *     collada material.
    * @return {number} The number oc TEXCOORD streams needed.
    */
-  o3djs.effect.getNumTexCoordStreamsNeeded = function(material) {
-    var p = o3djs.effect;
-    var lightingType = p.getColladaLightingType(material);
-    if (!p.isColladaLightingType(lightingType)) {
-      throw "not a collada standard material";
+  int getNumTexCoordStreamsNeeded(o3d::Material* material) {
+    /**
+     * The FCollada standard materials sampler parameter name prefixes.
+     * @type {!Array.<string>}
+     */
+    static const char* COLLADA_SAMPLER_PARAMETER_PREFIXES[] = {
+      "emissive",
+      "ambient",
+      "diffuse",
+      "specular",
+      "bump",
+    };
+
+    std::string lightingType = getColladaLightingType(material);
+    if (!isColladaLightingType(lightingType)) {
+      NOTREACHED() << "not a collada standard material";
     }
-    var colladaSamplers = p.COLLADA_SAMPLER_PARAMETER_PREFIXES;
-    var numTexCoordStreamsNeeded = 0
-    for (var cc = 0; cc < colladaSamplers.length; ++cc) {
-      var samplerPrefix = colladaSamplers[cc];
-      var samplerParam = material.getParam(samplerPrefix + "Sampler");
+    int numTexCoordStreamsNeeded = 0;
+    for (size_t cc = 0;
+         cc < arraysize(COLLADA_SAMPLER_PARAMETER_PREFIXES);
+         ++cc) {
+      std::string samplerPrefix(COLLADA_SAMPLER_PARAMETER_PREFIXES[cc]);
+      ParamSampler* samplerParam = material->GetParam<ParamSampler>(
+          samplerPrefix + "Sampler");
       if (samplerParam) {
         ++numTexCoordStreamsNeeded;
       }
     }
     return numTexCoordStreamsNeeded;
   };
+
+  /**
+   * Extracts the texture type from a texture param.
+   * @param {!o3d.ParamTexture} textureParam The texture parameter to
+   *     inspect.
+   * @return {string} The texture type (1D, 2D, 3D or CUBE).
+   */
+  std::string getTextureType(o3d::ParamTexture* textureParam) {
+    o3d::Texture texture = textureParam->value();
+    if (!texture) {
+      return "2D";  // No texture value, have to make a guess.
+    }
+    if (texture.className.compare("o3d.Texture1D") == 0) {
+      return "1D";
+    }
+    if (texture.className.compare("o3d.Texture2D") == 0) {
+      return "2D";
+    }
+    if (texture.className.compare("o3d.Texture3D") == 0) {
+      return "3D";
+    }
+    if (texture.className.compare("o3d.TextureCUBE") == 0) {
+      return "CUBE";
+    }
+    return "2D";
+  }
+
+  /**
+   * Extracts the sampler type from a sampler param.  It does it by inspecting
+   * the texture associated with the sampler.
+   * @param {!o3d.ParamTexture} samplerParam The texture parameter to
+   *     inspect.
+   * @return {string} The texture type (1D, 2D, 3D or CUBE).
+   */
+  std::string getSamplerType(o3d::ParamSampler* samplerParam) {
+    o3d::Sampler* sampler = samplerParam->value();
+    if (!sampler) {
+      return "2D";
+    }
+    o3d::ParamTexture* textureParam =
+        sampler->GetParam<ParmaTexture>(o3d::Sampler::kTextureParamName);
+    if (textureParam) {
+      return getTextureType(textureParam);
+    } else {
+      return "2D";
+    }
+  };
+
+
+  /**
+   * Builds uniform variables common to all standard lighting types.
+   * @return {string} The effect code for the common shader uniforms.
+   */
+  std::string buildCommonVertexUniforms() {
+    return std::string("uniform ") + MATRIX4 + " worldViewProjection" +
+        semanticSuffix("WORLDVIEWPROJECTION") + ";\n" +
+        "uniform " + FLOAT3 + " lightWorldPos;\n";
+  };
+
+  /**
+   * Builds uniform variables common to all standard lighting types.
+   * @return {string} The effect code for the common shader uniforms.
+   */
+  std::string buildCommonPixelUniforms() {
+    return std::string("uniform ") + FLOAT4 + " lightColor;\n";
+  };
+
+  /**
+   * Builds uniform variables common to lambert, phong and blinn lighting types.
+   * @return {string} The effect code for the common shader uniforms.
+   */
+  std::string buildLightingUniforms() {
+    return std::string("uniform ") + MATRIX4 + " world" +
+        semanticSuffix("WORLD") + ";\n" +
+        "uniform " + MATRIX4 +
+        " viewInverse" + semanticSuffix("VIEWINVERSE") + ";\n" +
+        "uniform " + MATRIX4 + " worldInverseTranspose" +
+        semanticSuffix("WORLDINVERSETRANSPOSE") + ";\n";
+  };
+
+  /**
+   * Builds uniform parameters for a given color input.  If the material
+   * has a sampler parameter, a sampler uniform is created, otherwise a
+   * float4 color value is created.
+   * @param {!o3d.Material} material The material to inspect.
+   * @param {!Array.<string>} descriptions Array to add descriptions too.
+   * @param {string} name The name of the parameter to look for.  Usually
+   *     emissive, ambient, diffuse or specular.
+   * @param {boolean} opt_addColorParam Whether to add a color param if no
+   *     sampler exists. Default = true.
+   * @return {string} The effect code for the uniform parameter.
+   */
+  std::string buildColorParam(
+      o3d::Material* material,
+      std::vector<std::string>* descriptions,
+      const std::string& name,
+      bool opt_addColorParam) {
+    o3d::ParamSampler samplerParam =
+        material->GetParam<ParamSampler>(name + "Sampler");
+    if (samplerParam) {
+      std::string type = getSamplerType(samplerParam);
+      descriptions->push_back(name + type + "Texture");
+      return std::string("uniform sampler") + type + " " + name + "Sampler;\n"
+    } else if (opt_addColorParam) {
+      descriptions->push_back(name + "Color");
+      return std::string("uniform ") + FLOAT4 + " " + name + ";\n";
+    } else {
+      return "";
+    }
+  };
+
+  /**
+   * Builds the effect code to retrieve a given color input.  If the material
+   * has a sampler parameter of that name, a texture lookup is done.  Otherwise
+   * it"s a no-op, since the value is retrieved directly from the color uniform
+   * of that name.
+   * @param {!o3d.Material} material The material to inspect.
+   * @param {string} name The name of the parameter to look for.  Usually
+   *                      emissive, ambient, diffuse or specular.
+   * @return {string} The effect code for the uniform parameter retrieval.
+   */
+  std::string getColorParam(o3d::Material* material, const std::string& name) {
+    o3d::ParamSampler* samplerParam =
+        material->GetParam<o3d::ParamSampler>(name + "Sampler");
+    if (samplerParam) {
+      std::string type = getSamplerType(samplerParam);
+      return std::string("  ") + FLOAT4 + " " + name + " = " + TEXTURE + type +
+             "(" + name + "Sampler, " +
+             PIXEL_VARYING_PREFIX + name + "UV);\n"
+    } else {
+      return "";
+    }
+  };
+
+  /**
+   * Builds vertex and fragment shader string for the Constant lighting type.
+   * @param {!o3d.Material} material The material for which to build
+   *     shaders.
+   * @param {!Array.<string>} descriptions Array to add descriptions too.
+   * @return {string} The effect code for the shader, ready to be parsed.
+   */
+  std::string buildConstantShaderString(
+      o3d::Material* material,
+      o3d::ParamSampler* bumpSampler,
+      std::vector<std::string>* descriptions) {
+    descriptions->push_back("constant");
+    return buildCommonVertexUniforms() +
+           buildVertexDecls(material, false, false) +
+           beginVertexShaderMain() +
+           positionVertexShaderCode() +
+           buildUVPassthroughs(material) +
+           endVertexShaderMain() +
+           pixelShaderHeader(material, false, false, bumpSampler) +
+           buildCommonPixelUniforms() +
+           repeatVaryingDecls() +
+           buildColorParam(material, descriptions, "emissive") +
+           beginPixelShaderMain() +
+           getColorParam(material, "emissive") +
+           endPixelShaderMain("emissive") +
+           entryPoints() +
+           matrixLoadOrder();
+  };
+
+  /**
+   * Builds vertex and fragment shader string for the Lambert lighting type.
+   * @param {!o3d.Material} material The material for which to build
+   *     shaders.
+   * @param {!Array.<string>} descriptions Array to add descriptions too.
+   * @return {string} The effect code for the shader, ready to be parsed.
+   */
+  std::string buildLambertShaderString(
+      o3d::Material* material,
+      std::vector<std::string>* descriptions) {
+    descriptions->push_back("lambert");
+    return buildCommonVertexUniforms() +
+           buildLightingUniforms() +
+           buildVertexDecls(material, true, false) +
+           beginVertexShaderMain() +
+           buildUVPassthroughs(material) +
+           positionVertexShaderCode() +
+           normalVertexShaderCode() +
+           surfaceToLightVertexShaderCode() +
+           bumpVertexShaderCode() +
+           endVertexShaderMain() +
+           pixelShaderHeader(material, true, false) +
+           buildCommonPixelUniforms() +
+           repeatVaryingDecls() +
+           buildColorParam(material, descriptions, "emissive") +
+           buildColorParam(material, descriptions, "ambient") +
+           buildColorParam(material, descriptions, "diffuse") +
+           buildColorParam(material, descriptions, "bump", false) +
+           utilityFunctions() +
+           beginPixelShaderMain() +
+           getColorParam(material, "emissive") +
+           getColorParam(material, "ambient") +
+           getColorParam(material, "diffuse") +
+           getNormalShaderCode() +
+           "  " + FLOAT3 + " surfaceToLight = normalize(" +
+           PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
+           "  " + FLOAT4 +
+           " litR = lit(dot(normal, surfaceToLight), 0.0, 0.0);\n" +
+           endPixelShaderMain(p.FLOAT4 +
+           "((emissive +\n" +
+           "      lightColor *" +
+           " (ambient * diffuse + diffuse * litR.y)).rgb,\n" +
+           "          diffuse.a)") +
+           entryPoints() +
+           matrixLoadOrder();
+  };
+
+  /**
+   * Builds vertex and fragment shader string for the Blinn lighting type.
+   * @param {!o3d.Material} material The material for which to build
+   *     shaders.
+   * @param {!Array.<string>} descriptions Array to add descriptions too.
+   * @return {string} The effect code for the shader, ready to be parsed.
+   * TODO: This is actually just a copy of the Phong code.
+   *     Change to Blinn.
+   */
+  std::string buildBlinnShaderString(
+      o3d::Material* material,
+      std::vector<std::string>* descriptions) {
+    descriptions->push_back("phong");
+    return buildCommonVertexUniforms() +
+        buildLightingUniforms() +
+        buildVertexDecls(material, true, true) +
+        beginVertexShaderMain() +
+        buildUVPassthroughs(material) +
+        positionVertexShaderCode() +
+        normalVertexShaderCode() +
+        surfaceToLightVertexShaderCode() +
+        surfaceToViewVertexShaderCode() +
+        bumpVertexShaderCode() +
+        endVertexShaderMain() +
+        pixelShaderHeader(material, true, true) +
+        buildCommonPixelUniforms() +
+        repeatVaryingDecls() +
+        buildColorParam(material, descriptions, "emissive") +
+        buildColorParam(material, descriptions, "ambient") +
+        buildColorParam(material, descriptions, "diffuse") +
+        buildColorParam(material, descriptions, "specular") +
+        buildColorParam(material, descriptions, "bump", false) +
+        "uniform float shininess;\n" +
+        "uniform float specularFactor;\n" +
+        utilityFunctions() +
+        beginPixelShaderMain() +
+        getColorParam(material, "emissive") +
+        getColorParam(material, "ambient") +
+        getColorParam(material, "diffuse") +
+        getColorParam(material, "specular") +
+        getNormalShaderCode() +
+        "  " + FLOAT3 + " surfaceToLight = normalize(" +
+        PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
+        "  " + FLOAT3 + " surfaceToView = normalize(" +
+        PIXEL_VARYING_PREFIX + "surfaceToView);\n" +
+        "  " + FLOAT3 +
+        " halfVector = normalize(surfaceToLight + " +
+        PIXEL_VARYING_PREFIX + "surfaceToView);\n" +
+        "  " + FLOAT4 +
+        " litR = lit(dot(normal, surfaceToLight), \n" +
+        "                    dot(normal, halfVector), shininess);\n" +
+        endPixelShaderMain( p.FLOAT4 +
+        "((emissive +\n" +
+        "  lightColor *" +
+        " (ambient * diffuse + diffuse * litR.y +\n" +
+        "                        + specular * litR.z *" +
+        " specularFactor)).rgb,\n" +
+        "      diffuse.a)") +
+        entryPoints() +
+        matrixLoadOrder();
+  };
+
+  /**
+   * Builds vertex and fragment shader string for the Phong lighting type.
+   * @param {!o3d.Material} material The material for which to build
+   *     shaders.
+   * @param {!Array.<string>} descriptions Array to add descriptions too.
+   * @return {string} The effect code for the shader, ready to be parsed.
+   */
+  std::string buildPhongShaderString(
+      o3d::Material* material,
+      std::vector<std::string>* descriptions) {
+    descriptions->push_back("phong");
+    return buildCommonVertexUniforms() +
+        buildLightingUniforms() +
+        buildVertexDecls(material, true, true) +
+        beginVertexShaderMain() +
+        buildUVPassthroughs(material) +
+        positionVertexShaderCode() +
+        normalVertexShaderCode() +
+        surfaceToLightVertexShaderCode() +
+        surfaceToViewVertexShaderCode() +
+        bumpVertexShaderCode() +
+        endVertexShaderMain() +
+        pixelShaderHeader(material, true, true) +
+        buildCommonPixelUniforms() +
+        repeatVaryingDecls() +
+        buildColorParam(material, descriptions, "emissive") +
+        buildColorParam(material, descriptions, "ambient") +
+        buildColorParam(material, descriptions, "diffuse") +
+        buildColorParam(material, descriptions, "specular") +
+        buildColorParam(material, descriptions, "bump", false) +
+        "uniform float shininess;\n" +
+        "uniform float specularFactor;\n" +
+        utilityFunctions() +
+        beginPixelShaderMain() +
+        getColorParam(material, "emissive") +
+        getColorParam(material, "ambient") +
+        getColorParam(material, "diffuse") +
+        getColorParam(material, "specular") +
+        getNormalShaderCode() +
+        "  " + FLOAT3 + " surfaceToLight = normalize(" +
+        PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
+        "  " + FLOAT3 + " surfaceToView = normalize(" +
+        PIXEL_VARYING_PREFIX + "surfaceToView);\n" +
+        "  " + FLOAT3 +
+        " halfVector = normalize(surfaceToLight + surfaceToView);\n" +
+        "  " + FLOAT4 +
+        " litR = lit(dot(normal, surfaceToLight), \n" +
+        "                    dot(normal, halfVector), shininess);\n" +
+        endPixelShaderMain(FLOAT4 +
+        "((emissive +\n" +
+        "  lightColor * (ambient * diffuse + diffuse * litR.y +\n" +
+        "                        + specular * litR.z *" +
+        " specularFactor)).rgb,\n" +
+        "      diffuse.a)") +
+        entryPoints() +
+        matrixLoadOrder();
+  };
+
+  /**
+   * Builds the position code for the vertex shader.
+   * @return {string} The code for the vertex shader.
+   */
+  std::string positionVertexShaderCode() {
+    return std::string("  ") + VERTEX_VARYING_PREFIX + "position = " +
+        mul(ATTRIBUTE_PREFIX +
+        "position", "worldViewProjection") + ";\n";
+  };
+
+  /**
+   * Builds the normal code for the vertex shader.
+   * @return {string} The code for the vertex shader.
+   */
+  std::string normalVertexShaderCode() {
+    return std::string("  ") + VERTEX_VARYING_PREFIX + "normal = " +
+        mul(FLOAT4 + "(" +
+        ATTRIBUTE_PREFIX +
+        "normal, 0)", "worldInverseTranspose") + ".xyz;\n";
+  };
+
+  /**
+   * Builds the surface to light code for the vertex shader.
+   * @return {string} The code for the vertex shader.
+   */
+  std::string surfaceToLightVertexShaderCode() {
+    return std::string("  ") + VERTEX_VARYING_PREFIX +
+        "surfaceToLight = lightWorldPos - \n" +
+        "                          " +
+        mul(ATTRIBUTE_PREFIX + "position",
+            "world") + ".xyz;\n";
+  };
+
+  /**
+   * Builds the surface to view code for the vertex shader.
+   * @return {string} The code for the vertex shader.
+   */
+  std::sting surfaceToViewVertexShaderCode() {
+    return std::string("  ") + VERTEX_VARYING_PREFIX +
+        "surfaceToView = (viewInverse[3] - " +
+        mul(ATTRIBUTE_PREFIX + "position", "world") + ").xyz;\n";
+  };
+
+  /**
+   * Builds the normal map part of the vertex shader.
+   * @param {boolean} opt_bumpSampler Whether there is a bump
+   *     sampler. Default = false.
+   * @return {string} The code for normal mapping in the vertex shader.
+   */
+  std::string bumpVertexShaderCode(o3d::ParamSampler* opt_bumpSampler) {
+    return bumpSampler ?
+        (std::string("  ") + VERTEX_VARYING_PREFIX + "binormal = " +
+         mul(FLOAT4 + "(" +
+         ATTRIBUTE_PREFIX + "binormal, 0)",
+             "worldInverseTranspose") + ".xyz;\n" +
+         "  " + VERTEX_VARYING_PREFIX + "tangent = " +
+         mul(FLOAT4 +
+         "(" + ATTRIBUTE_PREFIX + "tangent, 0)",
+             "worldInverseTranspose") + ".xyz;\n") : "";
+  };
+
+  /**
+   * Builds the normal calculation of the pixel shader.
+   * @return {string} The code for normal computation in the pixel shader.
+   */
+  std::string getNormalShaderCode(o3d::ParamSampler* bumpSampler) {
+    return bumpSampler ?
+        (MATRIX3 + " tangentToWorld = " + MATRIX3 +
+            "(" + ATTRIBUTE_PREFIX + "tangent,\n" +
+         "                                   " +
+         ATTRIBUTE_PREFIX + "binormal,\n" +
+         "                                   " +
+         ATTRIBUTE_PREFIX + "normal);\n" +
+         FLOAT3 + " tangentNormal = tex2D(bumpSampler, " +
+         ATTRIBUTE_PREFIX + "bumpUV.xy).xyz -\n" +
+         "                       " + FLOAT3 +
+         "(0.5, 0.5, 0.5);\n" + FLOAT3 + " normal = " +
+         mul("tangentNormal", "tangentToWorld") + ";\n" +
+         "normal = normalize(" + PIXEL_VARYING_PREFIX +
+         "normal);\n") : "  " + FLOAT3 + " normal = normalize(" +
+         PIXEL_VARYING_PREFIX + "normal);\n";
+  };
+
+  /**
+   * Builds the vertex declarations for a given material.
+   * @param {!o3d.Material} material The material to inspect.
+   * @param {boolean} diffuse Whether to include stuff for diffuse
+   *     calculations.
+   * @param {boolean} specular Whether to include stuff for diffuse
+   *     calculations.
+   * @return {string} The code for the vertex declarations.
+   */
+  std::string buildVertexDecls(
+      o3d::Material* material,
+      o3d::ParamSampler* bumpSampler,
+      bool diffuse,  bool specular) {
+    return buildAttributeDecls(
+        material, diffuse, specular, bumpSampler) +
+        buildVaryingDecls(
+            material, diffuse, specular, bumpSampler);
+  };
+
 
   /**
    * Builds a shader string for a given standard COLLADA material type.
@@ -576,434 +1009,35 @@ class GLSLShaderBuilder {
    * @return {{description: string, shader: string}} A description and the shader
    *     string.
    */
-  o3djs.effect.buildStandardShaderString = function(material,
-                                                    effectType) {
-    var p = o3djs.effect;
-    var bumpSampler = material.getParam("bumpSampler");
-    var bumpUVInterpolant;
-
-    /**
-     * Extracts the texture type from a texture param.
-     * @param {!o3d.ParamTexture} textureParam The texture parameter to
-     *     inspect.
-     * @return {string} The texture type (1D, 2D, 3D or CUBE).
-     */
-    var getTextureType = function(textureParam) {
-      var texture = textureParam.value;
-      if (!texture) return "2D";  // No texture value, have to make a guess.
-      switch (texture.className) {
-        case "o3d.Texture1D" : return "1D";
-        case "o3d.Texture2D" : return "2D";
-        case "o3d.Texture3D" : return "3D";
-        case "o3d.TextureCUBE" : return "CUBE";
-        default : return "2D";
-      }
-    }
-
-    /**
-     * Extracts the sampler type from a sampler param.  It does it by inspecting
-     * the texture associated with the sampler.
-     * @param {!o3d.ParamTexture} samplerParam The texture parameter to
-     *     inspect.
-     * @return {string} The texture type (1D, 2D, 3D or CUBE).
-     */
-    var getSamplerType = function(samplerParam) {
-      var sampler = samplerParam.value;
-      if (!sampler) return "2D";
-      var textureParam = sampler.getParam("Texture");
-      if (textureParam)
-        return getTextureType(textureParam);
-      else
-        return "2D";
-    };
-
-    /**
-     * Builds uniform variables common to all standard lighting types.
-     * @return {string} The effect code for the common shader uniforms.
-     */
-    var buildCommonVertexUniforms = function() {
-      return "uniform " + p.MATRIX4 + " worldViewProjection" +
-          p.semanticSuffix("WORLDVIEWPROJECTION") + ";\n" +
-          "uniform " + p.FLOAT3 + " lightWorldPos;\n";
-    };
-
-    /**
-     * Builds uniform variables common to all standard lighting types.
-     * @return {string} The effect code for the common shader uniforms.
-     */
-    var buildCommonPixelUniforms = function() {
-      return "uniform " + p.FLOAT4 + " lightColor;\n";
-    };
-
-    /**
-     * Builds uniform variables common to lambert, phong and blinn lighting types.
-     * @return {string} The effect code for the common shader uniforms.
-     */
-    var buildLightingUniforms = function() {
-      return "uniform " + p.MATRIX4 + " world" +
-          p.semanticSuffix("WORLD") + ";\n" +
-          "uniform " + p.MATRIX4 +
-          " viewInverse" + p.semanticSuffix("VIEWINVERSE") + ";\n" +
-          "uniform " + p.MATRIX4 + " worldInverseTranspose" +
-          p.semanticSuffix("WORLDINVERSETRANSPOSE") + ";\n";
-    };
-
-    /**
-     * Builds uniform parameters for a given color input.  If the material
-     * has a sampler parameter, a sampler uniform is created, otherwise a
-     * float4 color value is created.
-     * @param {!o3d.Material} material The material to inspect.
-     * @param {!Array.<string>} descriptions Array to add descriptions too.
-     * @param {string} name The name of the parameter to look for.  Usually
-     *     emissive, ambient, diffuse or specular.
-     * @param {boolean} opt_addColorParam Whether to add a color param if no
-     *     sampler exists. Default = true.
-     * @return {string} The effect code for the uniform parameter.
-     */
-    var buildColorParam = function(material, descriptions, name,
-                                   opt_addColorParam) {
-      if (opt_addColorParam === undefined) {
-        opt_addColorParam = true;
-      }
-      var samplerParam = material.getParam(name + "Sampler");
-      if (samplerParam) {
-        var type = getSamplerType(samplerParam);
-        descriptions.push(name + type + "Texture");
-        return "uniform sampler" + type + " " + name + "Sampler;\n"
-      } else if (opt_addColorParam) {
-        descriptions.push(name + "Color");
-        return "uniform " + p.FLOAT4 + " " + name + ";\n";
-      } else {
-        return "";
-      }
-    };
-
-    /**
-     * Builds the effect code to retrieve a given color input.  If the material
-     * has a sampler parameter of that name, a texture lookup is done.  Otherwise
-     * it"s a no-op, since the value is retrieved directly from the color uniform
-     * of that name.
-     * @param {!o3d.Material} material The material to inspect.
-     * @param {string} name The name of the parameter to look for.  Usually
-     *                      emissive, ambient, diffuse or specular.
-     * @return {string} The effect code for the uniform parameter retrieval.
-     */
-    var getColorParam = function(material, name) {
-      var samplerParam = material.getParam(name + "Sampler");
-      if (samplerParam) {
-        var type = getSamplerType(samplerParam);
-        return "  " + p.FLOAT4 + " " + name + " = " + p.TEXTURE + type +
-               "(" + name + "Sampler, " +
-               p.PIXEL_VARYING_PREFIX + name + "UV);\n"
-      } else {
-        return "";
-      }
-    };
-
-    /**
-     * Builds vertex and fragment shader string for the Constant lighting type.
-     * @param {!o3d.Material} material The material for which to build
-     *     shaders.
-     * @param {!Array.<string>} descriptions Array to add descriptions too.
-     * @return {string} The effect code for the shader, ready to be parsed.
-     */
-    var buildConstantShaderString = function(material, descriptions) {
-      descriptions.push("constant");
-      return buildCommonVertexUniforms() +
-             buildVertexDecls(material, false, false) +
-             p.beginVertexShaderMain() +
-             positionVertexShaderCode() +
-             p.buildUVPassthroughs(material) +
-             p.endVertexShaderMain() +
-             p.pixelShaderHeader(material, false, false, bumpSampler) +
-             buildCommonPixelUniforms() +
-             p.repeatVaryingDecls() +
-             buildColorParam(material, descriptions, "emissive") +
-             p.beginPixelShaderMain() +
-             getColorParam(material, "emissive") +
-             p.endPixelShaderMain("emissive") +
-             p.entryPoints() +
-             p.matrixLoadOrder();
-    };
-
-    /**
-     * Builds vertex and fragment shader string for the Lambert lighting type.
-     * @param {!o3d.Material} material The material for which to build
-     *     shaders.
-     * @param {!Array.<string>} descriptions Array to add descriptions too.
-     * @return {string} The effect code for the shader, ready to be parsed.
-     */
-    var buildLambertShaderString = function(material, descriptions) {
-      descriptions.push("lambert");
-      return buildCommonVertexUniforms() +
-             buildLightingUniforms() +
-             buildVertexDecls(material, true, false) +
-             p.beginVertexShaderMain() +
-             p.buildUVPassthroughs(material) +
-             positionVertexShaderCode() +
-             normalVertexShaderCode() +
-             surfaceToLightVertexShaderCode() +
-             bumpVertexShaderCode() +
-             p.endVertexShaderMain() +
-             p.pixelShaderHeader(material, true, false) +
-             buildCommonPixelUniforms() +
-             p.repeatVaryingDecls() +
-             buildColorParam(material, descriptions, "emissive") +
-             buildColorParam(material, descriptions, "ambient") +
-             buildColorParam(material, descriptions, "diffuse") +
-             buildColorParam(material, descriptions, "bump", false) +
-             p.utilityFunctions() +
-             p.beginPixelShaderMain() +
-             getColorParam(material, "emissive") +
-             getColorParam(material, "ambient") +
-             getColorParam(material, "diffuse") +
-             getNormalShaderCode() +
-             "  " + p.FLOAT3 + " surfaceToLight = normalize(" +
-             p.PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
-             "  " + p.FLOAT4 +
-             " litR = lit(dot(normal, surfaceToLight), 0.0, 0.0);\n" +
-             p.endPixelShaderMain(p.FLOAT4 +
-             "((emissive +\n" +
-             "      lightColor *" +
-             " (ambient * diffuse + diffuse * litR.y)).rgb,\n" +
-             "          diffuse.a)") +
-             p.entryPoints() +
-             p.matrixLoadOrder();
-    };
-
-    /**
-     * Builds vertex and fragment shader string for the Blinn lighting type.
-     * @param {!o3d.Material} material The material for which to build
-     *     shaders.
-     * @param {!Array.<string>} descriptions Array to add descriptions too.
-     * @return {string} The effect code for the shader, ready to be parsed.
-     * TODO: This is actually just a copy of the Phong code.
-     *     Change to Blinn.
-     */
-    var buildBlinnShaderString = function(material, descriptions) {
-      descriptions.push("phong");
-      return buildCommonVertexUniforms() +
-          buildLightingUniforms() +
-          buildVertexDecls(material, true, true) +
-          p.beginVertexShaderMain() +
-          p.buildUVPassthroughs(material) +
-          positionVertexShaderCode() +
-          normalVertexShaderCode() +
-          surfaceToLightVertexShaderCode() +
-          surfaceToViewVertexShaderCode() +
-          bumpVertexShaderCode() +
-          p.endVertexShaderMain() +
-          p.pixelShaderHeader(material, true, true) +
-          buildCommonPixelUniforms() +
-          p.repeatVaryingDecls() +
-          buildColorParam(material, descriptions, "emissive") +
-          buildColorParam(material, descriptions, "ambient") +
-          buildColorParam(material, descriptions, "diffuse") +
-          buildColorParam(material, descriptions, "specular") +
-          buildColorParam(material, descriptions, "bump", false) +
-          "uniform float shininess;\n" +
-          "uniform float specularFactor;\n" +
-          p.utilityFunctions() +
-          p.beginPixelShaderMain() +
-          getColorParam(material, "emissive") +
-          getColorParam(material, "ambient") +
-          getColorParam(material, "diffuse") +
-          getColorParam(material, "specular") +
-          getNormalShaderCode() +
-          "  " + p.FLOAT3 + " surfaceToLight = normalize(" +
-          p.PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
-          "  " + p.FLOAT3 + " surfaceToView = normalize(" +
-          p.PIXEL_VARYING_PREFIX + "surfaceToView);\n" +
-          "  " + p.FLOAT3 +
-          " halfVector = normalize(surfaceToLight + " +
-          p.PIXEL_VARYING_PREFIX + "surfaceToView);\n" +
-          "  " + p.FLOAT4 +
-          " litR = lit(dot(normal, surfaceToLight), \n" +
-          "                    dot(normal, halfVector), shininess);\n" +
-          p.endPixelShaderMain( p.FLOAT4 +
-          "((emissive +\n" +
-          "  lightColor *" +
-          " (ambient * diffuse + diffuse * litR.y +\n" +
-          "                        + specular * litR.z *" +
-          " specularFactor)).rgb,\n" +
-          "      diffuse.a)") +
-          p.entryPoints() +
-          p.matrixLoadOrder();
-    };
-
-    /**
-     * Builds vertex and fragment shader string for the Phong lighting type.
-     * @param {!o3d.Material} material The material for which to build
-     *     shaders.
-     * @param {!Array.<string>} descriptions Array to add descriptions too.
-     * @return {string} The effect code for the shader, ready to be parsed.
-     */
-    var buildPhongShaderString = function(material, descriptions) {
-      descriptions.push("phong");
-      return buildCommonVertexUniforms() +
-          buildLightingUniforms() +
-          buildVertexDecls(material, true, true) +
-          p.beginVertexShaderMain() +
-          p.buildUVPassthroughs(material) +
-          positionVertexShaderCode() +
-          normalVertexShaderCode() +
-          surfaceToLightVertexShaderCode() +
-          surfaceToViewVertexShaderCode() +
-          bumpVertexShaderCode() +
-          p.endVertexShaderMain() +
-          p.pixelShaderHeader(material, true, true) +
-          buildCommonPixelUniforms() +
-          p.repeatVaryingDecls() +
-          buildColorParam(material, descriptions, "emissive") +
-          buildColorParam(material, descriptions, "ambient") +
-          buildColorParam(material, descriptions, "diffuse") +
-          buildColorParam(material, descriptions, "specular") +
-          buildColorParam(material, descriptions, "bump", false) +
-          "uniform float shininess;\n" +
-          "uniform float specularFactor;\n" +
-          p.utilityFunctions() +
-          p.beginPixelShaderMain() +
-          getColorParam(material, "emissive") +
-          getColorParam(material, "ambient") +
-          getColorParam(material, "diffuse") +
-          getColorParam(material, "specular") +
-          getNormalShaderCode() +
-          "  " + p.FLOAT3 + " surfaceToLight = normalize(" +
-          p.PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
-          "  " + p.FLOAT3 + " surfaceToView = normalize(" +
-          p.PIXEL_VARYING_PREFIX + "surfaceToView);\n" +
-          "  " + p.FLOAT3 +
-          " halfVector = normalize(surfaceToLight + surfaceToView);\n" +
-          "  " + p.FLOAT4 +
-          " litR = lit(dot(normal, surfaceToLight), \n" +
-          "                    dot(normal, halfVector), shininess);\n" +
-          p.endPixelShaderMain(p.FLOAT4 +
-          "((emissive +\n" +
-          "  lightColor * (ambient * diffuse + diffuse * litR.y +\n" +
-          "                        + specular * litR.z *" +
-          " specularFactor)).rgb,\n" +
-          "      diffuse.a)") +
-          p.entryPoints() +
-          p.matrixLoadOrder();
-    };
-
-    /**
-     * Builds the position code for the vertex shader.
-     * @return {string} The code for the vertex shader.
-     */
-    var positionVertexShaderCode = function() {
-      return "  " + p.VERTEX_VARYING_PREFIX + "position = " +
-          p.mul(p.ATTRIBUTE_PREFIX +
-          "position", "worldViewProjection") + ";\n";
-    };
-
-    /**
-     * Builds the normal code for the vertex shader.
-     * @return {string} The code for the vertex shader.
-     */
-    var normalVertexShaderCode = function() {
-      return "  " + p.VERTEX_VARYING_PREFIX + "normal = " +
-          p.mul(p.FLOAT4 + "(" +
-          p.ATTRIBUTE_PREFIX +
-          "normal, 0)", "worldInverseTranspose") + ".xyz;\n";
-    };
-
-    /**
-     * Builds the surface to light code for the vertex shader.
-     * @return {string} The code for the vertex shader.
-     */
-    var surfaceToLightVertexShaderCode = function() {
-      return "  " + p.VERTEX_VARYING_PREFIX +
-          "surfaceToLight = lightWorldPos - \n" +
-             "                          " +
-             p.mul(p.ATTRIBUTE_PREFIX + "position",
-                "world") + ".xyz;\n";
-    };
-
-    /**
-     * Builds the surface to view code for the vertex shader.
-     * @return {string} The code for the vertex shader.
-     */
-    var surfaceToViewVertexShaderCode = function() {
-      return "  " + p.VERTEX_VARYING_PREFIX +
-          "surfaceToView = (viewInverse[3] - " +
-           p.mul(p.ATTRIBUTE_PREFIX + "position", "world") + ").xyz;\n";
-    };
-
-    /**
-     * Builds the normal map part of the vertex shader.
-     * @param {boolean} opt_bumpSampler Whether there is a bump
-     *     sampler. Default = false.
-     * @return {string} The code for normal mapping in the vertex shader.
-     */
-    var bumpVertexShaderCode = function(opt_bumpSampler) {
-      return bumpSampler ?
-          ("  " + p.VERTEX_VARYING_PREFIX + "binormal = " +
-           p.mul(p.FLOAT4 + "(" +
-           p.ATTRIBUTE_PREFIX + "binormal, 0)",
-               "worldInverseTranspose") + ".xyz;\n" +
-           "  " + p.VERTEX_VARYING_PREFIX + "tangent = " +
-           p.mul(p.FLOAT4 +
-           "(" + p.ATTRIBUTE_PREFIX + "tangent, 0)",
-               "worldInverseTranspose") + ".xyz;\n") : "";
-    };
-
-    /**
-     * Builds the normal calculation of the pixel shader.
-     * @return {string} The code for normal computation in the pixel shader.
-     */
-    var getNormalShaderCode = function() {
-      return bumpSampler ?
-          (p.MATRIX3 + " tangentToWorld = " + p.MATRIX3 +
-              "(" + p.ATTRIBUTE_PREFIX + "tangent,\n" +
-           "                                   " +
-           p.ATTRIBUTE_PREFIX + "binormal,\n" +
-           "                                   " +
-           p.ATTRIBUTE_PREFIX + "normal);\n" +
-           p.FLOAT3 + " tangentNormal = tex2D(bumpSampler, " +
-           p.ATTRIBUTE_PREFIX + "bumpUV.xy).xyz -\n" +
-           "                       " + p.FLOAT3 +
-           "(0.5, 0.5, 0.5);\n" + p.FLOAT3 + " normal = " +
-           p.mul("tangentNormal", "tangentToWorld") + ";\n" +
-           "normal = normalize(" + p.PIXEL_VARYING_PREFIX +
-           "normal);\n") : "  " + p.FLOAT3 + " normal = normalize(" +
-           p.PIXEL_VARYING_PREFIX + "normal);\n";
-    };
-
-    /**
-     * Builds the vertex declarations for a given material.
-     * @param {!o3d.Material} material The material to inspect.
-     * @param {boolean} diffuse Whether to include stuff for diffuse
-     *     calculations.
-     * @param {boolean} specular Whether to include stuff for diffuse
-     *     calculations.
-     * @return {string} The code for the vertex declarations.
-     */
-    var buildVertexDecls = function(material, diffuse, specular) {
-      return p.buildAttributeDecls(
-          material, diffuse, specular, bumpSampler) +
-          p.buildVaryingDecls(
-              material, diffuse, specular, bumpSampler);
-    };
-
+  std::string buildStandardShaderString(
+      o3d::Material* material,
+      const std::string& effectType,
+      std::string* description) {
+    ParamSampler* bumpSampler =
+        material->GetTypedParam<ParamSampler>("bumpSampler");
+    int bumpUVInterpolant;
 
     // Create a shader string of the appropriate type, based on the
     // effectType.
-    var str;
-    var descriptions = [];
+    std::string str;
+    std::vector<std::string> descriptions;
     if (effectType == "phong") {
-      str = buildPhongShaderString(material, descriptions);
+      str = buildPhongShaderString(material, &descriptions, bumpSampler);
     } else if (effectType == "lambert") {
-      str = buildLambertShaderString(material, descriptions);
+      str = buildLambertShaderString(material, &descriptions, bumpSampler);
     } else if (effectType == "blinn") {
-      str = buildBlinnShaderString(material, descriptions);
+      str = buildBlinnShaderString(material, &descriptions, bumpSampler);
     } else if (effectType == "constant") {
-      str = buildConstantShaderString(material, descriptions);
+      str = buildConstantShaderString(material, &descriptions, bumpSampler);
     } else {
-      throw ("unknown effect type "" + effectType + """);
+      NOTREACHED() << "unknown effect type "" + effectType + """;
     }
 
-    return {description: descriptions.join("_"), shader: str};
+    *description.clear();
+    for (size_t ii = 0; ii < descriptions.size(); ++ii) {
+      *description += descriptions[ii];
+    }
+    return str;
   };
 
   /**
@@ -1018,27 +1052,32 @@ class GLSLShaderBuilder {
    *     "constant").
    * @return {o3d.Effect} The created effect.
    */
-  o3djs.effect.getStandardShader = function(pack,
-                                            material,
-                                            effectType) {
-    var record = o3djs.effect.buildStandardShaderString(material,
-                                                        effectType);
-    var effects = pack.getObjectsByClassName("o3d.Effect");
-    for (var ii = 0; ii < effects.length; ++ii) {
-      if (effects[ii].name == record.description &&
-          effects[ii].source == record.shader) {
-        return effects[ii];
-      }
-    }
-    var effect = pack.createObject("Effect");
-    if (effect) {
-      effect.name = record.description;
-      if (effect.loadFromFXString(record.shader)) {
+  o3d::Effect* getStandardShader(
+      o3d::Pack* pack,
+      o3d::Material* material,
+      const std::string& effectType) {
+    std::string description;
+    std::string shader = buildStandardShaderString(
+        material,  effectType);
+    std::vector<Effect*> Get<Effect>()
+    o3d::ObjectBaseArray effects(pack->GetObjectsByClassName("o3d.Effect"));
+    o3d::Effect* effect = NULL;
+    for (size_t ii = 0; ii < effects.size(); ++ii) {
+      effect = dynamic_cast<o3d::Effect*>(effects[ii]);
+      if (effect->name().compare(description) == 0 &&
+          effect->source().compare(shader)) {
         return effect;
       }
-      pack.removeObject(effect);
     }
-    return null;
+    effect = pack->Create<Effect>();
+    if (effect) {
+      effect.set_name(description);
+      if (effect.loadFromFXString(shader)) {
+        return effect;
+      }
+      pack->RemoveObject(effect);
+    }
+    return NULL;
   };
 
   /**
@@ -1055,27 +1094,27 @@ class GLSLShaderBuilder {
    *     "constant").
    * @return {boolean} True on success.
    */
-  o3djs.effect.attachStandardShader = function(pack,
-                                               material,
-                                               lightPos,
-                                               effectType) {
-    var effect = o3djs.effect.getStandardShader(pack,
-                                                material,
-                                                effectType);
+  bool attachStandardShader(
+      o3d::Pack* pack,
+      o3d::Material* material,
+      const o3d::Vector3& lightPos,
+      const std::string& effectType) {
+    o3d::Effect* effect = getStandardShader(pack, material, effectType);
     if (effect) {
-      material.effect = effect;
-      effect.createUniformParameters(material);
+      material->set_effect(effect);
+      effect->createUniformParameters(material);
 
       // Set a couple of the default parameters in the hopes that this will
       // help the user get something on the screen. We check to make sure they
       // are not connected to something otherwise we"ll get an error.
-      var param = material.getParam("lightWorldPos");
-      if (!param.inputConnection) {
-        param.value = lightPos;
+      ParamFloat3* light_param =
+          material->GetParam<ParamFloat3>("lightWorldPos");
+      if (!param->input_connection()) {
+        param->set_value(lightPos);
       }
-      var param = material.getParam("lightColor");
-      if (!param.inputConnection) {
-        param.value = [1, 1, 1, 1];
+      ParamFloat4* color_param = material->GetParam<ParamFloat4>("lightColor");
+      if (!param->input_connection()) {
+        param->set_value(Float4(1.0f, 1.0f, 1.0f, 1.0f));
       }
       return true;
     } else {
@@ -1090,9 +1129,13 @@ class GLSLShaderBuilder {
    * @param {!o3d.Effect} effect Effect.
    * @param {!o3d.ParamObject} paramObject ParamObject on which to create Params.
    */
-  o3djs.effect.createUniformParameters = function(pack, effect, paramObject) {
-    effect.createUniformParameters(paramObject);
-    var infos = effect.getParameterInfo();
+  void createUniformParameters(
+      o3d::Pack* pack,
+      o3d::Effect* effect,
+      o3d::ParamObject* paramObject) {
+    effect->CreateUniformParameters(paramObject);
+    o3d::EffectParamaterInfoArray infos;
+    effect->GetParameterInfo(info_array);
     for (var ii = 0; ii < infos.length; ++ii) {
       var info = infos[ii];
       if (info.sasClassName.length == 0) {
@@ -1141,7 +1184,7 @@ class GLSLShaderBuilder {
   o3djs.effect.setLanguage("o3d");
 };
 
+}  // namespace o3d_utils
 #endif
 
-}  // namespace o3d_utils
 
