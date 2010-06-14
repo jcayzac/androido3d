@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <stdlib.h>
+#include <string.h>
 #include "shader_builder.h"
 #include "core/cross/effect.h"
 #include "core/cross/material.h"
@@ -24,8 +25,20 @@ class IntStringThing {
     : value_(0) {
   }
 
+  void Set(int value) {
+    value_ = value;
+  }
+
   void Increment() {
     ++value_;
+  }
+
+  std::string Inc() {
+    int v = value_;
+    value_++;
+    char buf[20];
+    sprintf (buf, "%d", v);
+    return &buf[0];
   }
 
   std::string ToString() {
@@ -45,7 +58,7 @@ class GLSLShaderBuilder {
    * we"re in glsl and need to declare the varying parameters in both shaders.
    * @type {string}
    */
-  const std::string* varying_decls_;
+  std::string varying_decls_;
 
   /**
    * An integer value which keeps track of the next available interpolant.
@@ -181,10 +194,10 @@ class GLSLShaderBuilder {
    * @param {string} opt_decls The declarations if you know them already.
    * @return {string} Code for the parameter declarations.
    */
+  // TODO(gman): Remove this. Just save the return from buildVaryingDecls
+  //   locally and use it.
   std::string repeatVaryingDecls(const std::string* opt_decls) {
-    return (opt_decls ? *opt_decls :
-            (varying_decls_ ? *varying_decls_ : buildVaryingDecls())) +
-           "\n";
+    return (opt_decls ? *opt_decls : varying_decls_) + "\n";
   };
 
   /**
@@ -231,12 +244,12 @@ class GLSLShaderBuilder {
       bool diffuse,
       bool specular,
       bool bumpSampler) {
-    std::string str(BEGIN_IN_STRUCT) +
+    std::string str = std::string(BEGIN_IN_STRUCT) +
               ATTRIBUTE + FLOAT4 + " " + "position" +
               semanticSuffix("POSITION") + ";\n";
     if (diffuse || specular) {
-      str += ATTRIBUTE + FLOAT3 + " " + "normal" +
-             semanticSuffix("NORMAL") + ";\n";
+      str = str + ATTRIBUTE + FLOAT3 + " " + "normal" +
+            semanticSuffix("NORMAL") + ";\n";
     }
     str += buildTexCoords(material, false) +
            buildBumpInputCoords(bumpSampler) +
@@ -259,30 +272,30 @@ class GLSLShaderBuilder {
       bool diffuse,
       bool specular,
       bool bumpSampler) {
-    std::string str(BEGIN_OUT_STRUCT) +
+    std::string str = std::string(BEGIN_OUT_STRUCT) +
         VARYING + FLOAT4 + " " +
         VARYING_DECLARATION_PREFIX + "position" +
         semanticSuffix("POSITION") + ";\n" +
         buildTexCoords(material, true) +
         buildBumpOutputCoords(bumpSampler);
     if (diffuse || specular) {
-      str += VARYING + FLOAT3 + " " +
+      str = str + VARYING + FLOAT3 + " " +
           VARYING_DECLARATION_PREFIX + "normal" +
           semanticSuffix("TEXCOORD" +
-             interpolant_++ + "") + ";\n" +
+             interpolant_.Inc() + "") + ";\n" +
           VARYING + FLOAT3 + " " +
           VARYING_DECLARATION_PREFIX + "surfaceToLight" +
           semanticSuffix(
-              "TEXCOORD" + interpolant_++ + "") + ";\n";
+              "TEXCOORD" + interpolant_.Inc() + "") + ";\n";
     }
     if (specular) {
-      str += VARYING + FLOAT3 + " " +
+      str = str + VARYING + FLOAT3 + " " +
           VARYING_DECLARATION_PREFIX + "surfaceToView" +
           semanticSuffix(
-              "TEXCOORD" + interpolant_++ + "") + ";\n";
+              "TEXCOORD" + interpolant_.Inc() + "") + ";\n";
     }
-    str += END_STRUCT;
-    varying_decls_ = new std::string(str);
+    str = str + END_STRUCT;
+    varying_decls_ = str;
     return str;
   };
 
@@ -305,11 +318,11 @@ class GLSLShaderBuilder {
         return std::string("  ") + VARYING + FLOAT2 + " " +
             VARYING_DECLARATION_PREFIX + name + "UV" +
             semanticSuffix(
-                "TEXCOORD" + interpolant_++ + "") + ";\n";
+                "TEXCOORD" + interpolant_.Inc() + "") + ";\n";
       } else {
         std::string desiredName(name + "UV");
-        std::string semantic("TEXCOORD") + interpolant_++;
-        std::string outputName(getAttributeName_(desiredName, semantic));
+        std::string semantic(std::string("TEXCOORD") + interpolant_.Inc());
+        std::string outputName(getAttributeName(desiredName, semantic));
         name_to_semantic_map_[desiredName] = semantic;
         return std::string("  ") + ATTRIBUTE + FLOAT2 + " " + outputName +
             semanticSuffix(semantic) + ";\n";
@@ -327,8 +340,8 @@ class GLSLShaderBuilder {
    *     be written as varying values.
    * @return {string} The code for the texture coordinate declarations.
    */
-  std::string buildTexCoords(o3d::Material* aterial, bool varying) {
-    interpolant_ = 0;
+  std::string buildTexCoords(o3d::Material* material, bool varying) {
+    interpolant_.Set(0);
     if (!varying) {
       name_to_semantic_map_.clear();
     }
@@ -393,14 +406,14 @@ class GLSLShaderBuilder {
    * @return {string} The code for bump input coords.
    */
   std::string buildBumpInputCoords(bool bumpSampler) {
-    return std::string() + bumpSampler ?
-        ("  " + FLOAT3 + " tangent" +
+    return std::string("") + (bumpSampler ?
+        (std::string("  ") + FLOAT3 + " tangent" +
             semanticSuffix("TANGENT") + ";\n" +
          "  " + FLOAT3 + " binormal" +
             semanticSuffix("BINORMAL") + ";\n" +
          "  " + FLOAT2 + " bumpUV" +
             semanticSuffix(
-                "TEXCOORD" + interpolant_++) + ";\n") : "";
+                std::string("TEXCOORD") + interpolant_.Inc()) + ";\n") : "");
   };
 
 
@@ -410,16 +423,16 @@ class GLSLShaderBuilder {
    * @return {string} The code for bump input coords.
    */
   std::string buildBumpOutputCoords(bool bumpSampler) {
-    return std::string("") + bumpSampler ?
-        ("  " + FLOAT3 + " tangent" +
+    return std::string("") + (bumpSampler ?
+        (std::string("  ") + FLOAT3 + " tangent" +
             semanticSuffix(
-                "TEXCOORD" + interpolant_++) + ";\n" +
+                std::string("TEXCOORD") + interpolant_.Inc()) + ";\n" +
          "  " + FLOAT3 + " binormal" +
-            semanticSuffix("TEXCOORD" +
-                interpolant_++) + ";\n" +
+            semanticSuffix(std::string("TEXCOORD") +
+                interpolant_.Inc()) + ";\n" +
          "  " + FLOAT2 + " bumpUV" +
             semanticSuffix(
-                "TEXCOORD" + interpolant_++) + ";\n") : "";
+                std::string("TEXCOORD") + interpolant_.Inc()) + ";\n") : "");
   };
 
 
@@ -428,7 +441,7 @@ class GLSLShaderBuilder {
    * @return {string} The effect code for the shader, ready to be parsed.
    */
   std::string buildCheckerShaderString() {
-    std::string varyingDecls(BEGIN_OUT_STRUCT) +
+    std::string varyingDecls = std::string(BEGIN_OUT_STRUCT) +
       VARYING + FLOAT4 + " " +
       VERTEX_VARYING_PREFIX + "position" +
       semanticSuffix("POSITION") + ";\n" +
@@ -444,7 +457,7 @@ class GLSLShaderBuilder {
       END_STRUCT;
 
     return std::string("uniform ") + MATRIX4 + " worldViewProjection" +
-    semanticSuffix("WORLDVIEWPROJECTION") + ";\n" +
+      semanticSuffix("WORLDVIEWPROJECTION") + ";\n" +
       "uniform " + MATRIX4 + " worldInverseTranspose" +
       semanticSuffix("WORLDINVERSETRANSPOSE") + ";\n" +
       "uniform " + MATRIX4 + " world" +
@@ -463,14 +476,14 @@ class GLSLShaderBuilder {
       "\n" +
       beginVertexShaderMain() +
       "  " + VERTEX_VARYING_PREFIX + "position = " +
-      mul(ATTRIBUTE_PREFIX + "position",
+      mul(std::string(ATTRIBUTE_PREFIX) + "position",
           "worldViewProjection") + ";\n" +
       "  " + VERTEX_VARYING_PREFIX + "normal = " +
-      mul(FLOAT4 + "(" +
+      mul(std::string(FLOAT4) + "(" +
       ATTRIBUTE_PREFIX + "normal, 0.0)",
           "worldInverseTranspose") + ".xyz;\n" +
       "  " + VERTEX_VARYING_PREFIX + "worldPosition = " +
-          mul(ATTRIBUTE_PREFIX + "position", "world") +
+          mul(std::string(ATTRIBUTE_PREFIX) + "position", "world") +
       ".xyz;\n" +
       "  " + VERTEX_VARYING_PREFIX + "texCoord = " +
       ATTRIBUTE_PREFIX + "texCoord0;\n" +
@@ -483,7 +496,7 @@ class GLSLShaderBuilder {
       "uniform " + FLOAT3 + " lightWorldPos;\n" +
       "uniform " + FLOAT3 + " lightColor;\n" +
       "\n" +
-      repeatVaryingDecls(varyingDecls) +
+      repeatVaryingDecls(&varyingDecls) +
       FLOAT4 + " checker(" + FLOAT2 + " uv) {\n" +
       "  float fmodResult = " + MOD + "(" +
       "    floor(checkSize * uv.x) + \n" +
@@ -503,7 +516,7 @@ class GLSLShaderBuilder {
       "  " + FLOAT4 +
       " outColor = directionalIntensity * check;\n" +
       endPixelShaderMain(
-          FLOAT4 + "(outColor.rgb, check.a)") +
+          std::string(FLOAT4) + "(outColor.rgb, check.a)") +
       "\n" + entryPoints() +
       matrixLoadOrder();
   };
@@ -546,15 +559,16 @@ class GLSLShaderBuilder {
      *
      * @type {string}
      */
-    static const char* COLLADA_LIGHTING_TYPE_PARAM_NAME "collada.lightingType";
+    static const char* COLLADA_LIGHTING_TYPE_PARAM_NAME =
+        "collada.lightingType";
 
     o3d::ParamString* lightingTypeParam =
-        material->GetParam<ParamString>(COLLADA_LIGHTING_TYPE_PARAM_NAME);
+        material->GetParam<o3d::ParamString>(COLLADA_LIGHTING_TYPE_PARAM_NAME);
     if (lightingTypeParam) {
       std::string lightingType(lightingTypeParam.value());
       std::transform(lightingType.begin(), lightingType.end(),
                      lightingType.begin(), toLower());
-      if (o3djs.effect.isColladaLightingType(lightingType)) {
+      if (isColladaLightingType(lightingType)) {
         return lightingType;
       }
     }
@@ -589,7 +603,7 @@ class GLSLShaderBuilder {
          cc < arraysize(COLLADA_SAMPLER_PARAMETER_PREFIXES);
          ++cc) {
       std::string samplerPrefix(COLLADA_SAMPLER_PARAMETER_PREFIXES[cc]);
-      ParamSampler* samplerParam = material->GetParam<ParamSampler>(
+      o3d::ParamSampler* samplerParam = material->GetParam<o3d::ParamSampler>(
           samplerPrefix + "Sampler");
       if (samplerParam) {
         ++numTexCoordStreamsNeeded;
@@ -605,20 +619,14 @@ class GLSLShaderBuilder {
    * @return {string} The texture type (1D, 2D, 3D or CUBE).
    */
   std::string getTextureType(o3d::ParamTexture* textureParam) {
-    o3d::Texture texture = textureParam->value();
+    o3d::Texture* texture = textureParam->value();
     if (!texture) {
       return "2D";  // No texture value, have to make a guess.
     }
-    if (texture.className.compare("o3d.Texture1D") == 0) {
-      return "1D";
-    }
-    if (texture.className.compare("o3d.Texture2D") == 0) {
+    if (texture->IsA(Texture2D::GetApparentClass()) {
       return "2D";
     }
-    if (texture.className.compare("o3d.Texture3D") == 0) {
-      return "3D";
-    }
-    if (texture.className.compare("o3d.TextureCUBE") == 0) {
+    if (texture->IsA(TextureCUBE:GetApparentClass()) {
       return "CUBE";
     }
     return "2D";
@@ -637,7 +645,7 @@ class GLSLShaderBuilder {
       return "2D";
     }
     o3d::ParamTexture* textureParam =
-        sampler->GetParam<ParmaTexture>(o3d::Sampler::kTextureParamName);
+        sampler->GetParam<o3d::ParamTexture>(o3d::Sampler::kTextureParamName);
     if (textureParam) {
       return getTextureType(textureParam);
     } else {
@@ -964,7 +972,7 @@ class GLSLShaderBuilder {
    * Builds the surface to view code for the vertex shader.
    * @return {string} The code for the vertex shader.
    */
-  std::sting surfaceToViewVertexShaderCode() {
+  std::string surfaceToViewVertexShaderCode() {
     return std::string("  ") + VERTEX_VARYING_PREFIX +
         "surfaceToView = (viewInverse[3] - " +
         mul(ATTRIBUTE_PREFIX + "position", "world") + ").xyz;\n";
@@ -1138,11 +1146,11 @@ class GLSLShaderBuilder {
       // help the user get something on the screen. We check to make sure they
       // are not connected to something otherwise we"ll get an error.
       o3d::ParamFloat3* light_param =
-	  material->GetParam<o3d::ParamFloat3>("lightWorldPos");
+    material->GetParam<o3d::ParamFloat3>("lightWorldPos");
       if (!light_param->input_connection()) {
         light_param->set_value(lightPos);
       }
-      o3d::ParamFloat4* color_param = 
+      o3d::ParamFloat4* color_param =
           material->GetParam<o3d::ParamFloat4>("lightColor");
       if (!color_param->input_connection()) {
         color_param->set_value(o3d::Float4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -1171,21 +1179,21 @@ class GLSLShaderBuilder {
       const o3d::EffectParameterInfo& info = infos[ii];
       if (info.sas_class_type() == NULL) {
         if (info.num_elements() > 0) {
-	  o3d::ParamArray* paramArray = pack->Create<o3d::ParamArray>();
-	  o3d::ParamParamArray* param = 
-	    paramObject->GetParam<o3d::ParamParamArray>(info.name());
+    o3d::ParamArray* paramArray = pack->Create<o3d::ParamArray>();
+    o3d::ParamParamArray* param =
+      paramObject->GetParam<o3d::ParamParamArray>(info.name());
           param->set_value(paramArray);
           paramArray->resize(info.num_elements(), info.class_type());
           if (info.class_type()->IsA(o3d::ParamSampler::GetClass())) {
             for (size jj = 0; jj < info.num_elements(); ++jj) {
-	      o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+        o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
               paramArray->GetParam<ParamSampler>(jj)->set_value(sampler);
             }
           }
         } else if (info.class_type().IsA(o3d::ParamSampler::GetClass())) {
-	  o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
-	  o3d::ParamSampler* param = 
-	    paramObject->GetParam<o3d::ParamSampler>(info.name);
+    o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+    o3d::ParamSampler* param =
+      paramObject->GetParam<o3d::ParamSampler>(info.name);
           param->set_value(sampler);
         }
       }
