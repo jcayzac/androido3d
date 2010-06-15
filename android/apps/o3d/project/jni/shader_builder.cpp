@@ -17,7 +17,6 @@
 #include "core/cross/sampler.h"
 #include "core/cross/texture.h"
 
-#if 0
 namespace o3d_utils {
 
 class IntStringThing {
@@ -69,6 +68,8 @@ class GLSLShaderBuilder {
   IntStringThing interpolant_;
 
   std::map<std::string, std::string> name_to_semantic_map_;
+
+  #define TWO_COLOR_CHECKER_EFFECT_NAME "o3djs.effect.twoColorCheckerEffect"
 
   #define FLOAT2 "vec2"
   #define FLOAT3 "vec3"
@@ -1022,7 +1023,7 @@ class GLSLShaderBuilder {
          "(0.5, 0.5, 0.5);\n" + FLOAT3 + " normal = " +
          mul("tangentNormal", "tangentToWorld") + ";\n" +
          "normal = normalize(" + PIXEL_VARYING_PREFIX +
-	  "normal);\n") : std::string("  ") + FLOAT3 + " normal = normalize(" +
+    "normal);\n") : std::string("  ") + FLOAT3 + " normal = normalize(" +
          PIXEL_VARYING_PREFIX + "normal);\n";
   };
 
@@ -1068,13 +1069,13 @@ class GLSLShaderBuilder {
     std::string str;
     std::vector<std::string> descriptions;
     if (effectType == "phong") {
-      str = buildPhongShaderString(material, &descriptions, bumpSampler);
+      str = buildPhongShaderString(material, bumpSampler, &descriptions);
     } else if (effectType == "lambert") {
-      str = buildLambertShaderString(material, &descriptions, bumpSampler);
+      str = buildLambertShaderString(material, bumpSampler, &descriptions);
     } else if (effectType == "blinn") {
-      str = buildBlinnShaderString(material, &descriptions, bumpSampler);
+      str = buildBlinnShaderString(material, bumpSampler, &descriptions);
     } else if (effectType == "constant") {
-      str = buildConstantShaderString(material, &descriptions, bumpSampler);
+      str = buildConstantShaderString(material, bumpSampler, &descriptions);
     } else {
       NOTREACHED() << "unknown effect type "" + effectType + """;
     }
@@ -1117,8 +1118,8 @@ class GLSLShaderBuilder {
     }
     effect = pack->Create<o3d::Effect>();
     if (effect) {
-      effect.set_name(description);
-      if (effect.loadFromFXString(shader)) {
+      effect->set_name(description);
+      if (effect->LoadFromFXString(shader)) {
         return effect;
       }
       pack->RemoveObject(effect);
@@ -1154,9 +1155,10 @@ class GLSLShaderBuilder {
       // help the user get something on the screen. We check to make sure they
       // are not connected to something otherwise we"ll get an error.
       o3d::ParamFloat3* light_param =
-    material->GetParam<o3d::ParamFloat3>("lightWorldPos");
+           material->GetParam<o3d::ParamFloat3>("lightWorldPos");
       if (!light_param->input_connection()) {
-        light_param->set_value(lightPos);
+        light_param->set_value(
+            o3d::Float3(lightPos.getX(), lightPos.getY(), lightPos.getZ()));
       }
       o3d::ParamFloat4* color_param =
           material->GetParam<o3d::ParamFloat4>("lightColor");
@@ -1187,29 +1189,54 @@ class GLSLShaderBuilder {
       const o3d::EffectParameterInfo& info = infos[ii];
       if (info.sas_class_type() == NULL) {
         if (info.num_elements() > 0) {
-    o3d::ParamArray* paramArray = pack->Create<o3d::ParamArray>();
-    o3d::ParamParamArray* param =
-      paramObject->GetParam<o3d::ParamParamArray>(info.name());
+          o3d::ParamArray* paramArray = pack->Create<o3d::ParamArray>();
+          o3d::ParamParamArray* param =
+              paramObject->GetParam<o3d::ParamParamArray>(info.name());
           param->set_value(paramArray);
-          paramArray->resize(info.num_elements(), info.class_type());
-          if (info.class_type()->IsA(o3d::ParamSampler::GetClass())) {
-            for (size jj = 0; jj < info.num_elements(); ++jj) {
-        o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
-              paramArray->GetParam<ParamSampler>(jj)->set_value(sampler);
+          paramArray->ResizeByClass(info.num_elements(), info.class_type());
+          if (o3d::ObjectBase::ClassIsA(
+              info.class_type(),
+              o3d::ParamSampler::GetApparentClass())) {
+            for (size_t jj = 0; jj < info.num_elements(); ++jj) {
+              o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+              paramArray->GetParam<o3d::ParamSampler>(jj)->set_value(sampler);
             }
           }
-        } else if (info.class_type().IsA(o3d::ParamSampler::GetClass())) {
-    o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
-    o3d::ParamSampler* param =
-      paramObject->GetParam<o3d::ParamSampler>(info.name);
+        } else if (o3d::ObjectBase::ClassIsA(
+            info.class_type(),
+            o3d::ParamSampler::GetApparentClass())) {
+          o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+          o3d::ParamSampler* param =
+              paramObject->GetParam<o3d::ParamSampler>(info.name());
           param->set_value(sampler);
         }
       }
     }
   };
+
+  /**
+   * Creates an effect that draws a 2 color procedural checker pattern.
+   * @param {!o3d.Pack} pack The pack to create the effect in. If the pack
+   *     already has an effect with the same name that effect will be returned.
+   * @return {!o3d.Effect} The effect.
+   */
+  o3d::Effect* createCheckerEffect(o3d::Pack* pack) {
+    o3d::ObjectBaseArray effects =
+        pack->GetObjects(o3d::Effect::GetApparentClass()->name(),
+                         TWO_COLOR_CHECKER_EFFECT_NAME);
+    if (!effects.empty()) {
+      return static_cast<o3d::Effect*>(effects[0]);
+    }
+
+    o3d::Effect* effect = pack->Create<o3d::Effect>();
+    effect->LoadFromFXString(buildCheckerShaderString());
+    effect->set_name(TWO_COLOR_CHECKER_EFFECT_NAME);
+    return effect;
+  };
+
 };
 
 }  // namespace o3d_utils
-#endif
+
 
 
