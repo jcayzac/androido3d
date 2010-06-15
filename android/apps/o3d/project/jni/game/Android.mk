@@ -16,8 +16,6 @@
 LOCAL_PATH      := $(call my-dir)
 MY_PATH         := $(call my-dir)
 
-#include $(MY_PATH)/tools/classgen/Android.mk
-
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := libgame

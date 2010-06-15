@@ -27,6 +27,15 @@ class BuildSystem(object):
   def ErrorMsg(self, msg):
     print "ERROR: %s" % msg
 
+  def MakeDestinationDirectories(self, dst_files):
+    """Generates destination directories if necessary."""
+    for dst in dst_files:
+      path = os.path.dirname(dst);
+      if (len(path) > 0) and (not os.path.exists(path)):
+        self.VerboseMsg("Make Directory: " + path)
+        if self.execute:
+          os.makedirs(path)
+        
   def Execute(self, args):
     """Executes a command"""
     # todo: make this prettier.
@@ -69,6 +78,7 @@ class BuildSystem(object):
   def ExecuteIf(self, args, src_files, dst_files):
     """Executes a command if dest_files are order than src_files or missing."""
     if self.ShouldBuild(src_files, dst_files):
+      self.MakeDestinationDirectories(dst_files)
       self.Execute(args)
       if self.execute and not self.VerifyExists(dst_files):
         raise RuntimeError("FAILED: build did not create all required files")
