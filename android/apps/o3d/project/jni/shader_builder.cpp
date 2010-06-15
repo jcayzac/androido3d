@@ -5,8 +5,9 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <ctype.h>
 #include <stdlib.h>
-#include <string.h>
+#include <strings.h>
 #include "shader_builder.h"
 #include "core/cross/effect.h"
 #include "core/cross/material.h"
@@ -185,7 +186,11 @@ class GLSLShaderBuilder {
    * @param {boolean} bumpSampler Whether there is a bump sampler.
    * @return {string} The header.
    */
-  std::string pixelShaderHeader() {
+  std::string pixelShaderHeader(
+      o3d::Material* /* material */,
+      bool /* diffuse */,
+      bool /* specular */,
+      o3d::ParamSampler* /* bumpSampler */) {
     return "\n// #o3d SplitMarker\n";
   };
 
@@ -489,7 +494,7 @@ class GLSLShaderBuilder {
       ATTRIBUTE_PREFIX + "texCoord0;\n" +
       endVertexShaderMain() +
       "\n" +
-      pixelShaderHeader() +
+      pixelShaderHeader(NULL, false, false, NULL) +
       "uniform " + FLOAT4 + " color1;\n" +
       "uniform " + FLOAT4 + " color2;\n" +
       "uniform float checkSize;\n" +
@@ -535,7 +540,7 @@ class GLSLShaderBuilder {
     };
 
     for (size_t ii = 0; ii < arraysize(COLLADA_LIGHTING_TYPES); ++ii) {
-      if (stricmp(lightingType.c_str(), COLLADA_LIGHTING_TYPES[ii]) == 0) {
+      if (strcasecmp(lightingType.c_str(), COLLADA_LIGHTING_TYPES[ii]) == 0) {
         return true;
       }
     }
@@ -565,9 +570,9 @@ class GLSLShaderBuilder {
     o3d::ParamString* lightingTypeParam =
         material->GetParam<o3d::ParamString>(COLLADA_LIGHTING_TYPE_PARAM_NAME);
     if (lightingTypeParam) {
-      std::string lightingType(lightingTypeParam.value());
+      std::string lightingType(lightingTypeParam->value());
       std::transform(lightingType.begin(), lightingType.end(),
-                     lightingType.begin(), toLower());
+                     lightingType.begin(), tolower);
       if (isColladaLightingType(lightingType)) {
         return lightingType;
       }
@@ -623,10 +628,10 @@ class GLSLShaderBuilder {
     if (!texture) {
       return "2D";  // No texture value, have to make a guess.
     }
-    if (texture->IsA(Texture2D::GetApparentClass()) {
+    if (texture->IsA(o3d::Texture2D::GetApparentClass())) {
       return "2D";
     }
-    if (texture->IsA(TextureCUBE:GetApparentClass()) {
+    if (texture->IsA(o3d::TextureCUBE::GetApparentClass())) {
       return "CUBE";
     }
     return "2D";
@@ -702,12 +707,12 @@ class GLSLShaderBuilder {
       std::vector<std::string>* descriptions,
       const std::string& name,
       bool opt_addColorParam) {
-    o3d::ParamSampler samplerParam =
-        material->GetParam<ParamSampler>(name + "Sampler");
+    o3d::ParamSampler* samplerParam =
+        material->GetParam<o3d::ParamSampler>(name + "Sampler");
     if (samplerParam) {
       std::string type = getSamplerType(samplerParam);
       descriptions->push_back(name + type + "Texture");
-      return std::string("uniform sampler") + type + " " + name + "Sampler;\n"
+      return std::string("uniform sampler") + type + " " + name + "Sampler;\n";
     } else if (opt_addColorParam) {
       descriptions->push_back(name + "Color");
       return std::string("uniform ") + FLOAT4 + " " + name + ";\n";
@@ -733,7 +738,7 @@ class GLSLShaderBuilder {
       std::string type = getSamplerType(samplerParam);
       return std::string("  ") + FLOAT4 + " " + name + " = " + TEXTURE + type +
              "(" + name + "Sampler, " +
-             PIXEL_VARYING_PREFIX + name + "UV);\n"
+             PIXEL_VARYING_PREFIX + name + "UV);\n";
     } else {
       return "";
     }
@@ -752,15 +757,15 @@ class GLSLShaderBuilder {
       std::vector<std::string>* descriptions) {
     descriptions->push_back("constant");
     return buildCommonVertexUniforms() +
-           buildVertexDecls(material, false, false) +
+           buildVertexDecls(material, false, false, bumpSampler) +
            beginVertexShaderMain() +
            positionVertexShaderCode() +
            buildUVPassthroughs(material) +
            endVertexShaderMain() +
            pixelShaderHeader(material, false, false, bumpSampler) +
            buildCommonPixelUniforms() +
-           repeatVaryingDecls() +
-           buildColorParam(material, descriptions, "emissive") +
+           repeatVaryingDecls(NULL) +
+           buildColorParam(material, descriptions, "emissive", false) +
            beginPixelShaderMain() +
            getColorParam(material, "emissive") +
            endPixelShaderMain("emissive") +
@@ -777,36 +782,37 @@ class GLSLShaderBuilder {
    */
   std::string buildLambertShaderString(
       o3d::Material* material,
+      o3d::ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("lambert");
     return buildCommonVertexUniforms() +
            buildLightingUniforms() +
-           buildVertexDecls(material, true, false) +
+           buildVertexDecls(material, true, false, bumpSampler) +
            beginVertexShaderMain() +
            buildUVPassthroughs(material) +
            positionVertexShaderCode() +
            normalVertexShaderCode() +
            surfaceToLightVertexShaderCode() +
-           bumpVertexShaderCode() +
+           bumpVertexShaderCode(bumpSampler) +
            endVertexShaderMain() +
-           pixelShaderHeader(material, true, false) +
+           pixelShaderHeader(material, true, false, bumpSampler) +
            buildCommonPixelUniforms() +
-           repeatVaryingDecls() +
-           buildColorParam(material, descriptions, "emissive") +
-           buildColorParam(material, descriptions, "ambient") +
-           buildColorParam(material, descriptions, "diffuse") +
+           repeatVaryingDecls(NULL) +
+           buildColorParam(material, descriptions, "emissive", false) +
+           buildColorParam(material, descriptions, "ambient", false) +
+           buildColorParam(material, descriptions, "diffuse", false) +
            buildColorParam(material, descriptions, "bump", false) +
            utilityFunctions() +
            beginPixelShaderMain() +
            getColorParam(material, "emissive") +
            getColorParam(material, "ambient") +
            getColorParam(material, "diffuse") +
-           getNormalShaderCode() +
+           getNormalShaderCode(bumpSampler) +
            "  " + FLOAT3 + " surfaceToLight = normalize(" +
            PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
            "  " + FLOAT4 +
            " litR = lit(dot(normal, surfaceToLight), 0.0, 0.0);\n" +
-           endPixelShaderMain(p.FLOAT4 +
+           endPixelShaderMain(std::string(FLOAT4) +
            "((emissive +\n" +
            "      lightColor *" +
            " (ambient * diffuse + diffuse * litR.y)).rgb,\n" +
@@ -826,26 +832,27 @@ class GLSLShaderBuilder {
    */
   std::string buildBlinnShaderString(
       o3d::Material* material,
+      o3d::ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("phong");
     return buildCommonVertexUniforms() +
         buildLightingUniforms() +
-        buildVertexDecls(material, true, true) +
+      buildVertexDecls(material, true, true, bumpSampler) +
         beginVertexShaderMain() +
         buildUVPassthroughs(material) +
         positionVertexShaderCode() +
         normalVertexShaderCode() +
         surfaceToLightVertexShaderCode() +
         surfaceToViewVertexShaderCode() +
-        bumpVertexShaderCode() +
+        bumpVertexShaderCode(bumpSampler) +
         endVertexShaderMain() +
-        pixelShaderHeader(material, true, true) +
+        pixelShaderHeader(material, true, true, bumpSampler) +
         buildCommonPixelUniforms() +
-        repeatVaryingDecls() +
-        buildColorParam(material, descriptions, "emissive") +
-        buildColorParam(material, descriptions, "ambient") +
-        buildColorParam(material, descriptions, "diffuse") +
-        buildColorParam(material, descriptions, "specular") +
+        repeatVaryingDecls(NULL) +
+        buildColorParam(material, descriptions, "emissive", false) +
+        buildColorParam(material, descriptions, "ambient", false) +
+        buildColorParam(material, descriptions, "diffuse", false) +
+        buildColorParam(material, descriptions, "specular", false) +
         buildColorParam(material, descriptions, "bump", false) +
         "uniform float shininess;\n" +
         "uniform float specularFactor;\n" +
@@ -855,7 +862,7 @@ class GLSLShaderBuilder {
         getColorParam(material, "ambient") +
         getColorParam(material, "diffuse") +
         getColorParam(material, "specular") +
-        getNormalShaderCode() +
+        getNormalShaderCode(bumpSampler) +
         "  " + FLOAT3 + " surfaceToLight = normalize(" +
         PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
         "  " + FLOAT3 + " surfaceToView = normalize(" +
@@ -866,7 +873,7 @@ class GLSLShaderBuilder {
         "  " + FLOAT4 +
         " litR = lit(dot(normal, surfaceToLight), \n" +
         "                    dot(normal, halfVector), shininess);\n" +
-        endPixelShaderMain( p.FLOAT4 +
+        endPixelShaderMain(std::string(FLOAT4) +
         "((emissive +\n" +
         "  lightColor *" +
         " (ambient * diffuse + diffuse * litR.y +\n" +
@@ -886,26 +893,27 @@ class GLSLShaderBuilder {
    */
   std::string buildPhongShaderString(
       o3d::Material* material,
+      o3d::ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("phong");
     return buildCommonVertexUniforms() +
         buildLightingUniforms() +
-        buildVertexDecls(material, true, true) +
+        buildVertexDecls(material, true, true, bumpSampler) +
         beginVertexShaderMain() +
         buildUVPassthroughs(material) +
         positionVertexShaderCode() +
         normalVertexShaderCode() +
         surfaceToLightVertexShaderCode() +
         surfaceToViewVertexShaderCode() +
-        bumpVertexShaderCode() +
+        bumpVertexShaderCode(bumpSampler) +
         endVertexShaderMain() +
-        pixelShaderHeader(material, true, true) +
+        pixelShaderHeader(material, true, true, bumpSampler) +
         buildCommonPixelUniforms() +
-        repeatVaryingDecls() +
-        buildColorParam(material, descriptions, "emissive") +
-        buildColorParam(material, descriptions, "ambient") +
-        buildColorParam(material, descriptions, "diffuse") +
-        buildColorParam(material, descriptions, "specular") +
+        repeatVaryingDecls(NULL) +
+        buildColorParam(material, descriptions, "emissive", false) +
+        buildColorParam(material, descriptions, "ambient", false) +
+        buildColorParam(material, descriptions, "diffuse", false) +
+        buildColorParam(material, descriptions, "specular", false) +
         buildColorParam(material, descriptions, "bump", false) +
         "uniform float shininess;\n" +
         "uniform float specularFactor;\n" +
@@ -915,7 +923,7 @@ class GLSLShaderBuilder {
         getColorParam(material, "ambient") +
         getColorParam(material, "diffuse") +
         getColorParam(material, "specular") +
-        getNormalShaderCode() +
+        getNormalShaderCode(bumpSampler) +
         "  " + FLOAT3 + " surfaceToLight = normalize(" +
         PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
         "  " + FLOAT3 + " surfaceToView = normalize(" +
@@ -925,7 +933,7 @@ class GLSLShaderBuilder {
         "  " + FLOAT4 +
         " litR = lit(dot(normal, surfaceToLight), \n" +
         "                    dot(normal, halfVector), shininess);\n" +
-        endPixelShaderMain(FLOAT4 +
+        endPixelShaderMain(std::string(FLOAT4) +
         "((emissive +\n" +
         "  lightColor * (ambient * diffuse + diffuse * litR.y +\n" +
         "                        + specular * litR.z *" +
@@ -941,7 +949,7 @@ class GLSLShaderBuilder {
    */
   std::string positionVertexShaderCode() {
     return std::string("  ") + VERTEX_VARYING_PREFIX + "position = " +
-        mul(ATTRIBUTE_PREFIX +
+        mul(std::string(ATTRIBUTE_PREFIX) +
         "position", "worldViewProjection") + ";\n";
   };
 
@@ -951,7 +959,7 @@ class GLSLShaderBuilder {
    */
   std::string normalVertexShaderCode() {
     return std::string("  ") + VERTEX_VARYING_PREFIX + "normal = " +
-        mul(FLOAT4 + "(" +
+        mul(std::string(FLOAT4) + "(" +
         ATTRIBUTE_PREFIX +
         "normal, 0)", "worldInverseTranspose") + ".xyz;\n";
   };
@@ -964,7 +972,7 @@ class GLSLShaderBuilder {
     return std::string("  ") + VERTEX_VARYING_PREFIX +
         "surfaceToLight = lightWorldPos - \n" +
         "                          " +
-        mul(ATTRIBUTE_PREFIX + "position",
+        mul(std::string(ATTRIBUTE_PREFIX) + "position",
             "world") + ".xyz;\n";
   };
 
@@ -975,7 +983,7 @@ class GLSLShaderBuilder {
   std::string surfaceToViewVertexShaderCode() {
     return std::string("  ") + VERTEX_VARYING_PREFIX +
         "surfaceToView = (viewInverse[3] - " +
-        mul(ATTRIBUTE_PREFIX + "position", "world") + ").xyz;\n";
+        mul(std::string(ATTRIBUTE_PREFIX) + "position", "world") + ").xyz;\n";
   };
 
   /**
@@ -985,13 +993,13 @@ class GLSLShaderBuilder {
    * @return {string} The code for normal mapping in the vertex shader.
    */
   std::string bumpVertexShaderCode(o3d::ParamSampler* opt_bumpSampler) {
-    return bumpSampler ?
+    return opt_bumpSampler ?
         (std::string("  ") + VERTEX_VARYING_PREFIX + "binormal = " +
-         mul(FLOAT4 + "(" +
+         mul(std::string(FLOAT4) + "(" +
          ATTRIBUTE_PREFIX + "binormal, 0)",
              "worldInverseTranspose") + ".xyz;\n" +
          "  " + VERTEX_VARYING_PREFIX + "tangent = " +
-         mul(FLOAT4 +
+         mul(std::string(FLOAT4) +
          "(" + ATTRIBUTE_PREFIX + "tangent, 0)",
              "worldInverseTranspose") + ".xyz;\n") : "";
   };
@@ -1002,7 +1010,7 @@ class GLSLShaderBuilder {
    */
   std::string getNormalShaderCode(o3d::ParamSampler* bumpSampler) {
     return bumpSampler ?
-        (MATRIX3 + " tangentToWorld = " + MATRIX3 +
+         (std::string(MATRIX3) + " tangentToWorld = " + MATRIX3 +
             "(" + ATTRIBUTE_PREFIX + "tangent,\n" +
          "                                   " +
          ATTRIBUTE_PREFIX + "binormal,\n" +
@@ -1014,7 +1022,7 @@ class GLSLShaderBuilder {
          "(0.5, 0.5, 0.5);\n" + FLOAT3 + " normal = " +
          mul("tangentNormal", "tangentToWorld") + ";\n" +
          "normal = normalize(" + PIXEL_VARYING_PREFIX +
-         "normal);\n") : "  " + FLOAT3 + " normal = normalize(" +
+	  "normal);\n") : std::string("  ") + FLOAT3 + " normal = normalize(" +
          PIXEL_VARYING_PREFIX + "normal);\n";
   };
 
@@ -1029,8 +1037,8 @@ class GLSLShaderBuilder {
    */
   std::string buildVertexDecls(
       o3d::Material* material,
-      o3d::ParamSampler* bumpSampler,
-      bool diffuse,  bool specular) {
+      bool diffuse,  bool specular,
+      o3d::ParamSampler* bumpSampler) {
     return buildAttributeDecls(
         material, diffuse, specular, bumpSampler) +
         buildVaryingDecls(
@@ -1096,7 +1104,7 @@ class GLSLShaderBuilder {
       const std::string& effectType) {
     std::string description;
     std::string shader = buildStandardShaderString(
-        material, effectType);
+        material, effectType, &description);
     //std::vector<o3d::Effect*> Get<o3d::Effect>()
     o3d::ObjectBaseArray effects(pack->GetObjectsByClassName("o3d.Effect"));
     o3d::Effect* effect = NULL;
