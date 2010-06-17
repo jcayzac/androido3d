@@ -1280,6 +1280,23 @@ void RendererGLES2::Destroy() {
 
 #endif
 
+#ifdef OS_ANDROID
+Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
+    const DisplayWindow& display_window,
+    bool off_screen) {
+  InitStatus init_status = InitCommonGLES2();
+  if (init_status != SUCCESS) {
+    Destroy();
+    return INITIALIZATION_ERROR;
+  }
+  return init_status;
+}
+
+void RendererGLES2::Destroy() {
+  DestroyCommonGLES2();
+}
+#endif
+
 bool RendererGLES2::MakeCurrent() {
 #ifdef OS_WIN
   if (!device_context_ || !gl_context_) return false;

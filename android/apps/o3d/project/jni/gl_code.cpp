@@ -26,12 +26,12 @@
 #include <stdlib.h>
 #include <math.h>
 
-#if 0
 #include "core/cross/service_locator.h"
 #include "core/cross/evaluation_counter.h"
 #include "core/cross/client.h"
 #include "core/cross/client_info.h"
 #include "core/cross/class_manager.h"
+#include "core/cross/display_window.h"
 #include "core/cross/features.h"
 #include "core/cross/object_manager.h"
 #include "core/cross/profiler.h"
@@ -42,25 +42,30 @@
 
 #include "shader_builder.h"
 #include "render_graph.h"
-#endif
 
 #define  LOG_TAG    "libo3djni"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-#if 0
+class DisplayWindowAndroid : public o3d::DisplayWindow {
+ public:
+  ~DisplayWindowAndroid() { }
+};
+
 class O3DManager {
  public:
   o3d::Client* client() const {
-    return client_;
+    return client_.get();
   }
 
   bool Initialize();
 
  private:
-  o3d::ServiceLocator* service_locator;
+  DisplayWindowAndroid display_window_;
+  o3d::ServiceLocator service_locator_;
   o3d::Renderer* renderer_;
   scoped_ptr<o3d::EvaluationCounter> evaluation_counter_;
+  scoped_ptr<o3d::ClassManager> class_manager_;
   scoped_ptr<o3d::ClientInfoManager> client_info_manager_;
   scoped_ptr<o3d::ObjectManager> object_manager_;
   scoped_ptr<o3d::Profiler> profiler_;
@@ -68,34 +73,26 @@ class O3DManager {
   scoped_ptr<o3d::Client> client_;
 };
 
-  bool O3DManager::Initialze() {
-    evaluation_counter_.reset(new o3d::EvaluationCounter(&service_locator_));
-    class_manager_.reset(new o3d::ClassManager(&service_locator_));
-    client_info_manager_.reset(new o3d::ClientInfoManager(&service_locator_));
-    object_manager_.reset(new o3d::ObjectManager(&service_locator_));
-    profiler_.reset(new o3d::Profiler(&service_locator_));
-    features_.reset(new o3d::Features(&service_locator_));
+bool O3DManager::Initialize() {
+  evaluation_counter_.reset(new o3d::EvaluationCounter(&service_locator_));
+  class_manager_.reset(new o3d::ClassManager(&service_locator_));
+  client_info_manager_.reset(new o3d::ClientInfoManager(&service_locator_));
+  object_manager_.reset(new o3d::ObjectManager(&service_locator_));
+  profiler_.reset(new o3d::Profiler(&service_locator_));
+  features_.reset(new o3d::Features(&service_locator_));
 
-    // create a renderer device based on the current platform
-    renderer_ = o3d::Renderer::CreateDefaultRenderer(&service_locator);
+  // create a renderer device based on the current platform
+  renderer_ = o3d::Renderer::CreateDefaultRenderer(&service_locator_);
 
-    // Initialize the renderer for off-screen rendering if kOffScreenRenderer
-    // is in the environment.
-    bool success;
-
-    //display_window_.reset(new o3d::DisplayWindowWindows);
-    //display_window_->set_hwnd(g_window_handle);
-
-    bool success =
-        renderer_->Init(*display_window_.get(), false) == o3d::Renderer::SUCCESS;
-
-    if (success) {
-      client_.reset(new o3d::Client(&service_locator));
-    }
-
-    return success;
+  bool success =
+      renderer_->Init(display_window_, false) == o3d::Renderer::SUCCESS;
+  if (success) {
+    client_.reset(new o3d::Client(&service_locator_));
   }
-#endif
+
+  return success;
+}
+
 static void printGLString(const char *name, GLenum s) {
     const char *v = (const char *) glGetString(s);
     LOGI("GL %s = %s\n", name, v);

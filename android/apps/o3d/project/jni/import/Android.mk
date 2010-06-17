@@ -27,6 +27,7 @@ LOCAL_CFLAGS    := \
 LOCAL_SRC_FILES := $(addprefix cross/, \
   collada.cc \
   collada_zip_archive.cc \
+  memory_stream.cc \
   raw_data.cc \
   )
 

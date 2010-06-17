@@ -22,6 +22,8 @@ LOCAL_MODULE    := libo3djni
 LOCAL_CFLAGS    := \
   -Werror \
   -D__ANDROID__ \
+  -DRENDERER_GLES2 \
+  -DGLES2_BACKEND_NATIVE_GLES2 \
   -I$(LOCAL_PATH)/third_party/stlport/stlport \
   -I$(LOCAL_PATH)/third_party/loggingshim \
 
