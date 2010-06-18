@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "base/logging.h"
 #include "core/cross/service_locator.h"
 #include "core/cross/evaluation_counter.h"
 #include "core/cross/client.h"
@@ -37,6 +38,7 @@
 #include "core/cross/profiler.h"
 #include "core/cross/renderer.h"
 #include "core/cross/renderer_platform.h"
+#include "core/cross/transform.h"
 #include "core/cross/types.h"
 #include "import/cross/collada.h"
 
@@ -59,6 +61,7 @@ class O3DManager {
   }
 
   bool Initialize();
+  bool Render();
 
  private:
   DisplayWindowAndroid display_window_;
@@ -71,6 +74,10 @@ class O3DManager {
   scoped_ptr<o3d::Profiler> profiler_;
   scoped_ptr<o3d::Features> features_;
   scoped_ptr<o3d::Client> client_;
+
+  o3d::Transform* root_;
+  o3d::Pack* pack_;
+  o3d_utils::ViewInfo* main_view_;
 };
 
 bool O3DManager::Initialize() {
@@ -84,13 +91,26 @@ bool O3DManager::Initialize() {
   // create a renderer device based on the current platform
   renderer_ = o3d::Renderer::CreateDefaultRenderer(&service_locator_);
 
-  bool success =
-      renderer_->Init(display_window_, false) == o3d::Renderer::SUCCESS;
-  if (success) {
-    client_.reset(new o3d::Client(&service_locator_));
+  if (renderer_->Init(display_window_, false) != o3d::Renderer::SUCCESS) {
+    return false;
   }
 
-  return success;
+  client_.reset(new o3d::Client(&service_locator_));
+  pack_ = client_->CreatePack();
+  root_ = pack_->Create<o3d::Transform>();
+  main_view_ = o3d_utils::ViewInfo::CreateBasicView(
+      pack_, root_, client_->render_graph_root());
+
+  return true;
+}
+
+bool O3DManager::Render() {
+  static int v = 0;
+  ++v;
+  main_view_->clear_buffer()->set_clear_color(
+      o3d::Float4(float(v % 100) / 100.0f, 0, 0, 1));
+  client_->Tick();
+  client_->RenderClient(true);
 }
 
 static void printGLString(const char *name, GLenum s) {
@@ -274,6 +294,8 @@ void renderFrame() {
     checkGlError("glDrawArrays");
 }
 
+static O3DManager* g_mgr;
+
 extern "C" {
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj);
@@ -281,10 +303,18 @@ extern "C" {
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height)
 {
-    setupGraphics(width, height);
+    //setupGraphics(width, height);
+    //g_mgr = new O3DManager();
+    //g_mgr->Initialize();
+    static const char* kFoo = "foo";
+    DLOG(INFO) << "test 1" << kFoo;
+    DLOG(INFO) << "test 2" << kFoo;
+    DLOG(INFO) << "test 3" << kFoo;
+    DLOG(INFO) << "test 4" << kFoo;
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj)
 {
-    renderFrame();
+    //renderFrame();
+    //g_mgr->Render();
 }
