@@ -3,12 +3,39 @@
 // found in the LICENSE file.
 
 #include <string>
+#include "core/cross/math_types.h"
+
+namespace o3d {
+
+class Effect;
+class Material;
+class Pack;
+class ParamObject;
+
+}  // namespace o3d_utils
 
 namespace o3d_utils {
 
 class ShaderBuilder {
  public:
-  static bool CreateShader();
+  static ShaderBuilder* Create();
+
+  static bool isColladaLightingType(const std::string& lightingType);
+  static std::string getColladaLightingType(o3d::Material* material);
+  static int getNumTexCoordStreamsNeeded(o3d::Material* material);
+
+  void createUniformParameters(
+      o3d::Pack* pack,
+      o3d::Effect* effect,
+      o3d::ParamObject* paramObject);
+
+  virtual o3d::Effect* createCheckerEffect(o3d::Pack* pack) = 0;
+  virtual bool attachStandardShader(
+      o3d::Pack* pack,
+      o3d::Material* material,
+      const o3d::Vector3& lightPos,
+      const std::string& effectType) = 0;
+
 };
 
 }  // namespace o3d_utils

@@ -51,7 +51,98 @@ class IntStringThing {
   int value_;
 };
 
-class GLSLShaderBuilder {
+/**
+ * Check if lighting type is a collada lighting type.
+ * @param {string} lightingType Lighting type to check.
+ * @return {boolean} true if it"s a collada lighting type.
+ */
+bool ShaderBuilder::isColladaLightingType(const std::string& lightingType) {
+  static const char* COLLADA_LIGHTING_TYPES[] = {
+    "phong",
+    "lambert",
+    "blinn",
+    "constant",
+  };
+
+  for (size_t ii = 0; ii < arraysize(COLLADA_LIGHTING_TYPES); ++ii) {
+    if (strcasecmp(lightingType.c_str(), COLLADA_LIGHTING_TYPES[ii]) == 0) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * Returns the collada lighting type of a collada standard material.
+ * @param {!o3d.Material} material Material to get lighting type from.
+ * @return {string} The lighting type or "" if it"s not a collada standard
+ *     material.
+ */
+std::string ShaderBuilder::getColladaLightingType(o3d::Material* material) {
+  /**
+   * The name of the parameter on a material if it"s a collada standard
+   * material.
+   *
+   * NOTE: This parameter is just a string attached to a material. It has no
+   *     meaning to the plugin, it is passed from the conditioner to the
+   *     javascript libraries so that they can build collada like effects.
+   *
+   * @type {string}
+   */
+  static const char* COLLADA_LIGHTING_TYPE_PARAM_NAME =
+      "collada.lightingType";
+
+  o3d::ParamString* lightingTypeParam =
+      material->GetParam<o3d::ParamString>(COLLADA_LIGHTING_TYPE_PARAM_NAME);
+  if (lightingTypeParam) {
+    std::string lightingType(lightingTypeParam->value());
+    std::transform(lightingType.begin(), lightingType.end(),
+                   lightingType.begin(), tolower);
+    if (isColladaLightingType(lightingType)) {
+      return lightingType;
+    }
+  }
+  return "";
+};
+
+/**
+ * Get the number of TEXCOORD streams needed by this material.
+ * @param {!o3d.Material} material The material MUST be a standard
+ *     collada material.
+ * @return {number} The number oc TEXCOORD streams needed.
+ */
+int ShaderBuilder::getNumTexCoordStreamsNeeded(o3d::Material* material) {
+  /**
+   * The FCollada standard materials sampler parameter name prefixes.
+   * @type {!Array.<string>}
+   */
+  static const char* COLLADA_SAMPLER_PARAMETER_PREFIXES[] = {
+    "emissive",
+    "ambient",
+    "diffuse",
+    "specular",
+    "bump",
+  };
+
+  std::string lightingType = getColladaLightingType(material);
+  if (!isColladaLightingType(lightingType)) {
+    NOTREACHED() << "not a collada standard material";
+  }
+  int numTexCoordStreamsNeeded = 0;
+  for (size_t cc = 0;
+       cc < arraysize(COLLADA_SAMPLER_PARAMETER_PREFIXES);
+       ++cc) {
+    std::string samplerPrefix(COLLADA_SAMPLER_PARAMETER_PREFIXES[cc]);
+    o3d::ParamSampler* samplerParam = material->GetParam<o3d::ParamSampler>(
+        samplerPrefix + "Sampler");
+    if (samplerParam) {
+      ++numTexCoordStreamsNeeded;
+    }
+  }
+  return numTexCoordStreamsNeeded;
+};
+
+class GLSLShaderBuilder : public ShaderBuilder {
  private:
   /**
    * Caches the varying parameter declarations to be repeated in the case that
@@ -525,97 +616,6 @@ class GLSLShaderBuilder {
           std::string(FLOAT4) + "(outColor.rgb, check.a)") +
       "\n" + entryPoints() +
       matrixLoadOrder();
-  };
-
-  /**
-   * Check if lighting type is a collada lighting type.
-   * @param {string} lightingType Lighting type to check.
-   * @return {boolean} true if it"s a collada lighting type.
-   */
-  bool isColladaLightingType(const std::string& lightingType) {
-    static const char* COLLADA_LIGHTING_TYPES[] = {
-      "phong",
-      "lambert",
-      "blinn",
-      "constant",
-    };
-
-    for (size_t ii = 0; ii < arraysize(COLLADA_LIGHTING_TYPES); ++ii) {
-      if (strcasecmp(lightingType.c_str(), COLLADA_LIGHTING_TYPES[ii]) == 0) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  /**
-   * Returns the collada lighting type of a collada standard material.
-   * @param {!o3d.Material} material Material to get lighting type from.
-   * @return {string} The lighting type or "" if it"s not a collada standard
-   *     material.
-   */
-  std::string getColladaLightingType(o3d::Material* material) {
-    /**
-     * The name of the parameter on a material if it"s a collada standard
-     * material.
-     *
-     * NOTE: This parameter is just a string attached to a material. It has no
-     *     meaning to the plugin, it is passed from the conditioner to the
-     *     javascript libraries so that they can build collada like effects.
-     *
-     * @type {string}
-     */
-    static const char* COLLADA_LIGHTING_TYPE_PARAM_NAME =
-        "collada.lightingType";
-
-    o3d::ParamString* lightingTypeParam =
-        material->GetParam<o3d::ParamString>(COLLADA_LIGHTING_TYPE_PARAM_NAME);
-    if (lightingTypeParam) {
-      std::string lightingType(lightingTypeParam->value());
-      std::transform(lightingType.begin(), lightingType.end(),
-                     lightingType.begin(), tolower);
-      if (isColladaLightingType(lightingType)) {
-        return lightingType;
-      }
-    }
-    return "";
-  };
-
-  /**
-   * Get the number of TEXCOORD streams needed by this material.
-   * @param {!o3d.Material} material The material MUST be a standard
-   *     collada material.
-   * @return {number} The number oc TEXCOORD streams needed.
-   */
-  int getNumTexCoordStreamsNeeded(o3d::Material* material) {
-    /**
-     * The FCollada standard materials sampler parameter name prefixes.
-     * @type {!Array.<string>}
-     */
-    static const char* COLLADA_SAMPLER_PARAMETER_PREFIXES[] = {
-      "emissive",
-      "ambient",
-      "diffuse",
-      "specular",
-      "bump",
-    };
-
-    std::string lightingType = getColladaLightingType(material);
-    if (!isColladaLightingType(lightingType)) {
-      NOTREACHED() << "not a collada standard material";
-    }
-    int numTexCoordStreamsNeeded = 0;
-    for (size_t cc = 0;
-         cc < arraysize(COLLADA_SAMPLER_PARAMETER_PREFIXES);
-         ++cc) {
-      std::string samplerPrefix(COLLADA_SAMPLER_PARAMETER_PREFIXES[cc]);
-      o3d::ParamSampler* samplerParam = material->GetParam<o3d::ParamSampler>(
-          samplerPrefix + "Sampler");
-      if (samplerParam) {
-        ++numTexCoordStreamsNeeded;
-      }
-    }
-    return numTexCoordStreamsNeeded;
   };
 
   /**
@@ -1107,10 +1107,10 @@ class GLSLShaderBuilder {
     std::string shader = buildStandardShaderString(
         material, effectType, &description);
     //std::vector<o3d::Effect*> Get<o3d::Effect>()
-    o3d::ObjectBaseArray effects(pack->GetObjectsByClassName("o3d.Effect"));
+    std::vector<o3d::Effect*> effects = pack->GetByClass<o3d::Effect>();
     o3d::Effect* effect = NULL;
     for (size_t ii = 0; ii < effects.size(); ++ii) {
-      effect = static_cast<o3d::Effect*>(effects[ii]);
+      effect = effects[ii];
       if (effect->name().compare(description) == 0 &&
           effect->source().compare(shader)) {
         return effect;
@@ -1235,6 +1235,10 @@ class GLSLShaderBuilder {
   };
 
 };
+
+ShaderBuilder* ShaderBuilder::Create() {
+  return new GLSLShaderBuilder();
+}
 
 }  // namespace o3d_utils
 
