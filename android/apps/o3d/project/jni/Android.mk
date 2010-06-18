@@ -30,6 +30,7 @@ LOCAL_CFLAGS    := \
 LOCAL_LDLIBS    := -llog -lGLESv2 -lz
 LOCAL_SRC_FILES := \
   gl_code.cpp \
+  camera.cpp \
   render_graph.cpp \
   shader_builder.cpp \
 
