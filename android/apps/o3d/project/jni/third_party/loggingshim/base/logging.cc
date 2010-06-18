@@ -5,24 +5,20 @@
 
 namespace logging {
   
-  Logger& getLogger() {
-    static Logger sLogStream;
-    return sLogStream;
-  }
-  
-  Logger Logger::printLog(LogSeverity severity, const char* tag) {
-    mSeverity = severity;
-    mTag = tag;
-  }
-  
-  std::ostream& Logger::operator<<(const std::string& s) {
-   if (mSeverity == FATAL) {
-      __android_log_assert("", mTag, s.c_str());
-    } else {
-      __android_log_write(mSeverity, mTag, s.c_str());
+ Logger::~Logger() {
+    if (mShowLocation) {
+      mInput << "\t" << mLocation;
     }
     
-    return nullStream();
+    if (mSeverity == FATAL) {
+      __android_log_assert("", mTag, mInput.str().c_str());
+    } else {
+      __android_log_print(mSeverity, mTag, mInput.str().c_str());
+    }
+  }
+  
+  std::ostringstream& Logger::printLog() {
+    return mInput;
   }
   
   std::ostream& nullStream() {

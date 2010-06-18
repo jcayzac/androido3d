@@ -92,6 +92,7 @@ bool O3DManager::Initialize() {
   renderer_ = o3d::Renderer::CreateDefaultRenderer(&service_locator_);
 
   if (renderer_->Init(display_window_, false) != o3d::Renderer::SUCCESS) {
+	DLOG(ERROR) << "Window initialization failed!";
     return false;
   }
 
@@ -304,17 +305,12 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height)
 {
     //setupGraphics(width, height);
-    //g_mgr = new O3DManager();
-    //g_mgr->Initialize();
-    static const char* kFoo = "foo";
-    DLOG(INFO) << "test 1" << kFoo;
-    DLOG(INFO) << "test 2" << kFoo;
-    DLOG(INFO) << "test 3" << kFoo;
-    DLOG(INFO) << "test 4" << kFoo;
+    g_mgr = new O3DManager();
+    g_mgr->Initialize();
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj)
 {
     //renderFrame();
-    //g_mgr->Render();
+    g_mgr->Render();
 }

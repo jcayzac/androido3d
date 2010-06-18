@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include <android/log.h>
@@ -26,16 +27,25 @@ inline std::ostream& operator<<(std::ostream& stream, const std::wstring& s) {
 
 namespace logging {
 
+  static const char* sDebugTag = "O3D";
+  
   class Logger {
     public: 
-      Logger printLog(LogSeverity severity, const char* tag);
-      std::ostream& operator<< (const std::string& s);
-   private:
-    LogSeverity mSeverity;
-    char const* mTag;
+      Logger(LogSeverity severity, const char* tag, const char* location) 
+        : mShowLocation(false),
+          mSeverity(severity),
+          mTag(tag),
+          mLocation(location) { };
+      virtual ~Logger();
+      std::ostringstream& printLog();
+     private:
+      std::ostringstream mInput;
+      bool mShowLocation;
+      LogSeverity mSeverity;
+      const char* mTag;
+      const char* mLocation;
   };
   
-  Logger& getLogger();
   
   std::ostream& nullStream();
 };
@@ -44,7 +54,7 @@ namespace logging {
 #define TOSTRING(x) STRINGIFY(x)
 
 #define LOG(severity) \
-  logging::getLogger().printLog(severity, __FILE__ ":" TOSTRING(__LINE__))
+  logging::Logger(severity, logging::sDebugTag, __FILE__ ":" TOSTRING(__LINE__)).printLog()
 
 #define LOG_IF(severity, condition) \
   !(condition) ? logging::nullStream() : LOG(severity)
