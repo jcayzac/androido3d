@@ -413,8 +413,6 @@ void O3DManager::PrepareShapes(o3d::Pack* pack) {
 void DumpRenderGraph(o3d::RenderNode* render_node, const std::string& indent) {
   if (render_node) {
     LOGI("%s%s\n", indent.c_str(), render_node->GetClass()->name());
-    LOGI("--h1b\n");
-    LOGI("%s%s\n", indent.c_str(), render_node->GetClass()->name());
     const o3d::RenderNodeRefArray& children = render_node->children();
     if (!children.empty()) {
       std::string inner = indent + "    ";
