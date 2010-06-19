@@ -408,6 +408,17 @@ void O3DManager::PrepareShapes(o3d::Pack* pack) {
   }
 };
 
+void DumpRenderGraph(o3d::RenderNode* render_node, const std::string& indent) {
+  LOGI("%s%s\n", indent.c_str(), render_node->GetClassName().c_str());
+  const o3d::RenderNodeRefArray& children = render_node->children();
+  if (!children.empty()) {
+    std::string inner = indent + "    ";
+    for (size_t ii = 0; ii < children.size(); ++ii) {
+      DumpRenderGraph(children[ii], inner);
+    }
+  }
+}
+
 bool O3DManager::Initialize() {
   evaluation_counter_.reset(new o3d::EvaluationCounter(&service_locator_));
   class_manager_.reset(new o3d::ClassManager(&service_locator_));
@@ -419,10 +430,14 @@ bool O3DManager::Initialize() {
   // create a renderer device based on the current platform
   renderer_ = o3d::Renderer::CreateDefaultRenderer(&service_locator_);
 
+  LOGI("-----------------------------HERE1\n");
+
   if (renderer_->Init(display_window_, false) != o3d::Renderer::SUCCESS) {
-	DLOG(ERROR) << "Window initialization failed!";
+  DLOG(ERROR) << "Window initialization failed!";
     return false;
   }
+
+  LOGI("-----------------------------HERE2\n");
 
   client_.reset(new o3d::Client(&service_locator_));
   pack_ = client_->CreatePack();
@@ -430,14 +445,20 @@ bool O3DManager::Initialize() {
   main_view_ = o3d_utils::ViewInfo::CreateBasicView(
       pack_, root_, client_->render_graph_root());
 
+  LOGI("---Render Graph---(start)---\n");
+  DumpRenderGraph(client_->render_graph_root(), "");
+  LOGI("---Render Graph---(end)---\n");
+
   return true;
 }
 
 bool O3DManager::Render() {
   static int v = 0;
   ++v;
+  float value = float(v % 100) / 100.0f;
   main_view_->clear_buffer()->set_clear_color(
-      o3d::Float4(float(v % 100) / 100.0f, 0, 0, 1));
+      o3d::Float4(value, 0, 0, 1));
+  DLOG(INFO) << value;
   client_->Tick();
   client_->RenderClient(true);
 }
@@ -633,6 +654,11 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height)
 {
     //setupGraphics(width, height);
+
+    // The OpenGL ES Spec requires this to already be set but appearently
+    // Android doesn't follow the spec?
+    glViewport(0, 0, width, height);
+
     g_mgr = new O3DManager();
     g_mgr->Initialize();
 }

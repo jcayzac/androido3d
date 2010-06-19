@@ -76,13 +76,13 @@ class DrawPassInfo {
   }
 
  private:
-  o3d::Pack::Ref pack_;
-  o3d::DrawContext::Ref draw_context_;
-  o3d::State::Ref state_;
-  o3d::StateSet::Ref state_set_;
-  o3d::DrawPass::Ref draw_pass_;
-  o3d::DrawList::Ref draw_list_;
-  o3d::RenderNode::Ref root_;
+  o3d::Pack* pack_;
+  o3d::DrawContext* draw_context_;
+  o3d::State* state_;
+  o3d::StateSet* state_set_;
+  o3d::DrawPass* draw_pass_;
+  o3d::DrawList* draw_list_;
+  o3d::RenderNode* root_;
 
   // A flag whether or not we created the DrawList for this DrawPassInfo.
   bool own_draw_list_;
@@ -241,14 +241,14 @@ class ViewInfo {
 
  private:
   std::vector<DrawPassInfo*> draw_pass_infos_;
-  o3d::Pack::Ref pack_;
-  o3d::RenderNode::Ref render_graph_root_;
-  o3d::Transform::Ref tree_root_;
-  o3d::RenderNode::Ref root_;
-  o3d::Viewport::Ref viewport_;
-  o3d::ClearBuffer::Ref clear_buffer_;
-  o3d::DrawContext::Ref draw_context_;
-  o3d::TreeTraversal::Ref tree_traversal_;
+  o3d::Pack* pack_;
+  o3d::RenderNode* render_graph_root_;
+  o3d::Transform* tree_root_;
+  o3d::RenderNode* root_;
+  o3d::Viewport* viewport_;
+  o3d::ClearBuffer* clear_buffer_;
+  o3d::DrawContext* draw_context_;
+  o3d::TreeTraversal* tree_traversal_;
   DrawPassInfo* performance_draw_pass_info_;
   DrawPassInfo* z_ordered_draw_pass_info_;
 
