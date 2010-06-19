@@ -46,6 +46,7 @@
 
 #include "shader_builder.h"
 #include "render_graph.h"
+#include "camera.h"
 
 #define  LOG_TAG    "libo3djni"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
@@ -64,7 +65,7 @@ class O3DManager {
     return client_.get();
   }
 
-  bool Initialize();
+  bool Initialize(int width, int height);
   bool Render();
 
   // Prepares all the materials in a pack assuming they are materials as
@@ -108,6 +109,7 @@ class O3DManager {
   o3d::Transform* root_;
   o3d::Pack* pack_;
   o3d_utils::ViewInfo* main_view_;
+  o3d::Pack* scene_pack_;
 };
 
 /**
@@ -409,17 +411,21 @@ void O3DManager::PrepareShapes(o3d::Pack* pack) {
 };
 
 void DumpRenderGraph(o3d::RenderNode* render_node, const std::string& indent) {
-  LOGI("%s%s\n", indent.c_str(), render_node->GetClassName().c_str());
-  const o3d::RenderNodeRefArray& children = render_node->children();
-  if (!children.empty()) {
-    std::string inner = indent + "    ";
-    for (size_t ii = 0; ii < children.size(); ++ii) {
-      DumpRenderGraph(children[ii], inner);
+  if (render_node) {
+    LOGI("%s%s\n", indent.c_str(), render_node->GetClass()->name());
+    LOGI("--h1b\n");
+    LOGI("%s%s\n", indent.c_str(), render_node->GetClass()->name());
+    const o3d::RenderNodeRefArray& children = render_node->children();
+    if (!children.empty()) {
+      std::string inner = indent + "    ";
+      for (size_t ii = 0; ii < children.size(); ++ii) {
+        DumpRenderGraph(children[ii], inner);
+      }
     }
   }
 }
 
-bool O3DManager::Initialize() {
+bool O3DManager::Initialize(int width, int height) {
   evaluation_counter_.reset(new o3d::EvaluationCounter(&service_locator_));
   class_manager_.reset(new o3d::ClassManager(&service_locator_));
   client_info_manager_.reset(new o3d::ClientInfoManager(&service_locator_));
@@ -440,6 +446,7 @@ bool O3DManager::Initialize() {
   LOGI("-----------------------------HERE2\n");
 
   client_.reset(new o3d::Client(&service_locator_));
+  client_->Init();
   pack_ = client_->CreatePack();
   root_ = pack_->Create<o3d::Transform>();
   main_view_ = o3d_utils::ViewInfo::CreateBasicView(
@@ -449,16 +456,32 @@ bool O3DManager::Initialize() {
   DumpRenderGraph(client_->render_graph_root(), "");
   LOGI("---Render Graph---(end)---\n");
 
+  scene_pack_ = client_->CreatePack();
+  o3d::Collada::Options options;
+  o3d::Collada::Import(
+      scene_pack_,
+      "/sdcard/collada/seven_shapes.zip",
+      root_,
+      NULL,
+      options);
+
+  PrepareMaterials(scene_pack_, main_view_, NULL);
+  PrepareShapes(scene_pack_);
+  o3d_utils::CameraInfo* camera_info =
+      o3d_utils::Camera::getViewAndProjectionFromCameras(
+          root_, width, height);
+
+  main_view_->draw_context()->set_view(camera_info->view);
+  main_view_->draw_context()->set_projection(camera_info->projection);
+
   return true;
 }
 
 bool O3DManager::Render() {
   static int v = 0;
   ++v;
-  float value = float(v % 100) / 100.0f;
   main_view_->clear_buffer()->set_clear_color(
-      o3d::Float4(value, 0, 0, 1));
-  DLOG(INFO) << value;
+      o3d::Float4(float(v % 100) / 100.0f, 0, 0, 1));
   client_->Tick();
   client_->RenderClient(true);
 }
@@ -660,7 +683,7 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobj
     glViewport(0, 0, width, height);
 
     g_mgr = new O3DManager();
-    g_mgr->Initialize();
+    g_mgr->Initialize(width, height);
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj)

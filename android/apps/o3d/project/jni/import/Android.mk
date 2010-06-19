@@ -27,8 +27,10 @@ LOCAL_CFLAGS    := \
 LOCAL_SRC_FILES := $(addprefix cross/, \
   collada.cc \
   collada_zip_archive.cc \
+  destination_buffer.cc \
   memory_stream.cc \
   raw_data.cc \
+  zip_archive.cc \
   )
 
 include $(BUILD_STATIC_LIBRARY)
