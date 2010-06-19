@@ -57,10 +57,24 @@ def main(argv):
     ]
   Cc(b, source_files, classgen_output_path)
   Link(b, source_files, classgen_output_path, 'ClassGen')
+  
+  # Run ClassGen to generate header files.
+  classgen_exe = classgen_output_path + 'ClassGen'
+  system_path = project_path + '/jni/game/system/'
+  meta_files = [\
+      system_path + 'BoxCollisionSystem.meta', \
+      system_path + 'MainLoop.meta', \
+      system_path + 'ProfileSystem.meta' \
+    ]
+    
+  header_path = project_path + '/bin/headers/'
+  for file in meta_files:
+    ClassGen(b, classgen_exe, file, header_path)
 
 # Convenience functions
 
 def MakeOutputFile(input_file, output_path, extension):
+  """Generates the name of an output file."""
   (base_name, ext) = os.path.splitext(os.path.basename(input_file))
   output_file = output_path + base_name + extension
   if output_path[len(output_path) - 1] != '/':
@@ -72,6 +86,7 @@ def MakeOutputFile(input_file, output_path, extension):
 # Build rules
 
 def Lex(builder, input_file, output_path):
+  """Builds the input file with Lex."""
   output_file = MakeOutputFile(input_file, output_path, '.c')
   
   builder.ExecuteIf(\
@@ -82,6 +97,7 @@ def Lex(builder, input_file, output_path):
     
     
 def Yacc(builder, input_file, output_path):
+  """Builds the input file with Yacc."""
   output_file = MakeOutputFile(input_file, output_path, '.c')
   
   builder.ExecuteIf(\
@@ -92,6 +108,7 @@ def Yacc(builder, input_file, output_path):
     
     
 def Cc(builder, input_files, output_path):
+  """Compiles the list of input files with gcc.  File paths are used as include paths."""
   input_paths = set()
   for file in input_files:
     in_path = os.path.abspath(os.path.dirname(file))
@@ -111,6 +128,7 @@ def Cc(builder, input_files, output_path):
       )
 
 def Link(builder, input_files, output_path, ouput_name):
+  """Links the input object files into an executable."""
   output_files = []
   for file in input_files:
     output_file = MakeOutputFile(file, output_path, '.o')
@@ -125,6 +143,16 @@ def Link(builder, input_files, output_path, ouput_name):
     [output_executable], \
     )
 
+
+def ClassGen(builder, classgen_path, input_file, output_path):
+  """Builds the input file with ClassGen."""
+  output_file = MakeOutputFile(input_file, output_path, '.h')
+  
+  builder.ExecuteIf(\
+    [classgen_path, input_file, output_file], \
+    [input_file], \
+    [output_file], \
+    )
 
 if __name__ == '__main__':
   main(sys.argv[1:])

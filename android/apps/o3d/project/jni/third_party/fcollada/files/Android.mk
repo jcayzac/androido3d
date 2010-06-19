@@ -68,8 +68,10 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE    := fcollada
 LOCAL_CFLAGS    := \
+  -DLINUX \
   -D__ANDROID__ \
   -DUNICODE \
+  -DRETAIL \
   -DFCOLLADA_EXCEPTION=0 \
   -I$(LOCAL_PATH)/../../../third_party/fcollada/files/LibXML/include \
   -I$(LOCAL_PATH)/../../../third_party/fcollada/files \
@@ -230,6 +232,7 @@ LOCAL_SRC_FILES := \
   FUtils/FUStringBuilder.cpp \
   FUtils/FUStringConversion.cpp \
   FUtils/FUSynchronizableObject.cpp \
+  FUtils/FUTestBed.cpp \
   FUtils/FUThread.cpp \
   FUtils/FUTracker.cpp \
   FUtils/FUUniqueStringMap.cpp \
