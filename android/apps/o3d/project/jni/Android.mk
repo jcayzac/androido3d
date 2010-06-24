@@ -33,6 +33,7 @@ LOCAL_SRC_FILES := \
   camera.cpp \
   render_graph.cpp \
   shader_builder.cpp \
+  wchar.cpp \
 
 LOCAL_STATIC_LIBRARIES := \
   o3dcore \

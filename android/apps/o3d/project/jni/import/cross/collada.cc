@@ -251,6 +251,7 @@ void Collada::ClearData() {
 // Returns true on success.
 bool Collada::ImportFile(const FilePath& filename, Transform* parent,
                          ParamFloat* animation_input) {
+  DLOG(INFO) << "ImportFile:" << filename.value();
   // Each time we start a new import, we need to clear out data from
   // the last import (if any).
   ClearData();
@@ -281,6 +282,7 @@ bool Collada::ImportFile(const FilePath& filename, Transform* parent,
 // Returns true on success.
 bool Collada::ImportZIP(const FilePath& filename, Transform* parent,
                         ParamFloat* animation_input) {
+  DLOG(INFO) << "ImportZip:" << filename.value();
   // This uses minizip, which avoids decompressing the zip archive to a
   // temp directory...
   //
@@ -353,6 +355,7 @@ bool Collada::ImportZIP(const FilePath& filename, Transform* parent,
 bool Collada::ImportDAE(const FilePath& filename,
                         Transform* parent,
                         ParamFloat* animation_input) {
+  DLOG(INFO) << "ImportDAE:" << filename.value();
   if (!parent) {
     return false;
   }
@@ -387,6 +390,7 @@ bool Collada::ImportDAEDocument(FCDocument* doc,
                                 bool fc_status,
                                 Transform* parent,
                                 ParamFloat* animation_input) {
+  DLOG(INFO) << "ImportDAEDocument:";
   if (!parent) {
     return false;
   }
@@ -720,6 +724,7 @@ Transform* Collada::BuildTransform(FCDSceneNode* node,
   const wchar_t* name = node->GetName().c_str();
 
   String name_utf8 =  WideToUTF8(name);
+  DLOG(INFO) << "BuildTransform:" << name_utf8;
 
   Transform* transform = pack_->Create<Transform>();
   transform->set_name(name_utf8);
@@ -859,6 +864,7 @@ bool Collada::ImportTree(NodeInstance *instance,
 
 bool Collada::ImportTreeInstances(FCDocument* doc,
                                   NodeInstance *node_instance) {
+  DLOG(INFO) << "ImportTreeInstances:";
   FCDSceneNode *node = node_instance->node();
   // recursively import the rest of the nodes in the tree
   const NodeInstance::NodeInstanceList &children = node_instance->children();
@@ -1278,14 +1284,18 @@ Shape* Collada::BuildShape(FCDocument* doc,
 
       // Get the material for this polygon set.
       Material* material = NULL;
+DLOG(INFO) << "Getting Material for: " << geom_name;
       FCDMaterialInstance* mat_instance = geom_instance->FindMaterialInstance(
           polys->GetMaterialSemantic());
       if (mat_instance) {
         FCDMaterial* collada_material = mat_instance->GetMaterial();
+DLOG(INFO) << "Getting collada material: " << collada_material;
         material = BuildMaterial(doc, collada_material);
+DLOG(INFO) << "Getting o3d material: " << material;
       }
       if (!material) {
         material = GetDummyMaterial();
+DLOG(INFO) << "Getting dummy material: " << material;
       }
       // Create an index buffer for this group of polygons.
 
@@ -1673,6 +1683,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
   if (!tex) {
     FilePath file_path = WideToFilePath(filename.c_str());
     FilePath uri = file_path;
+    DLOG(INFO) << "BuildTextureFromImage:" << uri.value();
 
     std::string tempfile;
     if (collada_zip_archive_) {
@@ -2044,6 +2055,8 @@ static const char* GetLightingType(FCDEffectStandard* std_profile) {
 }
 
 static FCDEffectProfileFX* FindProfileFX(FCDEffect* effect) {
+  DLOG(INFO) << "FindProfileFX:";
+  DLOG(INFO) << "FindProfileFX:" << effect;
   FCDEffectProfile* profile = effect->FindProfile(FUDaeProfileType::HLSL);
   if (!profile) {
     profile = effect->FindProfile(FUDaeProfileType::CG);
@@ -2064,6 +2077,7 @@ Material* Collada::BuildMaterial(FCDocument* doc,
   Material* material = materials_[material_id.c_str()];
   if (!material) {
     Effect* effect = NULL;
+DLOG(INFO) << "BuildMaterial: mat=" << collada_material;
     FCDEffect* collada_effect = collada_material->GetEffect();
     if (collada_effect) {
       effect = GetEffect(doc, collada_effect);
@@ -2071,18 +2085,23 @@ Material* Collada::BuildMaterial(FCDocument* doc,
 
     String collada_material_name = WideToUTF8(
         collada_material->GetName().c_str());
+DLOG(INFO) << "BuildMaterial:" << collada_material_name;
     Material* material = pack_->Create<Material>();
     material->set_name(collada_material_name);
     material->set_effect(effect);
     SetParamsFromMaterial(collada_material, material);
+DLOG(INFO) << "BuildMaterial: H1";
 
     // If this is a COLLADA-FX profile, add the render states from the
     // COLLADA-FX sections.
     FCDEffectProfileFX* profile_fx = FindProfileFX(collada_effect);
     if (profile_fx) {
+DLOG(INFO) << "BuildMaterial: H2";
       if (profile_fx->GetTechniqueCount() > 0) {
+DLOG(INFO) << "BuildMaterial: H3";
         FCDEffectTechnique* technique = profile_fx->GetTechnique(0);
         if (technique->GetPassCount() > 0) {
+DLOG(INFO) << "BuildMaterial: H4";
           FCDEffectPass* pass = technique->GetPass(0);
           State* state = pack_->Create<State>();
           state->set_name("pass_state");
@@ -2094,16 +2113,20 @@ Material* Collada::BuildMaterial(FCDocument* doc,
         }
       }
     } else {
+DLOG(INFO) << "BuildMaterial: H5";
       FCDEffectStandard* std_profile = static_cast<FCDEffectStandard *>(
           collada_effect->FindProfile(FUDaeProfileType::COMMON));
       if (std_profile) {
+DLOG(INFO) << "BuildMaterial: H6";
         ParamString* type_tag = material->CreateParam<ParamString>(
             kLightingTypeParamName);
         type_tag->set_value(GetLightingType(std_profile));
       }
     }
+DLOG(INFO) << "BuildMaterial: H7";
     materials_[material_id.c_str()] = material;
   }
+DLOG(INFO) << "BuildMaterial: H8";
   return material;
 }
 

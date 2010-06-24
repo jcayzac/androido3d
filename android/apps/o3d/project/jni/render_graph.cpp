@@ -50,7 +50,7 @@ bool DrawPassInfo::Initialize(
   state_set_->SetParent(parent);
 
   draw_pass_ = pack->Create<DrawPass>();
-  draw_pass_->set_draw_list(draw_list);
+  draw_pass_->set_draw_list(draw_list_);
   draw_pass_->set_sort_method(sort_method);
   draw_pass_->SetParent(state_set_);
 

@@ -423,6 +423,12 @@ void DumpRenderGraph(o3d::RenderNode* render_node, const std::string& indent) {
   }
 }
 
+void DumpMatrix(const o3d::Matrix4& mat) {
+  for (int ii = 0; ii < 4; ++ii) {
+    LOGI("   %g, %g, %g, %g\n", mat[ii][0], mat[ii][1], mat[ii][2], mat[ii][3]);
+  }
+}
+
 bool O3DManager::Initialize(int width, int height) {
   evaluation_counter_.reset(new o3d::EvaluationCounter(&service_locator_));
   class_manager_.reset(new o3d::ClassManager(&service_locator_));
@@ -463,8 +469,6 @@ bool O3DManager::Initialize(int width, int height) {
       NULL,
       options);
 
-  PrepareMaterials(scene_pack_, main_view_, NULL);
-  PrepareShapes(scene_pack_);
   o3d_utils::CameraInfo* camera_info =
       o3d_utils::Camera::getViewAndProjectionFromCameras(
           root_, width, height);
@@ -472,197 +476,34 @@ bool O3DManager::Initialize(int width, int height) {
   main_view_->draw_context()->set_view(camera_info->view);
   main_view_->draw_context()->set_projection(camera_info->projection);
 
+  PrepareMaterials(scene_pack_, main_view_, NULL);
+  PrepareShapes(scene_pack_);
+
+  LOGI("--view--\n");
+  DumpMatrix(main_view_->draw_context()->view());
+  LOGI("--projection--\n");
+  DumpMatrix(main_view_->draw_context()->projection());
+
   return true;
 }
 
 bool O3DManager::Render() {
-  static int v = 0;
-  ++v;
-  main_view_->clear_buffer()->set_clear_color(
-      o3d::Float4(float(v % 100) / 100.0f, 0, 0, 1));
+  //static int v = 0;
+  //++v;
+  //main_view_->clear_buffer()->set_clear_color(
+  //    o3d::Float4(float(v % 100) / 100.0f, 0, 0, 1));
   client_->Tick();
   client_->RenderClient(true);
-}
-
-static void printGLString(const char *name, GLenum s) {
-    const char *v = (const char *) glGetString(s);
-    LOGI("GL %s = %s\n", name, v);
-}
-
-static void checkGlError(const char* op) {
-    for (GLint error = glGetError(); error; error
-            = glGetError()) {
-        LOGI("after %s() glError (0x%x)\n", op, error);
-    }
-}
-
-#if 1
-static const char gVertexShader[] =
-    "attribute vec4 vPosition;\n"
-    "attribute vec4 vColor;\n"
-    "varying vec4 color;\n"
-    "void main() {\n"
-    "  gl_Position = vPosition;\n"
-    "  color = vColor;\n"
-    "}\n";
-
-static const char gFragmentShader[] =
-    "precision mediump float;\n"
-    "varying vec4 color;\n"
-    "void main() {\n"
-    "  gl_FragColor = color;\n"
-    "}\n";
-#else
-static const char gVertexShader[] =
-    "attribute vec4 vPosition;\n"
-    "void main() {\n"
-    "  gl_Position = vPosition;\n"
-    "}\n";
-
-static const char gFragmentShader[] =
-
-    "uniform mediump vec4 color;\n"
-    "void main() {\n"
-    "  gl_FragColor = color;\n"
-    "}\n";
-#endif
-
-GLuint loadShader(GLenum shaderType, const char* pSource) {
-    GLuint shader = glCreateShader(shaderType);
-    if (shader) {
-        LOGI("compiling shader: %s\n",
-             shaderType == GL_VERTEX_SHADER ? "Vertex" : "Fragment");
-        glShaderSource(shader, 1, &pSource, NULL);
-        glCompileShader(shader);
-        GLint compiled = 0;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-        LOGI("compile: %s\n", compiled ? "succeeded" : "failed");
-        if (!compiled) {
-            GLint infoLen = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-            LOGI("infolen: %d\n", infoLen);
-            if (infoLen) {
-                char* buf = (char*) malloc(infoLen);
-                if (buf) {
-                    glGetShaderInfoLog(shader, infoLen, NULL, buf);
-                    LOGI("Could not compile shader %d:\n%s\n",
-                            shaderType, buf);
-                    LOGE("Could not compile shader %d:\n%s\n",
-                            shaderType, buf);
-                    free(buf);
-                }
-                glDeleteShader(shader);
-                shader = 0;
-            }
-        }
-    }
-    return shader;
-}
-
-GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
-    GLuint vertexShader = loadShader(GL_VERTEX_SHADER, pVertexSource);
-    if (!vertexShader) {
-        return 0;
-    }
-
-    GLuint pixelShader = loadShader(GL_FRAGMENT_SHADER, pFragmentSource);
-    if (!pixelShader) {
-        return 0;
-    }
-
-    GLuint program = glCreateProgram();
-    if (program) {
-        glAttachShader(program, vertexShader);
-        checkGlError("glAttachShader");
-        glAttachShader(program, pixelShader);
-        checkGlError("glAttachShader");
-
-        glBindAttribLocation(program, 6, "vPosition");
-        glBindAttribLocation(program, 3, "vColor");
-
-        glLinkProgram(program);
-        GLint linkStatus = GL_FALSE;
-        glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
-        if (linkStatus != GL_TRUE) {
-            GLint bufLength = 0;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
-            if (bufLength) {
-                char* buf = (char*) malloc(bufLength);
-                if (buf) {
-                    glGetProgramInfoLog(program, bufLength, NULL, buf);
-                    LOGE("Could not link program:\n%s\n", buf);
-                    free(buf);
-                }
-            }
-            glDeleteProgram(program);
-            program = 0;
-        }
-    }
-    return program;
-}
-
-GLuint gProgram;
-GLuint gvPositionHandle;
-GLuint gvColorHandle;
-
-bool setupGraphics(int w, int h) {
-    printGLString("Version", GL_VERSION);
-    printGLString("Vendor", GL_VENDOR);
-    printGLString("Renderer", GL_RENDERER);
-    printGLString("Extensions", GL_EXTENSIONS);
-
-    LOGI("setupGraphics(%d, %d)", w, h);
-    gProgram = createProgram(gVertexShader, gFragmentShader);
-    if (!gProgram) {
-        LOGE("Could not create program.");
-        return false;
-    }
-    gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
-    gvColorHandle = glGetAttribLocation(gProgram, "vColor");
-    checkGlError("glGetAttribLocation");
-    LOGI("glGetAttribLocation(\"vPosition\") = %d\n",
-            gvPositionHandle);
-    LOGI("glGetAttribLocation(\"vColor\") = %d\n",
-            gvColorHandle);
-
-    glViewport(0, 0, w, h);
-    checkGlError("glViewport");
-    return true;
-}
-
-const GLfloat gTriangleVertices[] = { 0.0f, 0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f };
-const GLfloat gColors[] = {
-  1.0f, 0.5f, 0.5f, 1.0f,
-  0.5f, 1.0f, 0.5f, 1.0f,
-  0.5f, 0.5f, 1.0f, 1.0f,
-  };
-
-void renderFrame() {
-    static float grey;
-    grey += 0.01f;
-    if (grey > 1.0f) {
-        grey = 0.0f;
-    }
-    glClearColor(grey, grey, grey, 1.0f);
-    checkGlError("glClearColor");
-    glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    checkGlError("glClear");
-
-    glUseProgram(gProgram);
-    checkGlError("glUseProgram");
-
-    GLint cloc = glGetUniformLocation(gProgram, "color");
-    glUniform4f(cloc, 0.0, 1.0f, 1.0f, 0.0f);
-
-    glVertexAttribPointer(gvPositionHandle, 2, GL_FLOAT, GL_FALSE, 0, gTriangleVertices);
-    glVertexAttribPointer(gvColorHandle, 4, GL_FLOAT, GL_FALSE, 0, gColors);
-    checkGlError("glVertexAttribPointer");
-    glEnableVertexAttribArray(gvPositionHandle);
-    glEnableVertexAttribArray(gvColorHandle);
-    checkGlError("glEnableVertexAttribArray");
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    checkGlError("glDrawArrays");
+  //if (v < 4) {
+  //  LOGI("-----------RENDER--------\n");
+  //  LOGI("render_frame_count     : %d\n", renderer_->render_frame_count());
+  //  LOGI("transforms_processed   : %d\n", renderer_->transforms_processed());
+  //  LOGI("transforms_culled      : %d\n", renderer_->transforms_culled());
+  //  LOGI("draw_elements_processed: %d\n", renderer_->draw_elements_processed());
+  //  LOGI("draw_elements_culled   : %d\n", renderer_->draw_elements_culled());
+  //  LOGI("draw_elements_rendered : %d\n", renderer_->draw_elements_rendered());
+  //  LOGI("primitives_rendered    : %d\n", renderer_->primitives_rendered());
+  //}
 }
 
 static O3DManager* g_mgr;
@@ -689,3 +530,5 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobj
     //renderFrame();
     g_mgr->Render();
 }
+
+

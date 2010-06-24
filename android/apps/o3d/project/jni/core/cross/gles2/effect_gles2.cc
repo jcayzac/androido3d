@@ -157,6 +157,7 @@ GLuint EffectGLES2::LoadShader(GLenum type, const char* shader_src) {
     glGetShaderInfoLog(shader, error_length + 1, &length, buffer.get());
     O3D_ERROR(service_locator()) << "Effect Compile Error: " << buffer.get();
     DLOG(ERROR) << "Error compiling shader:" << buffer.get();
+    DLOG(ERROR) << "shader: \n" << shader_src << "\n";
     glDeleteShader(shader);
     return 0;
   }

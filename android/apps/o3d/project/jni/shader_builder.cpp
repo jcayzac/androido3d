@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(gman): This code is shit right now. It was converted directly from
+//     JavaScript with little thought on how it should be re-written for C++.
+
 #include <map>
 #include <string>
 #include <vector>
@@ -707,14 +710,14 @@ class GLSLShaderBuilder : public ShaderBuilder {
       o3d::Material* material,
       std::vector<std::string>* descriptions,
       const std::string& name,
-      bool opt_addColorParam) {
+      bool addColorParam) {
     o3d::ParamSampler* samplerParam =
         material->GetParam<o3d::ParamSampler>(name + "Sampler");
     if (samplerParam) {
       std::string type = getSamplerType(samplerParam);
       descriptions->push_back(name + type + "Texture");
       return std::string("uniform sampler") + type + " " + name + "Sampler;\n";
-    } else if (opt_addColorParam) {
+    } else if (addColorParam) {
       descriptions->push_back(name + "Color");
       return std::string("uniform ") + FLOAT4 + " " + name + ";\n";
     } else {
@@ -766,7 +769,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
            pixelShaderHeader(material, false, false, bumpSampler) +
            buildCommonPixelUniforms() +
            repeatVaryingDecls(NULL) +
-           buildColorParam(material, descriptions, "emissive", false) +
+           buildColorParam(material, descriptions, "emissive", true) +
            beginPixelShaderMain() +
            getColorParam(material, "emissive") +
            endPixelShaderMain("emissive") +
@@ -799,9 +802,9 @@ class GLSLShaderBuilder : public ShaderBuilder {
            pixelShaderHeader(material, true, false, bumpSampler) +
            buildCommonPixelUniforms() +
            repeatVaryingDecls(NULL) +
-           buildColorParam(material, descriptions, "emissive", false) +
-           buildColorParam(material, descriptions, "ambient", false) +
-           buildColorParam(material, descriptions, "diffuse", false) +
+           buildColorParam(material, descriptions, "emissive", true) +
+           buildColorParam(material, descriptions, "ambient", true) +
+           buildColorParam(material, descriptions, "diffuse", true) +
            buildColorParam(material, descriptions, "bump", false) +
            utilityFunctions() +
            beginPixelShaderMain() +
@@ -850,10 +853,10 @@ class GLSLShaderBuilder : public ShaderBuilder {
         pixelShaderHeader(material, true, true, bumpSampler) +
         buildCommonPixelUniforms() +
         repeatVaryingDecls(NULL) +
-        buildColorParam(material, descriptions, "emissive", false) +
-        buildColorParam(material, descriptions, "ambient", false) +
-        buildColorParam(material, descriptions, "diffuse", false) +
-        buildColorParam(material, descriptions, "specular", false) +
+        buildColorParam(material, descriptions, "emissive", true) +
+        buildColorParam(material, descriptions, "ambient", true) +
+        buildColorParam(material, descriptions, "diffuse", true) +
+        buildColorParam(material, descriptions, "specular", true) +
         buildColorParam(material, descriptions, "bump", false) +
         "uniform float shininess;\n" +
         "uniform float specularFactor;\n" +
@@ -911,10 +914,10 @@ class GLSLShaderBuilder : public ShaderBuilder {
         pixelShaderHeader(material, true, true, bumpSampler) +
         buildCommonPixelUniforms() +
         repeatVaryingDecls(NULL) +
-        buildColorParam(material, descriptions, "emissive", false) +
-        buildColorParam(material, descriptions, "ambient", false) +
-        buildColorParam(material, descriptions, "diffuse", false) +
-        buildColorParam(material, descriptions, "specular", false) +
+        buildColorParam(material, descriptions, "emissive", true) +
+        buildColorParam(material, descriptions, "ambient", true) +
+        buildColorParam(material, descriptions, "diffuse", true) +
+        buildColorParam(material, descriptions, "specular", true) +
         buildColorParam(material, descriptions, "bump", false) +
         "uniform float shininess;\n" +
         "uniform float specularFactor;\n" +
@@ -1023,7 +1026,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
          "(0.5, 0.5, 0.5);\n" + FLOAT3 + " normal = " +
          mul("tangentNormal", "tangentToWorld") + ";\n" +
          "normal = normalize(" + PIXEL_VARYING_PREFIX +
-    "normal);\n") : std::string("  ") + FLOAT3 + " normal = normalize(" +
+         "normal);\n") : std::string("  ") + FLOAT3 + " normal = normalize(" +
          PIXEL_VARYING_PREFIX + "normal);\n";
   };
 
@@ -1106,7 +1109,6 @@ class GLSLShaderBuilder : public ShaderBuilder {
     std::string description;
     std::string shader = buildStandardShaderString(
         material, effectType, &description);
-    //std::vector<o3d::Effect*> Get<o3d::Effect>()
     std::vector<o3d::Effect*> effects = pack->GetByClass<o3d::Effect>();
     o3d::Effect* effect = NULL;
     for (size_t ii = 0; ii < effects.size(); ++ii) {
