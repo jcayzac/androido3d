@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef O3D_UTILS_CAMERA_H_
+#define O3D_UTILS_CAMERA_H_
+
 #include <string>
 #include <vector>
 #include "core/cross/math_types.h"
@@ -115,4 +118,6 @@ class Camera {
 };
 
 }  // namespace o3d_utils
+
+#endif  // O3D_UTILS_CAMERA_H_
 

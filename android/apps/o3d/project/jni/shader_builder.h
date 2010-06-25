@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef O3D_UTILS_SHADER_BUILDER_H_
+#define O3D_UTILS_SHADER_BUILDER_H_
+
 #include <string>
 #include "core/cross/math_types.h"
 
@@ -39,4 +42,7 @@ class ShaderBuilder {
 };
 
 }  // namespace o3d_utils
+
+#endif  // O3D_UTILS_SHADER_BUILDER_H_
+
 

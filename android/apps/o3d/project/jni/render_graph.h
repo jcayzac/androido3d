@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef O3D_UTILS_RENDER_GRAPH_H_
+#define O3D_UTILS_RENDER_GRAPH_H_
+
 #include "core/cross/clear_buffer.h"
 #include "core/cross/draw_context.h"
 #include "core/cross/draw_list.h"
@@ -259,4 +262,6 @@ class ViewInfo {
 };
 
 }  // namespace o3d_utils
+
+#endif  // O3D_UTILS_RENDER_GRAPH_H_
 
