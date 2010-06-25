@@ -59,6 +59,7 @@
 #include "import/cross/collada_zip_archive.h"
 #include "import/cross/destination_buffer.h"
 #include "import/cross/file_output_stream_processor.h"
+#include "import/cross/raw_data.h"
 #include "utils/cross/file_path_utils.h"
 #if !defined(O3D_IMPORT_NO_DXT_DECOMPRESSION)
 #include "third_party/libtxc_dxtn/files/txc_dxtn.h"
@@ -1153,6 +1154,7 @@ Shape* Collada::BuildShape(FCDocument* doc,
                            FCDGeometryInstance* geom_instance,
                            FCDGeometry* geom,
                            TranslationMap* translationMap) {
+  DLOG(INFO) << "Collada::BuildShape\n";
   Shape* shape = NULL;
   LOG_ASSERT(doc && geom_instance && geom);
   if (geom && geom->IsMesh()) {
@@ -1284,18 +1286,14 @@ Shape* Collada::BuildShape(FCDocument* doc,
 
       // Get the material for this polygon set.
       Material* material = NULL;
-DLOG(INFO) << "Getting Material for: " << geom_name;
       FCDMaterialInstance* mat_instance = geom_instance->FindMaterialInstance(
           polys->GetMaterialSemantic());
       if (mat_instance) {
         FCDMaterial* collada_material = mat_instance->GetMaterial();
-DLOG(INFO) << "Getting collada material: " << collada_material;
         material = BuildMaterial(doc, collada_material);
-DLOG(INFO) << "Getting o3d material: " << material;
       }
       if (!material) {
         material = GetDummyMaterial();
-DLOG(INFO) << "Getting dummy material: " << material;
       }
       // Create an index buffer for this group of polygons.
 
@@ -1337,6 +1335,7 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
                                   FCDControllerInstance* instance,
                                   NodeInstance *parent_node_instance,
                                   Transform* parent) {
+  DLOG(INFO) << "Collada::BuildSkinnedShape\n";
   // TODO(o3d): Handle chained controllers. Morph->Skin->...
   // TODO(gman): Change this to correctly create the skin, separate from
   //     ParamArray and SkinEval so that we can support instanced skins.
@@ -1505,7 +1504,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
     Buffer* old_buffer = NULL;
     SourceBuffer* source_buffer = pack_->Create<SourceBuffer>();
     VertexBuffer* shared_buffer = pack_->Create<VertexBuffer>();
-    DestinationBuffer* dest_buffer = pack_->Create<DestinationBuffer>();
+    //DestinationBuffer* dest_buffer = pack_->Create<DestinationBuffer>();
+    VertexBuffer* dest_buffer = pack_->Create<VertexBuffer>();
     const StreamParamVector& source_stream_params =
         old_stream_bank->vertex_stream_params();
     std::vector<Field*> source_fields(source_stream_params.size(), NULL);
@@ -1694,30 +1694,36 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
       if (uri.value()[0] == FILE_PATH_LITERAL('/')) {
         uri = FilePath(uri.value().substr(1));
       }
-      // NOTE: We have the opportunity to simply extract a memory
-      // buffer for the image data here, but currently the image loaders expect
-      // to read a file, so we write out a temp file...
-
-      // filename_utf8 points to the name of the file inside the archive
-      // (it doesn't actually live on the filesystem so we make a temp file)
-      if (collada_zip_archive_->GetTempFileFromFile(FilePathToUTF8(file_path),
-                                                    &tempfile)) {
-        file_path = UTF8ToFilePath(tempfile);
+      size_t data_size = 0;
+      char* data = collada_zip_archive_->GetFileData(
+          FilePathToUTF8(file_path), &data_size);
+      if (data) {
+        RawData::Ref raw_data = RawData::Create(
+            service_locator_,
+            FilePathToUTF8(file_path),
+            data, data_size);
+        tex = Texture::Ref(
+          pack_->CreateTextureFromRawData(raw_data, true));
       }
+      free(data);
     } else {
       GetRelativePathIfPossible(base_path_, uri, &uri);
     }
 
-    if (!FindFile(options_.file_paths, file_path, &file_path)) {
-      O3D_ERROR(service_locator_) << "Could not find file: " << filename;
-      return NULL;
+    if (!tex) {
+      if (!FindFile(options_.file_paths, file_path, &file_path)) {
+        O3D_ERROR(service_locator_) << "Could not find file: " << filename;
+        DLOG(INFO) << "BuildTextureFromImage: could not find file: "
+           << FilePathToUTF8(file_path);
+        return NULL;
+      }
+      tex = Texture::Ref(
+          pack_->CreateTextureFromFile(FilePathToUTF8(uri),
+                                       file_path,
+                                       image::UNKNOWN,
+                                       options_.generate_mipmaps));
     }
 
-    tex = Texture::Ref(
-        pack_->CreateTextureFromFile(FilePathToUTF8(uri),
-                                     file_path,
-                                     image::UNKNOWN,
-                                     options_.generate_mipmaps));
     if (tex) {
       const fstring name(image->GetName());
       tex->set_name(WideToUTF8(name.c_str()));

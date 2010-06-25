@@ -6,6 +6,7 @@ syntax: glob
 *.vpwhist
 *.vtg
 eclipse_workspace
+eclipse-projects
 android/docs
 android/build
 android/out

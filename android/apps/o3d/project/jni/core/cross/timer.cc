@@ -33,7 +33,7 @@
 // This file contains the definitions of Timer related classes
 
 #include <build/build_config.h>
-#ifdef OS_LINUX
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <sys/time.h>
 #include <time.h>
 #endif
@@ -41,7 +41,7 @@
 
 namespace o3d {
 
-#ifdef OS_LINUX
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 static uint64_t GetCurrentTime() {
   struct timeval tv;
   gettimeofday(&tv, NULL);
@@ -90,7 +90,7 @@ float ElapsedTimeTimer::GetElapsedTimeHelper(bool reset) {
   elapsedTime = elapsedInSeconds;
 #endif
 
-#ifdef OS_LINUX
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   current_time = GetCurrentTime();
   elapsedTime = static_cast<float>((current_time - last_time_) * 1.e-6);
 #endif

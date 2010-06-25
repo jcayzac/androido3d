@@ -130,7 +130,7 @@ void VertexBufferGLES2::ConcreteFree() {
 // buffer data is currently stored.
 bool VertexBufferGLES2::ConcreteLock(Buffer::AccessMode access_mode,
                                      void **buffer_data) {
-  DLOG(INFO) << "VertexBufferGLES2 Lock  \"" << name() << "\"";
+  //DLOG(INFO) << "VertexBufferGLES2 Lock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
 #if defined(GLES2_BACKEND_DESKTOP_GL)
@@ -156,7 +156,7 @@ bool VertexBufferGLES2::ConcreteLock(Buffer::AccessMode access_mode,
 // Calls Unlock on the OpenGLES2 buffer to notify that the contents of the
 // buffer are now ready for use.
 bool VertexBufferGLES2::ConcreteUnlock() {
-  DLOG(INFO) << "VertexBufferGLES2 Unlock  \"" << name() << "\"";
+  //DLOG(INFO) << "VertexBufferGLES2 Unlock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
 #if defined(GLES2_BACKEND_DESKTOP_GL)

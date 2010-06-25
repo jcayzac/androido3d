@@ -40,6 +40,7 @@
 #include "core/cross/renderer.h"
 #include "core/cross/renderer_platform.h"
 #include "core/cross/shape.h"
+#include "core/cross/timer.h"
 #include "core/cross/transform.h"
 #include "core/cross/types.h"
 #include "import/cross/collada.h"
@@ -111,6 +112,10 @@ class O3DManager {
   o3d::Pack* pack_;
   o3d_utils::ViewInfo* main_view_;
   o3d::Pack* scene_pack_;
+  o3d::Transform* scene_root_;
+  o3d::ParamFloat* scene_time_;
+  o3d::ElapsedTimeTimer timer_;
+
 };
 
 /**
@@ -462,12 +467,18 @@ bool O3DManager::Initialize(int width, int height) {
   LOGI("---Render Graph---(end)---\n");
 
   scene_pack_ = client_->CreatePack();
+  scene_root_ = scene_pack_->Create<o3d::Transform>();
+  scene_time_ = scene_root_->CreateParam<o3d::ParamFloat>("scenetime");
+  scene_root_->SetParent(root_);
+
   o3d::Collada::Options options;
   o3d::Collada::Import(
       scene_pack_,
-      "/sdcard/collada/seven_shapes.zip",
-      root_,
-      NULL,
+//      "/sdcard/collada/seven_shapes.zip",
+//      "/sdcard/collada/cube.zip",
+      "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
+      scene_root_,
+      scene_time_,
       options);
 
   o3d_utils::CameraInfo* camera_info =
@@ -485,6 +496,7 @@ bool O3DManager::Initialize(int width, int height) {
   LOGI("--projection--\n");
   DumpMatrix(main_view_->draw_context()->projection());
 
+  timer_.GetElapsedTimeAndReset();
   return true;
 }
 
@@ -499,10 +511,15 @@ bool O3DManager::ResizeViewport(int width, int height) {
 }
 
 bool O3DManager::Render() {
-  //static int v = 0;
-  //++v;
-  //main_view_->clear_buffer()->set_clear_color(
-  //    o3d::Float4(float(v % 100) / 100.0f, 0, 0, 1));
+
+  // should store time separate.
+  float time = scene_time_->value();
+  time += timer_.GetElapsedTimeAndReset();
+  if (time > 249.0f / 30.0f) {  // end of kitty anim
+    time = 0.0f;
+  }
+  scene_time_->set_value(time);
+
   client_->Tick();
   client_->RenderClient(true);
   //if (v < 4) {
