@@ -66,6 +66,7 @@ class O3DManager {
   }
 
   bool Initialize(int width, int height);
+  bool ResizeViewport(int width, int height);
   bool Render();
 
   // Prepares all the materials in a pack assuming they are materials as
@@ -487,6 +488,16 @@ bool O3DManager::Initialize(int width, int height) {
   return true;
 }
 
+// I have no idea if this is right.
+bool O3DManager::ResizeViewport(int width, int height) {
+  o3d_utils::CameraInfo* camera_info =
+      o3d_utils::Camera::getViewAndProjectionFromCameras(
+          root_, width, height);
+
+  main_view_->draw_context()->set_view(camera_info->view);
+  main_view_->draw_context()->set_projection(camera_info->projection);
+}
+
 bool O3DManager::Render() {
   //static int v = 0;
   //++v;
@@ -506,29 +517,49 @@ bool O3DManager::Render() {
   //}
 }
 
-static O3DManager* g_mgr;
+static O3DManager* g_mgr = NULL;
 
 extern "C" {
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj);
+    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyDown(JNIEnv * env, jobject obj,  jint keycode);
+    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, jobject obj,  jint keycode);
+    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
+    		jint x, jint y, jfloat directionX, jfloat directionY);
+    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
+    		jfloat directionX, jfloat directionY);
 };
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height)
-{
-    //setupGraphics(width, height);
-
-    // The OpenGL ES Spec requires this to already be set but appearently
-    // Android doesn't follow the spec?
+JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height) {
     glViewport(0, 0, width, height);
-
-    g_mgr = new O3DManager();
-    g_mgr->Initialize(width, height);
+    
+    if (g_mgr != NULL) {
+      g_mgr->ResizeViewport(width, height);
+    } else {
+      g_mgr = new O3DManager();
+      g_mgr->Initialize(width, height);
+    }
 }
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj)
-{
+JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj) {
     //renderFrame();
     g_mgr->Render();
 }
 
+JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyDown(JNIEnv * env, jobject obj,  jint keycode) {
+	LOG(INFO) << "onKeyDown: " << keycode;
+}
 
+JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, jobject obj,  jint keycode) {
+	LOG(INFO) << "onKeyUp: " << keycode;
+}
+
+JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
+		jint x, jint y, jfloat directionX, jfloat directionY) {
+	LOG(INFO) << "onTouch: (" << x << ", " << y << ")";
+}
+
+JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
+		jfloat directionX, jfloat directionY) {
+	LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
+}

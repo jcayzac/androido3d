@@ -70,7 +70,7 @@ class O3DJNIView extends GLSurfaceView {
 
     public O3DJNIView(Context context) {
         super(context);
-        init(false, 0, 0);
+        init(false, 16, 0);
     }
 
     public O3DJNIView(Context context, boolean translucent, int depth, int stencil) {

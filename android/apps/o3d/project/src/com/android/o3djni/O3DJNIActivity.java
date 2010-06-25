@@ -18,10 +18,8 @@ package com.android.o3djni;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.WindowManager;
-
-import java.io.File;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 
 
 public class O3DJNIActivity extends Activity {
@@ -43,4 +41,32 @@ public class O3DJNIActivity extends Activity {
         super.onResume();
         mView.onResume();
     }
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		O3DJNILib.onKeyDown(keyCode);
+		return super.onKeyDown(keyCode, event);
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		O3DJNILib.onKeyUp(keyCode);
+		return super.onKeyUp(keyCode, event);
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		O3DJNILib.onTouch((int)event.getRawX(), (int)event.getRawY(), 0.0f, 0.0f);
+		return super.onTouchEvent(event);
+	}
+
+	@Override
+	public boolean onTrackballEvent(MotionEvent event) {
+		if (event.getAction() == MotionEvent.ACTION_MOVE) {
+			O3DJNILib.onRoll(event.getX(), event.getY());
+		}
+		return super.onTrackballEvent(event);
+	}
+    
+    
 }
