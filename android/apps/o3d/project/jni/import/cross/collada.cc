@@ -59,6 +59,7 @@
 #include "import/cross/collada_zip_archive.h"
 #include "import/cross/destination_buffer.h"
 #include "import/cross/file_output_stream_processor.h"
+#include "import/cross/raw_data.h"
 #include "utils/cross/file_path_utils.h"
 #if !defined(O3D_IMPORT_NO_DXT_DECOMPRESSION)
 #include "third_party/libtxc_dxtn/files/txc_dxtn.h"
@@ -1694,30 +1695,36 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
       if (uri.value()[0] == FILE_PATH_LITERAL('/')) {
         uri = FilePath(uri.value().substr(1));
       }
-      // NOTE: We have the opportunity to simply extract a memory
-      // buffer for the image data here, but currently the image loaders expect
-      // to read a file, so we write out a temp file...
-
-      // filename_utf8 points to the name of the file inside the archive
-      // (it doesn't actually live on the filesystem so we make a temp file)
-      if (collada_zip_archive_->GetTempFileFromFile(FilePathToUTF8(file_path),
-                                                    &tempfile)) {
-        file_path = UTF8ToFilePath(tempfile);
+      size_t data_size = 0;
+      char* data = collada_zip_archive_->GetFileData(
+          FilePathToUTF8(file_path), &data_size);
+      if (data) {
+        RawData::Ref raw_data = RawData::Create(
+            service_locator_,
+            FilePathToUTF8(file_path),
+            data, data_size);
+        tex = Texture::Ref(
+          pack_->CreateTextureFromRawData(raw_data, true));
       }
+      free(data);
     } else {
       GetRelativePathIfPossible(base_path_, uri, &uri);
     }
 
-    if (!FindFile(options_.file_paths, file_path, &file_path)) {
-      O3D_ERROR(service_locator_) << "Could not find file: " << filename;
-      return NULL;
+    if (!tex) {
+      if (!FindFile(options_.file_paths, file_path, &file_path)) {
+        O3D_ERROR(service_locator_) << "Could not find file: " << filename;
+        DLOG(INFO) << "BuildTextureFromImage: could not find file: "
+           << FilePathToUTF8(file_path);
+        return NULL;
+      }
+      tex = Texture::Ref(
+          pack_->CreateTextureFromFile(FilePathToUTF8(uri),
+                                       file_path,
+                                       image::UNKNOWN,
+                                       options_.generate_mipmaps));
     }
 
-    tex = Texture::Ref(
-        pack_->CreateTextureFromFile(FilePathToUTF8(uri),
-                                     file_path,
-                                     image::UNKNOWN,
-                                     options_.generate_mipmaps));
     if (tex) {
       const fstring name(image->GetName());
       tex->set_name(WideToUTF8(name.c_str()));

@@ -464,7 +464,8 @@ bool O3DManager::Initialize(int width, int height) {
   o3d::Collada::Options options;
   o3d::Collada::Import(
       scene_pack_,
-      "/sdcard/collada/seven_shapes.zip",
+//      "/sdcard/collada/seven_shapes.zip",
+      "/sdcard/collada/cube.zip",
       root_,
       NULL,
       options);
