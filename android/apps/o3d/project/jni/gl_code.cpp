@@ -40,6 +40,7 @@
 #include "core/cross/renderer.h"
 #include "core/cross/renderer_platform.h"
 #include "core/cross/shape.h"
+#include "core/cross/timer.h"
 #include "core/cross/transform.h"
 #include "core/cross/types.h"
 #include "import/cross/collada.h"
@@ -112,6 +113,7 @@ class O3DManager {
   o3d::Pack* scene_pack_;
   o3d::Transform* scene_root_;
   o3d::ParamFloat* scene_time_;
+  o3d::ElapsedTimeTimer timer_;
 
 };
 
@@ -493,6 +495,7 @@ bool O3DManager::Initialize(int width, int height) {
   LOGI("--projection--\n");
   DumpMatrix(main_view_->draw_context()->projection());
 
+  timer_.GetElapsedTimeAndReset();
   return true;
 }
 
@@ -500,7 +503,7 @@ bool O3DManager::Render() {
 
   // should store time separate.
   float time = scene_time_->value();
-  time += 1.0f / 30.0f; // need elapsed time here.
+  time += timer_.GetElapsedTimeAndReset();
   if (time > 249.0f / 30.0f) {  // end of kitty anim
     time = 0.0f;
   }
