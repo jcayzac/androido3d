@@ -42,6 +42,9 @@
 #include "core/cross/transform.h"
 #include "core/cross/types.h"
 
+#include "core/cross/buffer.h"
+#include "core/cross/stream_bank.h"
+
 #include "render_graph.h"
 #include "camera.h"
 #include "scene.h"
@@ -154,6 +157,59 @@ bool O3DManager::Initialize(int width, int height) {
       NULL);
   scene_->SetParent(root_);
 
+  LOGI("====[START]=====================================================\n");
+
+  LOGI("-(VertexBuffers)---------------------------------\n");
+  std::vector<o3d::VertexBuffer*> vbs =
+      scene_->pack()->GetByClass<o3d::VertexBuffer>();
+  for (size_t ii = 0; ii < vbs.size(); ++ii) {
+    o3d::VertexBuffer* vb = vbs[ii];
+    LOGI("vb: %d : %s num: %d components: %d\n",
+         ii, vb->name().c_str(), vb->num_elements(), vb->total_components());
+    const o3d::FieldRefArray& fields = vb->fields();
+    for (size_t jj = 0; jj < fields.size(); ++jj) {
+      o3d::Field* field = fields[jj];
+      LOGI("    field: %d : %s numComponents:%d offset:%d  size:%d\n",
+           jj, field->GetClass()->name(), field->num_components(),
+           field->offset(), field->size());
+    }
+  }
+
+  LOGI("-(SourceBuffers)---------------------------------\n");
+  std::vector<o3d::SourceBuffer*> sbs =
+      scene_->pack()->GetByClass<o3d::SourceBuffer>();
+  for (size_t ii = 0; ii < sbs.size(); ++ii) {
+    o3d::SourceBuffer* vb = sbs[ii];
+    LOGI("sb: %d : %s num: %d components: %d\n",
+         ii, vb->name().c_str(), vb->num_elements(), vb->total_components());
+    const o3d::FieldRefArray& fields = vb->fields();
+    for (size_t jj = 0; jj < fields.size(); ++jj) {
+      o3d::Field* field = fields[jj];
+      LOGI("    field: %d : %s numComponents:%d offset:%d  size:%d\n",
+           jj, field->GetClass()->name(), field->num_components(),
+           field->offset(), field->size());
+    }
+  }
+
+  std::vector<o3d::StreamBank*> stbs =
+      scene_->pack()->GetByClass<o3d::StreamBank>();
+  for (size_t ii = 0; ii < stbs.size(); ++ii) {
+    o3d::StreamBank* vb = stbs[ii];
+    LOGI("streamBank: %d : %s\n", ii, vb->name().c_str());
+    const o3d::StreamParamVector& streams = vb->vertex_stream_params();
+    for (size_t jj = 0; jj < streams.size(); ++jj) {
+      const o3d::Stream& stream = streams[jj]->stream();
+      LOGI("    stream: %d semantic:%d index:%d start:%d\n",
+           jj, stream.semantic(), stream.semantic_index(),
+           stream.start_index());
+    }
+    const o3d::ParamVector params = vb->GetParams();
+    for (size_t jj = 0; jj < params.size(); ++jj) {
+      o3d::Param* param = params[jj];
+      LOGI("   param: %d : %s\n", jj, param->name().c_str());
+    }
+  }
+
   o3d_utils::CameraInfo* camera_info =
       o3d_utils::Camera::getViewAndProjectionFromCameras(
           root_, width, height);
@@ -210,9 +266,9 @@ extern "C" {
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyDown(JNIEnv * env, jobject obj,  jint keycode);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, jobject obj,  jint keycode);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
-    		jint x, jint y, jfloat directionX, jfloat directionY);
+        jint x, jint y, jfloat directionX, jfloat directionY);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
-    		jfloat directionX, jfloat directionY);
+        jfloat directionX, jfloat directionY);
 };
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height) {
@@ -231,19 +287,19 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobj
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyDown(JNIEnv * env, jobject obj,  jint keycode) {
-	LOG(INFO) << "onKeyDown: " << keycode;
+  LOG(INFO) << "onKeyDown: " << keycode;
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, jobject obj,  jint keycode) {
-	LOG(INFO) << "onKeyUp: " << keycode;
+  LOG(INFO) << "onKeyUp: " << keycode;
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
-		jint x, jint y, jfloat directionX, jfloat directionY) {
-	LOG(INFO) << "onTouch: (" << x << ", " << y << ")";
+    jint x, jint y, jfloat directionX, jfloat directionY) {
+  LOG(INFO) << "onTouch: (" << x << ", " << y << ")";
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
-		jfloat directionX, jfloat directionY) {
-	LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
+    jfloat directionX, jfloat directionY) {
+  LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
 }
