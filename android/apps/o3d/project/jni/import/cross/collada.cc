@@ -1154,6 +1154,7 @@ Shape* Collada::BuildShape(FCDocument* doc,
                            FCDGeometryInstance* geom_instance,
                            FCDGeometry* geom,
                            TranslationMap* translationMap) {
+  DLOG(INFO) << "Collada::BuildShape\n";
   Shape* shape = NULL;
   LOG_ASSERT(doc && geom_instance && geom);
   if (geom && geom->IsMesh()) {
@@ -1285,18 +1286,14 @@ Shape* Collada::BuildShape(FCDocument* doc,
 
       // Get the material for this polygon set.
       Material* material = NULL;
-DLOG(INFO) << "Getting Material for: " << geom_name;
       FCDMaterialInstance* mat_instance = geom_instance->FindMaterialInstance(
           polys->GetMaterialSemantic());
       if (mat_instance) {
         FCDMaterial* collada_material = mat_instance->GetMaterial();
-DLOG(INFO) << "Getting collada material: " << collada_material;
         material = BuildMaterial(doc, collada_material);
-DLOG(INFO) << "Getting o3d material: " << material;
       }
       if (!material) {
         material = GetDummyMaterial();
-DLOG(INFO) << "Getting dummy material: " << material;
       }
       // Create an index buffer for this group of polygons.
 
@@ -1338,6 +1335,7 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
                                   FCDControllerInstance* instance,
                                   NodeInstance *parent_node_instance,
                                   Transform* parent) {
+  DLOG(INFO) << "Collada::BuildSkinnedShape\n";
   // TODO(o3d): Handle chained controllers. Morph->Skin->...
   // TODO(gman): Change this to correctly create the skin, separate from
   //     ParamArray and SkinEval so that we can support instanced skins.
@@ -1506,7 +1504,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
     Buffer* old_buffer = NULL;
     SourceBuffer* source_buffer = pack_->Create<SourceBuffer>();
     VertexBuffer* shared_buffer = pack_->Create<VertexBuffer>();
-    DestinationBuffer* dest_buffer = pack_->Create<DestinationBuffer>();
+    //DestinationBuffer* dest_buffer = pack_->Create<DestinationBuffer>();
+    VertexBuffer* dest_buffer = pack_->Create<VertexBuffer>();
     const StreamParamVector& source_stream_params =
         old_stream_bank->vertex_stream_params();
     std::vector<Field*> source_fields(source_stream_params.size(), NULL);
