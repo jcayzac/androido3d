@@ -42,11 +42,9 @@
 #include "core/cross/transform.h"
 #include "core/cross/types.h"
 
-#include "core/cross/buffer.h"
-#include "core/cross/stream_bank.h"
-
 #include "render_graph.h"
 #include "camera.h"
+#include "debug.h"
 #include "scene.h"
 
 #define  LOG_TAG    "libo3djni"
@@ -69,6 +67,7 @@ class O3DManager {
   bool Initialize(int width, int height);
   bool ResizeViewport(int width, int height);
   bool Render();
+  void CheckError();
 
  private:
   DisplayWindowAndroid display_window_;
@@ -96,25 +95,6 @@ O3DManager::O3DManager()
       main_view_(NULL),
       scene_(NULL),
       time_(0.0f) {
-}
-
-void DumpRenderGraph(o3d::RenderNode* render_node, const std::string& indent) {
-  if (render_node) {
-    LOGI("%s%s\n", indent.c_str(), render_node->GetClass()->name());
-    const o3d::RenderNodeRefArray& children = render_node->children();
-    if (!children.empty()) {
-      std::string inner = indent + "    ";
-      for (size_t ii = 0; ii < children.size(); ++ii) {
-        DumpRenderGraph(children[ii], inner);
-      }
-    }
-  }
-}
-
-void DumpMatrix(const o3d::Matrix4& mat) {
-  for (int ii = 0; ii < 4; ++ii) {
-    LOGI("   %g, %g, %g, %g\n", mat[ii][0], mat[ii][1], mat[ii][2], mat[ii][3]);
-  }
 }
 
 bool O3DManager::Initialize(int width, int height) {
@@ -151,64 +131,11 @@ bool O3DManager::Initialize(int width, int height) {
   scene_ = o3d_utils::Scene::LoadScene(
       client_.get(),
       main_view_,
-//      "/sdcard/collada/seven_shapes.zip");
-//      "/sdcard/collada/cube.zip");
+//      "/sdcard/collada/seven_shapes.zip",
+//      "/sdcard/collada/cube.zip",
       "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
       NULL);
   scene_->SetParent(root_);
-
-  LOGI("====[START]=====================================================\n");
-
-  LOGI("-(VertexBuffers)---------------------------------\n");
-  std::vector<o3d::VertexBuffer*> vbs =
-      scene_->pack()->GetByClass<o3d::VertexBuffer>();
-  for (size_t ii = 0; ii < vbs.size(); ++ii) {
-    o3d::VertexBuffer* vb = vbs[ii];
-    LOGI("vb: %d : %s num: %d components: %d\n",
-         ii, vb->name().c_str(), vb->num_elements(), vb->total_components());
-    const o3d::FieldRefArray& fields = vb->fields();
-    for (size_t jj = 0; jj < fields.size(); ++jj) {
-      o3d::Field* field = fields[jj];
-      LOGI("    field: %d : %s numComponents:%d offset:%d  size:%d\n",
-           jj, field->GetClass()->name(), field->num_components(),
-           field->offset(), field->size());
-    }
-  }
-
-  LOGI("-(SourceBuffers)---------------------------------\n");
-  std::vector<o3d::SourceBuffer*> sbs =
-      scene_->pack()->GetByClass<o3d::SourceBuffer>();
-  for (size_t ii = 0; ii < sbs.size(); ++ii) {
-    o3d::SourceBuffer* vb = sbs[ii];
-    LOGI("sb: %d : %s num: %d components: %d\n",
-         ii, vb->name().c_str(), vb->num_elements(), vb->total_components());
-    const o3d::FieldRefArray& fields = vb->fields();
-    for (size_t jj = 0; jj < fields.size(); ++jj) {
-      o3d::Field* field = fields[jj];
-      LOGI("    field: %d : %s numComponents:%d offset:%d  size:%d\n",
-           jj, field->GetClass()->name(), field->num_components(),
-           field->offset(), field->size());
-    }
-  }
-
-  std::vector<o3d::StreamBank*> stbs =
-      scene_->pack()->GetByClass<o3d::StreamBank>();
-  for (size_t ii = 0; ii < stbs.size(); ++ii) {
-    o3d::StreamBank* vb = stbs[ii];
-    LOGI("streamBank: %d : %s\n", ii, vb->name().c_str());
-    const o3d::StreamParamVector& streams = vb->vertex_stream_params();
-    for (size_t jj = 0; jj < streams.size(); ++jj) {
-      const o3d::Stream& stream = streams[jj]->stream();
-      LOGI("    stream: %d semantic:%d index:%d start:%d\n",
-           jj, stream.semantic(), stream.semantic_index(),
-           stream.start_index());
-    }
-    const o3d::ParamVector params = vb->GetParams();
-    for (size_t jj = 0; jj < params.size(); ++jj) {
-      o3d::Param* param = params[jj];
-      LOGI("   param: %d : %s\n", jj, param->name().c_str());
-    }
-  }
 
   o3d_utils::CameraInfo* camera_info =
       o3d_utils::Camera::getViewAndProjectionFromCameras(
@@ -232,6 +159,9 @@ bool O3DManager::Initialize(int width, int height) {
   }
 
   timer_.GetElapsedTimeAndReset();
+
+  CheckError();
+
   return true;
 }
 
@@ -256,7 +186,17 @@ bool O3DManager::Render() {
 
   client_->Tick();
   client_->RenderClient(true);
+
+  CheckError();
 }
+
+void O3DManager::CheckError() {
+  const std::string& error = client_->GetLastError();
+  if (!error.empty()) {
+    LOGI("================O3D ERROR====================\n%s", error.c_str());
+    client_->ClearLastError();
+  }
+};
 
 static O3DManager* g_mgr = NULL;
 

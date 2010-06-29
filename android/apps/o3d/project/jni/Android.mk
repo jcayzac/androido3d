@@ -31,6 +31,7 @@ LOCAL_LDLIBS    := -llog -lGLESv2 -lz -ldl
 LOCAL_SRC_FILES := \
   gl_code.cpp \
   camera.cpp \
+  debug.cpp \
   render_graph.cpp \
   scene.cpp \
   shader_builder.cpp \

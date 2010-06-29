@@ -338,6 +338,7 @@ Scene* Scene::LoadScene(
   o3d::ParamFloat* time = root->CreateParam<o3d::ParamFloat>("time");
 
   o3d::Collada::Options options;
+  options.up_axis = o3d::Vector3(0.0f, 1.0f, 0.0f);
   if (!o3d::Collada::Import(
       pack,
       filename,

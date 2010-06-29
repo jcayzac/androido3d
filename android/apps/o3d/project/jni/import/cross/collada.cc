@@ -1119,7 +1119,7 @@ Shape* Collada::GetShape(FCDocument* doc,
     fm::string geom_id = geom->GetDaeId();
     shape = shapes_[geom_id.c_str()];
     if (!shape) {
-      shape = BuildShape(doc, geom_instance, geom, NULL);
+      shape = BuildShape(doc, geom_instance, geom, NULL, NULL);
       if (!shape)
         return NULL;
       shapes_[geom_id.c_str()] = shape;
@@ -1153,7 +1153,8 @@ Shape* Collada::GetSkinnedShape(FCDocument* doc,
 Shape* Collada::BuildShape(FCDocument* doc,
                            FCDGeometryInstance* geom_instance,
                            FCDGeometry* geom,
-                           TranslationMap* translationMap) {
+                           TranslationMap* translationMap,
+                           const ObjectBase::Class* buffer_class) {
   DLOG(INFO) << "Collada::BuildShape\n";
   Shape* shape = NULL;
   LOG_ASSERT(doc && geom_instance && geom);
@@ -1185,7 +1186,9 @@ Shape* Collada::BuildShape(FCDocument* doc,
 
     scoped_array<Field*> fields(new Field*[num_sources]);
 
-    VertexBuffer* vertex_buffer = pack_->Create<VertexBuffer>();
+    Buffer* vertex_buffer = down_cast<Buffer*>(
+        pack_->CreateObjectByClass(
+            buffer_class ? buffer_class : VertexBuffer::GetApparentClass()));
     vertex_buffer->set_name(geom_name);
 
     // first create all the fields.
@@ -1349,7 +1352,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
     shape = BuildShape(doc,
                        instance,
                        controller->GetBaseGeometry(),
-                       &translationMap);
+                       &translationMap,
+                       SourceBuffer::GetApparentClass());
     if (!shape) {
       return NULL;
     }
@@ -1640,6 +1644,7 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
             }
             source_field->SetFromFloats(&data[0], num_source_components, 0,
                                         num_vertices);
+            dest_fields[ii]->Copy(*source_field);
             // Bind streams
             skin_eval->SetVertexStream(source_stream.semantic(),
                                        source_stream.semantic_index(),

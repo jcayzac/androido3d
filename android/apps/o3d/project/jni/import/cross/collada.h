@@ -41,6 +41,7 @@
 #include "base/file_path.h"
 #include "core/cross/param.h"
 #include "core/cross/types.h"
+#include "core/cross/object_base.h"
 #include "utils/cross/file_path_utils.h"
 
 class FCDocument;
@@ -343,7 +344,8 @@ class Collada {
   Shape* BuildShape(FCDocument* doc,
                     FCDGeometryInstance* geom_instance,
                     FCDGeometry* geom,
-                    TranslationMap* translationMap);
+                    TranslationMap* translationMap,
+                    const ObjectBase::Class* buffer_class);
 
   // Gets an O3D skinned shape corresponding to a given FCollada controller
   // instance. If the Shape does not exist, Builds one.

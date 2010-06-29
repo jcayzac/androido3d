@@ -5,6 +5,7 @@ syntax: glob
 *.vpw
 *.vpwhist
 *.vtg
+*.orig
 eclipse_workspace
 eclipse-projects
 android/docs
