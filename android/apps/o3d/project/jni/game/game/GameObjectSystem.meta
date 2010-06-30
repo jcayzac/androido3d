@@ -1,0 +1,67 @@
+//	GameObjectSystem.meta
+//	Copyright (C) 2008 Chris Pruett.		c_pruett@efn.org
+//
+//	FarClip Engine
+//
+//	Licensed under the Apache License, Version 2.0 (the "License");
+//	you may not use this file except in compliance with the License.
+//	You may obtain a copy of the License at
+//
+//			http://www.apache.org/licenses/LICENSE-2.0
+//
+//	Unless required by applicable law or agreed to in writing, software
+//	distributed under the License is distributed on an "AS IS" BASIS,
+//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//	See the License for the specific language governing permissions and
+//	limitations under the License.
+
+#include "KeyValueMap.h"
+#include "ObjectHandle.h"
+#include "System.h"
+
+class GameObject;
+class Vector3;
+
+metaclass GameObjectSystem
+{
+	base System
+	
+	// GameObjects can only be run in a subset of phases.
+	enum GameObjectUpdatePhase
+	{
+		public,
+		value PHASE_logic System::PHASE_logic,		
+		value PHASE_movement System::PHASE_movement,
+		value PHASE_resolution System::PHASE_resolution,
+		value PHASE_postMovement System::PHASE_postMovement,
+		value PHASE_render System::PHASE_render
+	}
+
+
+	function GameObjectSystem() { public }
+	
+	function virtual void update(const float timeDelta, const UpdatePhase phase)	{ public } 
+	// Game objects get a chance to run in multiple phases
+	function virtual bool runsInPhase(const UpdatePhase phase)	{ public } 
+
+	function int add(GameObject* pObject) { public } 
+	function void remove(GameObject* pObject) { public } 
+	function void removeAll() { public } 
+	
+	function GameObject* get(int id) { public } 
+	function void getAll(Array< ObjectHandle<GameObject> >* objects) { public } 
+	
+	function void findObjectsInSphere(const Vector3& position, const float radius, Array<GameObject*>* objects) { public }
+	
+	array mGameObjects { type GameObject*, ref count, length dynamic, private }
+	field mCurrentPhase { type GameObjectUpdatePhase, value PHASE_logic, private }
+	
+	get mGameObjects { protected, by pointer } 
+	get mCurrentPhase { public }
+	set mCurrentPhase { protected }
+}
+
+inline bool GameObjectSystem::runsInPhase(const UpdatePhase phase)
+{
+	return phase == System::PHASE_logic || phase == System::PHASE_movement || phase == System::PHASE_resolution || phase == System::PHASE_postMovement || phase == System::PHASE_render;
+}

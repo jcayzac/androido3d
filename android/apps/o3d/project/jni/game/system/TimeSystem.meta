@@ -1,0 +1,54 @@
+//	TimeSystem.meta
+//	Copyright (C) 2008 Chris Pruett.		c_pruett@efn.org
+//
+//	FarClip Engine
+//
+//	Licensed under the Apache License, Version 2.0 (the "License");
+//	you may not use this file except in compliance with the License.
+//	You may obtain a copy of the License at
+//
+//			http://www.apache.org/licenses/LICENSE-2.0
+//
+//	Unless required by applicable law or agreed to in writing, software
+//	distributed under the License is distributed on an "AS IS" BASIS,
+//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//	See the License for the specific language governing permissions and
+//	limitations under the License.
+
+
+#include "System.h"
+
+metaclass TimeSystem
+{
+	base System
+	abstract
+	
+	function TimeSystem() { public } 
+	function virtual ~TimeSystem() { public } 
+	
+	function void update() { public }	//	increments the time step, call this once per frame	
+	
+	function virtual double getRawOSTime() const	{ public }	 // override this for OS-specific time hooks	
+	function float getGameTime() const { public } 
+	function float getGameTimeDelta() const	{ public } 
+
+	field mGameStartTime { type double, private }
+	get mGameStartTime { public }
+	field mCurrentTime { type float, private }
+	field mLastTime { type float, private }
+}
+
+inline double TimeSystem::getRawOSTime() const
+{ 
+	return 0.0f; 
+}
+
+inline float TimeSystem::getGameTime() const 
+{ 
+	return mCurrentTime; 
+}
+
+inline float TimeSystem::getGameTimeDelta() const 
+{ 
+	return mCurrentTime - mLastTime; 
+}
