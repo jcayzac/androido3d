@@ -47,18 +47,19 @@ void MainLoop::updateGame()
 	// this function executes (systems may be added or removed) without affecting
 	// the app until the following frame.
 	ObjectHandle<System>* systemArray = mSystems.convertToArray();
-	for (UpdatePhase phase = PHASE_start; phase < PHASE_count; static_cast<int>(phase)++)
+	for (int phase = PHASE_start; phase < PHASE_count; phase = phase++)
 	{
+	  UpdatePhase currentPhase = static_cast<UpdatePhase>(phase);
 		for (int x = 0; x < count; x++)
 		{
-			if (systemArray[x]->runsInPhase(phase))
+			if (systemArray[x]->runsInPhase(currentPhase))
 			{
 				if (profiler)
 				{
 					profiler->startTracking(systemArray[x]->getMetaObject()->getName());
 				}
 				
-				systemArray[x]->update(timeDelta, phase);
+				systemArray[x]->update(timeDelta, currentPhase);
 				
 				if (profiler)
 				{

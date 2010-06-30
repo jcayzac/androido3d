@@ -18,6 +18,8 @@
 
 #include "Blackboard.h" // self
 
+#include <stdio.h>
+
 #include "my_assert.h"
 
 Blackboard::Blackboard() 

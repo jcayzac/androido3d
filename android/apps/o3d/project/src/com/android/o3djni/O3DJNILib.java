@@ -35,4 +35,7 @@ public class O3DJNILib {
      public static native void onKeyUp(int keycode);
      public static native void onTouch(int x, int y, float directionX, float directionY);
      public static native void onRoll(float directionX, float directionY);
+     
+     public static native String[] getSystemList();
+     public static native String[] getMetaData(String[] path);
 }

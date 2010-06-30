@@ -30,6 +30,9 @@ public class O3DJNIActivity extends Activity {
         super.onCreate(icicle);
         mView = new O3DJNIView(getApplication());
         setContentView(mView);
+        
+        Thread webThread = new Thread(new WebServer());
+        webThread.start();
     }
 
     @Override protected void onPause() {

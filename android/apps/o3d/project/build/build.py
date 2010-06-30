@@ -61,10 +61,29 @@ def main(argv):
   # Run ClassGen to generate header files.
   classgen_exe = classgen_output_path + 'ClassGen'
   system_path = project_path + '/jni/game/system/'
-  meta_files = [
-      system_path + 'BoxCollisionSystem.meta',
-      system_path + 'MainLoop.meta',
-      system_path + 'ProfileSystem.meta'
+  math_path = project_path + '/jni/game/math/'
+  game_path = project_path + '/jni/game/game/'
+  meta_files = [\
+      system_path + 'BoxCollisionSystem.meta', \
+      system_path + 'CollisionSystem.meta', \
+      system_path + 'MainLoop.meta', \
+      system_path + 'ProfileSystem.meta', \
+      system_path + 'RenderableObject.meta', \
+      system_path + 'Renderer.meta', \
+      system_path + 'System.meta', \
+      system_path + 'TimeSystem.meta', \
+      system_path + 'TimeSystemPosix.meta', \
+      math_path + "Box.meta",  \
+      game_path + "CollisionComponent.meta", \
+      game_path + "PhysicsComponent.meta", \
+      game_path + "CollisionPairSystem.meta", \
+      game_path + "ComponentList.meta", \
+      game_path + "GameComponent.meta", \
+      game_path + "GravityComponent.meta", \
+      game_path + "LinearMotionComponent.meta", \
+      game_path + "MovementComponent.meta", \
+      game_path + "RenderComponent.meta", \
+      game_path + "GameObjectSystem.meta", \
     ]
 
   header_path = project_path + '/bin/headers/'
@@ -143,11 +162,12 @@ def Link(builder, input_files, output_path, ouput_name):
 def ClassGen(builder, classgen_path, input_file, output_path):
   """Builds the input file with ClassGen."""
   output_file = MakeOutputFile(input_file, output_path, '.h')
-
-  builder.ExecuteIf(
-    [classgen_path, input_file, output_file],
-    [input_file],
-    [output_file])
+  
+  builder.ExecuteIf(\
+    [classgen_path, input_file, output_file], \
+    [classgen_path, input_file], \
+    [output_file], \
+    )
 
 if __name__ == '__main__':
   main(sys.argv[1:])

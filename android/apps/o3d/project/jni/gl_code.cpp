@@ -47,6 +47,20 @@
 #include "debug.h"
 #include "scene.h"
 
+
+// game stuff
+#include "GameObject.h"
+#include "GameObjectSystem.h"
+#include "MainLoop.h"
+#include "MathUtils.h"
+#include "MetaRegistry.h"
+#include "MovementComponent.h"
+#include "ProfileSystem.h"
+#include "RenderComponent.h"
+#include "SystemRegistry.h"
+#include "TimeSystemPosix.h"
+#include "Vector3.h"
+
 #define  LOG_TAG    "libo3djni"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -67,6 +81,7 @@ class O3DManager {
   bool Initialize(int width, int height);
   bool ResizeViewport(int width, int height);
   bool Render();
+  o3d::Transform* GetRoot();
   void CheckError();
 
  private:
@@ -132,8 +147,8 @@ bool O3DManager::Initialize(int width, int height) {
       client_.get(),
       main_view_,
 //      "/sdcard/collada/seven_shapes.zip",
-//      "/sdcard/collada/cube.zip",
-      "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
+      "/sdcard/collada/cube.zip",
+//      "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
 //      "/sdcard/collada/character.zip",
       NULL);
   scene_->SetParent(root_);
@@ -191,6 +206,10 @@ bool O3DManager::Render() {
   CheckError();
 }
 
+o3d::Transform* O3DManager::GetRoot() {
+  return root_;
+}
+
 void O3DManager::CheckError() {
   const std::string& error = client_->GetLastError();
   if (!error.empty()) {
@@ -200,6 +219,44 @@ void O3DManager::CheckError() {
 };
 
 static O3DManager* g_mgr = NULL;
+static ObjectHandle<MainLoop> g_mainLoop = NULL;
+static ObjectHandle<GameObject> g_object = NULL;
+
+void startUpGame() {
+  g_mainLoop = MainLoop::factory();
+  
+  TimeSystemPosix* pTimeSystem = TimeSystemPosix::factory();
+	pTimeSystem->startup();
+	g_mainLoop->setTimeSystem(pTimeSystem);
+	
+	SystemRegistry::getSystemRegistry()->addSystem(g_mainLoop);
+	SystemRegistry::getSystemRegistry()->addSystem(pTimeSystem);
+
+  ProfileSystem* pProfiler = ProfileSystem::factory();
+	SystemRegistry::getSystemRegistry()->addSystem(pProfiler);
+	g_mainLoop->addSystem(pProfiler);
+	
+	GameObjectSystem* pGameObjectSystem = GameObjectSystem::factory();
+	SystemRegistry::getSystemRegistry()->addSystem(pGameObjectSystem);
+	g_mainLoop->addSystem(pGameObjectSystem);
+	
+	// Make a game object!
+	GameObject* object = new GameObject();
+	RenderComponent* render = RenderComponent::factory();
+	MovementComponent* movement = MovementComponent::factory();
+	object->add(render);
+	object->add(movement);
+	
+
+	pGameObjectSystem->add(object);
+	g_object = object;
+	
+	// Let's load the box for this object.
+	//o3d::Transform* root = g_mgr->LoadAndAppend("/sdcard/collada/cube.zip");
+  
+  render->setTransform(g_mgr->GetRoot());
+}
+
 
 extern "C" {
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
@@ -209,7 +266,9 @@ extern "C" {
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
         jint x, jint y, jfloat directionX, jfloat directionY);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
-        jfloat directionX, jfloat directionY);
+    		jfloat directionX, jfloat directionY);
+    JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(JNIEnv * env, jobject obj);
+    JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNIEnv * env, jobject obj, jobjectArray path);
 };
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height) {
@@ -221,9 +280,15 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobj
       g_mgr = new O3DManager();
       g_mgr->Initialize(width, height);
     }
+    
+    if (g_mainLoop == NULL) {
+      startUpGame();
+    }
 }
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj) {
+JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj) {    
+    g_mainLoop->updateAll();
+    
     g_mgr->Render();
 }
 
@@ -241,6 +306,110 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, j
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
-    jfloat directionX, jfloat directionY) {
-  LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
+		jfloat directionX, jfloat directionY) {
+	LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
+	
+	Vector3 current = g_object->getRuntimeData()->getVector("velocity");
+	const float speed = 0.3f;
+	
+  Vector3 velocity = current + Vector3(directionX != 0.0f ? speed * Sign(directionX) : 0.0f, 
+        directionY != 0.0f ? -speed * Sign(directionY) : 0.0f, 0.0f);   
+	
+	g_object->getRuntimeData()->insertVector(velocity, "velocity");
+	g_object->getRuntimeData()->insertVector(Vector3::ZERO, "targetVelocity");
+	g_object->getRuntimeData()->insertVector(Vector3::ONE, "acceleration");
+	
+}
+
+
+JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(JNIEnv * env, jobject obj) {
+  const int systemCount = SystemRegistry::getSystemRegistry()->getCount();
+  
+  jobjectArray ret;
+  
+  ret = (jobjectArray)env->NewObjectArray(systemCount, 
+    env->FindClass("java/lang/String"), NULL);
+
+  for (int x = 0; x < systemCount; x++) {
+    const char* name = SystemRegistry::getSystemRegistry()->get(x)->getMetaObject()->getName();
+    env->SetObjectArrayElement(ret, x, env->NewStringUTF(name));
+  }
+  
+  return ret;
+}
+
+// Format is:
+// System/Field[/Index]/Object/
+JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNIEnv * env, jobject obj, jobjectArray path) {
+  const jsize pathElements = env->GetArrayLength(path);
+  
+  jobjectArray result = NULL;
+  
+  if (pathElements > 0) {
+    const jstring system_jni = (jstring)env->GetObjectArrayElement(path, 0);
+    const char* system_string = env->GetStringUTFChars(system_jni, NULL);
+    DLOG(INFO) << "Looking for system: " << system_string;
+    const MetaObject* system_meta = MetaRegistry::getMetaRegistry()->getMetaObject(system_string);
+    env->ReleaseStringUTFChars(system_jni, system_string);
+    const System* system = SystemRegistry::getSystemRegistry()->getSystem(system_meta);
+    MetaBase const* root = system;
+    
+    if (system != NULL) {
+      DLOG(INFO) << "Found system: " << system->getMetaObject()->getName();
+      bool done = false;
+      for (int x = 1; x < pathElements && !done; x++) {
+        const MetaObject* meta = root->getMetaObject();
+        if (!meta) {
+          break;
+        }
+        const jstring field = (jstring)env->GetObjectArrayElement(path, x);
+        const char* field_string = env->GetStringUTFChars(field, NULL);
+        const int field_count = meta->getFieldCount();
+        for (int y = 0; y < field_count; y++) {
+          const MetaField* metaField = meta->getField(y);
+          DLOG(INFO) << "Field: " << metaField->getName() << " (offset: " << metaField->getOffset() << ")";
+
+          if (strcmp(field_string, metaField->getName()) == 0) {
+            DLOG(INFO) << "Found field: " << metaField->getName();
+            // found the field!
+            if (metaField->getStorageType() == MetaField::TYPE_pointer) {
+              // todo: array support
+              void* object = *((void**)metaField->get(root));
+              if (object && MetaBase::authenticatePointer(object)) {
+                // safe to cast!
+                root = static_cast<MetaBase*>(object);
+                break;
+              }
+              
+              DLOG(INFO) << "Field null or unknown type: " << metaField->getTypeName();
+            }
+            // we found the field but can't go any further.
+            done = true;
+            break;
+          }
+        }
+        
+        
+        env->ReleaseStringUTFChars(field, field_string);
+      }
+    
+    }
+    
+    if (root) {
+      DLOG(INFO) << "Return object: " << root->getMetaObject()->getName();
+      const MetaObject* meta = root->getMetaObject();
+      const int field_count = meta->getFieldCount();
+      result = (jobjectArray)env->NewObjectArray(field_count, 
+        env->FindClass("java/lang/String"), NULL);
+    
+      for (int x = 0; x < field_count; x++) {
+        env->SetObjectArrayElement(result, x, env->NewStringUTF(meta->getField(x)->getName()));
+      }
+      
+    }
+    
+    
+  }
+  
+  return result;
 }

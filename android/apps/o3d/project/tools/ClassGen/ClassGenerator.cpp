@@ -381,7 +381,7 @@ void ClassGenerator::createField(const ParseElement* pElement)
 				mMetaFieldDefinitionString << "MetaField::TYPE_value, \"";
 			}
 			
-			mMetaFieldDefinitionString << pFieldName << "\", \"" << pFieldTypeName << "\", offsetof(" << mClassNameList.back();
+			mMetaFieldDefinitionString << pFieldName << "\", \"" << pFieldTypeName << "\", OFFSETOF(" << mClassNameList.back();
 			mMetaFieldDefinitionString << ", " << pFieldName << "), sizeof(" << pActualFieldType << ")";
 			
 			if (!pFieldLength.empty() && pFieldLength != "1")

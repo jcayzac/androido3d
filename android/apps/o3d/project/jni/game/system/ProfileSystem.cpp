@@ -136,7 +136,7 @@ void ProfileSystem::printRecordTree(const TimingRecord* record, const float samp
 	const float percentageTotal = (record->mTotalTime / sampleDuration) * 100.0f;
 	const float percentageRelative = (record->mTotalTime / parentDuration) * 100.0f;
 
-	printf("* %s \t %g ms \t\ %g%% (relative) \t %g%% (total) \t %d invocations (%d / frame)\n", record->mName, time, percentageRelative, percentageTotal, 
+	printf("* %s \t %g ms \t %g%% (relative) \t %g%% (total) \t %d invocations (%d / frame)\n", record->mName, time, percentageRelative, percentageTotal, 
 		record->mSampleCount, record->mSampleCount / getIntervalSamples());
 	
 	TimingRecord const* child = record->mChild;

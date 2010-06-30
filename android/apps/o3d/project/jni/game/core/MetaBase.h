@@ -21,6 +21,9 @@
 
 #include "Object.h"
 
+//#define OFFSETOF(T,m) offsetof(T, m)
+#define OFFSETOF(T,m) ((size_t)(&((T *)1)->m) - 1)
+
 class MetaObject;
 
 class MetaBase : public Object

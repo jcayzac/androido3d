@@ -55,6 +55,9 @@ class SystemRegistry : public Object
 		// meta objects from higher up in the inheritance tree can be passed
 		// here.	The comparison is effectively a dynamic_cast.
 		System* getSystem(const MetaObject* pMeta);
+		
+		System* get(const int index);
+		int getCount() const;
 	
 	protected:
 		void addInheritanceTree(System* pSystem, const MetaObject* pMeta);
@@ -72,10 +75,22 @@ inline SystemRegistry* SystemRegistry::getSystemRegistry()
 	return &s_mSystemRegistry;
 }
 
+inline System* SystemRegistry::get(const int index)
+{
+  return mSystems.get(index);
+}
+
+inline int SystemRegistry::getCount() const
+{
+  return mSystems.getElementCount();
+}
+
 template <typename T>
 T* getSystem()
 {
 	return static_cast<T*>(SystemRegistry::getSystemRegistry()->getSystem(T::getClassMetaObject()));
 }
+
+
 
 #endif //_SYSTEMREGISTRY_H
