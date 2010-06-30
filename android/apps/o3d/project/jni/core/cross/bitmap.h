@@ -260,6 +260,9 @@ class Bitmap : public ParamObject {
                    Semantic semantic,
                    scoped_array<uint8>* image_data);
 
+  // Converts a DDS file to a decompressed
+  Texture* DecompressDDS(RawData* data);
+
   // Loads bitmaps from a MemoryReadStream.
   // Parameters:
   //   stream: a stream for the bitmap data in one of the known formats

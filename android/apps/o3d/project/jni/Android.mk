@@ -44,6 +44,7 @@ LOCAL_STATIC_LIBRARIES := \
   o3dutils \
   fcollada \
   libxml \
+  libtxc_dxtn \
   libjpeg \
   libpng \
   zlib \
@@ -58,6 +59,7 @@ include $(MY_PATH)/import/Android.mk
 include $(MY_PATH)/utils/Android.mk
 include $(MY_PATH)/third_party/stlport/Android.mk
 include $(MY_PATH)/third_party/fcollada/files/Android.mk
+include $(MY_PATH)/third_party/libtxc_dxtn/files/Android.mk
 include $(MY_PATH)/third_party/libjpeg/Android.mk
 include $(MY_PATH)/third_party/libpng/Android.mk
 include $(MY_PATH)/third_party/zlib/Android.mk

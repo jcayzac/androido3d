@@ -398,6 +398,10 @@ class Pack : public NamedObject {
   //   Array of Object Pointers.
   ObjectBaseArray GetObjectsByClassName(const String& class_type_name) const;
 
+  // helper function
+  Texture* CreateTextureFromBitmaps(
+      const BitmapRefArray& bitmaps, const String& uri, bool generate_mips);
+
  private:
   // Texture objects function as factories for RenderSurface objects.
   // Constructed RenderSurfaces are registered with the pack associated with
@@ -438,10 +442,6 @@ class Pack : public NamedObject {
   IClassManager* class_manager_;
   ObjectManager* object_manager_;
   Renderer* renderer_;
-
-  // helper function
-  Texture* CreateTextureFromBitmaps(
-      const BitmapRefArray& bitmaps, const String& uri, bool generate_mips);
 
   // The set of objects owned by the pack.  This container contains all of the
   // references that force the lifespan of the contained objects to match

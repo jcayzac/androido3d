@@ -134,6 +134,7 @@ bool O3DManager::Initialize(int width, int height) {
 //      "/sdcard/collada/seven_shapes.zip",
 //      "/sdcard/collada/cube.zip",
       "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
+//      "/sdcard/collada/character.zip",
       NULL);
   scene_->SetParent(root_);
 

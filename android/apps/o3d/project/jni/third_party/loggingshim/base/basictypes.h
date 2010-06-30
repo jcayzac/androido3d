@@ -108,6 +108,7 @@ const  int64 kint64max  = (( int64) GG_LONGLONG(0x7FFFFFFFFFFFFFFF));
 // This template function declaration is used in defining arraysize.
 // Note that the function doesn't need an implementation, as we only
 // use its type.
+#ifdef __cplusplus
 template <typename T, size_t N>
 char (&ArraySizeHelper(T (&array)[N]))[N];
 
@@ -118,6 +119,7 @@ char (&ArraySizeHelper(T (&array)[N]))[N];
 template <typename T, size_t N>
 char (&ArraySizeHelper(const T (&array)[N]))[N];
 #endif
+#endif  // __cplusplus
 
 #define arraysize(array) (sizeof(ArraySizeHelper(array)))
 
@@ -180,6 +182,7 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 // implicit_cast would have been part of the C++ standard library,
 // but the proposal was submitted too late.  It will probably make
 // its way into the language in the future.
+#ifdef __cplusplus
 template<typename To, typename From>
 inline To implicit_cast(From const &f) {
   return f;
@@ -344,5 +347,6 @@ namespace base {
 enum LinkerInitialized { LINKER_INITIALIZED };
 }  // base
 
+#endif  // __cplusplus
 
 #endif  // BASE_BASICTYPES_H_

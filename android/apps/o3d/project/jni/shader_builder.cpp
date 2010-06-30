@@ -507,11 +507,11 @@ class GLSLShaderBuilder : public ShaderBuilder {
    */
   std::string buildBumpInputCoords(bool bumpSampler) {
     return std::string("") + (bumpSampler ?
-        (std::string("  ") + FLOAT3 + " tangent" +
+        (std::string("  ") + ATTRIBUTE + FLOAT3 + " tangent" +
             semanticSuffix("TANGENT") + ";\n" +
-         "  " + FLOAT3 + " binormal" +
+         "  " + ATTRIBUTE + FLOAT3 + " binormal" +
             semanticSuffix("BINORMAL") + ";\n" +
-         "  " + FLOAT2 + " bumpUV" +
+         "  " + ATTRIBUTE + FLOAT2 + " bumpUV" +
             semanticSuffix(
                 std::string("TEXCOORD") + interpolant_.Inc()) + ";\n") : "");
   };
@@ -524,13 +524,14 @@ class GLSLShaderBuilder : public ShaderBuilder {
    */
   std::string buildBumpOutputCoords(bool bumpSampler) {
     return std::string("") + (bumpSampler ?
-        (std::string("  ") + FLOAT3 + " tangent" +
+        (std::string("  ") +
+         VARYING + FLOAT3 + " " + VARYING_DECLARATION_PREFIX + "tangent" +
             semanticSuffix(
                 std::string("TEXCOORD") + interpolant_.Inc()) + ";\n" +
-         "  " + FLOAT3 + " binormal" +
+         "  " + VARYING + FLOAT3 + " " + VARYING_DECLARATION_PREFIX + "binormal" +
             semanticSuffix(std::string("TEXCOORD") +
                 interpolant_.Inc()) + ";\n" +
-         "  " + FLOAT2 + " bumpUV" +
+         "  " + VARYING + FLOAT2 + " " + VARYING_DECLARATION_PREFIX + "bumpUV" +
             semanticSuffix(
                 std::string("TEXCOORD") + interpolant_.Inc()) + ";\n") : "");
   };
@@ -1015,13 +1016,13 @@ class GLSLShaderBuilder : public ShaderBuilder {
   std::string getNormalShaderCode(o3d::ParamSampler* bumpSampler) {
     return bumpSampler ?
          (std::string(MATRIX3) + " tangentToWorld = " + MATRIX3 +
-            "(" + ATTRIBUTE_PREFIX + "tangent,\n" +
+            "(" + PIXEL_VARYING_PREFIX + "tangent,\n" +
          "                                   " +
-         ATTRIBUTE_PREFIX + "binormal,\n" +
+         PIXEL_VARYING_PREFIX + "binormal,\n" +
          "                                   " +
-         ATTRIBUTE_PREFIX + "normal);\n" +
+         PIXEL_VARYING_PREFIX + "normal);\n" +
          FLOAT3 + " tangentNormal = tex2D(bumpSampler, " +
-         ATTRIBUTE_PREFIX + "bumpUV.xy).xyz -\n" +
+         PIXEL_VARYING_PREFIX + "bumpUV.xy).xyz -\n" +
          "                       " + FLOAT3 +
          "(0.5, 0.5, 0.5);\n" + FLOAT3 + " normal = " +
          mul("tangentNormal", "tangentToWorld") + ";\n" +

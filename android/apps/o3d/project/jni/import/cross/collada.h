@@ -284,6 +284,9 @@ class Collada {
                   Transform* parent,
                   ParamFloat* animation_input);
 
+  // Loads a DDS file and converts to RGBA bitmaps.
+  bool DecompressDDS(RawData* raw_data, BitmapRefArray* new_bitmaps);
+
   // Recursively imports a tree of instances (shapes, etc..) from FCollada,
   // rooted at the given node, into the O3D scene. This is a separate step
   // from ImportTree because various kinds of instances can reference other

@@ -1,0 +1,13 @@
+ URL: http://homepage.hispeed.ch/rscheidegger/dri_experimental/s3tc_index.html
+ Version: 20070518
+ License: BSD
+ License File: LICENSE
+  
+ Description:
+  This library is used to decompress DXTn compressed textures.
+
+ Local modifications:
+ - Renamed txc_fetch_dxtn.c to txc_fetch_dxtn.cc so its header can
+   include C++ headers.
+ - Changed txc_dxtn.h to #include base/basictypes.h rather than
+   GL/gl.h. Manually defined GL typedefs using basictypes.h's types.

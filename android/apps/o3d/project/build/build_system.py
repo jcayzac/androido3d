@@ -35,7 +35,7 @@ class BuildSystem(object):
         self.VerboseMsg("Make Directory: " + path)
         if self.execute:
           os.makedirs(path)
-        
+
   def Execute(self, args):
     """Executes a command"""
     # todo: make this prettier.
@@ -65,6 +65,7 @@ class BuildSystem(object):
         self.DebugMsg("Build because %s is newer than %s" % (src, old))
         return True
 
+    self.DebugMsg("%s are up to date" % ", ".join(dst_files))
     return False
 
   def VerifyExists(self, files):

@@ -28,10 +28,10 @@ inline std::ostream& operator<<(std::ostream& stream, const std::wstring& s) {
 namespace logging {
 
   static const char* sDebugTag = "O3D";
-  
+
   class Logger {
-    public: 
-      Logger(LogSeverity severity, const char* tag, const char* location) 
+    public:
+      Logger(LogSeverity severity, const char* tag, const char* location)
         : mShowLocation(false),
           mSeverity(severity),
           mTag(tag),
@@ -45,8 +45,8 @@ namespace logging {
       const char* mTag;
       const char* mLocation;
   };
-  
-  
+
+
   std::ostream& nullStream();
 };
 
@@ -58,14 +58,14 @@ namespace logging {
 
 #define LOG_IF(severity, condition) \
   !(condition) ? logging::nullStream() : LOG(severity)
-  
+
 #define LOG_ASSERT(condition)  \
   LOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
-  
+
 #define CHECK(condition) \
   LOG_IF(FATAL, !(condition)) << "Check failed: " #condition ". "
-  
-  
+
+
 #define PLOG(severity) LOG(severity) << ": " << errno
 #define PLOG_IF(severity, condition) LOG_IF(severity) << ": " << errno
 #define PCHECK(condition) CHECK(condition) << ": " << errno
@@ -80,25 +80,25 @@ namespace logging {
 #define DLOG_IF(severity, condition) LOG_IF(severity)
 #define DLOG_ASSERT(condition) LOG_ASSERT(condition)
 #define DCHECK(condition) CHECK(condition)
-#define DCHECK_EQ(val1, val2) CHECK(val1 == val2)
+#define DCHECK_EQ(val1, val2) CHECK((val1) == (val2))
 
-#define DCHECK_NE(val1, val2) CHECK(val1 != val2)
+#define DCHECK_NE(val1, val2) CHECK((val1) != (val2))
 
-#define DCHECK_LE(val1, val2) CHECK(val1 <= val2)
+#define DCHECK_LE(val1, val2) CHECK((val1) <= (val2))
 
-#define DCHECK_LT(val1, val2) CHECK(val1 < val2)
+#define DCHECK_LT(val1, val2) CHECK((val1) < (val2))
 
-#define DCHECK_GE(val1, val2) CHECK(val1 >= val2)
+#define DCHECK_GE(val1, val2) CHECK((val1) >= (val2))
 
-#define DCHECK_GT(val1, val2) CHECK(val1 > val2)
+#define DCHECK_GT(val1, val2) CHECK((val1) > (val2))
 
-#define DCHECK_STREQ(str1, str2) CHECK(str1.compare(str2) == 0)
+#define DCHECK_STREQ(str1, str2) CHECK((str1).compare(str2) == 0)
 
-#define DCHECK_STRCASEEQ(str1, str2) CHECK(CaseInsensitiveCompare(str1, str2))
+#define DCHECK_STRCASEEQ(str1, str2) CHECK(CaseInsensitiveCompare((str1), (str2)))
 
-#define DCHECK_STRNE(str1, str2) CHECK(str1.compare(str2) != 0)
+#define DCHECK_STRNE(str1, str2) CHECK((str1).compare(str2) != 0)
 
-#define DCHECK_STRCASENE(str1, str2) CHECK(!CaseInsensitiveCompare(str1, str2))
+#define DCHECK_STRCASENE(str1, str2) CHECK(!CaseInsensitiveCompare((str1), (str2)))
 
 #else
 

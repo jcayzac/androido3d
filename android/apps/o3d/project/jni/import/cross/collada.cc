@@ -61,7 +61,7 @@
 #include "import/cross/file_output_stream_processor.h"
 #include "import/cross/raw_data.h"
 #include "utils/cross/file_path_utils.h"
-#if !defined(O3D_IMPORT_NO_DXT_DECOMPRESSION)
+#if !defined(O3D_IMPORT_NO_DXT_TO_PNG) || defined(O3D_IMPORT_DECOMPRESS_DXT)
 #include "third_party/libtxc_dxtn/files/txc_dxtn.h"
 #endif
 
@@ -1682,6 +1682,103 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
   return shape;
 }
 
+bool Collada::DecompressDDS(RawData* raw_data, BitmapRefArray* new_bitmaps) {
+  BitmapRefArray bitmaps;
+  bool is_cube_map = false;
+  if (!Bitmap::LoadFromRawData(raw_data, image::UNKNOWN, &bitmaps)) {
+    return false;
+  }
+  is_cube_map = bitmaps.size() == 6;
+  for (unsigned int i = 0; i < bitmaps.size(); i++) {
+    Bitmap* src_bitmap = bitmaps[i];
+    Bitmap::Ref bitmap(new Bitmap(service_locator_));
+    bitmap->Allocate(Texture::ARGB8,
+                     src_bitmap->width(),
+                     src_bitmap->height(),
+                     src_bitmap->num_mipmaps(),
+                     src_bitmap->semantic());
+    new_bitmaps->push_back(bitmap);
+  }
+  for (unsigned int i = 0; i < bitmaps.size(); i++) {
+    Bitmap* src_bitmap = bitmaps[i];
+    Bitmap* dst_bitmap = (*new_bitmaps)[i];
+    bool is_compressed =
+      (src_bitmap->format() == Texture::DXT1 ||
+       src_bitmap->format() == Texture::DXT3 ||
+       src_bitmap->format() == Texture::DXT5);
+    for (unsigned level = 0; level < src_bitmap->num_mipmaps(); ++level) {
+      int pitch = src_bitmap->GetMipPitch(level);
+      if (is_compressed) {
+        // The pitch returned by GetMipPitch for compressed textures
+        // is the number of bytes across a row of DXT blocks where as
+        // libtxc_dxtn wants the number of bytes across a row of pixels.
+        pitch = image::ComputeMipPitch(
+            Texture::ARGB8, level, src_bitmap->width());
+      }
+      uint8* data = src_bitmap->GetMipData(level);
+      int width = std::max(1U, src_bitmap->width() >> level);
+      int height = std::max(1U, src_bitmap->height() >> level);
+      int row_width = width * 4;
+      int decompressed_size = width * height * 4;
+      scoped_array<uint8> decompressed_data(new uint8[decompressed_size]);
+      memset(decompressed_data.get(), 0, decompressed_size);
+      if (is_compressed) {
+        for (int src_y = 0; src_y < height; src_y++) {
+          int dest_y = src_y;
+          if (is_cube_map) {
+            dest_y = height - src_y - 1;
+          }
+          for (int x = 0; x < width; x++) {
+            uint8* ptr =
+                &decompressed_data.get()[row_width * dest_y + 4 * x];
+            switch (src_bitmap->format()) {
+              case Texture::DXT1: {
+                fetch_2d_texel_rgba_dxt1(pitch, data, x, src_y, ptr);
+                break;
+              }
+              case Texture::DXT3: {
+                fetch_2d_texel_rgba_dxt3(pitch, data, x, src_y, ptr);
+                break;
+              }
+              case Texture::DXT5: {
+                fetch_2d_texel_rgba_dxt5(pitch, data, x, src_y, ptr);
+                break;
+              }
+              default:
+                O3D_ERROR(service_locator_)
+                    << "Unsupported DDS compressed texture format "
+                    << src_bitmap->format();
+                break;
+            }
+            // Need to swap the red and blue channels.
+            std::swap(ptr[0], ptr[2]);
+          }
+        }
+      } else if (src_bitmap->format() == Texture::XRGB8 ||
+                 src_bitmap->format() == Texture::ARGB8) {
+        for (int src_y = 0; src_y < height; src_y++) {
+          int dest_y = src_y;
+          if (is_cube_map) {
+            dest_y = height - src_y - 1;
+          }
+          memcpy(decompressed_data.get() + row_width * dest_y,
+                 data + pitch * src_y,
+                 row_width);
+        }
+      } else {
+        O3D_ERROR(service_locator_)
+            << "Unsupported DDS uncompressed texture format "
+            << src_bitmap->format();
+        return false;
+      }
+      dst_bitmap->SetRect(level, 0, 0, width, height,
+                          decompressed_data.get(),
+                          row_width);
+    }
+  }
+  return true;
+}
+
 Texture* Collada::BuildTextureFromImage(FCDImage* image) {
   const fstring filename = image->GetFilename();
   Texture* tex = textures_[filename.c_str()];
@@ -1707,8 +1804,20 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
             service_locator_,
             FilePathToUTF8(file_path),
             data, data_size);
-        tex = Texture::Ref(
-          pack_->CreateTextureFromRawData(raw_data, true));
+        #ifdef O3D_IMPORT_DECOMPRES_DXT
+        if (uri.MatchesExtension(UTF8ToFilePathStringType(".dds")) {
+          BitmapRefArray bitmaps;
+          if (DecompressDDS(raw_data, &bitmaps)) {
+            tex = CreateTextureFromBitmaps(
+                bitmaps, FilePathToUTF8(file_path), true);
+          }
+        }
+        #endif
+
+        if (!tex) {
+          tex = Texture::Ref(
+            pack_->CreateTextureFromRawData(raw_data, true));
+        }
       }
       free(data);
     } else {
@@ -1736,7 +1845,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
 
     bool inserted_original_data = false;
 
-    #if !defined(O3D_IMPORT_NO_DXT_DECOMPRESSION)
+    #if !defined(O3D_IMPORT_NO_DXT_TO_PNG)
     bool is_dds = uri.MatchesExtension(UTF8ToFilePathStringType(".dds"));
 
     if (is_dds &&
@@ -1769,11 +1878,8 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
           Bitmap::Ref src_bitmap = bitmaps[i];
           int pitch = src_bitmap->GetMipPitch(0);
           if (is_compressed) {
-            // TODO(kbr): there is a bug somewhere in
-            // Bitmap::GetMipPitch for compressed textures where its
-            // result is off by a factor of two, at least for DXT1
-            // textures. Don't have time to debug it right now.
-            pitch /= 2;
+            pitch =
+                image::ComputeMipPitch(Texture::ARGB8, 0, src_bitmap->width());
           }
           uint8* data = src_bitmap->GetMipData(0);
           int width = src_bitmap->width();
@@ -1875,7 +1981,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
         tex->RemoveParam(uri_param);
       }
     }
-    #endif  // !defined(O3D_IMPORT_NO_DXT_DECOMPRESSION)
+    #endif  // !defined(O3D_IMPORT_NO_DXT_TO_PNG)
 
     if (options_.keep_original_data && !inserted_original_data) {
       // Cache the original data by URI so we can recover it later.
