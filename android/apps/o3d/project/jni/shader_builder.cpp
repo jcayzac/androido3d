@@ -1021,7 +1021,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
          PIXEL_VARYING_PREFIX + "binormal,\n" +
          "                                   " +
          PIXEL_VARYING_PREFIX + "normal);\n" +
-         FLOAT3 + " tangentNormal = tex2D(bumpSampler, " +
+         FLOAT3 + " tangentNormal = " + TEXTURE + "2D(bumpSampler, " +
          PIXEL_VARYING_PREFIX + "bumpUV.xy).xyz -\n" +
          "                       " + FLOAT3 +
          "(0.5, 0.5, 0.5);\n" + FLOAT3 + " normal = " +
@@ -1122,6 +1122,21 @@ class GLSLShaderBuilder : public ShaderBuilder {
     effect = pack->Create<o3d::Effect>();
     if (effect) {
       effect->set_name(description);
+DLOG(INFO) << "-----------------------------------SHADER--";
+      size_t pos = 0;
+      int line_num = 1;
+      for(;;) {
+        size_t start = pos;
+        pos = shader.find_first_of('\n', pos);
+        std::string line = shader.substr(start, pos - start);
+        DLOG(INFO) << line_num << ": " << line;
+        if (pos == std::string::npos) {
+          break;
+        }
+        ++pos;
+        ++line_num;
+      }
+DLOG(INFO) << "\n--------------END--";
       if (effect->LoadFromFXString(shader)) {
         return effect;
       }
