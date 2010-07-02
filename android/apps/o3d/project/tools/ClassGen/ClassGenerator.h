@@ -60,7 +60,7 @@ class ClassGenerator
     const ParseElement* findChildByString(const ParseElement* pElement, const ElementType type, const std::string& name) const;
     const ParseElement* findChild(const ParseElement* pElement, const ElementType type) const;
 
-    bool isPointerType(const std::string& typeName, unsigned int* position);
+    bool isPointerType(const std::string& typeName, std::string::size_type* position);
 
     void printScope(ScopeType scope);
     void resetScope();

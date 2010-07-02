@@ -308,7 +308,7 @@ void ClassGenerator::createField(const ParseElement* pElement)
 			bool isPointer = false;
 
 			string pFieldTypeName = pFieldType;
-			unsigned int starPosition = string::npos;
+			string::size_type starPosition = string::npos;
 			if (isPointerType(pFieldTypeName, &starPosition))
 			{
 				isPointer = true;
@@ -518,7 +518,7 @@ void ClassGenerator::createAccessor(const ParseElement* pElement, const bool gen
 			string pFieldTypeName = pFieldType;
 
 
-			unsigned int typeStarPosition = string::npos;
+			string::size_type typeStarPosition = string::npos;
 			if (isPointerType(pFieldTypeName, &typeStarPosition))
 			{
 				isPointer = true;
@@ -527,7 +527,7 @@ void ClassGenerator::createAccessor(const ParseElement* pElement, const bool gen
 
 
 			string pAccessorName = pFieldName;
-			unsigned int nameStarPosition = string::npos;
+			string::size_type nameStarPosition = string::npos;
 			if (isPointerType(pAccessorName, &nameStarPosition))
 			{
 				pAccessorName.erase(nameStarPosition);
@@ -989,22 +989,22 @@ string ClassGenerator::baseName(const string& input) const
 {
 	string output = input;
 
-	const int periodIndex = output.find_first_of('.');
-	if (periodIndex != static_cast<int>(string::npos))
+	const string::size_type periodIndex = output.find_first_of('.');
+	if (periodIndex != string::npos)
 	{
-		output.resize(periodIndex);
+		output.resize(static_cast<int>(periodIndex));
 	}
 
 	// find the last slash, supporing forward or backward slashes
-	int slashIndex = output.find_last_of('/');
-	if (slashIndex == static_cast<int>(string::npos))
+	string::size_type slashIndex = output.find_last_of('/');
+	if (slashIndex == string::npos)
 	{
 		slashIndex = output.find_last_of('\\');
 	}
 
-	if (slashIndex != static_cast<int>(string::npos))
+	if (slashIndex != string::npos)
 	{
-		output = output.substr(slashIndex + 1);
+		output = output.substr(static_cast<int>(slashIndex) + 1);
 	}
 
 
@@ -1072,14 +1072,14 @@ string ClassGenerator::getChildString(const ParseElement* pElement, const Elemen
 	return result;
 }
 
-bool ClassGenerator::isPointerType(const string& typeName, unsigned int* position)
+bool ClassGenerator::isPointerType(const string& typeName, string::size_type* position)
 {
 	bool isPointer = false;
 	// Template<type*> // not a pointer
 	// Template<type*>* // pointer
 	// Type* const // pointer
 	// Type const * const // pointer
-	unsigned int typeStarPosition = typeName.rfind('*');
+	string::size_type typeStarPosition = typeName.rfind('*');
 	if (typeStarPosition != string::npos)
 	{
 		if (typeName.find('>', typeStarPosition) == string::npos)

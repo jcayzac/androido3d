@@ -407,29 +407,36 @@ JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(J
 // Format is:
 // System/Field[/Index]/Object/
 JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNIEnv * env, jobject obj, jobjectArray path) {
-  const jsize pathElements = env->GetArrayLength(path);
+  const jsize path_elements = env->GetArrayLength(path);
   
   jobjectArray result = NULL;
   
-  if (pathElements > 0) {
-    const jstring system_jni = (jstring)env->GetObjectArrayElement(path, 0);
-    const char* system_string = env->GetStringUTFChars(system_jni, NULL);
+  if (path_elements > 0) {
+    Array<char const*> elements(path_elements);
+    Array<jstring> jstrings(path_elements);
+    
+    for (int x = 0; x < path_elements; x++) {
+      const jstring jni_string = (jstring)env->GetObjectArrayElement(path, x);
+      const char* c_string = env->GetStringUTFChars(jni_string, NULL);
+      elements.append(c_string);
+      jstrings.append(jni_string);
+    }
+  
+    const char* system_string = elements.get(0);
     DLOG(INFO) << "Looking for system: " << system_string;
     const MetaObject* system_meta = MetaRegistry::getMetaRegistry()->getMetaObject(system_string);
-    env->ReleaseStringUTFChars(system_jni, system_string);
     const System* system = SystemRegistry::getSystemRegistry()->getSystem(system_meta);
     MetaBase const* root = system;
     
     if (system != NULL) {
       DLOG(INFO) << "Found system: " << system->getMetaObject()->getName();
       bool done = false;
-      for (int x = 1; x < pathElements && !done; x++) {
+      for (int x = 1; x < path_elements && !done; x++) {
         const MetaObject* meta = root->getMetaObject();
         if (!meta) {
           break;
         }
-        const jstring field = (jstring)env->GetObjectArrayElement(path, x);
-        const char* field_string = env->GetStringUTFChars(field, NULL);
+        const char* field_string = elements.get(x);
         const int field_count = meta->getFieldCount();
         for (int y = 0; y < field_count; y++) {
           const MetaField* metaField = meta->getField(y);
@@ -438,17 +445,37 @@ JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNI
           if (strcmp(field_string, metaField->getName()) == 0) {
             DLOG(INFO) << "Found field: " << metaField->getName();
             // found the field!
-            if (metaField->getStorageType() == MetaField::TYPE_pointer) {
-              // todo: array support
-              void* object = *((void**)metaField->get(root));
-              if (object && MetaBase::authenticatePointer(object)) {
-                // safe to cast!
-                root = static_cast<MetaBase*>(object);
-                break;
+            
+            void* object = NULL;
+
+            if (metaField->getElementCount(root) > 1 && x + 1 < path_elements) {
+              DLOG(INFO) << "Field is array of type " << metaField->getTypeName() << " and size " << metaField->getElementCount(root);
+              int index = atoi(elements.get(x + 1));
+              if (index >= 0 && index <= metaField->getElementCount(root)) {
+                if (metaField->getStorageType() == MetaField::TYPE_pointer) {
+                  // array of pointers
+                  object = *((void**)metaField->getElement(root, index));
+                } else {
+                  // inline array
+                  object = (void*)metaField->getElement(root, index);
+                }
               }
-              
-              DLOG(INFO) << "Field null or unknown type: " << metaField->getTypeName();
+            } else if (metaField->getElementCount(root) == 1) {
+              if (metaField->getStorageType() == MetaField::TYPE_pointer) {
+                object = *((void**)metaField->get(root));
+              } else {
+                object = (void*)metaField->get(root);
+              }
             }
+            
+
+            if (object && MetaBase::authenticatePointer(object)) {
+              // safe to cast!
+              root = static_cast<MetaBase*>(object);
+              break;
+            }
+              
+            DLOG(INFO) << "Field null or unknown type: " << metaField->getTypeName();
             // we found the field but can't go any further.
             done = true;
             break;
@@ -456,10 +483,17 @@ JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNI
         }
         
         
-        env->ReleaseStringUTFChars(field, field_string);
       }
     
     }
+    
+    // release the strings.
+    for (int x = 0; x < path_elements; x++) {
+      env->ReleaseStringUTFChars(jstrings.get(x), elements.get(x));
+    }
+    
+    jstrings.removeAll();
+    elements.removeAll();
     
     if (root) {
       DLOG(INFO) << "Return object: " << root->getMetaObject()->getName();
