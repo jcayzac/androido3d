@@ -1712,8 +1712,8 @@ bool Collada::DecompressDDS(RawData* raw_data, BitmapRefArray* new_bitmaps) {
         // The pitch returned by GetMipPitch for compressed textures
         // is the number of bytes across a row of DXT blocks where as
         // libtxc_dxtn wants the number of bytes across a row of pixels.
-        pitch = image::ComputeMipPitch(
-            Texture::ARGB8, level, src_bitmap->width());
+        pitch /= 2;  // there are 4 rows in a block so I don't understand why 2
+                     // works.
       }
       uint8* data = src_bitmap->GetMipData(level);
       int width = std::max(1U, src_bitmap->width() >> level);
@@ -1804,11 +1804,11 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
             service_locator_,
             FilePathToUTF8(file_path),
             data, data_size);
-        #ifdef O3D_IMPORT_DECOMPRES_DXT
-        if (uri.MatchesExtension(UTF8ToFilePathStringType(".dds")) {
+        #ifdef O3D_IMPORT_DECOMPRESS_DXT
+        if (uri.MatchesExtension(UTF8ToFilePathStringType(".dds"))) {
           BitmapRefArray bitmaps;
           if (DecompressDDS(raw_data, &bitmaps)) {
-            tex = CreateTextureFromBitmaps(
+            tex = pack_->CreateTextureFromBitmaps(
                 bitmaps, FilePathToUTF8(file_path), true);
           }
         }
@@ -1866,84 +1866,12 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
       };
 
       BitmapRefArray bitmaps;
+      RawData::Ref raw_data(
+        RawData::CreateFromFile(service_locator_, file_path, file_path)
       bool is_cube_map = false;
-      if (Bitmap::LoadFromFile(service_locator_, file_path,
-                               image::UNKNOWN, &bitmaps)) {
-        is_cube_map = bitmaps.size() == 6;
-        for (unsigned int i = 0; i < bitmaps.size(); i++) {
-          bool is_compressed =
-              (tex->format() == Texture::DXT1 ||
-               tex->format() == Texture::DXT3 ||
-               tex->format() == Texture::DXT5);
-          Bitmap::Ref src_bitmap = bitmaps[i];
-          int pitch = src_bitmap->GetMipPitch(0);
-          if (is_compressed) {
-            pitch =
-                image::ComputeMipPitch(Texture::ARGB8, 0, src_bitmap->width());
-          }
-          uint8* data = src_bitmap->GetMipData(0);
-          int width = src_bitmap->width();
-          int height = src_bitmap->height();
-          int row_width = width * 4;
-          int decompressed_size = width * height * 4;
-          scoped_array<uint8> decompressed_data(new uint8[decompressed_size]);
-          memset(decompressed_data.get(), 0, decompressed_size);
-          if (is_compressed) {
-            for (int src_y = 0; src_y < height; src_y++) {
-              int dest_y = src_y;
-              if (is_cube_map) {
-                dest_y = height - src_y - 1;
-              }
-              for (int x = 0; x < width; x++) {
-                uint8* ptr =
-                    &decompressed_data.get()[row_width * dest_y + 4 * x];
-                switch (src_bitmap->format()) {
-                  case Texture::DXT1: {
-                    fetch_2d_texel_rgba_dxt1(pitch, data, x, src_y, ptr);
-                    break;
-                  }
-                  case Texture::DXT3: {
-                    fetch_2d_texel_rgba_dxt3(pitch, data, x, src_y, ptr);
-                    break;
-                  }
-                  case Texture::DXT5: {
-                    fetch_2d_texel_rgba_dxt5(pitch, data, x, src_y, ptr);
-                    break;
-                  }
-                  default:
-                    DLOG(ERROR) << "Unsupported DDS compressed texture format "
-                                << src_bitmap->format();
-                    break;
-                }
-                // Need to swap the red and blue channels.
-                std::swap(ptr[0], ptr[2]);
-              }
-            }
-          } else if (src_bitmap->format() == Texture::XRGB8 ||
-                     src_bitmap->format() == Texture::ARGB8) {
-            for (int src_y = 0; src_y < height; src_y++) {
-              int dest_y = src_y;
-              if (is_cube_map) {
-                dest_y = height - src_y - 1;
-              }
-              memcpy(decompressed_data.get() + row_width * dest_y,
-                     data + pitch * src_y,
-                     row_width);
-            }
-          } else {
-            DLOG(ERROR) << "Unsupported DDS uncompressed texture format "
-                        << src_bitmap->format();
-            return NULL;
-          }
-          Bitmap::Ref bitmap(new Bitmap(service_locator_));
-          bitmap->Allocate(Texture::ARGB8,
-                           width,
-                           height,
-                           1,
-                           Bitmap::IMAGE);
-          bitmap->SetRect(0, 0, 0, width, height,
-                          decompressed_data.get(),
-                          row_width);
+      if (DecompressDDS(raw_data, &bitmaps)) {
+        for (size_t bb = 0; bb < bitmaps.size(); ++bb) {
+          Bitmap* bitmap = bitmaps[bb];
           std::vector<uint8> png_data;
           if (!bitmap->WriteToPNGStream(&png_data)) {
             DLOG(ERROR) << "Error writing PNG file for cube map";

@@ -775,6 +775,9 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   GLint max_vertex_attribs = 0;
   ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
   DLOG(INFO) << "Max Vertex Attribs = " << max_vertex_attribs;
+  GLint value = 0;
+  ::glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
+  DLOG(INFO) << "Max Texture Size = " << value;
   // Initialize global GLES2 settings.
   // Tell GLES2 that texture buffers can be single-byte aligned.
   ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
