@@ -1,4 +1,4 @@
-//	RenderComponent.cpp
+//	PlayerMotionComponent.cpp
 //	Copyright (C) 2008 Chris Pruett.		c_pruett@efn.org
 //
 //	FarClip Engine
@@ -16,30 +16,31 @@
 //	limitations under the License.
 
 
-#include "RenderComponent.h" // self
+#include "PlayerMotionComponent.h"
 
+#include "Blackboard.h"
 #include "GameObject.h"
-#include "Renderer.h"
-#include "SystemRegistry.h"
 #include "Vector3.h"
 
-#include "core/cross/transform.h"
-#include "core/cross/math_types.h"
+#include <math.h>
 
-void RenderComponent::update(float time, GameObject* pParentObject)
+void PlayerMotionComponent::update(const float timeDelta, GameObject* pParentObject)
 {
-  // for now, just push the object's position to its transform.
-  o3d::Transform* transform = getTransform();
-  if (transform)
+  if (pParentObject->getRuntimeData()->exists("go"))
   {
-    Vector3 position = pParentObject->getPosition();
+    pParentObject->getRuntimeData()->remove("go"); 
     Vector3 orientation = pParentObject->getRuntimeData()->getVector("orientation");
 
-    o3d::Matrix4 rot = o3d::Matrix4::rotationZYX(
-      o3d::Vector3(orientation[0], orientation[1], orientation[2]));
+    const float x = sinf(orientation[1]);
+    const float y = cosf(orientation[1]);
     
-    rot.setTranslation(o3d::Vector3(position[0], position[1], position[2]));
-   
-    transform->set_local_matrix(rot);
+    pParentObject->getRuntimeData()->insertVector(getMaxSpeed() * Vector3(x, 0.0f, y), "targetVelocity");
+
   }
+  else
+  {
+    pParentObject->getRuntimeData()->insertVector(Vector3::ZERO, "targetVelocity");
+  }
+  
+  pParentObject->getRuntimeData()->insertVector(getAcceleration(), "acceleration");
 }

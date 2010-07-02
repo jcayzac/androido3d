@@ -20,6 +20,7 @@ LOCAL_CFLAGS    := \
 #stlport and loggingshim included so that o3d::Transform can be referenced.
 
 LOCAL_SRC_FILES := \
+  AnimationComponent.cpp \
   RenderComponent.cpp \
   CollisionComponent.cpp \
   CollisionPairSystem.cpp \
@@ -32,6 +33,8 @@ LOCAL_SRC_FILES := \
   LinearMotionComponent.cpp \
   MovementComponent.cpp \
   PhysicsComponent.cpp \
+  PlayerAnimationComponent.cpp \
+  PlayerMotionComponent.cpp \
 
 
 include $(BUILD_STATIC_LIBRARY)

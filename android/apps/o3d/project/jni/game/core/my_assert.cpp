@@ -20,8 +20,11 @@
 #include <stdio.h>
 #include "my_assert.h"
 
+#include <android/log.h>
+
 void custom_assert(const char* pFileString, const int line, const char* pMessageString)
 {
-	printf("ASSERT FAILED: %s (%d) : %s", pFileString, line, pMessageString);
+	//printf("ASSERT FAILED: %s (%d) : %s", pFileString, line, pMessageString);
+	__android_log_print(ANDROID_LOG_ERROR, "ASSERT", "ASSERT FAILED: %s (%d) : %s", pFileString, line, pMessageString);
 	assert(false);
 }

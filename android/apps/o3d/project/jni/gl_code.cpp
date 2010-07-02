@@ -49,12 +49,15 @@
 
 
 // game stuff
+#include "AnimationComponent.h"
 #include "GameObject.h"
 #include "GameObjectSystem.h"
 #include "MainLoop.h"
 #include "MathUtils.h"
 #include "MetaRegistry.h"
 #include "MovementComponent.h"
+#include "PlayerAnimationComponent.h"
+#include "PlayerMotionComponent.h"
 #include "ProfileSystem.h"
 #include "RenderComponent.h"
 #include "SystemRegistry.h"
@@ -82,6 +85,7 @@ class O3DManager {
   bool ResizeViewport(int width, int height);
   bool Render();
   o3d::Transform* GetRoot();
+  o3d_utils::Scene* GetScene();
   void CheckError();
 
  private:
@@ -147,9 +151,9 @@ bool O3DManager::Initialize(int width, int height) {
       client_.get(),
       main_view_,
 //      "/sdcard/collada/seven_shapes.zip",
-      "/sdcard/collada/cube.zip",
+//      "/sdcard/collada/cube.zip",
 //      "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
-//      "/sdcard/collada/character.zip",
+      "/sdcard/collada/character.zip",
       NULL);
   scene_->SetParent(root_);
 
@@ -195,10 +199,10 @@ bool O3DManager::ResizeViewport(int width, int height) {
 
 bool O3DManager::Render() {
   time_ += timer_.GetElapsedTimeAndReset();
-  if (time_ > 249.0f / 30.0f) {  // end of kitty anim
+  /*if (time_ > 249.0f / 30.0f) {  // end of kitty anim
     time_ = 0.0f;
   }
-  scene_->SetAnimationTime(time_);
+  scene_->SetAnimationTime(time_);*/
 
   client_->Tick();
   client_->RenderClient(true);
@@ -208,6 +212,10 @@ bool O3DManager::Render() {
 
 o3d::Transform* O3DManager::GetRoot() {
   return root_;
+}
+
+o3d_utils::Scene* O3DManager::GetScene() {
+  return scene_;
 }
 
 void O3DManager::CheckError() {
@@ -244,9 +252,60 @@ void startUpGame() {
 	GameObject* object = new GameObject();
 	RenderComponent* render = RenderComponent::factory();
 	MovementComponent* movement = MovementComponent::factory();
+	AnimationComponent* animation = AnimationComponent::factory();
+	PlayerAnimationComponent* playerAnim = PlayerAnimationComponent::factory();
+	PlayerMotionComponent* playerMotion = PlayerMotionComponent::factory();
+
 	object->add(render);
 	object->add(movement);
+	object->add(animation);
+	object->add(playerAnim);
+	object->add(playerMotion);
 	
+	/* idle1: {startFrame: 0, endFrame: 30},
+  walk: {startFrame: 31, endFrame: 71},
+  jumpStart: {startFrame: 72, endFrame: 87},
+  jumpUp: {startFrame: 87, endFrame: 87},
+  jumpCrest: {startFrame: 87, endFrame: 91},
+  jumpFall: {startFrame: 91, endFrame: 91},
+  jumpLand: {startFrame: 91, endFrame: 110},
+  run: {startFrame: 111, endFrame: 127},
+  idle2: {startFrame: 128, endFrame: 173},
+  idle3: {startFrame: 174, endFrame: 246},
+  idle4: {startFrame: 247, endFrame: 573}}; */
+  
+	AnimationComponent::AnimationRecord* walkAnimation = AnimationComponent::AnimationRecord::factory();
+	walkAnimation->setStartFrame(31);
+	walkAnimation->setEndFrame(71);
+	walkAnimation->setFramesPerSecond(30);
+	walkAnimation->setLooping(true);
+	
+	const int walk = animation->addAnimation(walkAnimation);
+	
+	AnimationComponent::AnimationRecord* idle1Animation = AnimationComponent::AnimationRecord::factory();
+	idle1Animation->setStartFrame(0);
+	idle1Animation->setEndFrame(30);
+	idle1Animation->setFramesPerSecond(30);
+	idle1Animation->setLooping(true);
+	
+	const int idle1 = animation->addAnimation(idle1Animation);
+	
+	AnimationComponent::AnimationRecord* runAnimation = AnimationComponent::AnimationRecord::factory();
+	runAnimation->setStartFrame(111);
+	runAnimation->setEndFrame(127);
+	runAnimation->setFramesPerSecond(30);
+	runAnimation->setLooping(true);
+	
+	const int run = animation->addAnimation(runAnimation);
+	
+	animation->playAnimation(idle1);
+	
+	playerAnim->setIdleAnimation(idle1);
+	playerAnim->setWalkAnimation(walk);
+	playerAnim->setRunAnimation(run);
+	
+	playerMotion->setMaxSpeed(Vector3(25.0f, 0.0f, 25.0f));
+	playerMotion->setAcceleration(Vector3(100.0f, 100.0f, 100.0f));
 
 	pGameObjectSystem->add(object);
 	g_object = object;
@@ -255,6 +314,7 @@ void startUpGame() {
 	//o3d::Transform* root = g_mgr->LoadAndAppend("/sdcard/collada/cube.zip");
   
   render->setTransform(g_mgr->GetRoot());
+  animation->setSceneRoot(g_mgr->GetScene());
 }
 
 
@@ -303,13 +363,15 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, j
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
     jint x, jint y, jfloat directionX, jfloat directionY) {
   LOG(INFO) << "onTouch: (" << x << ", " << y << ")";
+  
+  g_object->getRuntimeData()->insertInt(1, "go");
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
 		jfloat directionX, jfloat directionY) {
 	LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
 	
-	Vector3 current = g_object->getRuntimeData()->getVector("velocity");
+	/*Vector3 current = g_object->getRuntimeData()->getVector("velocity");
 	const float speed = 0.3f;
 	
   Vector3 velocity = current + Vector3(directionX != 0.0f ? speed * Sign(directionX) : 0.0f, 
@@ -317,7 +379,11 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jo
 	
 	g_object->getRuntimeData()->insertVector(velocity, "velocity");
 	g_object->getRuntimeData()->insertVector(Vector3::ZERO, "targetVelocity");
-	g_object->getRuntimeData()->insertVector(Vector3::ONE, "acceleration");
+	g_object->getRuntimeData()->insertVector(Vector3::ONE, "acceleration");*/
+	
+	Vector3 orientation = g_object->getRuntimeData()->getVector("orientation");
+	orientation[1] += directionX;
+	g_object->getRuntimeData()->insertVector(orientation, "orientation");
 	
 }
 
