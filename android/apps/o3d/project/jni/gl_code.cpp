@@ -83,6 +83,7 @@ class O3DManager {
 
   bool Initialize(int width, int height);
   bool ResizeViewport(int width, int height);
+  void SetProjection(float width, float height);
   bool Render();
   o3d::Transform* GetRoot();
   o3d_utils::Scene* GetScene();
@@ -162,7 +163,8 @@ bool O3DManager::Initialize(int width, int height) {
           root_, width, height);
 
   main_view_->draw_context()->set_view(camera_info->view);
-  main_view_->draw_context()->set_projection(camera_info->projection);
+  //main_view_->draw_context()->set_projection(camera_info->projection);
+  SetProjection(width, height);
 
   // Set the light pos on all the materials. We could link a param to
   // all of them so we could just set the one param but I'm lazy.
@@ -185,6 +187,12 @@ bool O3DManager::Initialize(int width, int height) {
   return true;
 }
 
+void O3DManager::SetProjection(float width, float height) {
+  main_view_->draw_context()->set_projection(
+      o3d_utils::Camera::perspective(
+          o3d_utils::degToRad(30.0f), width / height, 10, 1000));
+}
+
 // I have no idea if this is right.
 bool O3DManager::ResizeViewport(int width, int height) {
   renderer_->Resize(width, height);
@@ -194,7 +202,8 @@ bool O3DManager::ResizeViewport(int width, int height) {
           root_, width, height);
 
   main_view_->draw_context()->set_view(camera_info->view);
-  main_view_->draw_context()->set_projection(camera_info->projection);
+  //main_view_->draw_context()->set_projection(camera_info->projection);
+  SetProjection(width, height);
 }
 
 bool O3DManager::Render() {
@@ -232,22 +241,22 @@ static ObjectHandle<GameObject> g_object = NULL;
 
 void startUpGame() {
   g_mainLoop = MainLoop::factory();
-  
+
   TimeSystemPosix* pTimeSystem = TimeSystemPosix::factory();
 	pTimeSystem->startup();
 	g_mainLoop->setTimeSystem(pTimeSystem);
-	
+
 	SystemRegistry::getSystemRegistry()->addSystem(g_mainLoop);
 	SystemRegistry::getSystemRegistry()->addSystem(pTimeSystem);
 
   ProfileSystem* pProfiler = ProfileSystem::factory();
 	SystemRegistry::getSystemRegistry()->addSystem(pProfiler);
 	g_mainLoop->addSystem(pProfiler);
-	
+
 	GameObjectSystem* pGameObjectSystem = GameObjectSystem::factory();
 	SystemRegistry::getSystemRegistry()->addSystem(pGameObjectSystem);
 	g_mainLoop->addSystem(pGameObjectSystem);
-	
+
 	// Make a game object!
 	GameObject* object = new GameObject();
 	RenderComponent* render = RenderComponent::factory();
@@ -261,7 +270,7 @@ void startUpGame() {
 	object->add(animation);
 	object->add(playerAnim);
 	object->add(playerMotion);
-	
+
 	/* idle1: {startFrame: 0, endFrame: 30},
   walk: {startFrame: 31, endFrame: 71},
   jumpStart: {startFrame: 72, endFrame: 87},
@@ -273,46 +282,46 @@ void startUpGame() {
   idle2: {startFrame: 128, endFrame: 173},
   idle3: {startFrame: 174, endFrame: 246},
   idle4: {startFrame: 247, endFrame: 573}}; */
-  
+
 	AnimationComponent::AnimationRecord* walkAnimation = AnimationComponent::AnimationRecord::factory();
 	walkAnimation->setStartFrame(31);
 	walkAnimation->setEndFrame(71);
 	walkAnimation->setFramesPerSecond(30);
 	walkAnimation->setLooping(true);
-	
+
 	const int walk = animation->addAnimation(walkAnimation);
-	
+
 	AnimationComponent::AnimationRecord* idle1Animation = AnimationComponent::AnimationRecord::factory();
 	idle1Animation->setStartFrame(0);
 	idle1Animation->setEndFrame(30);
 	idle1Animation->setFramesPerSecond(30);
 	idle1Animation->setLooping(true);
-	
+
 	const int idle1 = animation->addAnimation(idle1Animation);
-	
+
 	AnimationComponent::AnimationRecord* runAnimation = AnimationComponent::AnimationRecord::factory();
 	runAnimation->setStartFrame(111);
 	runAnimation->setEndFrame(127);
 	runAnimation->setFramesPerSecond(30);
 	runAnimation->setLooping(true);
-	
+
 	const int run = animation->addAnimation(runAnimation);
-	
+
 	animation->playAnimation(idle1);
-	
+
 	playerAnim->setIdleAnimation(idle1);
 	playerAnim->setWalkAnimation(walk);
 	playerAnim->setRunAnimation(run);
-	
+
 	playerMotion->setMaxSpeed(Vector3(25.0f, 0.0f, 25.0f));
 	playerMotion->setAcceleration(Vector3(100.0f, 100.0f, 100.0f));
 
 	pGameObjectSystem->add(object);
 	g_object = object;
-	
+
 	// Let's load the box for this object.
 	//o3d::Transform* root = g_mgr->LoadAndAppend("/sdcard/collada/cube.zip");
-  
+
   render->setTransform(g_mgr->GetRoot());
   animation->setSceneRoot(g_mgr->GetScene());
 }
@@ -340,15 +349,15 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobj
       g_mgr = new O3DManager();
       g_mgr->Initialize(width, height);
     }
-    
+
     if (g_mainLoop == NULL) {
       startUpGame();
     }
 }
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj) {    
+JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj) {
     g_mainLoop->updateAll();
-    
+
     g_mgr->Render();
 }
 
@@ -363,44 +372,44 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, j
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
     jint x, jint y, jfloat directionX, jfloat directionY) {
   LOG(INFO) << "onTouch: (" << x << ", " << y << ")";
-  
+
   g_object->getRuntimeData()->insertInt(1, "go");
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
 		jfloat directionX, jfloat directionY) {
 	LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
-	
+
 	/*Vector3 current = g_object->getRuntimeData()->getVector("velocity");
 	const float speed = 0.3f;
-	
-  Vector3 velocity = current + Vector3(directionX != 0.0f ? speed * Sign(directionX) : 0.0f, 
-        directionY != 0.0f ? -speed * Sign(directionY) : 0.0f, 0.0f);   
-	
+
+  Vector3 velocity = current + Vector3(directionX != 0.0f ? speed * Sign(directionX) : 0.0f,
+        directionY != 0.0f ? -speed * Sign(directionY) : 0.0f, 0.0f);
+
 	g_object->getRuntimeData()->insertVector(velocity, "velocity");
 	g_object->getRuntimeData()->insertVector(Vector3::ZERO, "targetVelocity");
 	g_object->getRuntimeData()->insertVector(Vector3::ONE, "acceleration");*/
-	
+
 	Vector3 orientation = g_object->getRuntimeData()->getVector("orientation");
 	orientation[1] += directionX;
 	g_object->getRuntimeData()->insertVector(orientation, "orientation");
-	
+
 }
 
 
 JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(JNIEnv * env, jobject obj) {
   const int systemCount = SystemRegistry::getSystemRegistry()->getCount();
-  
+
   jobjectArray ret;
-  
-  ret = (jobjectArray)env->NewObjectArray(systemCount, 
+
+  ret = (jobjectArray)env->NewObjectArray(systemCount,
     env->FindClass("java/lang/String"), NULL);
 
   for (int x = 0; x < systemCount; x++) {
     const char* name = SystemRegistry::getSystemRegistry()->get(x)->getMetaObject()->getName();
     env->SetObjectArrayElement(ret, x, env->NewStringUTF(name));
   }
-  
+
   return ret;
 }
 
@@ -408,26 +417,26 @@ JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(J
 // System/Field[/Index]/Object/
 JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNIEnv * env, jobject obj, jobjectArray path) {
   const jsize path_elements = env->GetArrayLength(path);
-  
+
   jobjectArray result = NULL;
-  
+
   if (path_elements > 0) {
     Array<char const*> elements(path_elements);
     Array<jstring> jstrings(path_elements);
-    
+
     for (int x = 0; x < path_elements; x++) {
       const jstring jni_string = (jstring)env->GetObjectArrayElement(path, x);
       const char* c_string = env->GetStringUTFChars(jni_string, NULL);
       elements.append(c_string);
       jstrings.append(jni_string);
     }
-  
+
     const char* system_string = elements.get(0);
     DLOG(INFO) << "Looking for system: " << system_string;
     const MetaObject* system_meta = MetaRegistry::getMetaRegistry()->getMetaObject(system_string);
     const System* system = SystemRegistry::getSystemRegistry()->getSystem(system_meta);
     MetaBase const* root = system;
-    
+
     if (system != NULL) {
       DLOG(INFO) << "Found system: " << system->getMetaObject()->getName();
       bool done = false;
@@ -445,7 +454,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNI
           if (strcmp(field_string, metaField->getName()) == 0) {
             DLOG(INFO) << "Found field: " << metaField->getName();
             // found the field!
-            
+
             void* object = NULL;
 
             if (metaField->getElementCount(root) > 1 && x + 1 < path_elements) {
@@ -467,49 +476,49 @@ JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNI
                 object = (void*)metaField->get(root);
               }
             }
-            
+
 
             if (object && MetaBase::authenticatePointer(object)) {
               // safe to cast!
               root = static_cast<MetaBase*>(object);
               break;
             }
-              
+
             DLOG(INFO) << "Field null or unknown type: " << metaField->getTypeName();
             // we found the field but can't go any further.
             done = true;
             break;
           }
         }
-        
-        
+
+
       }
-    
+
     }
-    
+
     // release the strings.
     for (int x = 0; x < path_elements; x++) {
       env->ReleaseStringUTFChars(jstrings.get(x), elements.get(x));
     }
-    
+
     jstrings.removeAll();
     elements.removeAll();
-    
+
     if (root) {
       DLOG(INFO) << "Return object: " << root->getMetaObject()->getName();
       const MetaObject* meta = root->getMetaObject();
       const int field_count = meta->getFieldCount();
-      result = (jobjectArray)env->NewObjectArray(field_count, 
+      result = (jobjectArray)env->NewObjectArray(field_count,
         env->FindClass("java/lang/String"), NULL);
-    
+
       for (int x = 0; x < field_count; x++) {
         env->SetObjectArrayElement(result, x, env->NewStringUTF(meta->getField(x)->getName()));
       }
-      
+
     }
-    
-    
+
+
   }
-  
+
   return result;
 }
