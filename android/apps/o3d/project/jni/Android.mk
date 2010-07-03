@@ -47,6 +47,7 @@ LOCAL_STATIC_LIBRARIES := \
   o3drenderer \
   o3dimport \
   o3dutils \
+  debug \
   fcollada \
   libxml \
   libtxc_dxtn \
@@ -72,6 +73,7 @@ include $(MY_PATH)/third_party/libjpeg/Android.mk
 include $(MY_PATH)/third_party/libpng/Android.mk
 include $(MY_PATH)/third_party/zlib/Android.mk
 include $(MY_PATH)/third_party/loggingshim/Android.mk
+include $(MY_PATH)/debug/Android.mk
 include $(MY_PATH)/game/core/Android.mk
 include $(MY_PATH)/game/math/Android.mk
 include $(MY_PATH)/game/system/Android.mk

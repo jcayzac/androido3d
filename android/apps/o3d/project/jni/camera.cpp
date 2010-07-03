@@ -81,11 +81,19 @@ const o3d::Matrix4& CameraInfo::computeProjection(
     projection = Vectormath::Aos::CreateOrthographicMatrix(
         -magX, magX, -magY, magY, zNear, zFar);
   } else {
+    #if 0
     projection = Vectormath::Aos::CreatePerspectiveMatrix(
         fieldOfViewRadians,       // field of view.
         areaWidth / areaHeight,   // Aspect ratio.
         zNear,                    // Near plane.
         zFar);                    // Far plane.
+    #else
+    projection = Camera::perspective(
+        fieldOfViewRadians,       // field of view.
+        areaWidth / areaHeight,   // Aspect ratio.
+        zNear,                    // Near plane.
+        zFar);                    // Far plane.
+    #endif
   }
   return projection;
 };
@@ -280,7 +288,27 @@ CameraInfo* Camera::getViewAndProjectionFromCameras(o3d::Transform* treeRoot,
   }
 };
 
+o3d::Matrix4 Camera::perspective(
+    float fovy_in_radians, float aspect, float z_near, float z_far) {
+  const float kEpsilon = 0.00001f;
+  float radians = fovy_in_radians * 0.5;
+  float delta_z = z_far - z_near;
+  float sine = sinf(radians);
 
+  if ((fabsf(delta_z) < kEpsilon) ||
+      (fabsf(sine) < kEpsilon) ||
+      (fabsf(aspect) < kEpsilon)) {
+  	return o3d::Matrix4::identity();
+  }
+
+  float cotangent = cosf(radians) / sine;
+
+  return o3d::Matrix4(
+    o3d::Vector4(cotangent / aspect, 0.0f, 0.0f, 0.0f),
+    o3d::Vector4(0.0f, cotangent, 0.0f, 0.0f),
+    o3d::Vector4(0.0f, 0.0f, -(z_far + z_near) / delta_z, -1.0f),
+    o3d::Vector4(0.0f, 0.04f, -2.0f * z_near * z_far / delta_z, 0.0f));
+}
 
 }  // namespace o3d_utils
 

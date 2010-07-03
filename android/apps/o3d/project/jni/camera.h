@@ -115,6 +115,9 @@ class Camera {
        o3d::Transform* treeRoot,
        float clientWidth,
        float clientHeight);
+
+   static o3d::Matrix4 perspective(
+       float fovy_in_radians, float aspect, float z_near, float z_far);
 };
 
 }  // namespace o3d_utils
