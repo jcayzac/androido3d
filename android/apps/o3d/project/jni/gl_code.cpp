@@ -73,12 +73,32 @@ class DisplayWindowAndroid : public o3d::DisplayWindow {
   ~DisplayWindowAndroid() { }
 };
 
+class ShaderExample {
+ public:
+  ShaderExample()
+      : box_(NULL),
+        color_param_(NULL),
+        time_(0) {
+  }
+  bool Init(class O3DManager* mgr);
+  void Update(float elapsedTimeSinceLastUpdateInSeconds);
+
+ private:
+  o3d_utils::Scene* box_;
+  o3d::ParamFloat4* color_param_;
+  float time_;
+};
+
 class O3DManager {
  public:
   O3DManager();
 
   o3d::Client* client() const {
     return client_.get();
+  }
+
+  o3d_utils::ViewInfo* main_view() const {
+    return main_view_;
   }
 
   bool Initialize(int width, int height);
@@ -107,6 +127,8 @@ class O3DManager {
   o3d_utils::Scene* scene_;
   o3d::ElapsedTimeTimer timer_;
   float time_;
+
+  ShaderExample example_;
 };
 
 O3DManager::O3DManager()
@@ -152,7 +174,6 @@ bool O3DManager::Initialize(int width, int height) {
       client_.get(),
       main_view_,
 //      "/sdcard/collada/seven_shapes.zip",
-//      "/sdcard/collada/cube.zip",
 //      "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
       "/sdcard/collada/character.zip",
       NULL);
@@ -161,6 +182,8 @@ bool O3DManager::Initialize(int width, int height) {
   o3d_utils::CameraInfo* camera_info =
       o3d_utils::Camera::getViewAndProjectionFromCameras(
           root_, width, height);
+
+  example_.Init(this);
 
   main_view_->draw_context()->set_view(camera_info->view);
   //main_view_->draw_context()->set_projection(camera_info->projection);
@@ -207,11 +230,11 @@ bool O3DManager::ResizeViewport(int width, int height) {
 }
 
 bool O3DManager::Render() {
-  time_ += timer_.GetElapsedTimeAndReset();
-  /*if (time_ > 249.0f / 30.0f) {  // end of kitty anim
-    time_ = 0.0f;
-  }
-  scene_->SetAnimationTime(time_);*/
+  float elapsedTimeSinceLastUpdateInSeconds = timer_.GetElapsedTimeAndReset();
+  time_ += elapsedTimeSinceLastUpdateInSeconds;
+
+  example_.Update(elapsedTimeSinceLastUpdateInSeconds);
+
 
   client_->Tick();
   client_->RenderClient(true);
@@ -234,6 +257,87 @@ void O3DManager::CheckError() {
     client_->ClearLastError();
   }
 };
+
+bool ShaderExample::Init(O3DManager* mgr) {
+  // Load the cube.
+  box_ = o3d_utils::Scene::LoadScene(
+      mgr->client(),
+      mgr->main_view(),
+      "/sdcard/collada/cube.zip",
+      NULL);
+  box_->SetParent(mgr->GetRoot());
+
+  // Change the shader on the cube.
+  // Here is where you need some planning. Either you need your artist to
+  // name the materials something you can find OR you need to know that there
+  // is exactly one material OR you need to know that you can effect all the
+  // materials etc.  In the case of the cube I'm going to just assume there is
+  // only 1 material.
+  o3d::Material* material = box_->pack()->GetByClass<o3d::Material>()[0];
+
+  // Create an effect. We could use the effect already on the box but it's
+  // already shared with other models.
+  o3d::Effect* effect = box_->pack()->Create<o3d::Effect>();
+
+  // Create a simple shader
+  static const char* shader =
+      // --vertex shader--
+      "uniform mat4 worldViewProjection;\n"
+      "attribute vec4 position;\n"
+      "attribute vec2 texCoord0;\n"
+      "varying vec2 v_diffuseUV;\n"
+      "void main () {\n"
+      "  gl_Position = worldViewProjection * position;\n"
+      "  v_diffuseUV = texCoord0;\n"
+      "}\n"
+      "// #o3d SplitMarker\n"
+      // --fragment shdaer--
+      "varying vec2 v_diffuseUV;\n"
+      "uniform sampler2D diffuseSampler;\n"
+      "uniform vec4 myColor;\n"
+      "void main () {\n"
+      "  gl_FragColor = myColor * texture2D(diffuseSampler, v_diffuseUV);\n"
+      "}\n"
+      // -- o3d stuff --
+      "// #o3d MatrixLoadOrder RowMajor\n";
+
+  // note: I know the cube has positions called "position" and uv coords called
+  // "texCoord0".  I also know that it has a texture that will be provided as
+  // diffuseSampler.  I know that the material I get off the cube will already
+  // have a parameter providing diffuseSampler so I don't have to fill that out.
+  // Here I'm just adding "myColor" basically and I'm doing no lighting calcs.
+
+  if (!effect->LoadFromFXString(shader)) {
+    mgr->CheckError();
+    return false;
+  } else {
+    // Now make the params the effect needs on the material. For the shader
+    // above this would make params for both "myColor" and "diffuseSampler" but
+    // I happen to know "diffuseSampler" already exists. "worldViewProjection"
+    // is a special case. O3D will fill that out for us.
+    effect->CreateUniformParameters(material);
+
+    // Look up the color param.
+    color_param_ = material->GetParam<o3d::ParamFloat4>("myColor");
+
+    // Set it to something
+    color_param_->set_value(o3d::Float4(1.0f, 0.0f, 0.0f, 1.0f));
+
+    // Tell the material to use this effect.
+    material->set_effect(effect);
+  }
+  return true;
+}
+
+void ShaderExample::Update(float elapsedTimeSinceLastUpdateInSeconds) {
+  time_ += elapsedTimeSinceLastUpdateInSeconds;
+  // Set the color every frame.
+  color_param_->set_value(o3d::Float4(
+      fmodf(time_ * 1.2f, 1.0f),
+      fmodf(time_ * 2.3f, 1.0f),
+      fmodf(time_ * 4.5f, 1.0f),
+      1.0f));
+}
 
 static O3DManager* g_mgr = NULL;
 static ObjectHandle<MainLoop> g_mainLoop = NULL;
@@ -322,7 +426,7 @@ void startUpGame() {
 	// Let's load the box for this object.
 	//o3d::Transform* root = g_mgr->LoadAndAppend("/sdcard/collada/cube.zip");
 
-  render->setTransform(g_mgr->GetRoot());
+  render->setTransform(g_mgr->GetScene()->root());
   animation->setSceneRoot(g_mgr->GetScene());
 }
 
