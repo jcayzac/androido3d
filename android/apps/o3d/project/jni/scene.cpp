@@ -358,6 +358,19 @@ Scene* Scene::LoadScene(
   PrepareMaterials(pack, view_info, material_pack);
   PrepareShapes(pack);
 
+  #if 1  // print total polygons.
+  {
+    int total = 0;
+    std::vector<o3d::IndexBuffer*> bufs = pack->GetByClass<o3d::IndexBuffer>();
+    for (size_t ii = 0; ii < bufs.size(); ++ii) {
+      int num = bufs[ii]->num_elements() / 3;
+      DLOG(INFO) << "IndexBuffer: " << bufs[ii]->name() << " : polys: " << num;
+      total += num;
+    }
+    DLOG(INFO) << "Total Polygons: " << total;
+  }
+  #endif
+
   return new Scene(pack, root, time);
 }
 
@@ -435,6 +448,7 @@ class Cloner {
     if (obj->IsA(o3d::Curve::GetApparentClass()) ||
         obj->IsA(o3d::Material::GetApparentClass()) ||
         obj->IsA(o3d::Effect::GetApparentClass()) ||
+        obj->IsA(o3d::IndexBuffer::GetApparentClass()) ||
         obj->IsA(o3d::Skin::GetApparentClass()) ||
         obj->IsA(o3d::Texture::GetApparentClass())) {
       return false;

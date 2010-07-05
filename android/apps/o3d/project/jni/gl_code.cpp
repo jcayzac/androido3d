@@ -82,6 +82,11 @@ class ShaderExample {
         color_param_(NULL),
         time_(0) {
   }
+
+  o3d_utils::Scene* scene() const {
+    return box_;
+  }
+
   bool Init(class O3DManager* mgr);
   void Update(float elapsedTimeSinceLastUpdateInSeconds);
 
@@ -142,6 +147,34 @@ O3DManager::O3DManager()
       time_(0.0f) {
 }
 
+void DisconnectAnimation(o3d::Pack* pack) {
+  std::vector<o3d::Transform*> transforms = pack->GetByClass<o3d::Transform>();
+  for (size_t ii = 0; ii < transforms.size(); ++ii) {
+    o3d::Transform* t = transforms[ii];
+    o3d::ParamMatrix4* p = t->GetParam<o3d::ParamMatrix4>("o3d.localMatrix");
+    if (p && p->input_connection()) {
+      DLOG(INFO) << "Unbinding input to: " << t->name();
+      p->UnbindInput();
+    }
+  }
+}
+
+void ReplaceShapes(o3d::Pack* pack, o3d::Shape* shape) {
+  std::vector<o3d::Transform*> transforms = pack->GetByClass<o3d::Transform>();
+  for (size_t ii = 0; ii < transforms.size(); ++ii) {
+    o3d::Transform* transform = transforms[ii];
+    const o3d::ShapeRefArray& shapes = transform->GetShapeRefs();
+    if (!shapes.empty()) {
+      // Remove the elems that are there.
+      while (!shapes.empty()) {
+        transform->RemoveShape(shapes[0]);
+      }
+      // Add in the cube
+      transform->AddShape(shape);
+    }
+  }
+}
+
 bool O3DManager::Initialize(int width, int height) {
   evaluation_counter_.reset(new o3d::EvaluationCounter(&service_locator_));
   class_manager_.reset(new o3d::ClassManager(&service_locator_));
@@ -199,16 +232,61 @@ bool O3DManager::Initialize(int width, int height) {
                      1.0f)));
   }
 
+  example_.Init(this);
+
   #if 0  // turn off rendering
     std::vector<o3d::DrawElement*> draw_elements =
         scene_->pack()->GetByClass<o3d::DrawElement>();
-    for (size_t jj = 0; jj < draw_elements.size(); ++jj) {
-      draw_elements[jj]->SetOwner(NULL);
+    for (size_t ii = 0; ii < draw_elements.size(); ++ii) {
+      draw_elements[ii]->SetOwner(NULL);
     }
   #endif
 
+  #if 0 // turn off animation
+    DisconnectAnimation(scene_->pack());
+    for (size_t ii = 0; ii < arraysize(scene_test_); ++ii) {
+      DisconnectAnimation(scene_test_[ii]->pack());
+    }
+  #endif
 
-  example_.Init(this);
+  #if 0 // set all the shaders to the simplest shader
+  {
+    static const char* shader =
+        // --vertex shader--
+        "uniform mat4 worldViewProjection;\n"
+        "attribute vec4 position;\n"
+        "void main () {\n"
+        "  gl_Position = worldViewProjection * position;\n"
+        "}\n"
+        "// #o3d SplitMarker\n"
+        // --fragment shdaer--
+        "void main () {\n"
+        "  gl_FragColor = vec4(1,0,0,1);\n"
+        "}\n"
+        // -- o3d stuff --
+        "// #o3d MatrixLoadOrder RowMajor\n";
+    o3d::Effect* effect = pack_->Create<o3d::Effect>();
+    if (!effect->LoadFromFXString(shader)) {
+      CheckError();
+    }
+    std::vector<o3d::Material*> materials =
+        scene_->pack()->GetByClass<o3d::Material>();
+    for (size_t ii = 0; ii < materials.size(); ++ii) {
+      materials[ii]->set_effect(effect);
+    }
+  }
+  #endif
+
+  #if 0 // replace all primitives with cube
+  {
+    o3d::Shape* shape =
+        example_.scene()->pack()->GetByClass<o3d::Shape>()[0];
+    ReplaceShapes(scene_->pack(), shape);
+    for (size_t ii = 0; ii < arraysize(scene_test_); ++ii) {
+      ReplaceShapes(scene_test_[ii]->pack(), shape);
+    }
+  }
+  #endif
 
   main_view_->draw_context()->set_view(camera_info->view);
   //main_view_->draw_context()->set_projection(camera_info->projection);
@@ -255,8 +333,19 @@ bool O3DManager::ResizeViewport(int width, int height) {
 }
 
 bool O3DManager::Render() {
+  static int frame_count = 0;
+  static float old_time = 0;
+  // Don't time for first couple of seconds.
+  if (time_ > 2.0f) {
+    frame_count++;
+  }
   float elapsedTimeSinceLastUpdateInSeconds = timer_.GetElapsedTimeAndReset();
   time_ += elapsedTimeSinceLastUpdateInSeconds;
+
+  if (time_ >= 12.0f && old_time < 12.0f) {
+    LOGI("frames per seconds = %f\n", frame_count / (time_ - 2.0f));
+  }
+  old_time = time_;
 
   example_.Update(elapsedTimeSinceLastUpdateInSeconds);
 
