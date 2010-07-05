@@ -1,31 +1,45 @@
 package com.android.o3djni;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.util.Log;
 
 public class WebServer implements Runnable {
-	private int port = 4444;
+	private int mPort = 4444;
+	private Map<String, String> mFileCache = new HashMap<String, String>();
+	private AssetManager mAssetManager;
+
+	WebServer(AssetManager assets) {
+		mAssetManager = assets;
+	}
 	
 	// based heavily on http://fragments.turtlemeat.com/javawebserver.php
 	public void run() {
 		//we are now inside our own thread separated from the gui.
 	    ServerSocket serversocket = null;
 	    
-	    Log.d("O3D Web", "Opening Connection on Port " + port + ", ip = " + getLocalIpAddress());
+	    Log.d("O3D Web", "Opening Connection on Port " + mPort + ", ip = " + getLocalIpAddress());
 	    try {
-	    	serversocket = new ServerSocket(port);
+	    	serversocket = new ServerSocket(mPort);
 	    }
 	    catch (Exception e) { 
 			Log.d("O3D Web", "Error: " + e.getMessage());
@@ -246,40 +260,71 @@ public class WebServer implements Runnable {
 	}
   
 	private String parseRequest(String path) {
-		StringBuilder buffer = new StringBuilder();
+		String response  = "";
 		if (path.length() == 0) {
-			String[] result = O3DJNILib.getSystemList();
-			for (int x = 0; x < result.length; x++) {
-				buffer.append(formatLink(result[x], ""));
-				buffer.append("<br>\n");
-			}
+			response = readFile("client.html");
 		} else {
-			String[] parts = path.split("/");
+			StringBuilder buffer = new StringBuilder();
 			String fullPath = "/" + path + "/";
-			String[][] result = O3DJNILib.getMetaData(parts); 
-			if (result != null) {
-				buffer.append("<table border='0'>");
+			String[] parts = path.split("/");
+			if (parts.length == 1) {
+				String[] result = O3DJNILib.getSystemList();
 				for (int x = 0; x < result.length; x++) {
-					buffer.append("<tr><td>");
-					buffer.append(result[x][1]);
-					buffer.append("</td><td>");
-					buffer.append(formatLink(result[x][0], fullPath));
-					buffer.append("</td><td>");
-					buffer.append(result[x][2]);
-					buffer.append("</td></tr>\n");
+					buffer.append(formatLink(result[x], fullPath));
+					buffer.append("<br>\n");
 				}
-				buffer.append("</table>");
 			} else {
-				buffer.append("(no fields)");
+				String[][] result = O3DJNILib.getMetaData(parts); 
+				if (result != null) {
+					buffer.append("<table border='0'>");
+					for (int x = 0; x < result.length; x++) {
+						buffer.append("<tr><td>");
+						buffer.append(result[x][1]);
+						buffer.append("</td><td>");
+						buffer.append(formatLink(result[x][0], fullPath));
+						buffer.append("</td><td>");
+						buffer.append(result[x][2]);
+						buffer.append("</td></tr>\n");
+					}
+					buffer.append("</table>");
+				} else {
+					buffer.append("(no fields)");
+				}
 			}
+			response = buffer.toString();
 		}
 		
-		String response = buffer.toString();
-	  
-		String header = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"> <html> <head> <title>O3D Client</title> </head> <body>";
-		String footer = "</body></html>";
-
-		return header + response + footer;
+		return response;
 	}
+	
+	private String readFile(String path) {
+		String result = "";
+		if (mFileCache.containsKey(path)) {
+			result = mFileCache.get(path);
+			Log.i("O3D Web", "Pulled " + path + " from cache.");
+		} else {
+			// Read the file and cache it.
+			try {
+				InputStream inputStream = mAssetManager.open(path);
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+				byte buf[] = new byte[1024];
+				int len;
+			    while ((len = inputStream.read(buf)) != -1) {
+			        outputStream.write(buf, 0, len);
+			    }
+			    outputStream.close();
+			    inputStream.close();
+			    
+			    result = outputStream.toString();
+			    
+			    mFileCache.put(path, result);
+
+			} catch (IOException e) {
+				Log.e("O3D Web", e.getMessage());
+			}
+		}
+		return result;
+	}
+	
 }
 

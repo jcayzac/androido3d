@@ -31,7 +31,7 @@ public class O3DJNIActivity extends Activity {
         mView = new O3DJNIView(getApplication());
         setContentView(mView);
         
-        Thread webThread = new Thread(new WebServer());
+        Thread webThread = new Thread(new WebServer(getAssets()));
         webThread.start();
     }
 

@@ -53,7 +53,8 @@ MetaInterface::~MetaInterface() {
 
 
 jobjectArray MetaInterface::parsePath() {
-  const char* system_string = mElements.get(0);
+  // first element is "get" or, eventually, "set".
+  const char* system_string = mElements.get(1);
   DLOG(INFO) << "Looking for system: " << system_string;
   const MetaObject* system_meta = MetaRegistry::getMetaRegistry()->getMetaObject(system_string);
   const System* system = SystemRegistry::getSystemRegistry()->getSystem(system_meta);
@@ -62,8 +63,8 @@ jobjectArray MetaInterface::parsePath() {
   jobjectArray output = NULL;
   if (system != NULL) {
     DLOG(INFO) << "Found system: " << system->getMetaObject()->getName();
-    if (mElements.getCount() > 1) {
-      output = parseObject(root, 1);
+    if (mElements.getCount() > 2) {
+      output = parseObject(root, 2);
     } else {
       output = printObject(root);
     }
