@@ -47,25 +47,6 @@
 #include "debug.h"
 #include "scene.h"
 
-
-// game stuff
-#include "AnimationComponent.h"
-#include "GameObject.h"
-#include "GameObjectSystem.h"
-#include "MainLoop.h"
-#include "MathUtils.h"
-#include "MetaRegistry.h"
-#include "MovementComponent.h"
-#include "PlayerAnimationComponent.h"
-#include "PlayerMotionComponent.h"
-#include "ProfileSystem.h"
-#include "RenderComponent.h"
-#include "SystemRegistry.h"
-#include "TimeSystemPosix.h"
-#include "Vector3.h"
-
-#include "meta_interface.h"
-
 #define  LOG_TAG    "libo3djni"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -73,27 +54,6 @@
 class DisplayWindowAndroid : public o3d::DisplayWindow {
  public:
   ~DisplayWindowAndroid() { }
-};
-
-class ShaderExample {
- public:
-  ShaderExample()
-      : box_(NULL),
-        color_param_(NULL),
-        time_(0) {
-  }
-
-  o3d_utils::Scene* scene() const {
-    return box_;
-  }
-
-  bool Init(class O3DManager* mgr);
-  void Update(float elapsedTimeSinceLastUpdateInSeconds);
-
- private:
-  o3d_utils::Scene* box_;
-  o3d::ParamFloat4* color_param_;
-  float time_;
 };
 
 class O3DManager {
@@ -132,11 +92,9 @@ class O3DManager {
   o3d::Pack* pack_;
   o3d_utils::ViewInfo* main_view_;
   o3d_utils::Scene* scene_;
-  o3d_utils::Scene* scene_test_[9];
+  o3d_utils::Scene* scene_test_[2];
   o3d::ElapsedTimeTimer timer_;
   float time_;
-
-  ShaderExample example_;
 };
 
 O3DManager::O3DManager()
@@ -145,34 +103,6 @@ O3DManager::O3DManager()
       main_view_(NULL),
       scene_(NULL),
       time_(0.0f) {
-}
-
-void DisconnectAnimation(o3d::Pack* pack) {
-  std::vector<o3d::Transform*> transforms = pack->GetByClass<o3d::Transform>();
-  for (size_t ii = 0; ii < transforms.size(); ++ii) {
-    o3d::Transform* t = transforms[ii];
-    o3d::ParamMatrix4* p = t->GetParam<o3d::ParamMatrix4>("o3d.localMatrix");
-    if (p && p->input_connection()) {
-      DLOG(INFO) << "Unbinding input to: " << t->name();
-      p->UnbindInput();
-    }
-  }
-}
-
-void ReplaceShapes(o3d::Pack* pack, o3d::Shape* shape) {
-  std::vector<o3d::Transform*> transforms = pack->GetByClass<o3d::Transform>();
-  for (size_t ii = 0; ii < transforms.size(); ++ii) {
-    o3d::Transform* transform = transforms[ii];
-    const o3d::ShapeRefArray& shapes = transform->GetShapeRefs();
-    if (!shapes.empty()) {
-      // Remove the elems that are there.
-      while (!shapes.empty()) {
-        transform->RemoveShape(shapes[0]);
-      }
-      // Add in the cube
-      transform->AddShape(shape);
-    }
-  }
 }
 
 bool O3DManager::Initialize(int width, int height) {
@@ -232,62 +162,6 @@ bool O3DManager::Initialize(int width, int height) {
                      1.0f)));
   }
 
-  example_.Init(this);
-
-  #if 0  // turn off rendering
-    std::vector<o3d::DrawElement*> draw_elements =
-        scene_->pack()->GetByClass<o3d::DrawElement>();
-    for (size_t ii = 0; ii < draw_elements.size(); ++ii) {
-      draw_elements[ii]->SetOwner(NULL);
-    }
-  #endif
-
-  #if 0 // turn off animation
-    DisconnectAnimation(scene_->pack());
-    for (size_t ii = 0; ii < arraysize(scene_test_); ++ii) {
-      DisconnectAnimation(scene_test_[ii]->pack());
-    }
-  #endif
-
-  #if 0 // set all the shaders to the simplest shader
-  {
-    static const char* shader =
-        // --vertex shader--
-        "uniform mat4 worldViewProjection;\n"
-        "attribute vec4 position;\n"
-        "void main () {\n"
-        "  gl_Position = worldViewProjection * position;\n"
-        "}\n"
-        "// #o3d SplitMarker\n"
-        // --fragment shdaer--
-        "void main () {\n"
-        "  gl_FragColor = vec4(1,0,0,1);\n"
-        "}\n"
-        // -- o3d stuff --
-        "// #o3d MatrixLoadOrder RowMajor\n";
-    o3d::Effect* effect = pack_->Create<o3d::Effect>();
-    if (!effect->LoadFromFXString(shader)) {
-      CheckError();
-    }
-    std::vector<o3d::Material*> materials =
-        scene_->pack()->GetByClass<o3d::Material>();
-    for (size_t ii = 0; ii < materials.size(); ++ii) {
-      materials[ii]->set_effect(effect);
-    }
-  }
-  #endif
-
-  #if 0 // replace all primitives with cube
-  {
-    o3d::Shape* shape =
-        example_.scene()->pack()->GetByClass<o3d::Shape>()[0];
-    ReplaceShapes(scene_->pack(), shape);
-    for (size_t ii = 0; ii < arraysize(scene_test_); ++ii) {
-      ReplaceShapes(scene_test_[ii]->pack(), shape);
-    }
-  }
-  #endif
-
   main_view_->draw_context()->set_view(camera_info->view);
   //main_view_->draw_context()->set_projection(camera_info->projection);
   SetProjection(width, height);
@@ -333,22 +207,10 @@ bool O3DManager::ResizeViewport(int width, int height) {
 }
 
 bool O3DManager::Render() {
-  static int frame_count = 0;
-  static float old_time = 0;
-  // Don't time for first couple of seconds.
-  if (time_ > 2.0f) {
-    frame_count++;
-  }
   float elapsedTimeSinceLastUpdateInSeconds = timer_.GetElapsedTimeAndReset();
   time_ += elapsedTimeSinceLastUpdateInSeconds;
 
-  if (time_ >= 12.0f && old_time < 12.0f) {
-    LOGI("frames per seconds = %f\n", frame_count / (time_ - 2.0f));
-  }
-  old_time = time_;
-
-  example_.Update(elapsedTimeSinceLastUpdateInSeconds);
-
+  scene_->SetAnimationTime(fmodf(time_, 573.0f / 30.0f));
   for (int ii = 0; ii < arraysize(scene_test_); ++ii) {
     scene_test_[ii]->SetAnimationTime(fmodf(time_ + ii * 0.1, 573.0f / 30.0f));
   }
@@ -375,178 +237,7 @@ void O3DManager::CheckError() {
   }
 };
 
-bool ShaderExample::Init(O3DManager* mgr) {
-  // Load the cube.
-  box_ = o3d_utils::Scene::LoadScene(
-      mgr->client(),
-      mgr->main_view(),
-      "/sdcard/collada/cube.zip",
-      NULL);
-  box_->SetParent(mgr->GetRoot());
-
-  // Change the shader on the cube.
-  // Here is where you need some planning. Either you need your artist to
-  // name the materials something you can find OR you need to know that there
-  // is exactly one material OR you need to know that you can effect all the
-  // materials etc.  In the case of the cube I'm going to just assume there is
-  // only 1 material.
-  o3d::Material* material = box_->pack()->GetByClass<o3d::Material>()[0];
-
-  // Create an effect. We could use the effect already on the box but it's
-  // already shared with other models.
-  o3d::Effect* effect = box_->pack()->Create<o3d::Effect>();
-
-  // Create a simple shader
-  static const char* shader =
-      // --vertex shader--
-      "uniform mat4 worldViewProjection;\n"
-      "attribute vec4 position;\n"
-      "attribute vec2 texCoord0;\n"
-      "varying vec2 v_diffuseUV;\n"
-      "void main () {\n"
-      "  gl_Position = worldViewProjection * position;\n"
-      "  v_diffuseUV = texCoord0;\n"
-      "}\n"
-      "// #o3d SplitMarker\n"
-      // --fragment shdaer--
-      "varying vec2 v_diffuseUV;\n"
-      "uniform sampler2D diffuseSampler;\n"
-      "uniform vec4 myColor;\n"
-      "void main () {\n"
-      "  gl_FragColor = myColor * texture2D(diffuseSampler, v_diffuseUV);\n"
-      "}\n"
-      // -- o3d stuff --
-      "// #o3d MatrixLoadOrder RowMajor\n";
-
-  // note: I know the cube has positions called "position" and uv coords called
-  // "texCoord0".  I also know that it has a texture that will be provided as
-  // diffuseSampler.  I know that the material I get off the cube will already
-  // have a parameter providing diffuseSampler so I don't have to fill that out.
-  // Here I'm just adding "myColor" basically and I'm doing no lighting calcs.
-
-  if (!effect->LoadFromFXString(shader)) {
-    mgr->CheckError();
-    return false;
-  } else {
-    // Now make the params the effect needs on the material. For the shader
-    // above this would make params for both "myColor" and "diffuseSampler" but
-    // I happen to know "diffuseSampler" already exists. "worldViewProjection"
-    // is a special case. O3D will fill that out for us.
-    effect->CreateUniformParameters(material);
-
-    // Look up the color param.
-    color_param_ = material->GetParam<o3d::ParamFloat4>("myColor");
-
-    // Set it to something
-    color_param_->set_value(o3d::Float4(1.0f, 0.0f, 0.0f, 1.0f));
-
-    // Tell the material to use this effect.
-    material->set_effect(effect);
-  }
-  return true;
-}
-
-void ShaderExample::Update(float elapsedTimeSinceLastUpdateInSeconds) {
-  time_ += elapsedTimeSinceLastUpdateInSeconds;
-  // Set the color every frame.
-  color_param_->set_value(o3d::Float4(
-      fmodf(time_ * 1.2f, 1.0f),
-      fmodf(time_ * 2.3f, 1.0f),
-      fmodf(time_ * 4.5f, 1.0f),
-      1.0f));
-}
-
 static O3DManager* g_mgr = NULL;
-static ObjectHandle<MainLoop> g_mainLoop = NULL;
-static ObjectHandle<GameObject> g_object = NULL;
-
-void startUpGame() {
-  g_mainLoop = MainLoop::factory();
-
-  TimeSystemPosix* pTimeSystem = TimeSystemPosix::factory();
-	pTimeSystem->startup();
-	g_mainLoop->setTimeSystem(pTimeSystem);
-
-	SystemRegistry::getSystemRegistry()->addSystem(g_mainLoop);
-	SystemRegistry::getSystemRegistry()->addSystem(pTimeSystem);
-
-  ProfileSystem* pProfiler = ProfileSystem::factory();
-	SystemRegistry::getSystemRegistry()->addSystem(pProfiler);
-	g_mainLoop->addSystem(pProfiler);
-
-	GameObjectSystem* pGameObjectSystem = GameObjectSystem::factory();
-	SystemRegistry::getSystemRegistry()->addSystem(pGameObjectSystem);
-	g_mainLoop->addSystem(pGameObjectSystem);
-
-	// Make a game object!
-	GameObject* object = new GameObject();
-	RenderComponent* render = RenderComponent::factory();
-	MovementComponent* movement = MovementComponent::factory();
-	AnimationComponent* animation = AnimationComponent::factory();
-	PlayerAnimationComponent* playerAnim = PlayerAnimationComponent::factory();
-	PlayerMotionComponent* playerMotion = PlayerMotionComponent::factory();
-
-	object->add(render);
-	object->add(movement);
-	object->add(animation);
-	object->add(playerAnim);
-	object->add(playerMotion);
-
-	/* idle1: {startFrame: 0, endFrame: 30},
-  walk: {startFrame: 31, endFrame: 71},
-  jumpStart: {startFrame: 72, endFrame: 87},
-  jumpUp: {startFrame: 87, endFrame: 87},
-  jumpCrest: {startFrame: 87, endFrame: 91},
-  jumpFall: {startFrame: 91, endFrame: 91},
-  jumpLand: {startFrame: 91, endFrame: 110},
-  run: {startFrame: 111, endFrame: 127},
-  idle2: {startFrame: 128, endFrame: 173},
-  idle3: {startFrame: 174, endFrame: 246},
-  idle4: {startFrame: 247, endFrame: 573}}; */
-
-	AnimationComponent::AnimationRecord* walkAnimation = AnimationComponent::AnimationRecord::factory();
-	walkAnimation->setStartFrame(31);
-	walkAnimation->setEndFrame(71);
-	walkAnimation->setFramesPerSecond(30);
-	walkAnimation->setLooping(true);
-
-	const int walk = animation->addAnimation(walkAnimation);
-
-	AnimationComponent::AnimationRecord* idle1Animation = AnimationComponent::AnimationRecord::factory();
-	idle1Animation->setStartFrame(0);
-	idle1Animation->setEndFrame(30);
-	idle1Animation->setFramesPerSecond(30);
-	idle1Animation->setLooping(true);
-
-	const int idle1 = animation->addAnimation(idle1Animation);
-
-	AnimationComponent::AnimationRecord* runAnimation = AnimationComponent::AnimationRecord::factory();
-	runAnimation->setStartFrame(111);
-	runAnimation->setEndFrame(127);
-	runAnimation->setFramesPerSecond(30);
-	runAnimation->setLooping(true);
-
-	const int run = animation->addAnimation(runAnimation);
-
-	animation->playAnimation(idle1);
-
-	playerAnim->setIdleAnimation(idle1);
-	playerAnim->setWalkAnimation(walk);
-	playerAnim->setRunAnimation(run);
-
-	playerMotion->setMaxSpeed(Vector3(25.0f, 0.0f, 25.0f));
-	playerMotion->setAcceleration(Vector3(100.0f, 100.0f, 100.0f));
-
-	pGameObjectSystem->add(object);
-	g_object = object;
-
-	// Let's load the box for this object.
-	//o3d::Transform* root = g_mgr->LoadAndAppend("/sdcard/collada/cube.zip");
-
-  render->setTransform(g_mgr->GetScene()->root());
-  animation->setSceneRoot(g_mgr->GetScene());
-}
-
 
 extern "C" {
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
@@ -570,15 +261,9 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobj
       g_mgr = new O3DManager();
       g_mgr->Initialize(width, height);
     }
-
-    if (g_mainLoop == NULL) {
-      startUpGame();
-    }
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj) {
-    g_mainLoop->updateAll();
-
     g_mgr->Render();
 }
 
@@ -593,37 +278,21 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, j
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
     jint x, jint y, jfloat directionX, jfloat directionY) {
   LOG(INFO) << "onTouch: (" << x << ", " << y << ")";
-
-  g_object->getRuntimeData()->insertInt(1, "go");
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
 		jfloat directionX, jfloat directionY) {
 	LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
-
-	Vector3 orientation = g_object->getRuntimeData()->getVector("orientation");
-	orientation[1] += directionX;
-	g_object->getRuntimeData()->insertVector(orientation, "orientation");
-
 }
 
-
 JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(JNIEnv * env, jobject obj) {
-  const int systemCount = SystemRegistry::getSystemRegistry()->getCount();
-
-  jobjectArray ret = MetaInterface::getSystems(env);
-
+  jobjectArray ret;
   return ret;
 }
 
 // Format is:
 // System/Field[/Index]/Object/
 JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNIEnv * env, jobject obj, jobjectArray path) {
-  const jsize path_elements = env->GetArrayLength(path);
-
-  MetaInterface interface(env, path, path_elements);
-
-  jobjectArray result = interface.parsePath();
-
+  jobjectArray result;
   return result;
 }

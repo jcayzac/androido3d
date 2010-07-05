@@ -26,18 +26,12 @@ LOCAL_CFLAGS    := \
   -DGLES2_BACKEND_NATIVE_GLES2 \
   -I$(LOCAL_PATH)/third_party/stlport/stlport \
   -I$(LOCAL_PATH)/third_party/loggingshim \
-  -I$(NDK_APP_PROJECT_PATH)/bin/headers \
-  -I$(LOCAL_PATH)/game/core \
-  -I$(LOCAL_PATH)/game/game \
-  -I$(LOCAL_PATH)/game/math \
-  -I$(LOCAL_PATH)/game/system \
 
 LOCAL_LDLIBS    := -llog -lGLESv2 -lz -ldl
 LOCAL_SRC_FILES := \
   gl_code.cpp \
   camera.cpp \
   debug.cpp \
-  meta_interface.cpp \
   render_graph.cpp \
   scene.cpp \
   shader_builder.cpp \
@@ -48,7 +42,6 @@ LOCAL_STATIC_LIBRARIES := \
   o3drenderer \
   o3dimport \
   o3dutils \
-  debug \
   fcollada \
   libxml \
   libtxc_dxtn \
@@ -57,10 +50,6 @@ LOCAL_STATIC_LIBRARIES := \
   zlib \
   loggingshim \
   stlport \
-  gamecore \
-  gamesystems \
-  gamemath \
-  gamegame \
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -74,8 +63,4 @@ include $(MY_PATH)/third_party/libjpeg/Android.mk
 include $(MY_PATH)/third_party/libpng/Android.mk
 include $(MY_PATH)/third_party/zlib/Android.mk
 include $(MY_PATH)/third_party/loggingshim/Android.mk
-include $(MY_PATH)/debug/Android.mk
-include $(MY_PATH)/game/core/Android.mk
-include $(MY_PATH)/game/math/Android.mk
-include $(MY_PATH)/game/system/Android.mk
-include $(MY_PATH)/game/game/Android.mk
+
