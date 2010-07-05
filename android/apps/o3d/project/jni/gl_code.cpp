@@ -199,6 +199,15 @@ bool O3DManager::Initialize(int width, int height) {
                      1.0f)));
   }
 
+  #if 0  // turn off rendering
+    std::vector<o3d::DrawElement*> draw_elements =
+        scene_->pack()->GetByClass<o3d::DrawElement>();
+    for (size_t jj = 0; jj < draw_elements.size(); ++jj) {
+      draw_elements[jj]->SetOwner(NULL);
+    }
+  #endif
+
+
   example_.Init(this);
 
   main_view_->draw_context()->set_view(camera_info->view);
@@ -514,7 +523,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(J
   const int systemCount = SystemRegistry::getSystemRegistry()->getCount();
 
   jobjectArray ret = MetaInterface::getSystems(env);
-  
+
   return ret;
 }
 
@@ -522,10 +531,10 @@ JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(J
 // System/Field[/Index]/Object/
 JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNIEnv * env, jobject obj, jobjectArray path) {
   const jsize path_elements = env->GetArrayLength(path);
-  
+
   MetaInterface interface(env, path, path_elements);
 
   jobjectArray result = interface.parsePath();
-  
+
   return result;
 }
