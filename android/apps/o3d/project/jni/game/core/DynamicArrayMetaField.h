@@ -46,18 +46,17 @@ class DynamicArrayMetaField : public T
 		void appendElement(MetaBase* pObject, const void* pData) const;
 };
 
-// get does the same thing as MetaField::get(), which just calls getElement(0). Since we're changing 
-// the behavior of getElement(), we need to make sure that get() isn't affected.
 template <class T>
 inline void* DynamicArrayMetaField<T>::get(const MetaBase* pObject) const
 {
-	return T::getElement(pObject, 0);
+	return getElement(pObject, 0);
 }
 
 template <class T>
 inline const int DynamicArrayMetaField<T>::getElementCount(const MetaBase* pObject) const
 {
-	ArrayBase* pArray = static_cast<ArrayBase*>(get(pObject));
+  // We must use T::getElement(0) to get the pointer to the array object rather than its first entry.
+	ArrayBase* pArray = static_cast<ArrayBase*>(T::getElement(pObject, 0));
 	int count = 0;
 	if (pArray)
 	{
@@ -70,7 +69,8 @@ template <class T>
 inline void* DynamicArrayMetaField<T>::getElement(const MetaBase* pObject, const int index) const
 {
 	void* result = NULL;
-	ArrayBase* pArray = static_cast<ArrayBase*>(get(pObject));
+	// We must use T::getElement(0) to get the pointer to the array object rather than its first entry.
+	ArrayBase* pArray = static_cast<ArrayBase*>(T::getElement(pObject, 0));
 	if (pArray && pArray->getCount() > index)
 	{
 		void* pointerToElement = pArray->getElement(index);
@@ -82,7 +82,8 @@ inline void* DynamicArrayMetaField<T>::getElement(const MetaBase* pObject, const
 template <class T>
 inline void DynamicArrayMetaField<T>::setElement(MetaBase* pObject, const int index, const void* pData) const
 {
-	ArrayBase* pArray = static_cast<ArrayBase*>(get(pObject));
+  // We must use T::getElement(0) to get the pointer to the array object rather than its first entry.
+	ArrayBase* pArray = static_cast<ArrayBase*>(T::getElement(pObject, 0));
 	if (pArray && pArray->getCount() > index)
 	{
 		pArray->setElement(index, const_cast<void*>(pData));
@@ -99,7 +100,8 @@ inline void DynamicArrayMetaField<T>::validateIndividualRef(const MetaBase* /*pO
 template <class T>
 inline void DynamicArrayMetaField<T>::appendElement(MetaBase* pObject, const void* pData) const
 {
-	ArrayBase* pArray = static_cast<ArrayBase*>(get(pObject));
+  // We must use T::getElement(0) to get the pointer to the array object rather than its first entry.
+	ArrayBase* pArray = static_cast<ArrayBase*>(T::getElement(pObject, 0));
 	if (pArray)
 	{
 		pArray->appendElement(const_cast<void*>(pData));

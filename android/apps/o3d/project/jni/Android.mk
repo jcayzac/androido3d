@@ -37,6 +37,7 @@ LOCAL_SRC_FILES := \
   gl_code.cpp \
   camera.cpp \
   debug.cpp \
+  meta_interface.cpp \
   render_graph.cpp \
   scene.cpp \
   shader_builder.cpp \

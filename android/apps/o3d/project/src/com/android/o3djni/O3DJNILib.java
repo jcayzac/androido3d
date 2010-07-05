@@ -37,5 +37,5 @@ public class O3DJNILib {
      public static native void onRoll(float directionX, float directionY);
      
      public static native String[] getSystemList();
-     public static native String[] getMetaData(String[] path);
+     public static native String[][] getMetaData(String[] path);
 }

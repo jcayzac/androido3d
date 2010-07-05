@@ -1,0 +1,56 @@
+//	GameObject.h
+//	Copyright (C) 2008 Chris Pruett.		c_pruett@efn.org
+//
+//	FarClip Engine
+//
+//	Licensed under the Apache License, Version 2.0 (the "License");
+//	you may not use this file except in compliance with the License.
+//	You may obtain a copy of the License at
+//
+//			http://www.apache.org/licenses/LICENSE-2.0
+//
+//	Unless required by applicable law or agreed to in writing, software
+//	distributed under the License is distributed on an "AS IS" BASIS,
+//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//	See the License for the specific language governing permissions and
+//	limitations under the License.
+
+
+#include "Blackboard.h"
+#include "GameComponent.h"
+#include "GameObjectSystem.h"
+#include "Vector3.h"
+
+
+metaclass GameObject
+{
+		function virtual void update(const float& timeDelta, const GameObjectSystem::GameObjectUpdatePhase currentPhase) { public }
+    function void add(GameComponent* component) { public }
+    function void remove(const GameComponent* component) { public }
+    function void removeAll() { public }
+
+    field mID { type int, value -1, private }
+    field mPosition { type Vector3, value Vector3::ZERO, private }
+    field mRuntimeData { type Blackboard, private }
+    array mComponents { type GameComponent*, length dynamic, ref count, private }
+    
+    get mID { public }
+    set mID { public }
+    
+    get mPosition { public, by const reference }
+    set mPosition { public, by const reference }
+    
+    get mRuntimeData { public, by pointer }
+    get mRuntimeData { public, by const pointer }
+
+};
+
+inline void GameObject::add(GameComponent* component)
+{
+  mComponents.append(component);
+}
+
+inline void GameObject::removeAll()
+{
+  mComponents.removeAll();
+}

@@ -35,7 +35,7 @@ void GameObjectSystem::update(const float timeDelta, const UpdatePhase phase)
 	const int count = mGameObjects.getCount();
 	for (int x = 0; x < count; x++)
 	{
-		mGameObjects.get(x)->update(timeDelta);
+		mGameObjects.get(x)->update(timeDelta, static_cast<GameObjectUpdatePhase>(phase));
 	}
 }
 

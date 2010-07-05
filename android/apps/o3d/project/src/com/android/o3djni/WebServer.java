@@ -241,44 +241,43 @@ public class WebServer implements Runnable {
 	return null;
   }
 
-	private static String format(String[] s, String delimiter, String path) {
-		int capacity = 0;
-		int delimLength = delimiter.length();
-		int pathLength = path.length();
-		int extrasLength = "<a href=\"\"></a>".length();
-		for(int x = 0; x < s.length; x++) {
-			capacity += (s[x].length() * 2) + delimLength + pathLength + extrasLength;
-		}
-	
-		StringBuilder buffer = new StringBuilder(capacity);
-		for(int x = 0; x < s.length; x++) {
-			buffer.append("<a href=\"" + path);
-			buffer.append(s[x]);
-			buffer.append("\">");
-			buffer.append(s[x]);
-			buffer.append("</a>");
-			if (x + 1 < s.length) {
-				buffer.append(delimiter);
-			}
-		}
-		return buffer.toString();
+	private static String formatLink(String s, String path) {
+		return "<a href=\"" + path + s + "\">" + s + "</a>";
 	}
   
 	private String parseRequest(String path) {
-		String response = "";
-		String[] result;
-		String fullPath = path + "/";
+		StringBuilder buffer = new StringBuilder();
 		if (path.length() == 0) {
-			result = O3DJNILib.getSystemList();
-			fullPath = "";
+			String[] result = O3DJNILib.getSystemList();
+			for (int x = 0; x < result.length; x++) {
+				buffer.append(formatLink(result[x], ""));
+				buffer.append("<br>\n");
+			}
 		} else {
 			String[] parts = path.split("/");
-			result = O3DJNILib.getMetaData(parts); 
+			String fullPath = "/" + path + "/";
+			String[][] result = O3DJNILib.getMetaData(parts); 
+			if (result != null) {
+				buffer.append("<table border='0'>");
+				for (int x = 0; x < result.length; x++) {
+					buffer.append("<tr><td>");
+					buffer.append(result[x][1]);
+					buffer.append("</td><td>");
+					buffer.append(formatLink(result[x][0], fullPath));
+					buffer.append("</td><td>");
+					buffer.append(result[x][2]);
+					buffer.append("</td></tr>\n");
+				}
+				buffer.append("</table>");
+			} else {
+				buffer.append("(no fields)");
+			}
 		}
+		
+		String response = buffer.toString();
 	  
 		String header = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"> <html> <head> <title>O3D Client</title> </head> <body>";
 		String footer = "</body></html>";
-		response = format(result, "\n<br>", fullPath);
 
 		return header + response + footer;
 	}

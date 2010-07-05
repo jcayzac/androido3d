@@ -80,6 +80,7 @@ def main(argv):
       game_path + "CollisionPairSystem.meta", 
       game_path + "ComponentList.meta", 
       game_path + "GameComponent.meta", 
+      game_path + "GameObject.meta", 
       game_path + "GameObjectSystem.meta", 
       game_path + "GravityComponent.meta", 
       game_path + "LinearMotionComponent.meta", 

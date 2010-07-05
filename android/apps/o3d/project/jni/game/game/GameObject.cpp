@@ -23,15 +23,14 @@
 #include "System.h"
 #include "SystemRegistry.h"
 
-void GameObject::update(const float& time)
+void GameObject::update(const float& time, const GameObjectSystem::GameObjectUpdatePhase currentPhase)
 {
-	const int count = getCount();
+	const int count = mComponents.getCount();
 	ProfileSystem* profiler = getSystem<ProfileSystem>();
-	GameObjectSystem::GameObjectUpdatePhase currentPhase = getSystem<GameObjectSystem>()->getCurrentPhase();
 	
 	for (int x = 0; x < count; x++)
 	{
-		GameComponent* current = get(x);
+		GameComponent* current = mComponents.get(x);
 		if (current->runsInPhase(currentPhase))
 		{
 			if (profiler)
@@ -47,4 +46,21 @@ void GameObject::update(const float& time)
 			}
 		}
 	}
+}
+
+void GameObject::remove(const GameComponent* component)
+{
+  const int count = mComponents.getCount();
+	
+	for (int x = 0; x < count; x++)
+	{
+		if (component == mComponents.get(x))
+		{
+		  // Note, this means that the fist *instance* of this component will be removed.
+		  // but we never require instances to appear only one in this list.
+		  mComponents.remove(x);
+		  break;
+		}
+		
+  }
 }

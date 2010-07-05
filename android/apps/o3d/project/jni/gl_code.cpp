@@ -64,6 +64,8 @@
 #include "TimeSystemPosix.h"
 #include "Vector3.h"
 
+#include "meta_interface.h"
+
 #define  LOG_TAG    "libo3djni"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -380,16 +382,6 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jo
 		jfloat directionX, jfloat directionY) {
 	LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
 
-	/*Vector3 current = g_object->getRuntimeData()->getVector("velocity");
-	const float speed = 0.3f;
-
-  Vector3 velocity = current + Vector3(directionX != 0.0f ? speed * Sign(directionX) : 0.0f,
-        directionY != 0.0f ? -speed * Sign(directionY) : 0.0f, 0.0f);
-
-	g_object->getRuntimeData()->insertVector(velocity, "velocity");
-	g_object->getRuntimeData()->insertVector(Vector3::ZERO, "targetVelocity");
-	g_object->getRuntimeData()->insertVector(Vector3::ONE, "acceleration");*/
-
 	Vector3 orientation = g_object->getRuntimeData()->getVector("orientation");
 	orientation[1] += directionX;
 	g_object->getRuntimeData()->insertVector(orientation, "orientation");
@@ -400,16 +392,8 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jo
 JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(JNIEnv * env, jobject obj) {
   const int systemCount = SystemRegistry::getSystemRegistry()->getCount();
 
-  jobjectArray ret;
-
-  ret = (jobjectArray)env->NewObjectArray(systemCount,
-    env->FindClass("java/lang/String"), NULL);
-
-  for (int x = 0; x < systemCount; x++) {
-    const char* name = SystemRegistry::getSystemRegistry()->get(x)->getMetaObject()->getName();
-    env->SetObjectArrayElement(ret, x, env->NewStringUTF(name));
-  }
-
+  jobjectArray ret = MetaInterface::getSystems(env);
+  
   return ret;
 }
 
@@ -417,108 +401,10 @@ JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(J
 // System/Field[/Index]/Object/
 JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNIEnv * env, jobject obj, jobjectArray path) {
   const jsize path_elements = env->GetArrayLength(path);
+  
+  MetaInterface interface(env, path, path_elements);
 
-  jobjectArray result = NULL;
-
-  if (path_elements > 0) {
-    Array<char const*> elements(path_elements);
-    Array<jstring> jstrings(path_elements);
-
-    for (int x = 0; x < path_elements; x++) {
-      const jstring jni_string = (jstring)env->GetObjectArrayElement(path, x);
-      const char* c_string = env->GetStringUTFChars(jni_string, NULL);
-      elements.append(c_string);
-      jstrings.append(jni_string);
-    }
-
-    const char* system_string = elements.get(0);
-    DLOG(INFO) << "Looking for system: " << system_string;
-    const MetaObject* system_meta = MetaRegistry::getMetaRegistry()->getMetaObject(system_string);
-    const System* system = SystemRegistry::getSystemRegistry()->getSystem(system_meta);
-    MetaBase const* root = system;
-
-    if (system != NULL) {
-      DLOG(INFO) << "Found system: " << system->getMetaObject()->getName();
-      bool done = false;
-      for (int x = 1; x < path_elements && !done; x++) {
-        const MetaObject* meta = root->getMetaObject();
-        if (!meta) {
-          break;
-        }
-        const char* field_string = elements.get(x);
-        const int field_count = meta->getFieldCount();
-        for (int y = 0; y < field_count; y++) {
-          const MetaField* metaField = meta->getField(y);
-          DLOG(INFO) << "Field: " << metaField->getName() << " (offset: " << metaField->getOffset() << ")";
-
-          if (strcmp(field_string, metaField->getName()) == 0) {
-            DLOG(INFO) << "Found field: " << metaField->getName();
-            // found the field!
-
-            void* object = NULL;
-
-            if (metaField->getElementCount(root) > 1 && x + 1 < path_elements) {
-              DLOG(INFO) << "Field is array of type " << metaField->getTypeName() << " and size " << metaField->getElementCount(root);
-              int index = atoi(elements.get(x + 1));
-              if (index >= 0 && index <= metaField->getElementCount(root)) {
-                if (metaField->getStorageType() == MetaField::TYPE_pointer) {
-                  // array of pointers
-                  object = *((void**)metaField->getElement(root, index));
-                } else {
-                  // inline array
-                  object = (void*)metaField->getElement(root, index);
-                }
-              }
-            } else if (metaField->getElementCount(root) == 1) {
-              if (metaField->getStorageType() == MetaField::TYPE_pointer) {
-                object = *((void**)metaField->get(root));
-              } else {
-                object = (void*)metaField->get(root);
-              }
-            }
-
-
-            if (object && MetaBase::authenticatePointer(object)) {
-              // safe to cast!
-              root = static_cast<MetaBase*>(object);
-              break;
-            }
-
-            DLOG(INFO) << "Field null or unknown type: " << metaField->getTypeName();
-            // we found the field but can't go any further.
-            done = true;
-            break;
-          }
-        }
-
-
-      }
-
-    }
-
-    // release the strings.
-    for (int x = 0; x < path_elements; x++) {
-      env->ReleaseStringUTFChars(jstrings.get(x), elements.get(x));
-    }
-
-    jstrings.removeAll();
-    elements.removeAll();
-
-    if (root) {
-      DLOG(INFO) << "Return object: " << root->getMetaObject()->getName();
-      const MetaObject* meta = root->getMetaObject();
-      const int field_count = meta->getFieldCount();
-      result = (jobjectArray)env->NewObjectArray(field_count,
-        env->FindClass("java/lang/String"), NULL);
-
-      for (int x = 0; x < field_count; x++) {
-        env->SetObjectArrayElement(result, x, env->NewStringUTF(meta->getField(x)->getName()));
-      }
-
-    }
-
-
-  }
-
+  jobjectArray result = interface.parsePath();
+  
   return result;
 }
