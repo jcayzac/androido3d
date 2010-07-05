@@ -7,6 +7,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := o3dcore
 LOCAL_CPP_EXTENSION := .cc
 LOCAL_CFLAGS    := \
+  -O1 \
   -D__ANDROID__ \
   -DO3D_NO_CANVAS \
   -DO3D_NO_GPU2D \
@@ -121,6 +122,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := o3drenderer
 LOCAL_CPP_EXTENSION := .cc
 LOCAL_CFLAGS    := \
+  -O1 \
   -D__ANDROID__ \
   -DRENDERER_GLES2 \
   -DGLES2_BACKEND_NATIVE_GLES2 \

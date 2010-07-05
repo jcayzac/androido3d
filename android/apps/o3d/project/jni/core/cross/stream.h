@@ -151,7 +151,7 @@ class ParamVertexBufferStream : public TypedParamBase<char> {
 
   virtual void CopyDataFromParam(Param *source_param);
 
-  const Stream& stream() {
+  const Stream& stream() const {
     // We guarantee there will always be a stream.
     return *stream_.Get();
   }

@@ -127,6 +127,7 @@ class O3DManager {
   o3d::Pack* pack_;
   o3d_utils::ViewInfo* main_view_;
   o3d_utils::Scene* scene_;
+  o3d_utils::Scene* scene_test_[9];
   o3d::ElapsedTimeTimer timer_;
   float time_;
 
@@ -185,6 +186,19 @@ bool O3DManager::Initialize(int width, int height) {
       o3d_utils::Camera::getViewAndProjectionFromCameras(
           root_, width, height);
 
+  for (int ii = 0; ii < arraysize(scene_test_); ++ii) {
+    scene_test_[ii] = scene_->Clone(client_.get());
+    scene_test_[ii]->SetParent(root_);
+    scene_test_[ii]->root()->set_local_matrix(o3d::Matrix4(
+        o3d::Vector4(0.4f, 0.0f, 0.0f, 0.0f),
+        o3d::Vector4(0.0f, 0.4f, 0.0f, 0.0f),
+        o3d::Vector4(0.0f, 0.0f, 0.4f, 0.0f),
+        o3d::Vector4(-5.0f + 5.0 * (ii % 3),
+                     0.0f,
+                     -5.0f + 5.0 * (ii / 3),
+                     1.0f)));
+  }
+
   example_.Init(this);
 
   main_view_->draw_context()->set_view(camera_info->view);
@@ -237,6 +251,9 @@ bool O3DManager::Render() {
 
   example_.Update(elapsedTimeSinceLastUpdateInSeconds);
 
+  for (int ii = 0; ii < arraysize(scene_test_); ++ii) {
+    scene_test_[ii]->SetAnimationTime(fmodf(time_ + ii * 0.1, 573.0f / 30.0f));
+  }
 
   client_->Tick();
   client_->RenderClient(true);
