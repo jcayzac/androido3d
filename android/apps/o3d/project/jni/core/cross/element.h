@@ -145,7 +145,7 @@ class Element : public ParamObject {
   // Gets the current owner of this Element.
   // Returns:
   //   A pointer to the owner of this element.
-  Shape* owner() {
+  Shape* owner() const {
     return owner_;
   }
 

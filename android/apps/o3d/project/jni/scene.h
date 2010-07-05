@@ -6,6 +6,7 @@
 #define O3D_UTILS_SCENE_H_
 
 #include <string>
+#include <set>
 #include "core/cross/types.h"
 
 namespace o3d {
@@ -23,6 +24,15 @@ class Transform;
 namespace o3d_utils {
 
 class ViewInfo;
+
+class StringList {
+ public:
+  StringList(const char** strings, size_t num_strings);
+  bool IsInList(const std::string& check);
+
+ private:
+  std::set<std::string> strings_;
+};
 
 // Manages a scene loaded from collada/o3d.
 class Scene {
@@ -43,6 +53,13 @@ class Scene {
   o3d::Transform* root() const {
     return root_;
   }
+
+  o3d::ParamFloat* time_param() const {
+    return time_;
+  }
+
+  // TODO(gman): Need to pass in effect/material pack :-(
+  Scene* Clone(o3d::Client* client) const;
 
   void SetParent(o3d::Transform* parent);
   void SetLocalMatrix(const o3d::Matrix4& mat);
@@ -73,6 +90,8 @@ class Scene {
   static void PrepareShapes(o3d::Pack* pack);
 
  private:
+  friend class Cloner;
+
   Scene(o3d::Pack* pack, o3d::Transform* root, o3d::ParamFloat* time);
 
   static bool hasNonOneAlpha(
