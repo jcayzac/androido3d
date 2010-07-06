@@ -59,7 +59,9 @@ class SortHelper {
   ThingMap things_;
 };
 
-void DumpRenderGraph(o3d::RenderNode* render_node, const std::string& indent);
+void DumpRenderNode(
+    const o3d::RenderNode* render_node, const std::string& indent);
+void DumpTransform(const o3d::Transform* transform, const std::string& indent);
 void DumpMatrix(const o3d::Matrix4& mat);
 bool EndsWith(const std::string& str, const std::string& end);
 

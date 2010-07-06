@@ -24,6 +24,7 @@
 #include "core/cross/client.h"
 #include "core/cross/curve.h"
 #include "core/cross/pack.h"
+#include "core/cross/param_array.h"
 #include "core/cross/primitive.h"
 #include "core/cross/sampler.h"
 #include "core/cross/shape.h"
@@ -429,9 +430,9 @@ class Cloner {
         Cloner* cloner,
         const o3d::ObjectBase* src,
         o3d::ObjectBase* dst) {
-//DLOG(INFO) << "Checking if object is: " << T::GetApparentClass()->name();
+DLOG(INFO) << "Checking if object is: " << T::GetApparentClass()->name();
       if (src->IsA(T::GetApparentClass()) && dst->IsA(T::GetApparentClass())) {
-//DLOG(INFO) << "Copying as: " <<  T::GetApparentClass()->name();
+DLOG(INFO) << "Copying as: " <<  T::GetApparentClass()->name();
         cloner->Copy(static_cast<const T*>(src), static_cast<T*>(dst));
         return true;
       }
@@ -457,7 +458,7 @@ class Cloner {
   };
 
   void Copy(const o3d::Element* src_element, o3d::Element* dst_element) {
-//DLOG(INFO) << "Copy Element";
+DLOG(INFO) << "Copy Element";
     Copy(static_cast<const o3d::ParamObject*>(src_element),
          static_cast<o3d::ParamObject*>(dst_element));
 
@@ -465,7 +466,7 @@ class Cloner {
   }
 
   void Copy(const o3d::NamedObject* src_object, o3d::NamedObject* dst_object) {
-//DLOG(INFO) << "Copy NamedObject";
+DLOG(INFO) << "Copy NamedObject";
     Copy(static_cast<const o3d::ObjectBase*>(src_object),
          static_cast<o3d::ObjectBase*>(dst_object));
 
@@ -473,7 +474,7 @@ class Cloner {
   }
 
   void Copy(const o3d::ParamObject* src, o3d::ParamObject* dst) {
-//DLOG(INFO) << "Copy ParamObject";
+DLOG(INFO) << "Copy ParamObject";
     Copy(static_cast<const o3d::NamedObject*>(src),
          static_cast<o3d::NamedObject*>(dst));
     const o3d::NamedParamRefMap& params = src->params();
@@ -489,12 +490,12 @@ class Cloner {
   }
 
   void Copy(const o3d::ObjectBase* src_object, o3d::ObjectBase* dst_object) {
-//DLOG(INFO) << "Copy ObjectBase";
+DLOG(INFO) << "Copy ObjectBase";
   }
 
   void Copy(
       const o3d::Primitive* src_primitive, o3d::Primitive* dst_primitive) {
-//DLOG(INFO) << "Copy Primitive";
+DLOG(INFO) << "Copy Primitive";
     Copy(static_cast<const o3d::Element*>(src_primitive),
          static_cast<o3d::Element*>(dst_primitive));
 
@@ -507,7 +508,7 @@ class Cloner {
   }
 
   void Copy(const o3d::Shape* src_shape, o3d::Shape* dst_shape) {
-//DLOG(INFO) << "Copy Shape";
+DLOG(INFO) << "Copy Shape";
     Copy(static_cast<const o3d::ParamObject*>(src_shape),
          static_cast<o3d::ParamObject*>(dst_shape));
 
@@ -519,7 +520,7 @@ class Cloner {
 
   void Copy(
       const o3d::Transform* src_transform, o3d::Transform* dst_transform) {
-//DLOG(INFO) << "Copy Transform";
+DLOG(INFO) << "Copy Transform";
     Copy(static_cast<const o3d::ParamObject*>(src_transform),
          static_cast<o3d::ParamObject*>(dst_transform));
 
@@ -532,7 +533,7 @@ class Cloner {
   }
 
   void Copy(const o3d::SkinEval* src_skin_eval, o3d::SkinEval* dst_skin_eval) {
-//DLOG(INFO) << "Copy SkinEval";
+DLOG(INFO) << "Copy SkinEval";
     Copy(static_cast<const o3d::VertexSource*>(src_skin_eval),
          static_cast<o3d::VertexSource*>(dst_skin_eval));
 
@@ -555,9 +556,26 @@ class Cloner {
     }
   }
 
+  void Copy(const o3d::ParamArray* src_array, o3d::ParamArray* dst_array) {
+DLOG(INFO) << "Copy ParamArray";
+    Copy(static_cast<const o3d::NamedObject*>(src_array),
+         static_cast<o3d::NamedObject*>(dst_array));
+
+    const o3d::ParamArray::ParamRefVector& src_params = src_array->params();
+    const o3d::ParamArray::ParamRefVector& dst_params = dst_array->params();
+    for (size_t ii = 0; ii < src_params.size(); ++ii) {
+      o3d::Param* src_param = src_params[ii];
+      o3d::Param* input = src_param->input_connection();
+      if (input) {
+        o3d::Param* dst_param = dst_params[ii];
+        dst_param->Bind(GetNew<o3d::Param>(input));
+      }
+    }
+  }
+
   void Copy(const o3d::StreamBank* src_stream_bank,
             o3d::StreamBank* dst_stream_bank) {
-//DLOG(INFO) << "Copy StreamBank";
+DLOG(INFO) << "Copy StreamBank";
     Copy(static_cast<const o3d::ParamObject*>(src_stream_bank),
          static_cast<o3d::ParamObject*>(dst_stream_bank));
     const o3d::StreamParamVector& vertex_stream_params =
@@ -608,7 +626,7 @@ Scene* Cloner::CloneScene(o3d::Client* client, const Scene* src) {
   o3d::Pack* dst_pack = client->CreatePack();
   o3d::Pack* src_pack = src->pack();
 
-//DLOG(INFO) << "Walk Stream Banks";
+DLOG(INFO) << "Walk Stream Banks";
   // First, hand process the stream_banks to find which vertex buffers need to
   // be cloned and which don't
   std::set<o3d::Buffer*> buffers_to_clone;
@@ -633,7 +651,7 @@ Scene* Cloner::CloneScene(o3d::Client* client, const Scene* src) {
     }
   }
 
-//DLOG(INFO) << "Compute buffers to keep";
+DLOG(INFO) << "Compute buffers to keep";
   // Clone stuff not on the list.
   std::vector<o3d::Buffer*> buffers =
       src_pack->GetByClass<o3d::Buffer>();
@@ -649,10 +667,17 @@ Scene* Cloner::CloneScene(o3d::Client* client, const Scene* src) {
 
   for (std::set<o3d::Buffer*>::iterator it = buffers_to_keep.begin();
        it != buffers_to_keep.end(); ++it) {
-    AddMapping(*it, *it);
+    o3d::Buffer* buffer = *it;
+    AddMapping(buffer, buffer);
+    // The the fields
+    const o3d::FieldRefArray& fields = buffer->fields();
+    for (size_t jj = 0; jj < fields.size(); ++jj) {
+      const o3d::Field* field = fields[jj];
+      AddMapping(field, field);
+    }
   }
 
-//DLOG(INFO) << "Walk Primitives";
+DLOG(INFO) << "Walk Primitives";
   // Next we need to look at all primitives and see if they use a streambank
   // that needs to be cloned.
   std::vector<o3d::Primitive*> primitives =
@@ -665,7 +690,7 @@ Scene* Cloner::CloneScene(o3d::Client* client, const Scene* src) {
     }
   }
 
-//DLOG(INFO) << "Walk Shapes";
+DLOG(INFO) << "Walk Shapes";
   // Finally we need to go through the shapes and see if they use a primitive
   // that needs to be cloned.
   std::vector<o3d::Shape*> shapes = src_pack->GetByClass<o3d::Shape>();
@@ -685,7 +710,7 @@ Scene* Cloner::CloneScene(o3d::Client* client, const Scene* src) {
     }
   }
 
-//DLOG(INFO) << "Clone Stuff";
+DLOG(INFO) << "Clone Stuff";
   // Clone all the rest.
   std::vector<o3d::ObjectBase*> objects =
       src_pack->GetByClass<o3d::ObjectBase>();
@@ -712,6 +737,18 @@ Scene* Cloner::CloneScene(o3d::Client* client, const Scene* src) {
           AddMapping(src_field, dst_field);
         }
       }
+      if (dst->IsA(o3d::ParamArray::GetApparentClass())) {
+        // Duplicate the params
+        o3d::ParamArray* src_array = down_cast<o3d::ParamArray*>(src);
+        o3d::ParamArray* dst_array = down_cast<o3d::ParamArray*>(dst);
+        const o3d::ParamArray::ParamRefVector& src_params = src_array->params();
+        for (size_t jj = 0; jj < src_params.size(); ++jj) {
+          o3d::Param* src_param = src_params[jj];
+          o3d::Param* dst_param =
+              dst_array->CreateParamByClass(jj, src_param->GetClass());
+          AddMapping(src_param, dst_param);
+        }
+      }
     }
     AddMapping(src, dst);
 
@@ -729,7 +766,7 @@ Scene* Cloner::CloneScene(o3d::Client* client, const Scene* src) {
     }
   }
 
-//DLOG(INFO) << "Setup Copier";
+DLOG(INFO) << "Setup Copier";
   std::vector<CopierBase::Ref> copiers;
   // TODO(gman): Init this just once.
   // NOTE: The order here is important. Derived types must
@@ -740,22 +777,23 @@ Scene* Cloner::CloneScene(o3d::Client* client, const Scene* src) {
   copiers.push_back(CopierBase::Ref(new Copier<o3d::Element>));
   copiers.push_back(CopierBase::Ref(new Copier<o3d::Transform>));
   copiers.push_back(CopierBase::Ref(new Copier<o3d::Shape>));
+  copiers.push_back(CopierBase::Ref(new Copier<o3d::ParamArray>));
   copiers.push_back(CopierBase::Ref(new Copier<o3d::ParamObject>));
   copiers.push_back(CopierBase::Ref(new Copier<o3d::NamedObject>));
   copiers.push_back(CopierBase::Ref(new Copier<o3d::ObjectBase>));
 
   // Now copy/bind everything.
-//DLOG(INFO) << "Copy Stuff";
+DLOG(INFO) << "Copy Stuff";
   for (size_t ii = 0; ii < objects.size(); ++ii) {
     o3d::ObjectBase* src = objects[ii];
     o3d::ObjectBase* dst = GetNew<o3d::ObjectBase>(src);
     if (dst && src != dst) {
-      //DLOG(INFO) << "Copying a: " << src->GetClass()->name();
-      //DLOG(INFO) << "To a : " << dst->GetClass()->name();
-      //if (src->IsA(o3d::NamedObject::GetApparentClass())) {
-      //  DLOG(INFO) << "Copying: "
-      //             << down_cast<o3d::NamedObject*>(src)->name();
-      //}
+      DLOG(INFO) << "Copying a: " << src->GetClass()->name();
+      DLOG(INFO) << "To a : " << dst->GetClass()->name();
+      if (src->IsA(o3d::NamedObject::GetApparentClass())) {
+        DLOG(INFO) << "Copying: "
+                   << down_cast<o3d::NamedObject*>(src)->name();
+      }
       for (size_t jj = 0; jj < copiers.size(); ++jj) {
         if (copiers[jj]->Copy(this, src, dst)) {
           break;
@@ -764,7 +802,7 @@ Scene* Cloner::CloneScene(o3d::Client* client, const Scene* src) {
     }
   }
 
-//DLOG(INFO) << "Done Copying";
+DLOG(INFO) << "Done Copying";
 
   return new Scene(
       dst_pack,

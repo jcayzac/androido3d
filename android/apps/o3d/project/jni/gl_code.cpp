@@ -133,15 +133,15 @@ bool O3DManager::Initialize(int width, int height) {
       pack_, root_, client_->render_graph_root());
 
   LOGI("---Render Graph---(start)---\n");
-  DumpRenderGraph(client_->render_graph_root(), "");
+  DumpRenderNode(client_->render_graph_root(), "");
   LOGI("---Render Graph---(end)---\n");
 
   scene_ = o3d_utils::Scene::LoadScene(
       client_.get(),
       main_view_,
 //      "/sdcard/collada/seven_shapes.zip",
-//      "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
-      "/sdcard/collada/character.zip",
+      "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
+//      "/sdcard/collada/character.zip",
       NULL);
   scene_->SetParent(root_);
 
@@ -161,6 +161,12 @@ bool O3DManager::Initialize(int width, int height) {
                      -5.0f + 5.0 * (ii / 3),
                      1.0f)));
   }
+
+  LOGI("--------ORIGINAL-----------------\n");
+  DumpTransform(scene_->root(), "");
+  LOGI("--------COPY---------------------\n");
+  DumpTransform(scene_test_[0]->root(), "");
+  LOGI("--------END----------------------\n");
 
   main_view_->draw_context()->set_view(camera_info->view);
   //main_view_->draw_context()->set_projection(camera_info->projection);
