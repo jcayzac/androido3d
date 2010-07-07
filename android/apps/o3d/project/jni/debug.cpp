@@ -27,11 +27,34 @@
 #include "core/cross/effect.h"
 #include "core/cross/element.h"
 #include "core/cross/material.h"
+#include "core/cross/param_array.h"
+#include "core/cross/primitive.h"
 #include "core/cross/render_node.h"
 #include "core/cross/sampler.h"
 #include "core/cross/shape.h"
+#include "core/cross/skin.h"
 #include "core/cross/texture.h"
 #include "core/cross/transform.h"
+
+void DumpPoint3(const o3d::Point3& v, const char* label) {
+  LOGI("%s: %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2]);
+}
+
+void DumpVector3(const o3d::Vector3& v, const char* label) {
+  LOGI("%s: %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2]);
+}
+
+void DumpFloat3(const o3d::Float3& v, const char* label) {
+  LOGI("%s: %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2]);
+}
+
+void DumpVector4(const o3d::Vector4& v, const char* label) {
+  LOGI("%s: %.3f, %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2], v[3]);
+}
+
+void DumpFloat4(const o3d::Float4& v, const char* label) {
+  LOGI("%s: %.3f, %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2], v[3]);
+}
 
 void DumpParams(const o3d::ParamObject* obj, const std::string& indent) {
   if (obj) {
@@ -41,7 +64,7 @@ void DumpParams(const o3d::ParamObject* obj, const std::string& indent) {
          ++it) {
       o3d::Param* param = it->second;
       o3d::Param* input = param->input_connection();
-      std::string value;
+      std::string value = "--na--";
       char buf[256];
       if (param->IsA(o3d::ParamFloat::GetApparentClass())) {
         float v = static_cast<o3d::ParamFloat*>(param)->value();
@@ -58,6 +81,14 @@ void DumpParams(const o3d::ParamObject* obj, const std::string& indent) {
       } else if (param->IsA(o3d::ParamFloat4::GetApparentClass())) {
         o3d::Float4 v = static_cast<o3d::ParamFloat4*>(param)->value();
         sprintf(buf, "%.3f, %.3f, %.3f, %.3f", v[0], v[1], v[2], v[3]);
+        value = buf;
+      } else if (param->IsA(o3d::ParamBoundingBox::GetApparentClass())) {
+        o3d::BoundingBox v =
+            static_cast<o3d::ParamBoundingBox*>(param)->value();
+        sprintf(buf, "%s [%.3f, %.3f, %.3f], [%.3f, %.3f, %.3f]",
+                v.valid() ? "valid" : "**invalid**",
+                v.min_extent()[0], v.min_extent()[1],
+                v.min_extent()[2],v.max_extent()[0], v.max_extent()[1], v.max_extent()[2]);
         value = buf;
       } else if (param->IsA(o3d::ParamInteger::GetApparentClass())) {
         int v = static_cast<o3d::ParamInteger*>(param)->value();
@@ -80,10 +111,20 @@ void DumpParams(const o3d::ParamObject* obj, const std::string& indent) {
       } else if (param->IsA(o3d::ParamSampler::GetApparentClass())) {
         o3d::Sampler* v = static_cast<o3d::ParamSampler*>(param)->value();
         value = v ? v->name() : "NULL";
+      } else if (param->IsA(o3d::ParamSkin::GetApparentClass())) {
+        o3d::Skin* v = static_cast<o3d::ParamSkin*>(param)->value();
+        value = v ? v->name() : "NULL";
+      } else if (param->IsA(o3d::ParamStreamBank::GetApparentClass())) {
+        o3d::StreamBank* v = static_cast<o3d::ParamStreamBank*>(param)->value();
+        value = v ? v->name() : "NULL";
+      } else if (param->IsA(o3d::ParamParamArray::GetApparentClass())) {
+        o3d::ParamArray* v = static_cast<o3d::ParamParamArray*>(param)->value();
+        value = v ? v->name() : "NULL";
       }
       if (input) {
-        LOGI("%s:Param: %s [%s] <- %s\n", indent.c_str(), param->name().c_str(),
-             param->GetClass()->name(), input->name().c_str());
+        LOGI("%s:Param: %s [%s] <- %s.%s\n", indent.c_str(),
+             param->name().c_str(), param->GetClass()->name(),
+             input->owner()->name().c_str(), input->name().c_str());
       } else {
         LOGI("%s:Param: %s [%s] = %s\n", indent.c_str(), param->name().c_str(),
              param->GetClass()->name(), value.c_str());
@@ -117,8 +158,76 @@ void DumpDrawElement(
 
 void DumpElement(const o3d::Element* element, const std::string& indent) {
   if (element) {
+    const char* pre = indent.c_str();
     LOGI("%sElement: %s\n", indent.c_str(), element->name().c_str());
     DumpParams(element, indent + "   ");
+    if (element->IsA(o3d::Primitive::GetApparentClass())) {
+      const o3d::Primitive* prim = down_cast<const o3d::Primitive*>(element);
+      LOGI("%s  num_primitives: %d\n", pre, prim->number_primitives());
+      LOGI("%s  num_vertices: %d\n", pre, prim->number_vertices());
+      LOGI("%s  prim_type: %d\n", pre, prim->primitive_type());
+      LOGI("%s  start index: %d\n", pre, prim->start_index());
+      LOGI("%s  indexbuffer: %s\n", pre, prim->index_buffer()->name().c_str());
+      o3d::StreamBank* sb = prim->stream_bank();
+      const o3d::StreamParamVector& params = sb->vertex_stream_params();
+      for (size_t jj = 0; jj < params.size(); ++jj) {
+        const o3d::ParamVertexBufferStream* param = params[jj];
+        const o3d::Stream& stream = param->stream();
+        const o3d::Field& field = stream.field();
+        const o3d::Buffer* buffer = field.buffer();
+        LOGI("%s    stream: s:%d si:%d start:%d numv:%d buf:%s:%s\n",
+             pre, stream.semantic(),
+             stream.semantic_index(), stream.start_index(),
+             stream.GetMaxVertices(),
+             buffer->name().c_str(),
+             buffer->GetClass()->name());
+        unsigned num = std::min(buffer->num_elements(), 5u);
+        float floats[5 * 4];
+        field.GetAsFloats(0, floats, field.num_components(), num);
+        for (unsigned elem = 0; elem < num; ++elem) {
+          float* v = &floats[elem * field.num_components()];
+          switch (field.num_components()) {
+          case 1:
+            LOGI("%s     %d: %.3f\n", pre, elem, v[0]);
+            break;
+          case 2:
+            LOGI("%s     %d: %.3f, %.3f\n", pre, elem, v[0], v[1]);
+            break;
+          case 3:
+            LOGI("%s     %d: %.3f, %.3f, %.3f\n", pre, elem, v[0], v[1], v[2]);
+            break;
+          case 4:
+            LOGI("%s     %d: %.3f, %.3f, %.3f, %.3f\n", pre, elem,
+                 v[0], v[1], v[2], v[3]);
+            break;
+          }
+        }
+
+        const o3d::Param* input = param->input_connection();
+        if (input) {
+          const o3d::ParamObject* owner = input->owner();
+          LOGI("%s      input: %s:%s:%s:%s\n", pre,
+               owner->name().c_str(), owner->GetClass()->name(),
+               input->name().c_str(), input->GetClass()->name());
+          if (owner->IsA(o3d::SkinEval::GetApparentClass())) {
+            const o3d::SkinEval* se = down_cast<const o3d::SkinEval*>(owner);
+            LOGI("%s        se skin: %s\n", pre, se->skin()->name().c_str());
+            LOGI("%s        se mats: %s\n", pre,se->matrices()->name().c_str());
+            const o3d::ParamArray* pa = se->matrices();
+            LOGI("%s        pa size: %d\n", pre, pa->size());
+            for (size_t pp = 0; pp < pa->size(); ++pp) {
+              o3d::Param* mp = pa->GetUntypedParam(pp);
+              o3d::Param* inp = mp->input_connection();
+              LOGI("%s        %d: <- %s:%s\n",
+                   pre, pp, inp ? inp->owner()->name().c_str() : "-",
+                   inp ? inp->name().c_str() : "-");
+            }
+            LOGI("%s      -skineval-\n", pre);
+            DumpParams(se, indent + "    ");
+          }
+        }
+      }
+    }
     const o3d::DrawElementRefArray& draw_elements =
         element->GetDrawElementRefs();
     if (!draw_elements.empty()) {

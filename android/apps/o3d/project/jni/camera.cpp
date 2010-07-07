@@ -192,6 +192,9 @@ CameraInfo* Camera::getViewAndProjectionFromCamera(
   } else {
     // Set it to the orientation of the camera.
     view = Vectormath::Aos::inverse(camera->world_matrix());
+    eye = o3d::Point3(0,0,0) + camera->world_matrix().getTranslation();
+    target = eye + camera->world_matrix().getUpper3x3().getCol2();
+    up = camera->world_matrix().getUpper3x3().getCol1();
   }
 
   o3d::ParamString* projectionType =
@@ -255,7 +258,10 @@ CameraInfo* Camera::getCameraFitToScene(o3d::Transform* treeRoot,
   CameraInfo* cameraInfo = new CameraInfo(
       o3d::Matrix4::lookAt(eye, target, up),
       nearPlane,
-      farPlane);
+      farPlane,
+      eye,
+      target,
+      up);
 
   cameraInfo->setAsPerspective(degToRad(45.0f));
   cameraInfo->computeProjection(clientWidth, clientHeight);

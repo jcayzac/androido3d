@@ -38,6 +38,7 @@
 #include "core/cross/profiler.h"
 #include "core/cross/renderer.h"
 #include "core/cross/renderer_platform.h"
+#include "core/cross/skin.h"
 #include "core/cross/timer.h"
 #include "core/cross/transform.h"
 #include "core/cross/types.h"
@@ -92,7 +93,6 @@ class O3DManager {
   o3d::Pack* pack_;
   o3d_utils::ViewInfo* main_view_;
   o3d_utils::Scene* scene_;
-  o3d_utils::Scene* scene_test_[2];
   o3d::ElapsedTimeTimer timer_;
   float time_;
 };
@@ -119,7 +119,7 @@ bool O3DManager::Initialize(int width, int height) {
   LOGI("-----------------------------HERE1\n");
 
   if (renderer_->Init(display_window_, false) != o3d::Renderer::SUCCESS) {
-  DLOG(ERROR) << "Window initialization failed!";
+    DLOG(ERROR) << "Window initialization failed!";
     return false;
   }
 
@@ -139,37 +139,15 @@ bool O3DManager::Initialize(int width, int height) {
   scene_ = o3d_utils::Scene::LoadScene(
       client_.get(),
       main_view_,
-//      "/sdcard/collada/seven_shapes.zip",
-      "/sdcard/collada/kitty_151_idle_stand05_cff1.zip",
-//      "/sdcard/collada/character.zip",
+      "/sdcard/collada/character.zip",
       NULL);
   scene_->SetParent(root_);
 
   o3d_utils::CameraInfo* camera_info =
       o3d_utils::Camera::getViewAndProjectionFromCameras(
           root_, width, height);
-
-  for (int ii = 0; ii < arraysize(scene_test_); ++ii) {
-    scene_test_[ii] = scene_->Clone(client_.get());
-    scene_test_[ii]->SetParent(root_);
-    scene_test_[ii]->root()->set_local_matrix(o3d::Matrix4(
-        o3d::Vector4(0.4f, 0.0f, 0.0f, 0.0f),
-        o3d::Vector4(0.0f, 0.4f, 0.0f, 0.0f),
-        o3d::Vector4(0.0f, 0.0f, 0.4f, 0.0f),
-        o3d::Vector4(-5.0f + 5.0 * (ii % 3),
-                     0.0f,
-                     -5.0f + 5.0 * (ii / 3),
-                     1.0f)));
-  }
-
-  LOGI("--------ORIGINAL-----------------\n");
-  DumpTransform(scene_->root(), "");
-  LOGI("--------COPY---------------------\n");
-  DumpTransform(scene_test_[0]->root(), "");
-  LOGI("--------END----------------------\n");
-
   main_view_->draw_context()->set_view(camera_info->view);
-  //main_view_->draw_context()->set_projection(camera_info->projection);
+
   SetProjection(width, height);
 
   // Set the light pos on all the materials. We could link a param to
@@ -199,7 +177,6 @@ void O3DManager::SetProjection(float width, float height) {
           o3d_utils::degToRad(30.0f), width / height, 10, 1000));
 }
 
-// I have no idea if this is right.
 bool O3DManager::ResizeViewport(int width, int height) {
   renderer_->Resize(width, height);
 
@@ -208,22 +185,82 @@ bool O3DManager::ResizeViewport(int width, int height) {
           root_, width, height);
 
   main_view_->draw_context()->set_view(camera_info->view);
-  //main_view_->draw_context()->set_projection(camera_info->projection);
   SetProjection(width, height);
+}
+
+o3d::Matrix4 lookAt2(
+    const o3d::Point3& eye,
+    const o3d::Point3& target,
+    const o3d::Vector3& up) {
+  o3d::Vector4 vz(Vectormath::Aos::normalize(eye - target));
+  o3d::Vector4 vx(Vectormath::Aos::cross(up, vz.getXYZ()));
+  o3d::Vector4 vy(Vectormath::Aos::cross(vz.getXYZ(), vx.getXYZ()));
+  return o3d::Matrix4(vx, vy, vz, o3d::Vector4(eye));
 }
 
 bool O3DManager::Render() {
   float elapsedTimeSinceLastUpdateInSeconds = timer_.GetElapsedTimeAndReset();
   time_ += elapsedTimeSinceLastUpdateInSeconds;
 
-  scene_->SetAnimationTime(fmodf(time_, 573.0f / 30.0f));
-  for (int ii = 0; ii < arraysize(scene_test_); ++ii) {
-    scene_test_[ii]->SetAnimationTime(fmodf(time_ + ii * 0.1, 573.0f / 30.0f));
+  // Data for animations in 30hz frames. O3D uses seconds so divide by 30.
+  //
+  // idle1: {startFrame: 0, endFrame: 30},
+  // walk: {startFrame: 31, endFrame: 71},
+  // jumpStart: {startFrame: 72, endFrame: 87},
+  // jumpUp: {startFrame: 87, endFrame: 87},
+  // jumpCrest: {startFrame: 87, endFrame: 91},
+  // jumpFall: {startFrame: 91, endFrame: 91},
+  // jumpLand: {startFrame: 91, endFrame: 110},
+  // run: {startFrame: 111, endFrame: 127},
+  // idle2: {startFrame: 128, endFrame: 173},
+  // idle3: {startFrame: 174, endFrame: 246},
+  // idle4: {startFrame: 247, endFrame: 573}};
+  static const float kWalkStart = 31.0f / 30.0f;
+  static const float kWalkEnd = 71.0f / 30.0f;
+  static const float kWalkDuration = kWalkEnd - kWalkStart;
+  static const float kIdleStart = 247.0f / 30.0f;
+  static const float kIdleEnd = 573.0f / 30.0f;
+  static const float kIdleDuration = kIdleEnd - kIdleStart;
+
+  static float moveTimer = 0.0f;
+  static float animTimer = 0.0f;
+  static bool idleing = false;
+
+  animTimer += elapsedTimeSinceLastUpdateInSeconds;
+  if (!idleing) {
+    moveTimer += elapsedTimeSinceLastUpdateInSeconds * 0.5;
+
+    // Move and animate the character
+    // Move in a circle
+    const float kMoveRadius = 10.0f;
+    o3d::Point3 position(
+        sinf(moveTimer) * kMoveRadius,
+        0.0f,
+        cosf(moveTimer) * kMoveRadius);
+    o3d::Point3 target(
+        sinf(moveTimer - 0.1f) * kMoveRadius,
+        0.0f,
+        cosf(moveTimer - 0.1f) * kMoveRadius);
+    o3d::Vector3 up(0.0f, 1.0f, 0.0f);
+
+    o3d::Matrix4 mat(lookAt2(position, target, up));
+    scene_->root()->set_local_matrix(mat);
+
+    scene_->SetAnimationTime(kWalkStart + fmodf(animTimer, kWalkDuration));
+    if (animTimer >= kWalkDuration * 4) {
+      animTimer = 0.0f;
+      idleing = true;
+    }
+  } else {
+    scene_->SetAnimationTime(kIdleStart + std::min(animTimer, kIdleDuration));
+    if (animTimer >= kIdleDuration) {
+      animTimer = 0.0f;
+      idleing = false;
+    }
   }
 
   client_->Tick();
   client_->RenderClient(true);
-
   CheckError();
 }
 
