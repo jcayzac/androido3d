@@ -36,6 +36,22 @@
 #include "core/cross/texture.h"
 #include "core/cross/transform.h"
 
+void DumpMultiLineString(const std::string& str) {
+  size_t pos = 0;
+  int line_num = 1;
+  for(;;) {
+    size_t start = pos;
+    pos = str.find_first_of('\n', pos);
+    std::string line = str.substr(start, pos - start);
+    DLOG(INFO) << line_num << ": " << line;
+    if (pos == std::string::npos) {
+      break;
+    }
+    ++pos;
+    ++line_num;
+  }
+}
+
 void DumpPoint3(const o3d::Point3& v, const char* label) {
   LOGI("%s: %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2]);
 }

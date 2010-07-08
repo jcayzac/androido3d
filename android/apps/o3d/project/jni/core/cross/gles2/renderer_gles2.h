@@ -48,6 +48,7 @@ namespace o3d {
 class Material;
 class Effect;
 class DrawEffect;
+class ObjectManager;
 class SemanticManager;
 
 // Implements the genereric Renderer interface using OpenGLES2.
@@ -184,6 +185,9 @@ class RendererGLES2 : public Renderer {
   // Programs the helper constants into the hardware.
   void UpdateDxClippingUniform(GLint location);
 
+  // Called when we get a new context.
+  bool OnContextRestored();
+
  protected:
   // Keep the constructor protected so only factory methods can create
   // renderers.
@@ -260,6 +264,7 @@ class RendererGLES2 : public Renderer {
   // ones.
   void UpdateHelperConstant(float width, float height);
 
+  ServiceDependency<ObjectManager> object_manager_;
   ServiceDependency<SemanticManager> semantic_manager_;
 
   // Indicates we're rendering fullscreen rather than in the plugin region.

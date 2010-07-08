@@ -293,6 +293,21 @@ bool EffectGLES2::LoadFromFXString(const String& effect) {
   return true;
 }
 
+bool EffectGLES2::OnContextRestored() {
+  if (gl_program_ && !source().empty()) {
+    // The program is not valid. It belonged to a different context.
+    gl_program_ = 0;
+    // we have to make a copy of the string because LoadFromFXString
+    // will clear the internal string.
+    std::string shader(source());
+    if (!LoadFromFXString(shader)) {
+      DLOG(ERROR) << "couldn't restore" << name() << ":\n" << source();
+      return false;
+    }
+  }
+  return true;
+}
+
 void EffectGLES2::GetShaderParamInfo(
     GLuint program,
     std::map<String, EffectParameterInfo>* info_map) {

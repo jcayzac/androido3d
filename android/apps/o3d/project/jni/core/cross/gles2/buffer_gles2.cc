@@ -180,6 +180,15 @@ bool VertexBufferGLES2::ConcreteUnlock() {
   return true;
 }
 
+bool VertexBufferGLES2::OnContextRestored() {
+  if (shadow_.get()) {
+    renderer_->MakeCurrentLazy();
+    glGenBuffersARB(1, &gl_buffer_);
+    glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
+    glBufferData(
+        GL_ARRAY_BUFFER, GetSizeInBytes(), shadow_.get(), GL_STATIC_DRAW);
+  }
+}
 
 // Index Buffers ---------------------------------------------------------------
 
@@ -295,5 +304,16 @@ bool IndexBufferGLES2::ConcreteUnlock() {
 #endif
   CHECK_GL_ERROR();
   return true;
+}
+
+bool IndexBufferGLES2::OnContextRestored() {
+  if (shadow_.get()) {
+    renderer_->MakeCurrentLazy();
+    glGenBuffersARB(1, &gl_buffer_);
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, gl_buffer_);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER, GetSizeInBytes(), shadow_.get(),
+        GL_STATIC_DRAW);
+  }
 }
 }  // namespace o3d

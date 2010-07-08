@@ -280,6 +280,15 @@ static bool CreateGLImages(GLenum target,
   return true;
 }
 
+static void SetDefaultTextureParameters(GLenum target) {
+  glTexParameteri(target,
+                  GL_TEXTURE_MIN_FILTER,
+                  GL_NEAREST_MIPMAP_LINEAR);
+  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
 // Texture2DGLES2 --------------------------------------------------------------
 
 // Constructs a 2D texture object from an existing OpenGLES2 2D texture.
@@ -357,12 +366,7 @@ Texture2DGLES2* Texture2DGLES2::Create(ServiceLocator* service_locator,
     glDeleteTextures(1, &gl_texture);
     return NULL;
   }
-  glTexParameteri(GL_TEXTURE_2D,
-                  GL_TEXTURE_MIN_FILTER,
-                  GL_NEAREST_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  SetDefaultTextureParameters(GL_TEXTURE_2D);
 
   Texture2DGLES2 *texture = new Texture2DGLES2(service_locator,
                                                gl_texture,
@@ -375,7 +379,11 @@ Texture2DGLES2* Texture2DGLES2::Create(ServiceLocator* service_locator,
 
   // If the hardware does not support npot textures, allocate a 0-initialized
   // mip-chain here for use during Texture2DGLES2::Lock.
+  #ifdef O3D_RENDERER_MUST_BACK_RESOURCES
+  {
+  #else
   if (resize_to_pot) {
+  #endif
     texture->backing_bitmap_->Allocate(format, width, height, levels,
                                        Bitmap::IMAGE);
     texture->has_levels_ = (1 << levels) - 1;
@@ -447,7 +455,12 @@ void Texture2DGLES2::SetRect(int level,
     return;
   }
 
+  #ifdef O3D_RENDERER_MUST_BACK_RESOURCES
+  if (!compressed) {
+    // TODO(gman): must shadow compressed textures as well.
+  #else
   if (resize_to_pot_) {
+  #endif
     DCHECK(backing_bitmap_->image_data());
     DCHECK(!compressed);
     // We need to update the backing mipmap and then use that to update the
@@ -549,7 +562,9 @@ bool Texture2DGLES2::PlatformSpecificUnlock(int level) {
   }
   locked_levels_ &= ~(1 << level);
   if (!resize_to_pot_ && (locked_levels_ == 0)) {
+    #ifndef O3D_RENDERER_MUST_BACK_RESOURCES
     backing_bitmap_->FreeData();
+    #endif
     has_levels_ = 0;
   }
   CHECK_GL_ERROR();
@@ -584,6 +599,32 @@ RenderSurface::Ref Texture2DGLES2::PlatformSpecificGetRenderSurface(
 
 const Texture::RGBASwizzleIndices& Texture2DGLES2::GetABGR32FSwizzleIndices() {
   return g_gl_abgr32f_swizzle_indices;
+}
+
+bool Texture2DGLES2::OnContextRestored() {
+  renderer_->MakeCurrentLazy();
+  glGenTextures(1, &gl_texture_);
+  glBindTexture(GL_TEXTURE_2D, gl_texture_);
+  GLenum gl_internal_format = 0;
+  GLenum gl_data_type = 0;
+  GLenum gl_format = GLFormatFromO3DFormat(format(),
+                                           &gl_internal_format,
+                                           &gl_data_type);
+  bool resize_to_pot = !renderer_->supports_npot() &&
+                       !image::IsPOT(width(), height());
+  if (!CreateGLImages(GL_TEXTURE_2D, gl_internal_format, gl_format,
+                      gl_data_type, TextureCUBE::FACE_POSITIVE_X,
+                      format(), levels(), width(), height(), resize_to_pot)) {
+    DLOG(ERROR) << "Failed to create texture images.";
+    glDeleteTextures(1, &gl_texture_);
+    return false;
+  }
+
+  for (int level = 0; level < levels(); ++level) {
+    UpdateBackedMipLevel(level);
+  }
+  SetDefaultTextureParameters(GL_TEXTURE_2D);
+  return true;
 }
 
 // TextureCUBEGLES2 ------------------------------------------------------------
@@ -680,12 +721,7 @@ TextureCUBEGLES2* TextureCUBEGLES2::Create(ServiceLocator* service_locator,
                    format, levels, edge_length, edge_length,
                    resize_to_pot);
   }
-  glTexParameteri(GL_TEXTURE_CUBE_MAP,
-                  GL_TEXTURE_MIN_FILTER,
-                  GL_NEAREST_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  SetDefaultTextureParameters(GL_TEXTURE_CUBE_MAP);
 
   // Create a new texture object, which initializes the base Texture class
   // from the Bitmap information.
@@ -698,7 +734,11 @@ TextureCUBEGLES2* TextureCUBEGLES2::Create(ServiceLocator* service_locator,
                                                    enable_render_surfaces);
   // If the hardware does not support npot textures, allocate a 0-initialized
   // mip-chain here for use during TextureCUBEGLES2::Lock.
+  #ifdef O3D_RENDERER_MUST_BACK_RESOURCES
+  {
+  #else
   if (resize_to_pot) {
+  #endif
     for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
       texture->backing_bitmaps_[face]->Allocate(
           format, edge_length, edge_length, levels, Bitmap::IMAGE);
@@ -794,7 +834,12 @@ void TextureCUBEGLES2::SetRect(TextureCUBE::CubeFace face,
     return;
   }
 
+  #ifdef O3D_RENDERER_MUST_BACK_RESOURCES
+  if (!compressed) {
+    // TODO(gman): Must back compressed textures.
+  #else
   if (resize_to_pot_) {
+  #endif
     Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
     DCHECK(backing_bitmap->image_data());
     DCHECK(!compressed);
@@ -916,7 +961,9 @@ bool TextureCUBEGLES2::PlatformSpecificUnlock(CubeFace face, int level) {
       }
     }
     if (!has_locked_level) {
+      #ifndef O3D_RENDERER_MUST_BACK_RESOURCES
       backing_bitmap->FreeData();
+      #endif
       for (int i = 0; i < static_cast<int>(NUMBER_OF_FACES); ++i) {
         has_levels_[i] = 0;
       }
@@ -924,6 +971,36 @@ bool TextureCUBEGLES2::PlatformSpecificUnlock(CubeFace face, int level) {
   }
   CHECK_GL_ERROR();
   return false;
+}
+
+bool TextureCUBEGLES2::OnContextRestored() {
+  renderer_->MakeCurrentLazy();
+  glGenTextures(1, &gl_texture_);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture_);
+
+  GLenum gl_internal_format = 0;
+  GLenum gl_data_type = 0;
+  GLenum gl_format = GLFormatFromO3DFormat(format(),
+                                           &gl_internal_format,
+                                           &gl_data_type);
+  bool resize_to_pot = !renderer_->supports_npot() &&
+                       !image::IsPOT(edge_length(), edge_length());
+
+  for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
+    CreateGLImages(kCubemapFaceList[face], gl_internal_format,
+                   gl_format, gl_data_type,
+                   static_cast<CubeFace>(face),
+                   format(), levels(), edge_length(), edge_length(),
+                   resize_to_pot);
+  }
+
+  for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
+    for (int level = 0; level < levels(); ++level) {
+      UpdateBackedMipLevel(level, static_cast<CubeFace>(face));
+    }
+  }
+  SetDefaultTextureParameters(GL_TEXTURE_CUBE_MAP);
+  return true;
 }
 
 const Texture::RGBASwizzleIndices&

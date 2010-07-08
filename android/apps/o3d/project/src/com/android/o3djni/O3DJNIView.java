@@ -333,7 +333,7 @@ class O3DJNIView extends GLSurfaceView {
         }
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            // Do nothing.
+        	O3DJNILib.surfaceCreated();
         }
     }
 }

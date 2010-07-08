@@ -19,6 +19,7 @@
 #include "core/cross/param_array.h"
 #include "core/cross/sampler.h"
 #include "core/cross/texture.h"
+#include "debug.h"
 
 namespace o3d_utils {
 
@@ -1115,7 +1116,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
     for (size_t ii = 0; ii < effects.size(); ++ii) {
       effect = effects[ii];
       if (effect->name().compare(description) == 0 &&
-          effect->source().compare(shader)) {
+          effect->source().compare(shader) == 0) {
         return effect;
       }
     }
@@ -1123,19 +1124,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
     if (effect) {
       effect->set_name(description);
 DLOG(INFO) << "-----------------------------------SHADER--";
-      size_t pos = 0;
-      int line_num = 1;
-      for(;;) {
-        size_t start = pos;
-        pos = shader.find_first_of('\n', pos);
-        std::string line = shader.substr(start, pos - start);
-        DLOG(INFO) << line_num << ": " << line;
-        if (pos == std::string::npos) {
-          break;
-        }
-        ++pos;
-        ++line_num;
-      }
+      DumpMultiLineString(shader);
 DLOG(INFO) << "\n--------------END--";
       if (effect->LoadFromFXString(shader)) {
         return effect;

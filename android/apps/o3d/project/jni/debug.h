@@ -59,6 +59,7 @@ class SortHelper {
   ThingMap things_;
 };
 
+void DumpMultiLineString(const std::string& str);
 void DumpPoint3(const o3d::Point3& v, const char* label);
 void DumpVector3(const o3d::Vector3& v, const char* label);
 void DumpFloat3(const o3d::Float3& v, const char* label);

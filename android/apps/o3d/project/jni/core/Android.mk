@@ -126,6 +126,7 @@ LOCAL_CFLAGS    := \
   -D__ANDROID__ \
   -DRENDERER_GLES2 \
   -DGLES2_BACKEND_NATIVE_GLES2 \
+  -DO3D_RENDERER_MUST_BACK_RESOURCES \
   -I$(LOCAL_PATH)/../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/../third_party/libjpeg \
   -I$(LOCAL_PATH)/../third_party/libpng \

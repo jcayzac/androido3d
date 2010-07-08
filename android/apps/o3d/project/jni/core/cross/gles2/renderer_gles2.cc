@@ -48,6 +48,7 @@
 #include "core/cross/gles2/utils_gles2-inl.h"
 #include "core/cross/gles2/utils_gles2.h"
 #include "core/cross/material.h"
+#include "core/cross/object_manager.h"
 #include "core/cross/semantic_manager.h"
 #include "core/cross/features.h"
 #include "core/cross/shape.h"
@@ -561,6 +562,7 @@ RendererGLES2* RendererGLES2::CreateDefault(ServiceLocator* service_locator) {
 
 RendererGLES2::RendererGLES2(ServiceLocator* service_locator)
     : Renderer(service_locator),
+      object_manager_(service_locator),
       semantic_manager_(service_locator),
 #ifdef OS_WIN
       gl_context_(NULL),
@@ -1788,6 +1790,119 @@ const int* RendererGLES2::GetRGBAUByteNSwizzleTable() {
 // we're implementing GLES2, we only ever return a GLES2 renderer.
 Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
   return RendererGLES2::CreateDefault(service_locator);
+}
+
+// Restore all resources
+// Returns true on success and false on failure.
+bool RendererGLES2::OnContextRestored() {
+  ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  while (glGetError() != GL_NO_ERROR);
+  SetInitialStates();
+
+  // Restore all Effect objects.
+  {
+    const EffectArray effect_array(object_manager_->GetByClass<Effect>());
+    EffectArray::const_iterator p, end(effect_array.end());
+    for (p = effect_array.begin(); p != end; ++p) {
+      EffectGLES2* effect =  down_cast<EffectGLES2*>(*p);
+      DLOG(INFO) << "Restoring Effect: " << effect->name();
+      if (!effect->OnContextRestored()) {
+        DLOG(ERROR) << "Failed To Restore Effect: " << effect->name();
+        return false;
+      }
+    }
+  }
+
+  // Restore all VertexBuffer objects.
+  {
+    const std::vector<VertexBuffer*>
+        buffers(object_manager_->GetByClass<VertexBuffer>());
+    std::vector<VertexBuffer*>::const_iterator iter(buffers.begin()),
+        end(buffers.end());
+    for (;iter != end; ++iter) {
+      VertexBuffer* buffer = *iter;
+      DLOG(INFO) << "Restoring VertexBuffer: " << buffer->name();
+      VertexBufferGLES2* buffer_gles2 = down_cast<VertexBufferGLES2*>(buffer);
+      if (!buffer_gles2->OnContextRestored()) {
+        DLOG(ERROR) << "Failed To Restore VertexBuffer: " << buffer->name();
+        return false;
+      }
+    }
+  }
+
+  // Restore all IndexBuffer objects.
+  {
+    const std::vector<IndexBuffer*>
+        buffers(object_manager_->GetByClass<IndexBuffer>());
+    std::vector<IndexBuffer*>::const_iterator iter(buffers.begin()),
+        end(buffers.end());
+    for (;iter != end; ++iter) {
+      IndexBuffer* buffer = *iter;
+      DLOG(INFO) << "Restoring IndexBuffer: " << buffer->name();
+      IndexBufferGLES2* buffer_gles2 = down_cast<IndexBufferGLES2*>(buffer);
+      if (!buffer_gles2->OnContextRestored()) {
+        DLOG(ERROR) << "Failed To Restore IndexBuffer: " << buffer->name();
+        return false;
+      }
+    }
+  }
+
+  // Restore all Texture objects.
+  {
+    const std::vector<Texture*>
+        texture_array(object_manager_->GetByClass<Texture>());
+    std::vector<Texture*>::const_iterator texture_iter(texture_array.begin()),
+        texture_end(texture_array.end());
+    for (;texture_iter != texture_end; ++texture_iter) {
+      Texture* texture = *texture_iter;
+      DLOG(INFO) << "Restoring Texture: " << texture->name();
+      if (texture->IsA(Texture2D::GetApparentClass())) {
+        Texture2DGLES2* texture2d_gles2 = down_cast<Texture2DGLES2*>(texture);
+        if (!texture2d_gles2->OnContextRestored()) {
+          DLOG(ERROR) << "Failed To Restore Texture: " << texture->name();
+          return false;
+        }
+      } else if (texture->IsA(TextureCUBE::GetApparentClass())) {
+        TextureCUBEGLES2* texture_cube_gles2 =
+            down_cast<TextureCUBEGLES2*>(texture);
+        if (!texture_cube_gles2->OnContextRestored()) {
+          DLOG(ERROR) << "Failed To Restore Texture: " << texture->name();
+          return false;
+        }
+      }
+    }
+  }
+
+  // Restore all RenderSurface objects.  Note that this pass must happen
+  // after the Textures have been restored.
+  {
+    std::vector<RenderSurfaceBase*> surface_array(
+        object_manager_->GetByClass<RenderSurfaceBase>());
+    std::vector<RenderSurfaceBase*>::const_iterator surface_iter(
+        surface_array.begin()), surface_end(surface_array.end());
+    for (; surface_iter != surface_end; ++surface_iter) {
+      RenderSurfaceBase* surface = *surface_iter;
+      DLOG(INFO) << "Restoring Surface: " << surface->name();
+      if (surface->IsA(RenderSurface::GetApparentClass())) {
+        RenderSurfaceGLES2* render_surface_gles2 =
+            down_cast<RenderSurfaceGLES2*>(surface);
+        if (!render_surface_gles2->OnContextRestored()) {
+          DLOG(ERROR) << "Failed To Restore Surface: " << surface->name();
+          return false;
+        }
+      } else if (surface->IsA(RenderDepthStencilSurface::GetApparentClass())) {
+        RenderDepthStencilSurfaceGLES2* render_depth_stencil_surface_gles2 =
+            down_cast<RenderDepthStencilSurfaceGLES2*>(surface);
+        if (!render_depth_stencil_surface_gles2->OnContextRestored()) {
+          DLOG(ERROR) << "Failed To Restore Surface: " << surface->name();
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
 }
 
 }  // namespace o3d

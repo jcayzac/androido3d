@@ -30,12 +30,10 @@ public class O3DJNILib {
      */
      public static native void init(int width, int height);
      public static native void step();
-     
+     public static native void surfaceCreated();
+
      public static native void onKeyDown(int keycode);
      public static native void onKeyUp(int keycode);
      public static native void onTouch(int x, int y, float directionX, float directionY);
      public static native void onRoll(float directionX, float directionY);
-     
-     public static native String[] getSystemList();
-     public static native String[][] getMetaData(String[] path);
 }

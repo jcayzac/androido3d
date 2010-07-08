@@ -89,6 +89,9 @@ class Texture2DGLES2 : public Texture2D {
   // Gets the GLES2 texture handle.
   GLuint gl_texture() const { return gl_texture_; }
 
+  // Handler for a new context.
+  bool OnContextRestored();
+
   // Gets a RGBASwizzleIndices that contains a mapping from
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
@@ -178,6 +181,9 @@ class TextureCUBEGLES2 : public TextureCUBE {
   virtual void* GetTextureHandle() const {
     return reinterpret_cast<void*>(gl_texture_);
   }
+
+  // Handler for a new context.
+  bool OnContextRestored();
 
   // Gets the GLES2 texture handle.
   GLuint gl_texture() const { return gl_texture_; }

@@ -73,6 +73,9 @@ class RenderSurfaceGLES2 : public RenderSurface {
     return mip_level_;
   }
 
+  // Handler for a new context.
+  bool OnContextRestored();
+
  protected:
   // The platform specific part of GetBitmap.
   virtual bool PlatformSpecificGetIntoBitmap(Bitmap::Ref bitmap) const;
@@ -99,6 +102,10 @@ class RenderDepthStencilSurfaceGLES2 : public RenderDepthStencilSurface {
   GLuint stencil_buffer() const {
     return render_buffers_[1];
   }
+
+  // Handler for a new context.
+  bool OnContextRestored();
+
  private:
   // Handles to the depth and stencil render-buffers, respectively.
   GLuint render_buffers_[2];

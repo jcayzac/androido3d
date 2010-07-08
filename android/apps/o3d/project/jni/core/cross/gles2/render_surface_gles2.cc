@@ -54,6 +54,11 @@ RenderSurfaceGLES2::RenderSurfaceGLES2(ServiceLocator *service_locator,
 RenderSurfaceGLES2::~RenderSurfaceGLES2() {
 }
 
+bool RenderSurfaceGLES2::OnContextRestored() {
+  DLOG(INFO) << "RenderSurfaceGLES2::OnContextRestored not implemented";
+  return true;
+}
+
 bool RenderSurfaceGLES2::PlatformSpecificGetIntoBitmap(
     Bitmap::Ref bitmap) const {
   Renderer* renderer = service_locator()->GetService<Renderer>();
@@ -138,6 +143,12 @@ RenderDepthStencilSurfaceGLES2::~RenderDepthStencilSurfaceGLES2() {
 #endif
   glDeleteRenderbuffersEXT(2, render_buffers_);
 #endif
+}
+
+bool RenderDepthStencilSurfaceGLES2::OnContextRestored() {
+  DLOG(INFO)
+      << "RenderDepthStencilSurfaceGLES2::OnContextRestored not implemented";
+  return true;
 }
 
 }  // end namespace o3d

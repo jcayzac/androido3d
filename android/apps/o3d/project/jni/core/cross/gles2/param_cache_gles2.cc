@@ -665,7 +665,7 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
         if (!handler.IsNull()) {
           param_cache_gl->uniform_map().insert(
               std::make_pair(location, handler));
-          DLOG(INFO) << "ElementGLES2 Matched gl_paramETER \""
+          DLOG(INFO) << "ElementGLES2 Matched gl_parameter \""
                      << name << "\" to Param \""
                      << param->name() << "\" from \""
                      << param_object->name() << "\"";
@@ -676,12 +676,12 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
                       << param->name() << "\" type \""
                       << param->GetClassName() << "\" from \""
                       << param_object->name()
-                      << "\" does not match gl_paramETER \""
+                      << "\" does not match gl_parameter \""
                       << name << "\"";
         }
       }
       if (handler.IsNull()) {
-        DLOG(ERROR) << "No matching Param for gl_paramETER \""
+        DLOG(ERROR) << "No matching Param for gl_parameter \""
                     << name << "\"";
       }
     }

@@ -73,6 +73,7 @@ class O3DManager {
   bool ResizeViewport(int width, int height);
   void SetProjection(float width, float height);
   bool Render();
+  bool OnContextRestored();
   o3d::Transform* GetRoot();
   o3d_utils::Scene* GetScene();
   void CheckError();
@@ -169,6 +170,14 @@ bool O3DManager::Initialize(int width, int height) {
   CheckError();
 
   return true;
+}
+
+bool O3DManager::OnContextRestored() {
+  // Reset the timer so we don't have some giant time slice.
+  timer_.GetElapsedTimeAndReset();
+
+  // Restore the resources.
+  return down_cast<o3d::RendererGLES2*>(renderer_)->OnContextRestored();
 }
 
 void O3DManager::SetProjection(float width, float height) {
@@ -284,6 +293,7 @@ static O3DManager* g_mgr = NULL;
 
 extern "C" {
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
+    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_surfaceCreated(JNIEnv * env, jobject obj);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyDown(JNIEnv * env, jobject obj,  jint keycode);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, jobject obj,  jint keycode);
@@ -291,23 +301,34 @@ extern "C" {
         jint x, jint y, jfloat directionX, jfloat directionY);
     JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
     		jfloat directionX, jfloat directionY);
-    JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(JNIEnv * env, jobject obj);
-    JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNIEnv * env, jobject obj, jobjectArray path);
 };
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height) {
-    glViewport(0, 0, width, height);
+  LOGI("init %dx%d", width, height);
+  glViewport(0, 0, width, height);
 
-    if (g_mgr != NULL) {
-      g_mgr->ResizeViewport(width, height);
-    } else {
-      g_mgr = new O3DManager();
-      g_mgr->Initialize(width, height);
+  if (g_mgr != NULL) {
+    g_mgr->ResizeViewport(width, height);
+  } else {
+    g_mgr = new O3DManager();
+    g_mgr->Initialize(width, height);
+  }
+}
+
+JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_surfaceCreated(JNIEnv * env, jobject obj) {
+  // Called when the EGL surface is created, such as on boot and after a context loss.
+  LOGI("surfaceCreated\n");
+  if (g_mgr) {
+    LOGI("Restoring Resources\n");
+    if (!g_mgr->OnContextRestored()) {
+      LOGI("Failed to restore resources");
+      g_mgr->CheckError();
     }
+  }
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj) {
-    g_mgr->Render();
+  g_mgr->Render();
 }
 
 JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyDown(JNIEnv * env, jobject obj,  jint keycode) {
@@ -328,14 +349,4 @@ JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jo
 	LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
 }
 
-JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getSystemList(JNIEnv * env, jobject obj) {
-  jobjectArray ret;
-  return ret;
-}
 
-// Format is:
-// System/Field[/Index]/Object/
-JNIEXPORT jobjectArray JNICALL Java_com_android_o3djni_O3DJNILib_getMetaData(JNIEnv * env, jobject obj, jobjectArray path) {
-  jobjectArray result;
-  return result;
-}

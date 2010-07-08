@@ -64,6 +64,9 @@ class VertexBufferGLES2 : public VertexBuffer {
   // Returns the OpenGLES2 vertex buffer Object handle.
   GLuint gl_buffer() const { return gl_buffer_; }
 
+  // Handler for a new context.
+  bool OnContextRestored();
+
  protected:
   // Creates a OpenGLES2 vertex buffer object of the specified size.
   virtual bool ConcreteAllocate(size_t size_in_bytes);
@@ -102,6 +105,9 @@ class IndexBufferGLES2 : public IndexBuffer {
 
   // Returns the OpenGLES2 vertex buffer Object handle.
   GLuint gl_buffer() const { return gl_buffer_; }
+
+  // Handler for a new context.
+  bool OnContextRestored();
 
  protected:
   // Creates a OpenGLES2 index buffer of the specified size.

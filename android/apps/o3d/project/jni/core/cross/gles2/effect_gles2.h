@@ -110,6 +110,9 @@ class EffectGLES2 : public Effect {
   GLuint gl_program() { return gl_program_; }
   int compile_count() { return compile_count_; }
 
+  // Handler for a new context.
+  bool OnContextRestored();
+
  private:
   // Loops through all the parameters in the ShapeDataGLES2 and updates the
   // corresponding parameter EffectGLES2 object
