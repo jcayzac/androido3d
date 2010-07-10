@@ -169,9 +169,9 @@ void Scene::PrepareMaterial(
 }
 
 void Scene::AttachStandardEffect(o3d::Pack* pack,
-                                      o3d::Material* material,
-                                      o3d_utils::ViewInfo* viewInfo,
-                                      const std::string& effectType) {
+                                 o3d::Material* material,
+                                 o3d_utils::ViewInfo* viewInfo,
+                                 const std::string& effectType) {
   if (!material->effect()) {
     scoped_ptr<ShaderBuilder> shader_builder(ShaderBuilder::Create());
     o3d::Vector3 light_pos =
@@ -339,13 +339,15 @@ Scene* Scene::LoadScene(
     o3d::Client* client,
     o3d_utils::ViewInfo* view_info,
     const std::string& filename,
-    o3d::Pack* material_pack) {
+    o3d::Pack* effect_texture_pack) {
   o3d::Pack* pack = client->CreatePack();
   o3d::Transform* root = pack->Create<o3d::Transform>();
   o3d::ParamFloat* time = root->CreateParam<o3d::ParamFloat>("time");
 
   o3d::Collada::Options options;
   options.up_axis = o3d::Vector3(0.0f, 1.0f, 0.0f);
+  options.texture_pack = effect_texture_pack;
+  options.store_textures_by_basename = effect_texture_pack != NULL;
   if (!o3d::Collada::Import(
       pack,
       filename,
@@ -356,7 +358,7 @@ Scene* Scene::LoadScene(
     return NULL;
   }
 
-  PrepareMaterials(pack, view_info, material_pack);
+  PrepareMaterials(pack, view_info, effect_texture_pack);
   PrepareShapes(pack);
 
   #if 1  // print total polygons.

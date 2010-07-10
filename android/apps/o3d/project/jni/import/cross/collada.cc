@@ -1781,21 +1781,33 @@ bool Collada::DecompressDDS(RawData* raw_data, BitmapRefArray* new_bitmaps) {
 
 Texture* Collada::BuildTextureFromImage(FCDImage* image) {
   const fstring filename = image->GetFilename();
-  Texture* tex = textures_[filename.c_str()];
-  if (!tex) {
-    FilePath file_path = WideToFilePath(filename.c_str());
-    FilePath uri = file_path;
-    DLOG(INFO) << "BuildTextureFromImage:" << uri.value();
+  FilePath file_path = WideToFilePath(filename.c_str());
+  FilePath uri = options_.store_textures_by_basename ? file_path.BaseName() :
+                 file_path;
+  if (collada_zip_archive_) {
+    // If we're getting data from a zip archive, then we just strip
+    // the "/" from the beginning of the name, since that represents
+    // the root of the archive, and we can assume all the paths in
+    // the archive are relative to that.
+    if (uri.value()[0] == FILE_PATH_LITERAL('/')) {
+      uri = FilePath(uri.value().substr(1));
+    }
+  }
 
+  Texture* tex = textures_[uri];
+  if (!tex && options_.texture_pack) {
+    std::vector<Texture*> textures = options_.texture_pack->Get<Texture>(
+        FilePathToUTF8(uri));
+    if (!textures.empty()) {
+      tex = textures[0];
+    }
+  }
+
+  if (!tex) {
+    DLOG(INFO) << "BuildTextureFromImage:" << uri.value();
+    Pack* tex_pack = options_.texture_pack ? options_.texture_pack : pack_;
     std::string tempfile;
     if (collada_zip_archive_) {
-      // If we're getting data from a zip archive, then we just strip
-      // the "/" from the beginning of the name, since that represents
-      // the root of the archive, and we can assume all the paths in
-      // the archive are relative to that.
-      if (uri.value()[0] == FILE_PATH_LITERAL('/')) {
-        uri = FilePath(uri.value().substr(1));
-      }
       size_t data_size = 0;
       char* data = collada_zip_archive_->GetFileData(
           FilePathToUTF8(file_path), &data_size);
@@ -1808,7 +1820,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
         if (uri.MatchesExtension(UTF8ToFilePathStringType(".dds"))) {
           BitmapRefArray bitmaps;
           if (DecompressDDS(raw_data, &bitmaps)) {
-            tex = pack_->CreateTextureFromBitmaps(
+            tex = tex_pack->CreateTextureFromBitmaps(
                 bitmaps, FilePathToUTF8(file_path), true);
           }
         }
@@ -1816,7 +1828,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
 
         if (!tex) {
           tex = Texture::Ref(
-            pack_->CreateTextureFromRawData(raw_data, true));
+            tex_pack->CreateTextureFromRawData(raw_data, true));
         }
       }
       free(data);
@@ -1832,15 +1844,15 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
         return NULL;
       }
       tex = Texture::Ref(
-          pack_->CreateTextureFromFile(FilePathToUTF8(uri),
-                                       file_path,
-                                       image::UNKNOWN,
-                                       options_.generate_mipmaps));
+          tex_pack->CreateTextureFromFile(
+              FilePathToUTF8(uri),
+              file_path,
+              image::UNKNOWN,
+              options_.generate_mipmaps));
     }
 
     if (tex) {
-      const fstring name(image->GetName());
-      tex->set_name(WideToUTF8(name.c_str()));
+      tex->set_name(FilePathToUTF8(uri));
     }
 
     bool inserted_original_data = false;
@@ -1919,7 +1931,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
     }
 
     if (tempfile.size() > 0) ZipArchive::DeleteFile(tempfile);
-    textures_[filename.c_str()] = tex;
+    textures_[uri] = tex;
   }
   return tex;
 }

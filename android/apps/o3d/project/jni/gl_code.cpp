@@ -91,6 +91,7 @@ class O3DManager {
   scoped_ptr<o3d::Client> client_;
 
   o3d::Transform* root_;
+  o3d::Pack* effect_texture_pack_;
   o3d::Pack* pack_;
   o3d_utils::ViewInfo* main_view_;
   o3d_utils::Scene* scene_;
@@ -129,6 +130,7 @@ bool O3DManager::Initialize(int width, int height) {
   client_.reset(new o3d::Client(&service_locator_));
   client_->Init();
   pack_ = client_->CreatePack();
+  effect_texture_pack_ = client_->CreatePack();
   root_ = pack_->Create<o3d::Transform>();
   main_view_ = o3d_utils::ViewInfo::CreateBasicView(
       pack_, root_, client_->render_graph_root());
@@ -141,7 +143,7 @@ bool O3DManager::Initialize(int width, int height) {
       client_.get(),
       main_view_,
       "/sdcard/collada/character.zip",
-      NULL);
+      effect_texture_pack_);
   scene_->SetParent(root_);
 
   o3d_utils::CameraInfo* camera_info =
@@ -155,13 +157,17 @@ bool O3DManager::Initialize(int width, int height) {
   // all of them so we could just set the one param but I'm lazy.
   o3d::Vector3 light_pos =
       Vectormath::Aos::inverse(camera_info->view).getTranslation();
-  std::vector<o3d::Material*> materials =
-      scene_->pack()->GetByClass<o3d::Material>();
-  for (size_t ii = 0; ii < materials.size(); ++ii) {
-    o3d::ParamFloat3* pos =
-        materials[ii]->GetParam<o3d::ParamFloat3>("lightWorldPos");
-    if (pos) {
-      pos->set_value(o3d::Float3(light_pos[0], light_pos[1], light_pos[2]));
+  std::vector<o3d::Pack*> packs;
+  packs.push_back(scene_->pack());
+  for (size_t ii = 0; ii < packs.size(); ++ii) {
+    std::vector<o3d::Material*> materials =
+        packs[ii]->GetByClass<o3d::Material>();
+    for (size_t ii = 0; ii < materials.size(); ++ii) {
+      o3d::ParamFloat3* pos =
+          materials[ii]->GetParam<o3d::ParamFloat3>("lightWorldPos");
+      if (pos) {
+        pos->set_value(o3d::Float3(light_pos[0], light_pos[1], light_pos[2]));
+      }
     }
   }
 

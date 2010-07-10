@@ -40,11 +40,18 @@ class Scene {
   ~Scene();
 
   // Material pack can be NULL
+  // Parameters:
+  //   client: The o3d client object.
+  //   view_info: The view to use with material
+  //   filename: The path to the file to load
+  //   effect_texture_pack: The pack to get textures and effects from or to
+  //      put new textures and effects into. Pass NULL to have textures and
+  //      effects put in the pack that will get created for this scene.
   static Scene* LoadScene(
       o3d::Client* client,
       o3d_utils::ViewInfo* view_info,
       const std::string& filename,
-      o3d::Pack* material_pack);
+      o3d::Pack* effect_texture_pack);
 
   o3d::Pack* pack() const {
     return pack_;

@@ -163,7 +163,9 @@ class Collada {
           condition_document(false),
           up_axis(0.0f, 0.0f, 0.0f),
           base_path(FilePath::kCurrentDirectory),
-          convert_dds_to_png(false) {}
+          convert_dds_to_png(false),
+          texture_pack(NULL),
+          store_textures_by_basename(false) {}
     // Whether or not to generate mip-maps on the textures we load.
     bool generate_mipmaps;
 
@@ -188,6 +190,15 @@ class Collada {
     // True means convert DDS files to PNGs. For cube map textures, this
     // implies writing six separate PNGs.
     bool convert_dds_to_png;
+
+    // If NOT NULL, Texture will be placed in this pack. If a texture of the
+    // same name already exists in this pack it will be used instead of loading
+    // a new one.
+    o3d::Pack* texture_pack;
+
+    // When storing and matching textures only the basename will be used.
+    // Ie, "foo/bar/baz.jpg" becomes just "baz.jpg"
+    bool store_textures_by_basename;
   };
 
   // Collada Param Names.
@@ -465,7 +476,7 @@ class Collada {
   NodeInstance* instance_root_;
 
   // A map of the Textures created by the importer, indexed by filename.
-  std::map<const std::wstring, Texture*> textures_;
+  std::map<const FilePath, Texture*> textures_;
 
   // A map of the Effects created by the importer, indexed by DAE id.
   std::map<const std::string, Effect*> effects_;
