@@ -4,6 +4,7 @@
 
 // TODO(gman): This code is shit right now. It was converted directly from
 //     JavaScript with little thought on how it should be re-written for C++.
+// Small change to test hg
 
 #include <map>
 #include <string>
