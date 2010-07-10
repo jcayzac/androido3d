@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// OpenGL ES 2.0 code
+// Sample code using O3D library.
 
 #include <jni.h>
 #include <android/log.h>
