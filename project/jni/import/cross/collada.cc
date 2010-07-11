@@ -1782,8 +1782,9 @@ bool Collada::DecompressDDS(RawData* raw_data, BitmapRefArray* new_bitmaps) {
 Texture* Collada::BuildTextureFromImage(FCDImage* image) {
   const fstring filename = image->GetFilename();
   FilePath file_path = WideToFilePath(filename.c_str());
-  FilePath uri = options_.store_textures_by_basename ? file_path.BaseName() :
-                 file_path;
+  FilePath uri = file_path;
+  FilePath tex_id = options_.store_textures_by_basename ? file_path.BaseName() :
+                    file_path;
   if (collada_zip_archive_) {
     // If we're getting data from a zip archive, then we just strip
     // the "/" from the beginning of the name, since that represents
@@ -1792,12 +1793,15 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
     if (uri.value()[0] == FILE_PATH_LITERAL('/')) {
       uri = FilePath(uri.value().substr(1));
     }
+    if (tex_id.value()[0] == FILE_PATH_LITERAL('/')) {
+      tex_id = FilePath(tex_id.value().substr(1));
+    }
   }
 
-  Texture* tex = textures_[uri];
+  Texture* tex = textures_[tex_id];
   if (!tex && options_.texture_pack) {
     std::vector<Texture*> textures = options_.texture_pack->Get<Texture>(
-        FilePathToUTF8(uri));
+        FilePathToUTF8(tex_id));
     if (!textures.empty()) {
       tex = textures[0];
     }
@@ -1852,7 +1856,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
     }
 
     if (tex) {
-      tex->set_name(FilePathToUTF8(uri));
+      tex->set_name(FilePathToUTF8(tex_id));
     }
 
     bool inserted_original_data = false;
@@ -1931,7 +1935,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
     }
 
     if (tempfile.size() > 0) ZipArchive::DeleteFile(tempfile);
-    textures_[uri] = tex;
+    textures_[tex_id] = tex;
   }
   return tex;
 }

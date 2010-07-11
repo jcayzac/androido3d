@@ -30,14 +30,9 @@ LOCAL_CFLAGS    := \
 LOCAL_LDLIBS    := -llog -lGLESv2 -lz -ldl
 LOCAL_SRC_FILES := \
   gl_code.cpp \
-  camera.cpp \
-  debug.cpp \
-  render_graph.cpp \
-  scene.cpp \
-  shader_builder.cpp \
-  wchar.cpp \
 
 LOCAL_STATIC_LIBRARIES := \
+  o3dhelp \
   o3dcore \
   o3drenderer \
   o3dimport \
@@ -50,9 +45,11 @@ LOCAL_STATIC_LIBRARIES := \
   zlib \
   loggingshim \
   stlport \
+  o3dwchar \
 
 include $(BUILD_SHARED_LIBRARY)
 
+include $(MY_PATH)/AndroidLib.mk
 include $(MY_PATH)/core/Android.mk
 include $(MY_PATH)/import/Android.mk
 include $(MY_PATH)/utils/Android.mk

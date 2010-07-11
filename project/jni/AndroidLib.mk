@@ -32,9 +32,26 @@ LOCAL_SRC_FILES := \
   render_graph.cpp \
   scene.cpp \
   shader_builder.cpp \
-  wchar.cpp \
 
 include $(BUILD_STATIC_LIBRARY)
 
+#### Wchar functions
+#
+include $(CLEAR_VARS)
+
+LOCAL_MODULE    := o3dwchar
+
+LOCAL_CFLAGS    := \
+  -Werror \
+  -D__ANDROID__ \
+  -DRENDERER_GLES2 \
+  -DGLES2_BACKEND_NATIVE_GLES2 \
+  -I$(LOCAL_PATH)/third_party/stlport/stlport \
+  -I$(LOCAL_PATH)/third_party/loggingshim \
+
+LOCAL_SRC_FILES := \
+  wchar.cpp \
+
+include $(BUILD_STATIC_LIBRARY)
 
 
