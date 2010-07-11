@@ -8,23 +8,13 @@ syntax: glob
 *.orig
 eclipse_workspace
 eclipse-projects
-android/docs
-android/build
-android/out
-android/apps/o3d/project/libs
-android/apps/san-angeles
-android/apps/two-libs
-android/apps/unit-tests
-android/apps/hello-jni
-android/apps/hello-gl2
-android/apps/o3d/project/bin
-android/apps/o3d/project/gen
-android/GNUmakefile
-android/README.TXT
-android/apps/o3d/project/.classpath
-android/apps/o3d/project/.project
-android/apps/o3d/project/.settings/org.eclipse.jdt.core.prefs
-android/apps/o3d/project/libs/armeabi/libo3djni.so
+project/libs
+project/bin
+project/gen
+project/.classpath
+project/.project
+project/.settings/org.eclipse.jdt.core.prefs
+project/libs/armeabi/libo3djni.so
 
 
 
