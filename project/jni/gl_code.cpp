@@ -358,6 +358,22 @@ bool O3DManager::Render() {
   client_->Tick();
   client_->RenderClient(true);
   CheckError();
+
+  //{
+  //  static bool once = false;
+  //  if (once) {
+  //    return true;
+  //  }
+  //  once = true;
+  //}
+  //LOGI("transforms processed   : %d\n", renderer_->transforms_processed());
+  //LOGI("transforms culled      : %d\n", renderer_->transforms_culled());
+  //LOGI("draw elements processed: %d\n", renderer_->draw_elements_processed());
+  //LOGI("draw elements culled   : %d\n", renderer_->draw_elements_culled());
+  //LOGI("draw elements rendered : %d\n", renderer_->draw_elements_rendered());
+  //LOGI("primtives_rendered     : %d\n", renderer_->primitives_rendered());
+
+  return true;
 }
 
 o3d::Transform* O3DManager::GetRoot() {

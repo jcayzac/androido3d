@@ -249,7 +249,7 @@ o3d::Primitive* Primitives::CreatePlane(
 
   return CreatePrimitive(
     pack, &positions, &normals, &tex_coords, &indices,
-    o3d::Primitive::TRIANGLESTRIP);
+    o3d::Primitive::TRIANGLELIST);
 }
 
 }  // namespace o3d_utils
