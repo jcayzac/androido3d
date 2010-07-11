@@ -18,6 +18,7 @@
 #include <vector>
 #include "core/cross/param.h"
 #include "core/cross/primitive.h"
+#include "core/cross/renderer.h"
 #include "core/cross/sampler.h"
 #include "core/cross/texture.h"
 #include "core/cross/transform.h"
@@ -86,6 +87,14 @@ o3d::Texture2D* ImagePlane::GetTexture(
 
   o3d::Texture* texture = pack->CreateTextureFromFile(
       filename, filename, o3d::image::UNKNOWN, true);
+  if (!texture) {
+    // If we couldn't load the texture return the ERROR texture.
+    DLOG(ERROR) << "Could not load texture: " << filename;
+    o3d::Renderer* renderer =
+        pack->service_locator()->GetService<o3d::Renderer>();
+    return down_cast<o3d::Texture2D*>(renderer->error_texture());
+  }
+
   DCHECK(texture->IsA(o3d::Texture2D::GetApparentClass()));
   texture->set_name(filename);
   return down_cast<o3d::Texture2D*>(texture);
