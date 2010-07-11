@@ -89,7 +89,6 @@ class Scene {
       o3d_utils::ViewInfo* viewInfo,
       const std::string& effectType);
 
-  static void SetBoundingBoxAndZSortPoint(o3d::Element* element);
   static void AddMissingTexCoordStreams(o3d::Element* element);
   static void AddMissingTexCoordStreams(o3d::Shape* shape);
   static void SetBoundingBoxesAndZSortPoints(o3d::Shape* shape);

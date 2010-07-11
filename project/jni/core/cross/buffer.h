@@ -102,6 +102,12 @@ class Buffer : public NamedObject {
   Field* CreateField(const ObjectBase::Class* field_type,
                      unsigned num_components);
 
+  // Typesafe version of CreateField.
+  template <typename T>
+  T* CreateTypedField(unsigned num_components) {
+    return down_cast<T*>(CreateField(T::GetApparentClass(), num_components));
+  }
+
   // Creates a field on this buffer
   //
   // this is for Javascript

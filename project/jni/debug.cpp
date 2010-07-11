@@ -98,6 +98,14 @@ void DumpParams(const o3d::ParamObject* obj, const std::string& indent) {
         o3d::Float4 v = static_cast<o3d::ParamFloat4*>(param)->value();
         sprintf(buf, "%.3f, %.3f, %.3f, %.3f", v[0], v[1], v[2], v[3]);
         value = buf;
+      } else if (param->IsA(o3d::ParamMatrix4::GetApparentClass())) {
+        o3d::Matrix4 v = static_cast<o3d::ParamMatrix4*>(param)->value();
+        value = "";
+        for (size_t ii = 0; ii < 4; ++ii) {
+          sprintf(buf, "[%.3f, %.3f, %.3f, %.3f]",
+                  v[ii][0], v[ii][1], v[ii][2], v[ii][3]);
+          value += buf;
+        }
       } else if (param->IsA(o3d::ParamBoundingBox::GetApparentClass())) {
         o3d::BoundingBox v =
             static_cast<o3d::ParamBoundingBox*>(param)->value();
@@ -258,13 +266,13 @@ void DumpElement(const o3d::Element* element, const std::string& indent) {
 void DumpShape(const o3d::Shape* shape, const std::string& indent) {
   if (shape) {
     LOGI("%sShape: %s\n", indent.c_str(), shape->name().c_str());
-    const o3d::ElementRefArray& elements = shape->GetElementRefs();
-    if (!elements.empty()) {
-      std::string inner = indent + "    ";
-      for (size_t ii = 0; ii < elements.size(); ++ii) {
-        DumpElement(elements[ii], inner);
-      }
-    }
+//    const o3d::ElementRefArray& elements = shape->GetElementRefs();
+//    if (!elements.empty()) {
+//      std::string inner = indent + "    ";
+//      for (size_t ii = 0; ii < elements.size(); ++ii) {
+//        DumpElement(elements[ii], inner);
+//      }
+//    }
   }
 }
 

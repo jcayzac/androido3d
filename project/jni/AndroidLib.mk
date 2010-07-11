@@ -29,6 +29,8 @@ LOCAL_CFLAGS    := \
 LOCAL_SRC_FILES := \
   camera.cpp \
   debug.cpp \
+  image_plane.cpp \
+  primitives.cpp \
   render_graph.cpp \
   scene.cpp \
   shader_builder.cpp \

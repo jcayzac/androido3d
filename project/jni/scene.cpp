@@ -33,6 +33,7 @@
 #include "core/cross/types.h"
 #include "import/cross/collada.h"
 #include "shader_builder.h"
+#include "primitives.h"
 #include "render_graph.h"
 
 namespace o3d_utils {
@@ -211,24 +212,6 @@ void Scene::PrepareMaterials(
 }
 
 /**
- * Sets the bounding box and z sort point of an element.
- * @param {!o3d.Element} element Element to set bounding box and z sort point
- *     on.
- */
-void Scene::SetBoundingBoxAndZSortPoint(o3d::Element* element) {
-  o3d::BoundingBox boundingBox;
-  element->GetBoundingBox(0, &boundingBox);
-  o3d::Point3 minExtent = boundingBox.min_extent();
-  o3d::Point3 maxExtent = boundingBox.max_extent();
-  element->set_bounding_box(boundingBox);
-  element->set_cull(true);
-  element->set_z_sort_point(o3d::Float3(
-      (minExtent.getX() + maxExtent.getX()) / 2.0f,
-      (minExtent.getY() + maxExtent.getY()) / 2.0f,
-      (minExtent.getZ() + maxExtent.getZ()) / 2.0f));
-};
-
-/**
  * Adds missing texture coordinate streams to a primitive.
  *
  * This is very application specific but if it's a primitive
@@ -307,7 +290,7 @@ void Scene::AddMissingTexCoordStreams(o3d::Shape* shape) {
 void Scene::SetBoundingBoxesAndZSortPoints(o3d::Shape* shape) {
   const o3d::ElementRefArray& elements = shape->GetElementRefs();
   for (size_t ee = 0; ee < elements.size(); ++ee) {
-    SetBoundingBoxAndZSortPoint(elements[ee]);
+    Primitives::SetBoundingBoxAndZSortPoint(elements[ee]);
   }
 };
 

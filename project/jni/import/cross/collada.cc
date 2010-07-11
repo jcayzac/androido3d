@@ -2116,7 +2116,6 @@ static const char* GetLightingType(FCDEffectStandard* std_profile) {
 }
 
 static FCDEffectProfileFX* FindProfileFX(FCDEffect* effect) {
-  DLOG(INFO) << "FindProfileFX:";
   DLOG(INFO) << "FindProfileFX:" << effect;
   FCDEffectProfile* profile = effect->FindProfile(FUDaeProfileType::HLSL);
   if (!profile) {
@@ -2138,7 +2137,6 @@ Material* Collada::BuildMaterial(FCDocument* doc,
   Material* material = materials_[material_id.c_str()];
   if (!material) {
     Effect* effect = NULL;
-DLOG(INFO) << "BuildMaterial: mat=" << collada_material;
     FCDEffect* collada_effect = collada_material->GetEffect();
     if (collada_effect) {
       effect = GetEffect(doc, collada_effect);
@@ -2146,23 +2144,18 @@ DLOG(INFO) << "BuildMaterial: mat=" << collada_material;
 
     String collada_material_name = WideToUTF8(
         collada_material->GetName().c_str());
-DLOG(INFO) << "BuildMaterial:" << collada_material_name;
     Material* material = pack_->Create<Material>();
     material->set_name(collada_material_name);
     material->set_effect(effect);
     SetParamsFromMaterial(collada_material, material);
-DLOG(INFO) << "BuildMaterial: H1";
 
     // If this is a COLLADA-FX profile, add the render states from the
     // COLLADA-FX sections.
     FCDEffectProfileFX* profile_fx = FindProfileFX(collada_effect);
     if (profile_fx) {
-DLOG(INFO) << "BuildMaterial: H2";
       if (profile_fx->GetTechniqueCount() > 0) {
-DLOG(INFO) << "BuildMaterial: H3";
         FCDEffectTechnique* technique = profile_fx->GetTechnique(0);
         if (technique->GetPassCount() > 0) {
-DLOG(INFO) << "BuildMaterial: H4";
           FCDEffectPass* pass = technique->GetPass(0);
           State* state = pack_->Create<State>();
           state->set_name("pass_state");
@@ -2174,20 +2167,16 @@ DLOG(INFO) << "BuildMaterial: H4";
         }
       }
     } else {
-DLOG(INFO) << "BuildMaterial: H5";
       FCDEffectStandard* std_profile = static_cast<FCDEffectStandard *>(
           collada_effect->FindProfile(FUDaeProfileType::COMMON));
       if (std_profile) {
-DLOG(INFO) << "BuildMaterial: H6";
         ParamString* type_tag = material->CreateParam<ParamString>(
             kLightingTypeParamName);
         type_tag->set_value(GetLightingType(std_profile));
       }
     }
-DLOG(INFO) << "BuildMaterial: H7";
     materials_[material_id.c_str()] = material;
   }
-DLOG(INFO) << "BuildMaterial: H8";
   return material;
 }
 
