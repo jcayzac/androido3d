@@ -43,9 +43,10 @@
 #include "core/cross/transform.h"
 #include "core/cross/types.h"
 
-#include "render_graph.h"
 #include "camera.h"
 #include "debug.h"
+#include "image_plane.h"
+#include "render_graph.h"
 #include "scene.h"
 
 #define  LOG_TAG    "libo3djni"
@@ -55,6 +56,21 @@
 class DisplayWindowAndroid : public o3d::DisplayWindow {
  public:
   ~DisplayWindowAndroid() { }
+};
+
+struct ImgInfo {
+  bool center;
+  float x;
+  float y;
+  float depth;
+  const char* filename;
+};
+
+static ImgInfo imgs[] = {
+  { true, 699, 387, 1, "/sdcard/androido3d/images/egg.png", },
+  { false, 26, 25, 2, "/sdcard/androido3d/images/gaugeback.png", },
+  { false, 26 + 6, 25 + 11, 1,"/sdcard/androido3d/images/1x1white.png", },
+  { false, 596, 16, 1, "/sdcard/androido3d/images/radar.png", },
 };
 
 class O3DManager {
@@ -91,9 +107,12 @@ class O3DManager {
   scoped_ptr<o3d::Client> client_;
 
   o3d::Transform* root_;
+  o3d::Transform* hud_root_;
   o3d::Pack* effect_texture_pack_;
   o3d::Pack* pack_;
   o3d_utils::ViewInfo* main_view_;
+  o3d_utils::ViewInfo* hud_view_;
+  o3d_utils::ImagePlane* images_[arraysize(imgs)];
   o3d_utils::Scene* scene_;
   o3d::ElapsedTimeTimer timer_;
   float time_;
@@ -101,8 +120,10 @@ class O3DManager {
 
 O3DManager::O3DManager()
     : root_(NULL),
+      hud_root_(NULL),
       pack_(NULL),
       main_view_(NULL),
+      hud_view_(NULL),
       scene_(NULL),
       time_(0.0f) {
 }
@@ -135,14 +156,47 @@ bool O3DManager::Initialize(int width, int height) {
   main_view_ = o3d_utils::ViewInfo::CreateBasicView(
       pack_, root_, client_->render_graph_root());
 
-  LOGI("---Render Graph---(start)---\n");
-  DumpRenderNode(client_->render_graph_root(), "");
-  LOGI("---Render Graph---(end)---\n");
+  // Create a second view for the hud.
+  hud_root_ = pack_->Create<o3d::Transform>();
+  hud_view_ = o3d_utils::ViewInfo::CreateBasicView(
+      pack_, hud_root_, client_->render_graph_root());
+
+  // Make sure the hud gets drawn after the 3d stuff
+  hud_view_->root()->set_priority(main_view_->root()->priority() + 1);
+
+  // Turn off clearing the color for the hud since that would erase the 3d
+  // parts but leave clearing the depth and stencil so the HUD is unaffected
+  // by anything done by the 3d parts.
+  hud_view_->clear_buffer()->set_clear_color_flag(false);
+
+  // Set culling to none so we can flip images using rotation or negative scale.
+  o3d::State* state = hud_view_->z_ordered_draw_pass_info()->state();
+  state->GetStateParam<o3d::ParamInteger>(
+        o3d::State::kCullModeParamName)->set_value(o3d::State::CULL_NONE);
+  state->GetStateParam<o3d::ParamBoolean>(
+        o3d::State::kZWriteEnableParamName)->set_value(false);
+
+  hud_view_->draw_context()->set_view(o3d::Matrix4::lookAt(
+      o3d::Point3(0.0f, 0.0f, 30.0f),
+      o3d::Point3(0.0f, 0.0f, 0.0f),
+      o3d::Vector3(0.0f, 1.0f, 0.0f)));
+
+  for (size_t ii = 0; ii < arraysize(images_); ++ii) {
+    const ImgInfo& info = imgs[ii];
+    images_[ii] = o3d_utils::ImagePlane::Create(
+        pack_, pack_, hud_view_, info.filename, info.center);
+    images_[ii]->transform()->SetParent(hud_root_);
+    images_[ii]->transform()->set_local_matrix(o3d::Matrix4::translation(
+        o3d::Vector3(info.x, info.y, info.depth)));
+  }
+
+  images_[0]->transform()->GetChildrenRefs()[0]->GetShapeRefs()[0]->
+      GetElementRefs()[0]->set_cull(false);
 
   scene_ = o3d_utils::Scene::LoadScene(
       client_.get(),
       main_view_,
-      "/sdcard/collada/character.zip",
+      "/sdcard/androido3d/collada/character.zip",
       effect_texture_pack_);
   scene_->SetParent(root_);
 
@@ -190,6 +244,15 @@ void O3DManager::SetProjection(float width, float height) {
   main_view_->draw_context()->set_projection(
       o3d_utils::Camera::perspective(
           o3d_utils::degToRad(30.0f), width / height, 10, 1000));
+
+  hud_view_->draw_context()->set_projection(
+      o3d::Matrix4::orthographic(
+          0,
+          width,
+          height,
+          0,
+          0.001,
+          1000));
 }
 
 bool O3DManager::ResizeViewport(int width, int height) {
@@ -258,7 +321,7 @@ bool O3DManager::Render() {
         cosf(moveTimer - 0.1f) * kMoveRadius);
     o3d::Vector3 up(0.0f, 1.0f, 0.0f);
 
-    o3d::Matrix4 mat(lookAt2(position, target, up));
+    o3d::Matrix4 mat(o3d::Matrix4::lookAt(position, target, up));
     scene_->root()->set_local_matrix(mat);
 
     scene_->SetAnimationTime(kWalkStart + fmodf(animTimer, kWalkDuration));
@@ -273,6 +336,24 @@ bool O3DManager::Render() {
       idleing = false;
     }
   }
+
+  // Move the meter in the gauge.
+  images_[2]->SetColorMult(o3d::Float4(
+      (sinf(time_ * 4.0f) + 1.0f) * 0.5f, 0.0f, 0.0f, 1.0f));
+  images_[2]->transform()->set_local_matrix(
+     o3d::Matrix4::translation(
+         o3d::Vector3(imgs[2].x, imgs[2].y, imgs[2].depth)) *
+     o3d::Matrix4::scale(o3d::Vector3(fmodf(time_ / 2, 1.0f) * 384, 80, 1)));
+
+  // Spin the egg.
+  images_[0]->transform()->set_local_matrix(
+     o3d::Matrix4::translation(
+       o3d::Vector3(imgs[0].x, imgs[0].y, imgs[0].depth)) *
+     o3d::Matrix4::rotationZ(time_));
+
+  // Fade the radar in/out.
+  images_[3]->SetColorMult(
+      o3d::Float4(1.0f, 1.0f, 1.0f, (sinf(time_ * 2) + 1) * 0.5));
 
   client_->Tick();
   client_->RenderClient(true);
