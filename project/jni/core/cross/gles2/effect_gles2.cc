@@ -273,10 +273,10 @@ bool EffectGLES2::LoadFromFXString(const String& effect) {
   glDeleteShader(gl_vertex_shader);
   glDeleteShader(gl_fragment_shader);
   // Check the compile status
-  GLint value;
+  GLint value = 0;
   glGetProgramiv(gl_program_, GL_LINK_STATUS, &value);
   if (value == 0) {
-    GLint error_length;
+    GLint error_length = 0;
     glGetProgramiv(gl_program_, GL_INFO_LOG_LENGTH, &error_length);
     scoped_array<char> buffer(new char[error_length + 1]);
     GLsizei length;

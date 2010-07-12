@@ -252,5 +252,69 @@ o3d::Primitive* Primitives::CreatePlane(
     o3d::Primitive::TRIANGLELIST);
 }
 
+o3d::Primitive* Primitives::CreateSphere(
+      o3d::Pack* pack,
+      float radius,
+      int subdivisionsAxis,
+      int subdivisionsHeight,
+      o3d::Matrix4* matrix) {
+  DCHECK(subdivisionsAxis >= 1);
+  DCHECK(subdivisionsHeight >= 1);
+
+  std::vector<o3d::Point3> positions;
+  std::vector<o3d::Vector3> normals;
+  std::vector<Vector2> tex_coords;
+  std::vector<Triangle> indices;
+
+  const float kPI = 3.14159265f;
+
+  for (int y = 0; y <= subdivisionsHeight; ++y) {
+    for (int x = 0; x <= subdivisionsAxis; ++x) {
+      // Generate a vertex based on its spherical coordinates
+      float u = static_cast<float>(x) / static_cast<float>(subdivisionsAxis);
+      float v = static_cast<float>(y) / static_cast<float>(subdivisionsHeight);
+      float theta = 2.0f * kPI * u;
+      float phi = kPI * v;
+      float sinTheta = sinf(theta);
+      float cosTheta = cosf(theta);
+      float sinPhi = sinf(phi);
+      float cosPhi = cosf(phi);
+      float ux = cosTheta * sinPhi;
+      float uy = cosPhi;
+      float uz = sinTheta * sinPhi;
+      positions.push_back(o3d::Point3(radius * ux, radius * uy, radius * uz));
+      normals.push_back(o3d::Vector3(ux, uy, uz));
+      tex_coords.push_back(Vector2(1 - u, 1 - v));
+    }
+  }
+
+  int numVertsAround = subdivisionsAxis + 1;
+
+  for (int x = 0; x < subdivisionsAxis; ++x) {
+    for (int y = 0; y < subdivisionsHeight; ++y) {
+      // Make triangle 1 of quad.
+      indices.push_back(Triangle(
+          (y + 0) * numVertsAround + x,
+          (y + 0) * numVertsAround + x + 1,
+          (y + 1) * numVertsAround + x));
+
+      // Make triangle 2 of quad.
+      indices.push_back(Triangle(
+          (y + 1) * numVertsAround + x,
+          (y + 0) * numVertsAround + x + 1,
+          (y + 1) * numVertsAround + x + 1));
+    }
+  }
+
+  if (matrix) {
+    ApplyMatrix(*matrix, &positions);
+    ApplyMatrix(*matrix, &normals);
+  }
+
+  return CreatePrimitive(
+    pack, &positions, &normals, &tex_coords, &indices,
+    o3d::Primitive::TRIANGLELIST);
+}
+
 }  // namespace o3d_utils
 

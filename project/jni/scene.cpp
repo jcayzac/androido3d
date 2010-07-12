@@ -26,6 +26,7 @@
 #include "core/cross/pack.h"
 #include "core/cross/param_array.h"
 #include "core/cross/primitive.h"
+#include "core/cross/renderer.h"
 #include "core/cross/sampler.h"
 #include "core/cross/shape.h"
 #include "core/cross/skin.h"
@@ -337,8 +338,30 @@ Scene* Scene::LoadScene(
       root,
       time,
       options)) {
-    pack->Destroy();
-    return NULL;
+    // Make an error scene
+    o3d::Shape* shape = pack->Create<o3d::Shape>();
+    o3d::Primitive* prim = Primitives::CreateSphere(
+        pack, 10.0f, 8, 5, NULL);
+    // Setup the material with collada parameters so the shader builder will
+    // make a shader for us.
+    // NOTE: This is NOT the typical way to do this. This is only because
+    //    we have a collada specific shader builder in shader_builder.cpp
+    //    which is NOT part of O3D.
+    o3d::Material* material = pack->Create<o3d::Material>();
+    o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+    o3d::Renderer* renderer =
+        pack->service_locator()->GetService<o3d::Renderer>();
+    sampler->set_texture(renderer->error_texture());
+    sampler->set_min_filter(o3d::Sampler::NONE);
+    sampler->set_mag_filter(o3d::Sampler::NONE);
+    sampler->set_mip_filter(o3d::Sampler::NONE);
+    material->CreateParam<o3d::ParamString>("collada.lightingType")->set_value(
+        "constant");
+    material->CreateParam<o3d::ParamSampler>("emissiveSampler")->set_value(
+        sampler);
+    root->AddShape(shape);
+    prim->SetOwner(shape);
+    prim->set_material(material);
   }
 
   PrepareMaterials(pack, view_info, effect_texture_pack);

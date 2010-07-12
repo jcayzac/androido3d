@@ -59,6 +59,14 @@ class Primitives {
       int subdivisionsWidth,
       int subdivisionsDepth,
       o3d::Matrix4* matrix);
+
+  // Creates a sphere.
+  static o3d::Primitive* CreateSphere(
+      o3d::Pack* pack,
+      float radius,
+      int subdivisionsAxis,
+      int subdivisionsHeight,
+      o3d::Matrix4* matrix);
 };
 
 }  // namespace o3d_utils

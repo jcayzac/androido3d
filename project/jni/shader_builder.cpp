@@ -1130,6 +1130,7 @@ DLOG(INFO) << "\n--------------END--";
       if (effect->LoadFromFXString(shader)) {
         return effect;
       }
+DLOG(INFO) << "LoadFromFXString failed";
       pack->RemoveObject(effect);
     }
     return NULL;
@@ -1164,13 +1165,13 @@ DLOG(INFO) << "\n--------------END--";
       // are not connected to something otherwise we"ll get an error.
       o3d::ParamFloat3* light_param =
            material->GetParam<o3d::ParamFloat3>("lightWorldPos");
-      if (!light_param->input_connection()) {
+      if (light_param && !light_param->input_connection()) {
         light_param->set_value(
             o3d::Float3(lightPos.getX(), lightPos.getY(), lightPos.getZ()));
       }
       o3d::ParamFloat4* color_param =
           material->GetParam<o3d::ParamFloat4>("lightColor");
-      if (!color_param->input_connection()) {
+      if (color_param && !color_param->input_connection()) {
         color_param->set_value(o3d::Float4(1.0f, 1.0f, 1.0f, 1.0f));
       }
       return true;
