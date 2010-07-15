@@ -1181,49 +1181,6 @@ DLOG(INFO) << "LoadFromFXString failed";
   };
 
   /**
-   * Creates the uniform parameters needed for an Effect on the given ParamObject.
-   * @param {!o3d.Pack} pack Pack to create extra objects in like Samplers and
-   *     ParamArrays.
-   * @param {!o3d.Effect} effect Effect.
-   * @param {!o3d.ParamObject} paramObject ParamObject on which to create Params.
-   */
-  void createUniformParameters(
-      o3d::Pack* pack,
-      o3d::Effect* effect,
-      o3d::ParamObject* paramObject) {
-    effect->CreateUniformParameters(paramObject);
-    o3d::EffectParameterInfoArray infos;
-    effect->GetParameterInfo(&infos);
-    for (size_t ii = 0; ii < infos.size(); ++ii) {
-      const o3d::EffectParameterInfo& info = infos[ii];
-      if (info.sas_class_type() == NULL) {
-        if (info.num_elements() > 0) {
-          o3d::ParamArray* paramArray = pack->Create<o3d::ParamArray>();
-          o3d::ParamParamArray* param =
-              paramObject->GetParam<o3d::ParamParamArray>(info.name());
-          param->set_value(paramArray);
-          paramArray->ResizeByClass(info.num_elements(), info.class_type());
-          if (o3d::ObjectBase::ClassIsA(
-              info.class_type(),
-              o3d::ParamSampler::GetApparentClass())) {
-            for (size_t jj = 0; jj < info.num_elements(); ++jj) {
-              o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
-              paramArray->GetParam<o3d::ParamSampler>(jj)->set_value(sampler);
-            }
-          }
-        } else if (o3d::ObjectBase::ClassIsA(
-            info.class_type(),
-            o3d::ParamSampler::GetApparentClass())) {
-          o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
-          o3d::ParamSampler* param =
-              paramObject->GetParam<o3d::ParamSampler>(info.name());
-          param->set_value(sampler);
-        }
-      }
-    }
-  };
-
-  /**
    * Creates an effect that draws a 2 color procedural checker pattern.
    * @param {!o3d.Pack} pack The pack to create the effect in. If the pack
    *     already has an effect with the same name that effect will be returned.
@@ -1248,6 +1205,51 @@ DLOG(INFO) << "LoadFromFXString failed";
 ShaderBuilder* ShaderBuilder::Create() {
   return new GLSLShaderBuilder();
 }
+
+/**
+ * Creates the uniform parameters needed for an Effect on the given ParamObject.
+ * @param {!o3d.Pack} pack Pack to create extra objects in like Samplers and
+ *     ParamArrays.
+ * @param {!o3d.Effect} effect Effect.
+ * @param {!o3d.ParamObject} paramObject ParamObject on which to create Params.
+ */
+void ShaderBuilder::createUniformParameters(
+    o3d::Pack* pack,
+    o3d::Effect* effect,
+    o3d::ParamObject* paramObject) {
+  effect->CreateUniformParameters(paramObject);
+  o3d::EffectParameterInfoArray infos;
+  effect->GetParameterInfo(&infos);
+  for (size_t ii = 0; ii < infos.size(); ++ii) {
+    const o3d::EffectParameterInfo& info = infos[ii];
+    if (info.sas_class_type() == NULL) {
+      if (info.num_elements() > 0) {
+        o3d::ParamArray* paramArray = pack->Create<o3d::ParamArray>();
+        o3d::ParamParamArray* param =
+            paramObject->GetParam<o3d::ParamParamArray>(info.name());
+        param->set_value(paramArray);
+        paramArray->ResizeByClass(info.num_elements(), info.class_type());
+        if (o3d::ObjectBase::ClassIsA(
+            info.class_type(),
+            o3d::ParamSampler::GetApparentClass())) {
+          for (size_t jj = 0; jj < info.num_elements(); ++jj) {
+            o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+            paramArray->GetParam<o3d::ParamSampler>(jj)->set_value(sampler);
+          }
+        }
+      } else if (o3d::ObjectBase::ClassIsA(
+          info.class_type(),
+          o3d::ParamSampler::GetApparentClass())) {
+        o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+        o3d::ParamSampler* param =
+            paramObject->GetParam<o3d::ParamSampler>(info.name());
+        param->set_value(sampler);
+      }
+    }
+  }
+};
+
+
 
 }  // namespace o3d_utils
 

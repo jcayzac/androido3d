@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-// OpenGL ES 2.0 code
-
 #include <map>
 #include <set>
 #include <string>
@@ -33,184 +31,12 @@
 #include "core/cross/transform.h"
 #include "core/cross/types.h"
 #include "import/cross/collada.h"
-#include "shader_builder.h"
+#include "materials.h"
 #include "primitives.h"
 #include "render_graph.h"
+#include "shader_builder.h"
 
 namespace o3d_utils {
-
-/**
- * Checks a material's params by name to see if it possibly has non 1.0 alpha.
- * Given a name, checks for a ParamTexture called 'nameTexture' and if that
- * fails, checks for a ParamFloat4 'name'.
- * @private
- * @param {!o3d.Material} material Materal to check.
- * @param {string} name name of color params to check.
- * @return {{found: boolean, nonOneAlpha: boolean}} found is true if one of
- *     the params was found, nonOneAlpha is true if that param had non 1.0
- *     alpha.
- */
-bool Scene::hasNonOneAlpha(
-    o3d::Material* material, const std::string& name,
-    bool* nonOneAlpha) {
-  bool found = false;
-  *nonOneAlpha = false;
-  o3d::Texture* texture = NULL;
-  o3d::ParamSampler* samplerParam =
-      material->GetParam<o3d::ParamSampler>(name + "Sampler");
-  if (samplerParam) {
-    found = true;
-    o3d::Sampler* sampler = samplerParam->value();
-    if (sampler) {
-      texture = sampler->texture();
-    }
-  } else {
-    o3d::ParamTexture* textureParam =
-        material->GetParam<o3d::ParamTexture>(name + "Texture");
-    if (textureParam) {
-      found = true;
-      texture = textureParam->value();
-    }
-  }
-
-  if (texture && !texture->alpha_is_one()) {
-    *nonOneAlpha = true;
-  }
-
-  if (!found) {
-    o3d::ParamFloat4* colorParam = material->GetParam<o3d::ParamFloat4>(name);
-    if (colorParam) {
-      found = true;
-      // TODO: this check does not work. We need to check for the
-      // <transparency> and <transparent> elements or something.
-      // if (colorParam.value[3] < 1) {
-      //   nonOneAlpha = true;
-      // }
-    }
-  }
-  return found;
-};
-
-/**
- * Prepares a material by setting their drawList and possibly creating
- * an standard effect if one does not already exist.
- *
- * This function is very specific to our sample importer. It expects that if
- * no Effect exists on a material that certain extra Params have been created
- * on the Material to give us instructions on what to Effects to create.
- *
- * @param {!o3d.Pack} pack Pack to manage created objects.
- * @param {!o3djs.rendergraph.ViewInfo} viewInfo as returned from
- *     o3djs.rendergraph.createView.
- * @param {!o3d.Material} material to prepare.
- * @param {string} opt_effectType type of effect to create ('phong',
- *     'lambert', 'constant').
- *
- * @see o3djs.material.attachStandardEffect
- */
-void Scene::PrepareMaterial(
-    o3d::Pack* pack, o3d_utils::ViewInfo* view_info, o3d::Material* material,
-    std::string opt_effect_type) {
-  // Assume we want the performance list
-  o3d::DrawList* draw_list =
-      view_info->performance_draw_pass_info()->draw_list();
-  // First check if we have a tag telling us that it is or is not
-  // transparent
-  if (!material->draw_list()) {
-    o3d::ParamBoolean* param = material->GetParam<o3d::ParamBoolean>(
-        "collada.transparent");
-    if (param) {
-      material->set_draw_list(param->value() ?
-          view_info->z_ordered_draw_pass_info()->draw_list() :
-          view_info->performance_draw_pass_info()->draw_list());
-    }
-  }
-
-  // If the material has no effect, try to build shaders for it.
-  if (!material->effect()) {
-    // If the user didn't pass an effect type in see if one was stored there
-    // by our importer.
-    if (opt_effect_type.empty()) {
-      // Retrieve the lightingType parameter from the material, if any.
-      std::string lightingType =
-          ShaderBuilder::getColladaLightingType(material);
-      if (!lightingType.empty()) {
-        opt_effect_type = lightingType;
-      }
-    }
-    if (!opt_effect_type.empty()) {
-      AttachStandardEffect(pack,
-                           material,
-                           view_info,
-                           opt_effect_type);
-      // For collada common profile stuff guess what drawList to use. Note: We
-      // can only do this for collada common profile stuff because we supply
-      // the shaders and therefore now the inputs and how they are used.
-      // For other shaders you've got to do this stuff yourself. On top of
-      // that this is a total guess. Just because a texture has no alpha
-      // it does not follow that you don't want it in the zOrderedDrawList.
-      // That is application specific. Here we are just making a guess and
-      // hoping that it covers most cases.
-      if (!material->draw_list()) {
-        // Check the common profile params.
-        bool nonOneAlpha = false;
-        bool found = hasNonOneAlpha(material, "diffuse", &nonOneAlpha);
-        if (!found) {
-          found = hasNonOneAlpha(material, "emissive", &nonOneAlpha);
-        }
-        if (nonOneAlpha) {
-          draw_list = view_info->z_ordered_draw_pass_info()->draw_list();
-        }
-      }
-    }
-  }
-
-  if (!material->draw_list()) {
-    material->set_draw_list(draw_list);
-  }
-}
-
-void Scene::AttachStandardEffect(o3d::Pack* pack,
-                                 o3d::Material* material,
-                                 o3d_utils::ViewInfo* viewInfo,
-                                 const std::string& effectType) {
-  if (!material->effect()) {
-    scoped_ptr<ShaderBuilder> shader_builder(ShaderBuilder::Create());
-    o3d::Vector3 light_pos =
-        Vectormath::Aos::inverse(
-            viewInfo->draw_context()->view()).getTranslation();
-    if (!shader_builder->attachStandardShader(
-        pack, material, light_pos, effectType)) {
-       NOTREACHED() << "Could not attach a standard effect";
-    }
-  }
-}
-
-/**
- * Prepares all the materials in the given pack by setting their drawList and
- * if they don't have an Effect, creating one for them.
- *
- * This function is very specific to our sample importer. It expects that if
- * no Effect exists on a material that certain extra Params have been created
- * on the Material to give us instructions on what to Effects to create.
- *
- * @param {!o3d.Pack} pack Pack to prepare.
- * @param {!o3djs.rendergraph.ViewInfo} viewInfo as returned from
- *     o3djs.rendergraph.createView.
- * @param {!o3d.Pack} opt_effectPack Pack to create effects in. If this
- *     is not specifed the pack to prepare above will be used.
- *
- * @see o3djs.material.prepareMaterial
- */
-void Scene::PrepareMaterials(
-  o3d::Pack* pack, o3d_utils::ViewInfo* view_info, o3d::Pack* effect_pack) {
-  std::vector<o3d::Material*> materials = pack->GetByClass<o3d::Material>();
-  for (size_t ii = 0; ii < materials.size(); ++ii) {
-    PrepareMaterial(effect_pack ? effect_pack : pack,
-                    view_info,
-                    materials[ii], "");
-  }
-}
 
 /**
  * Adds missing texture coordinate streams to a primitive.
@@ -364,7 +190,7 @@ Scene* Scene::LoadScene(
     prim->set_material(material);
   }
 
-  PrepareMaterials(pack, view_info, effect_texture_pack);
+  Materials::PrepareMaterials(pack, view_info, effect_texture_pack);
   PrepareShapes(pack);
 
   #if 1  // print total polygons.

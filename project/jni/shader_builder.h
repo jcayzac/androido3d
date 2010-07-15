@@ -27,7 +27,7 @@ class ShaderBuilder {
   static std::string getColladaLightingType(o3d::Material* material);
   static int getNumTexCoordStreamsNeeded(o3d::Material* material);
 
-  void createUniformParameters(
+  static void createUniformParameters(
       o3d::Pack* pack,
       o3d::Effect* effect,
       o3d::ParamObject* paramObject);

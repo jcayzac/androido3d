@@ -30,6 +30,7 @@ LOCAL_SRC_FILES := \
   camera.cpp \
   debug.cpp \
   image_plane.cpp \
+  materials.cpp \
   primitives.cpp \
   render_graph.cpp \
   scene.cpp \

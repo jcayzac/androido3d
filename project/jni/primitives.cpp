@@ -180,8 +180,8 @@ o3d::Primitive* CreatePrimitive(
   Primitives::SetFieldFromPoint3s(position_field, *positions);
   sb->SetVertexStream(o3d::Stream::POSITION, 0, position_field, 0);
   if (normals) {
-    normal_field->SetFromFloats(&(*normals)[0][0], 3, 0, num_vertices);
     Primitives::SetFieldFromVector3s(normal_field, *normals);
+    sb->SetVertexStream(o3d::Stream::NORMAL, 0, normal_field, 0);
   }
   if (tex_coords) {
     texcoord_field->SetFromFloats(&(*tex_coords)[0][0], 2, 0, num_vertices);
