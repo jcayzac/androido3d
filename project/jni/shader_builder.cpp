@@ -1028,8 +1028,8 @@ class GLSLShaderBuilder : public ShaderBuilder {
          "                       " + FLOAT3 +
          "(0.5, 0.5, 0.5);\n" + FLOAT3 + " normal = " +
          mul("tangentNormal", "tangentToWorld") + ";\n" +
-         "normal = normalize(" + PIXEL_VARYING_PREFIX +
-         "normal);\n") : std::string("  ") + FLOAT3 + " normal = normalize(" +
+         "normal = normalize(normal);\n") :
+         std::string("  ") + FLOAT3 + " normal = normalize(" +
          PIXEL_VARYING_PREFIX + "normal);\n";
   };
 
