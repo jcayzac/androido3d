@@ -362,7 +362,7 @@ o3d::Material* Materials::CreateConstantMaterialEx(
     sampler->set_texture(opt_texture);
   }
 
-  AttachStandardEffectEx(pack, material, "phong");
+  AttachStandardEffectEx(pack, material, "constant");
 
   return material;
 }
