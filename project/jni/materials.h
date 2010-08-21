@@ -57,20 +57,20 @@ class Materials {
       o3d::Material* material,
       const std::string& effectType);
 
-  o3d::Material* CreateBasicMaterial(
+  static o3d::Material* CreateBasicMaterial(
       o3d::Pack* pack,
       o3d_utils::ViewInfo* viewInfo,
       o3d::Float4* opt_color,
       o3d::Texture* opt_texture,
       bool transparent);
 
-  o3d::Material* CreateConstantMaterialEx(
+  static o3d::Material* CreateConstantMaterialEx(
       o3d::Pack* pack,
       o3d::DrawList* drawList,
       o3d::Float4* opt_color,
       o3d::Texture* opt_texture);
 
-  o3d::Material* CreateConstantMaterial(
+  static o3d::Material* CreateConstantMaterial(
       o3d::Pack* pack,
       o3d_utils::ViewInfo* viewInfo,
       o3d::Float4* opt_color,

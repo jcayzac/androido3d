@@ -16,6 +16,7 @@
 
 #include "image_plane.h"
 #include <vector>
+#include "core/cross/image_utils.h"
 #include "core/cross/param.h"
 #include "core/cross/primitive.h"
 #include "core/cross/renderer.h"
@@ -169,9 +170,12 @@ bool ImagePlane::Init(
   sampler_->set_address_mode_v(o3d::Sampler::CLAMP);
   sampler_->set_texture(texture);
 
+  if (!o3d::image::IsPOT(texture->width(), texture->height())) {
+    sampler_->set_min_filter(o3d::Sampler::POINT);
+  }
+
   // NOTE: We may need to set the min filter to NEAREST on some hardware
   // or better yet, we should just make O3D do that if it needs to.
-
   sampler_param_ =
       scale_transform_->CreateParam<o3d::ParamSampler>("texSampler0");
   sampler_param_->set_value(sampler_);
