@@ -275,6 +275,7 @@ bool EffectGLES2::LoadFromFXString(const String& effect) {
   // Check the compile status
   GLint value = 0;
   glGetProgramiv(gl_program_, GL_LINK_STATUS, &value);
+  CHECK_GL_ERROR();
   if (value == 0) {
     GLint error_length = 0;
     glGetProgramiv(gl_program_, GL_INFO_LOG_LENGTH, &error_length);
