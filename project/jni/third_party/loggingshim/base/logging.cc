@@ -10,11 +10,11 @@ namespace logging {
       mInput << "\t" << mLocation;
     }
     
+	 	__android_log_print(mSeverity, mTag, mInput.str().c_str());
+
     if (mSeverity == FATAL) {
-      __android_log_assert("", mTag, mInput.str().c_str());
-    } else {
-      __android_log_print(mSeverity, mTag, mInput.str().c_str());
-    }
+      __android_log_assert(false, mTag, mInput.str().c_str());
+    } 
   }
   
   std::ostringstream& Logger::printLog() {
