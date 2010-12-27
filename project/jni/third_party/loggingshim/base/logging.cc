@@ -2,18 +2,29 @@
 #include "base/logging.h"
 
 #include <sstream>
+#include <string>
 
 namespace logging {
-  
+ 
+Logger::Logger(LogSeverity severity, const char* tag, const char* file, int line, bool showLocation)
+        : mShowLocation(showLocation),
+          mSeverity(severity),
+          mTag(tag) { 
+    std::ostringstream location;
+    location << file << ":" << line; 
+    mLocation = location.str().c_str(); 
+  }
+
  Logger::~Logger() {
-    if (mShowLocation) {
+    if (mShowLocation || mSeverity == FATAL) {
       mInput << "\t" << mLocation;
     }
     
 	 	__android_log_print(mSeverity, mTag, mInput.str().c_str());
 
     if (mSeverity == FATAL) {
-      __android_log_assert(false, mTag, mInput.str().c_str());
+      //__android_log_assert(false, mTag, mInput.str().c_str());
+      exit(0);
     } 
   }
   

@@ -1842,7 +1842,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
 
     if (!tex) {
       if (!FindFile(options_.file_paths, file_path, &file_path)) {
-        O3D_ERROR(service_locator_) << "Could not find file: " << filename;
+        O3D_ERROR(service_locator_) << "Could not find file: " << FilePathToUTF8(file_path);
         DLOG(INFO) << "BuildTextureFromImage: could not find file: "
            << FilePathToUTF8(file_path);
         return NULL;
@@ -2243,7 +2243,7 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
         } else {
           FilePath temp_path = file_path;
           if (!FindFile(options_.file_paths, temp_path, &temp_path)) {
-            O3D_ERROR(service_locator_) << "Could not find file: " << path;
+            O3D_ERROR(service_locator_) << "Could not find file: " << FilePathToUTF8(file_path);
             return NULL;
           }
           file_util::ReadFileToString(temp_path, &effect_string);

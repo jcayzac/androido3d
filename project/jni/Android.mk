@@ -24,7 +24,6 @@ LOCAL_CFLAGS    := \
   -D__ANDROID__ \
   -DRENDERER_GLES2 \
   -DGLES2_BACKEND_NATIVE_GLES2 \
-  -I$(LOCAL_PATH)/third_party/stlport/stlport \
   -I$(LOCAL_PATH)/third_party/loggingshim \
 
 LOCAL_LDLIBS    := -llog -lGLESv2 -lz -ldl
@@ -44,7 +43,6 @@ LOCAL_STATIC_LIBRARIES := \
   libpng \
   zlib \
   loggingshim \
-  stlport \
   o3dwchar \
 
 include $(BUILD_SHARED_LIBRARY)
@@ -53,7 +51,6 @@ include $(MY_PATH)/AndroidLib.mk
 include $(MY_PATH)/core/Android.mk
 include $(MY_PATH)/import/Android.mk
 include $(MY_PATH)/utils/Android.mk
-include $(MY_PATH)/third_party/stlport/Android.mk
 include $(MY_PATH)/third_party/fcollada/files/Android.mk
 include $(MY_PATH)/third_party/libtxc_dxtn/files/Android.mk
 include $(MY_PATH)/third_party/libjpeg/Android.mk

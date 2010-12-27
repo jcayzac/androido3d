@@ -62,7 +62,7 @@ class ElapsedTimeTimer {
   typedef AbsoluteTime TimeStamp;
 #endif
 
-#ifdef OS_LINUX
+#if defined(OS_LINUX) || defined(__ANDROID__)
   typedef uint64_t TimeStamp;
 #endif
 
@@ -75,9 +75,6 @@ class ElapsedTimeTimer {
   TimeStamp windows_timer_frequency_;
 #endif
 
-#ifdef __ANDROID__
-  typedef uint64_t TimeStamp;
-#endif
 
   // The value of the tick count from the windows performance counter from the
   // last time GetElapsedTime was called.

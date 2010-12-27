@@ -15,7 +15,6 @@ LOCAL_CFLAGS    := \
   -DO3D_IMPORT_NO_DXT_DECOMPRESSION \
   -DFCOLLADA_EXCEPTION=0 \
   -DUNICODE \
-  -I$(LOCAL_PATH)/../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/../third_party/fcollada/files/LibXML/include \
   -I$(LOCAL_PATH)/../third_party/fcollada/files \
   -I$(LOCAL_PATH)/../third_party/loggingshim \
@@ -35,7 +34,6 @@ LOCAL_SRC_FILES := $(addprefix cross/, \
   json_writer.cc \
   string_reader.cc \
   string_writer.cc \
-  structured_writer.h \
   text_reader.cc \
   text_writer.cc \
   )

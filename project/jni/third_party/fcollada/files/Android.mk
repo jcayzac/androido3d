@@ -13,7 +13,6 @@ LOCAL_CFLAGS    := \
   -DFCOLLADA_EXCEPTION=0 \
   -I$(LOCAL_PATH)/LibXML/include \
   -I$(LOCAL_PATH) \
-  -I$(LOCAL_PATH)/../../../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/../../../third_party/chromium \
 
 LOCAL_SRC_FILES := \
@@ -75,7 +74,6 @@ LOCAL_CFLAGS    := \
   -DFCOLLADA_EXCEPTION=0 \
   -I$(LOCAL_PATH)/../../../third_party/fcollada/files/LibXML/include \
   -I$(LOCAL_PATH)/../../../third_party/fcollada/files \
-  -I$(LOCAL_PATH)/../../../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/../../../third_party/chromium \
 
 LOCAL_SRC_FILES := \

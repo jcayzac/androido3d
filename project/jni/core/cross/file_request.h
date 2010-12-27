@@ -36,6 +36,7 @@
 #define O3D_CORE_CROSS_FILE_REQUEST_H_
 
 #include <algorithm>
+#include <cctype>
 #include <string>
 
 #include "base/scoped_ptr.h"

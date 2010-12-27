@@ -17,7 +17,6 @@ LOCAL_CFLAGS    := \
   -DO3D_NO_TEMP_FILES \
   -DFCOLLADA_EXCEPTION=0 \
   -DUNICODE \
-  -I$(LOCAL_PATH)/../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/../third_party/fcollada/files/LibXML/include \
   -I$(LOCAL_PATH)/../third_party/fcollada/files \
   -I$(LOCAL_PATH)/../third_party/loggingshim \

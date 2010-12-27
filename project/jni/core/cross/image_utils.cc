@@ -39,6 +39,8 @@
 #include "core/cross/pointer_utils.h"
 #include "core/cross/math_utilities.h"
 
+#include <cctype>
+
 namespace o3d {
 namespace image {
 

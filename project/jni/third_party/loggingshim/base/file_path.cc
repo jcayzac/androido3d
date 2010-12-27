@@ -375,9 +375,10 @@ bool FilePath::MatchesExtension(const StringType& extension) const {
 
   FilePath::StringType current_extension = Extension();
 
-  if (current_extension.length() != extension.length())
+  if (current_extension.length() != extension.length()) {
     return false;
-
+  }
+  
   return FilePath::CompareEqualIgnoreCase(extension, current_extension);
 }
 

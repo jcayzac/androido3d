@@ -1748,7 +1748,7 @@ Texture2D::Ref RendererGLES2::CreatePlatformSpecificTexture2D(
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  DLOG(INFO) << "RendererGLES2 CreateTexture2D";
+  DLOG(INFO) << "RendererGLES2 CreateTexture2D " << width << "x" << height;
   MakeCurrentLazy();
   return Texture2D::Ref(Texture2DGLES2::Create(service_locator(),
                                                format,

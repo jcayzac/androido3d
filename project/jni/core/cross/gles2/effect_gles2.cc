@@ -40,6 +40,8 @@
 #pragma warning(disable : 4311)
 #endif
 
+
+#include <cctype>
 #include <sstream>
 #include "base/cross/std_functional.h"
 #include "core/cross/semantic_manager.h"

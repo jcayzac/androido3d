@@ -9,7 +9,6 @@ LOCAL_CPP_EXTENSION := .cc
 LOCAL_CFLAGS    := \
   -D__ANDROID__ \
   -DUNICODE \
-  -I$(LOCAL_PATH)/../../third_party/stlport/stlport \
   -I$(LOCAL_PATH)/.. \
   -I$(LOCAL_PATH) \
 

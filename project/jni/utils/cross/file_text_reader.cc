@@ -174,7 +174,7 @@ size_t FileTextReader::GetFileSize() const {
 #if defined(OS_WIN)
   int file_number = ::_fileno(input_);
 #else
-  int file_number = ::fileno(input_);
+  int file_number = fileno(input_);
 #endif
   ::fstat(file_number, &file_info);
 

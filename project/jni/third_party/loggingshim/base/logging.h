@@ -13,6 +13,8 @@
 
 #include <android/log.h>
 
+#include "build/build_config.h"
+
 enum LogSeverity {
     INFO = ANDROID_LOG_INFO,
     WARNING = ANDROID_LOG_WARN,
@@ -31,11 +33,12 @@ namespace logging {
 
   class Logger {
     public:
-      Logger(LogSeverity severity, const char* tag, const char* location)
-        : mShowLocation(false),
+      Logger(LogSeverity severity, const char* tag, const char* location, bool showLocation)
+        : mShowLocation(showLocation),
           mSeverity(severity),
           mTag(tag),
           mLocation(location) { };
+      Logger(LogSeverity severity, const char* tag, const char* file, int line, bool showLocation);
       virtual ~Logger();
       std::ostringstream& printLog();
      private:
@@ -53,8 +56,11 @@ namespace logging {
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
+#define LOG_MANUAL(severity, file, line) \
+  logging::Logger(severity, logging::sDebugTag, file, line, true).printLog()
+
 #define LOG(severity) \
-  logging::Logger(severity, logging::sDebugTag, __FILE__ ":" TOSTRING(__LINE__)).printLog()
+  logging::Logger(severity, logging::sDebugTag, __FILE__ ":" TOSTRING(__LINE__), false).printLog()
 
 #define LOG_IF(severity, condition) \
   !(condition) ? logging::nullStream() : LOG(severity)
@@ -74,7 +80,7 @@ namespace logging {
 // We should probably unify all logging here.
 #define NDEBUG_EAT_STREAM_PARAMETERS logging::nullStream()
 
-#ifdef NDEBUG
+#ifndef NDEBUG
 
 #define DLOG(severity) LOG(severity)
 #define DLOG_IF(severity, condition) LOG_IF(severity)
@@ -164,7 +170,7 @@ namespace logging {
 // of the current function in the NOTIMPLEMENTED message.
 #define NOTIMPLEMENTED_MSG "Not implemented reached in " << __PRETTY_FUNCTION__
 #else
-#define NOTIMPLEMENTED_MSG "NOT IMPLEMENTED"
+#define NOTIMPLEMENTED_MSG "NOT IMPLEMENTED "
 #endif
 
 #if NOTIMPLEMENTED_POLICY == 0

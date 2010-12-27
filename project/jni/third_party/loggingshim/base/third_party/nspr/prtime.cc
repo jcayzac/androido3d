@@ -77,6 +77,8 @@
 #include <errno.h>  /* for EINVAL */
 #include <time.h>
 
+#include <cctype>
+
 /* Implements the Unix localtime_r() function for windows */
 #if defined(OS_WIN)
 static void localtime_r(const time_t* secs, struct tm* time) {

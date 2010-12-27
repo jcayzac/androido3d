@@ -38,7 +38,7 @@
 #if defined(__ANDROID__)
 // This is needed because the Android NDK utility is broken and so this has
 // to be included before <utility>.
-#include "third_party/stlport/stlport/utility"
+//#include "third_party/stlport/stlport/utility"
 #endif
 
 #include <utility>

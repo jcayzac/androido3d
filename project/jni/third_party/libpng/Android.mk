@@ -14,8 +14,6 @@ LOCAL_CFLAGS    := \
 
 LOCAL_SRC_FILES := \
   png.c \
-  png.h \
-  pngconf.h \
   pngerror.c \
   pnggccrd.c \
   pngget.c \
@@ -27,7 +25,6 @@ LOCAL_SRC_FILES := \
   pngrutil.c \
   pngset.c \
   pngtrans.c \
-  pngusr.h \
   pngvcrd.c \
   pngwio.c \
   pngwrite.c \

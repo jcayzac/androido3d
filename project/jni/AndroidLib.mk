@@ -23,7 +23,6 @@ LOCAL_CFLAGS    := \
   -D__ANDROID__ \
   -DRENDERER_GLES2 \
   -DGLES2_BACKEND_NATIVE_GLES2 \
-  -I$(LOCAL_PATH)/third_party/stlport/stlport \
   -I$(LOCAL_PATH)/third_party/loggingshim \
 
 LOCAL_SRC_FILES := \
@@ -49,7 +48,6 @@ LOCAL_CFLAGS    := \
   -D__ANDROID__ \
   -DRENDERER_GLES2 \
   -DGLES2_BACKEND_NATIVE_GLES2 \
-  -I$(LOCAL_PATH)/third_party/stlport/stlport \
   -I$(LOCAL_PATH)/third_party/loggingshim \
 
 LOCAL_SRC_FILES := \

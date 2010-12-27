@@ -53,7 +53,8 @@ IErrorStatus::ErrorCallback* ErrorStatus::Exchange(ErrorCallback* callback) {
 void ErrorStatus::SetLastError(const String& error, const char *file,
     int line) {
   if (log_to_file_) {
-    logging::LogMessage(file, line, ERROR).stream() << error;
+//    logging::LogMessage(file, line, ERROR).stream() << error;
+    LOG_MANUAL(ERROR, file, line) << error;
   }
   SetLastError(error);
 }

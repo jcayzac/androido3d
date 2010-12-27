@@ -56,6 +56,8 @@ bool DrawPassInfo::Initialize(
 
   pack_ = pack;
   root_ = state_set_;
+  
+  return true;
 };
 
 ViewInfo::ViewInfo()
@@ -120,11 +122,15 @@ bool ViewInfo::Initialize(
       DrawList::BY_PERFORMANCE,
       NULL, priority_++, NULL, performance_draw_list);
 
+  DCHECK(performance_draw_pass_info_);
+  
   // Setup a z Ordered DrawPass
   z_ordered_draw_pass_info_ = CreateDrawPass(
       DrawList::BY_Z_ORDER,
       NULL, priority_++, NULL, z_ordered_draw_list);
 
+  DCHECK(z_ordered_draw_pass_info_);
+  
   draw_pass_infos_.push_back(performance_draw_pass_info_);
   draw_pass_infos_.push_back(z_ordered_draw_pass_info_);
 
@@ -147,6 +153,8 @@ bool ViewInfo::Initialize(
   root_->SetParent(parent);
 
   own_draw_context_ = draw_context == NULL;
+  
+  return true;
 };
 
 DrawPassInfo* ViewInfo::CreateDrawPass(

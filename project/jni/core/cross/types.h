@@ -80,7 +80,7 @@
   if (LOG_OCCURRENCES <= n)                     \
     ++LOG_OCCURRENCES;                          \
   if (LOG_OCCURRENCES <= n)                     \
-    COMPACT_GOOGLE_LOG_ ## severity.stream()
+    LOG(severity)
 
 #define SOME_KIND_OF_LOG_EVERY_N(severity, n)   \
   static int LOG_OCCURRENCES = 0;               \
@@ -89,7 +89,7 @@
   if (++LOG_OCCURRENCES_MOD_N > n)              \
     LOG_OCCURRENCES_MOD_N -= n;                 \
   if (LOG_OCCURRENCES_MOD_N == 1)               \
-    COMPACT_GOOGLE_LOG_ ## severity.stream()
+    LOG(severity)
 
 #define DLOG_FIRST_N(severity, n)               \
   SOME_KIND_OF_LOG_FIRST_N(severity, (n))

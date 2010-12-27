@@ -17,7 +17,7 @@
 // A set of macros to use for platform detection.
 #if defined(__APPLE__)
 #define OS_MACOSX 1
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__ANDROID__) 
 #define OS_LINUX 1
 // Use TOOLKIT_GTK on linux if TOOLKIT_VIEWS isn't defined.
 #if !defined(TOOLKIT_VIEWS)
