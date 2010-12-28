@@ -632,7 +632,7 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
     String name(name_buffer.get(), length);
 
     // Find a Param of the same name, and record the link.
-    if (param_cache_gl->uniform_map().find(ii) ==
+    if (param_cache_gl->uniform_map().find(location) ==
         param_cache_gl->uniform_map().end()) {
       const ObjectBase::Class *sem_class = NULL;
       // Try looking by SAS class name.
