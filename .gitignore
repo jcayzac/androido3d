@@ -5,6 +5,10 @@
 # *.[oa]
 # *~
 
+# protocol buffers generated sources
+*.pb.h
+*.pb.cc
+
 # android intermediate files
 armeabi-v7a
 armeabi

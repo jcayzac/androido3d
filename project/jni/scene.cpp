@@ -18,6 +18,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <fstream>
 #include "scene.h"
 #include "core/cross/client.h"
 #include "core/cross/curve.h"
@@ -145,6 +146,32 @@ void Scene::PrepareShapes(o3d::Pack* pack) {
   }
 };
 
+o3d::Shape* Scene::CreateErrorShape(o3d::Pack* pack) {
+  o3d::Shape* shape = pack->Create<o3d::Shape>();
+  o3d::Primitive* prim = Primitives::CreateSphere(
+      pack, 10.0f, 8, 5, NULL);
+  // Setup the material with collada parameters so the shader builder will
+  // make a shader for us.
+  // NOTE: This is NOT the typical way to do this. This is only because
+  //    we have a collada specific shader builder in shader_builder.cpp
+  //    which is NOT part of O3D.
+  o3d::Material* material = pack->Create<o3d::Material>();
+  o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+  o3d::Renderer* renderer =
+      pack->service_locator()->GetService<o3d::Renderer>();
+  sampler->set_texture(renderer->error_texture());
+  sampler->set_min_filter(o3d::Sampler::NONE);
+  sampler->set_mag_filter(o3d::Sampler::NONE);
+  sampler->set_mip_filter(o3d::Sampler::NONE);
+  material->CreateParam<o3d::ParamString>("collada.lightingType")->set_value(
+      "constant");
+  material->CreateParam<o3d::ParamSampler>("emissiveSampler")->set_value(
+      sampler);
+  prim->SetOwner(shape);
+  prim->set_material(material);
+  return shape;
+}
+
 Scene* Scene::LoadScene(
     o3d::Client* client,
     o3d_utils::ViewInfo* view_info,
@@ -165,31 +192,9 @@ Scene* Scene::LoadScene(
       time,
       options)) {
     // Make an error scene
-    o3d::Shape* shape = pack->Create<o3d::Shape>();
-    o3d::Primitive* prim = Primitives::CreateSphere(
-        pack, 10.0f, 8, 5, NULL);
-    // Setup the material with collada parameters so the shader builder will
-    // make a shader for us.
-    // NOTE: This is NOT the typical way to do this. This is only because
-    //    we have a collada specific shader builder in shader_builder.cpp
-    //    which is NOT part of O3D.
-    o3d::Material* material = pack->Create<o3d::Material>();
-    o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
-    o3d::Renderer* renderer =
-        pack->service_locator()->GetService<o3d::Renderer>();
-    sampler->set_texture(renderer->error_texture());
-    sampler->set_min_filter(o3d::Sampler::NONE);
-    sampler->set_mag_filter(o3d::Sampler::NONE);
-    sampler->set_mip_filter(o3d::Sampler::NONE);
-    material->CreateParam<o3d::ParamString>("collada.lightingType")->set_value(
-        "constant");
-    material->CreateParam<o3d::ParamSampler>("emissiveSampler")->set_value(
-        sampler);
-    prim->SetOwner(shape);
-    prim->set_material(material);
-    pack->root()->AddShape(shape);
+    pack->root()->AddShape(CreateErrorShape(pack));
   }
-	
+
   Materials::PrepareMaterials(pack, view_info, effect_texture_pack);
   PrepareShapes(pack);
 
@@ -208,6 +213,52 @@ Scene* Scene::LoadScene(
 
   return new Scene(pack, pack->root(), time);
 }
+
+Scene* Scene::LoadBinaryScene(
+  o3d::Client* client,
+  o3d_utils::ViewInfo* view_info,
+  const std::string& filename,
+  o3d::extra::IExternalResourceProvider& external_resource_provider) {
+
+  o3d::Transform* root = 0;
+  o3d::Pack* pack = client->CreatePack();
+
+  std::ifstream ifs(filename.c_str(), std::ios::in|std::ios::binary);
+  if (ifs.is_open()) {
+    root = o3d::extra::LoadFromBinaryStream(ifs, *pack, external_resource_provider);
+    ifs.close();
+  }
+  else {
+    DLOG(ERROR) << "Can't open " << filename;
+  }
+  if (!root) {
+    // Make an error scene
+    DLOG(ERROR) << "Making an error scene";
+    root = pack->Create<o3d::Transform>();
+    root->CreateParam<o3d::ParamFloat>("time");
+    root->AddShape(CreateErrorShape(pack));
+  }
+
+  pack->set_root(root);
+  Materials::PrepareMaterials(pack, view_info, 0);
+  PrepareShapes(pack);
+
+  #if 1  // print total polygons.
+  {
+    int total = 0;
+    std::vector<o3d::IndexBuffer*> bufs = pack->GetByClass<o3d::IndexBuffer>();
+    for (size_t ii = 0; ii < bufs.size(); ++ii) {
+      int num = bufs[ii]->num_elements() / 3;
+      DLOG(INFO) << "IndexBuffer: " << bufs[ii]->name() << " : polys: " << num;
+      total += num;
+    }
+    DLOG(INFO) << "Total Polygons: " << total;
+  }
+  #endif
+
+  return new Scene(pack, pack->root(), pack->root()->GetParam<o3d::ParamFloat>("time"));
+}
+
 
 Scene::Scene(o3d::Pack* pack, o3d::Transform* root, o3d::ParamFloat* time)
     : pack_(pack),

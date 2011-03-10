@@ -20,6 +20,7 @@
 #include <string>
 #include <set>
 #include "core/cross/types.h"
+#include "extra/cross/binary.h"
 
 namespace o3d {
 
@@ -65,6 +66,12 @@ class Scene {
       const std::string& filename,
       o3d::Pack* effect_texture_pack);
 
+  static Scene* LoadBinaryScene(
+      o3d::Client* client,
+      o3d_utils::ViewInfo* view_info,
+      const std::string& filename,
+      o3d::extra::IExternalResourceProvider& external_resource_provider);
+
   o3d::Pack* pack() const {
     return pack_;
   }
@@ -95,6 +102,7 @@ class Scene {
   friend class Cloner;
 
   Scene(o3d::Pack* pack, o3d::Transform* root, o3d::ParamFloat* time);
+  static o3d::Shape* CreateErrorShape(o3d::Pack* pack);
 
   o3d::Pack* pack_;
   o3d::Transform* root_;

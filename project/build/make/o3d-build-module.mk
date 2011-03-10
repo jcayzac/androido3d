@@ -17,4 +17,7 @@
 # Add module to current list, for combined libraries
 O3D_MODULES += $(LOCAL_MODULE)
 
+# Replace protocol buffer descriptors with their corresponding source file
+LOCAL_SRC_FILES := $(LOCAL_SRC_FILES:.proto=.pb.cc)
+
 include $(BUILD_STATIC_LIBRARY)

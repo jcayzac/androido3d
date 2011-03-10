@@ -1,0 +1,216 @@
+/*
+ * Copyright (C) 2010 Tonchidot Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Three kinds of messages can be sent over the wire. Those are encoded
+ * as a sequence of protocol buffers:
+ * - Strings contain an [AtomHeader] with atom_type = STRING_ATOM, followed by a [String].
+ * - Arbitrary O3D types-derived protocol buffers, described below in detail,
+ * are sent as an empty [AtomHeader], an [ObjectHeader] and a type-specific
+ * protocol buffer (e.g. [Effect]).
+ * - The end of the archive is announced using an [AtomHeader] with atom_type
+ * set to END_OF_ARCHIVE, followed by an [EndOfArchive] containing the id of the
+ * scenegraph's root transform. The binary model loading/saving functions will stop
+ * using the stream at this point, but leave it open so it can be used to further
+ * read or write data in another part of the application (so it is possible, for
+ * instance, to stream image files and models using the same iostream).
+ */
+
+option optimize_for = LITE_RUNTIME;
+option cc_generic_services   = false;
+option java_generic_services = false;
+option py_generic_services   = false;
+package o3d.extra.binary;
+
+/// @brief First protocol buffer in a stream. Not compressed.
+message StreamHeader {
+  enum Compression {
+    COMPRESSION_NONE = 1;
+    COMPRESSION_GZIP = 2;
+    COMPRESSION_LZMA = 3;
+  }
+  /// Tells what compression algorithm is used in the rest
+  /// of the stream. Defaults to {COMPRESSION_NONE}.
+  optional Compression compression = 1;
+}
+
+/// @brief Describe what kind of atom comes next.
+message AtomHeader {
+  /// @brief Type of atoms.
+  enum Type {
+    OBJECT_ATOM          = 1; ///< Default. Next atom is an {ObjectHeader}.
+    STRING_ATOM          = 2; ///< Next atom is a {String}.
+    END_OF_ARCHIVE_ATOM  = 3; ///< Next atom is the {EndOfArchive}.
+    ATTACHMENT_ATOM      = 4; ///< Next atom is an {Attachment}.
+  }
+  optional Type atom_type = 1; ///< Defaults to {Type}'s first value, {OBJECT_ATOM}
+}
+
+message String {
+  // Always preceded by an AtomHeader
+  optional string value = 1 [default=""];
+}
+
+message ObjectHeader {
+  // Always preceded by an AtomHeader
+  required uint32 type  = 1;
+  required uint32 id    = 2;
+  optional uint32 name  = 3;
+}
+
+message Param {
+  // Always preceded by an ObjectHeader
+  optional bool   bool_value           = 1;
+  optional sint32 integer_value        = 2;
+  repeated float  float_value          = 3 [packed=true];
+  optional uint32 indexed_string_value = 4;
+  optional uint32 object_ref_value     = 5;
+  // Param's input connection, if any
+  optional uint32 input_connection_ref = 6;
+  // Param-owning object or array reference
+  optional uint32 owner_ref            = 7;
+  // Index of the param inside a ParamArray
+  optional uint32 index                = 8;
+}
+
+message Effect {
+  // Always preceded by an ObjectHeader
+  optional uint32 source_indexed_string = 1;
+}
+
+message Skin {
+  // Always preceded by an ObjectHeader
+  message InfluenceArray {
+    message Influence {
+      required uint32 matrix_index = 1;
+      required float  weight       = 2;
+    }
+    repeated Influence influence = 1;
+  }
+  repeated InfluenceArray influence_array           = 1;
+  repeated float          inverse_bind_pose_matrice = 2 [packed=true];
+}
+
+message Curve {
+  // Always preceded by an ObjectHeader
+  enum Infinity {
+    CONSTANT       = 1;
+    LINEAR         = 2;
+    CYCLE          = 3;
+    CYCLE_RELATIVE = 4;
+    OSCILLATE      = 5;
+  }
+  message Key {
+    enum Type {
+      STEP   = 1;
+      LINEAR = 2;
+      BEZIER = 3;
+    }
+    required Type  type           = 1;
+    required float input          = 2;
+    required float output         = 3;
+    repeated float bezier_tangent = 4 [packed=true];
+  }
+  required Infinity pre_infinity  = 1;
+  required Infinity post_infinity = 2;
+  required bool     use_cache     = 3;
+  required float    sample_rate   = 4;
+  repeated Key      key           = 5;
+}
+
+message Buffer {
+  // Always preceded by an ObjectHeader
+  message Field {
+    enum Type {
+      FLOAT  = 1;
+      UINT32 = 2;
+      UINT16 = 3;
+      BYTE   = 4;
+    }
+    required uint32 id             = 1;
+    required Type   type           = 2;
+    optional uint32 name           = 3;
+    required uint32 num_components = 4;
+    repeated uint32 value_uint     = 5 [packed=true];
+    repeated float  value_float    = 6 [packed=true];
+    optional bytes  value_byte     = 7;
+  }
+  required uint32 num_elements = 1;
+  repeated Field  field        = 2;
+}
+
+message VertexSource {
+  // Always preceded by an ObjectHeader
+  message Stream {
+    enum Semantic {
+      POSITION = 1;
+      NORMAL   = 2;
+      TANGENT  = 3;
+      BINORMAL = 4;
+      COLOR    = 5;
+      TEXCOORD = 6;
+    }
+    required uint32   field_ref      = 1;
+    required uint32   start_index    = 2;
+    required Semantic semantic       = 3;
+    required uint32   semantic_index = 4;
+    optional uint32   bind           = 5;
+  }
+  repeated Stream stream = 1;
+}
+
+message Primitive {
+  // Always preceded by an ObjectHeader
+  enum Type {
+    POINT_LIST     = 1;
+    LINE_LIST      = 2;
+    LINE_STRIP     = 3;
+    TRIANGLE_LIST  = 4;
+    TRIANGLE_STRIP = 5;
+    TRIANGLE_FAN   = 6;
+  }
+  required Type   primitive_type    = 1;
+  required uint32 number_vertices   = 2;
+  required uint32 number_primitives = 3;
+  required uint32 start_index       = 4;
+  optional uint32 index_buffer_ref  = 5;
+  optional uint32 stream_bank_ref   = 6;
+  required uint32 owner_ref         = 7;
+}
+
+message Transform {
+  // Always preceded by an ObjectHeader
+  optional uint32 parent_ref = 1;
+}
+
+message Attachment {
+  // Special atom used to bind a list of attachments to an object
+  // Example: attaching shapes to a transform.
+  required uint32 object_ref     = 1;
+  repeated uint32 attachment_ref = 2 [packed=true];
+}
+
+message Texture {
+  // Always preceded by an ObjectHeader
+  required uint32 uri = 1;
+}
+
+message EndOfArchive {
+  // Always preceded by an AtomHeader
+  required uint32 root = 1;
+}
+
+/* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */

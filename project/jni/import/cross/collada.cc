@@ -1717,6 +1717,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
   const fstring filename = image->GetFilename();
   FilePath file_path = WideToFilePath(filename.c_str());
   FilePath uri = file_path;
+  FilePath original_uri = file_path;
   FilePath tex_id = options_.store_textures_by_basename ? file_path.BaseName() :
                     file_path;
   if (collada_zip_archive_) {
@@ -1775,6 +1776,9 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
 
     if (tex) {
       tex->set_name(FilePathToUTF8(tex_id));
+      ParamString* original_uri_param = tex->CreateParam<ParamString>(O3D_STRING_CONSTANT("original_uri"));
+      DCHECK(original_uri_param != NULL);
+      original_uri_param->set_value(FilePathToUTF8(original_uri));
     }
 
     if (options_.keep_original_data) {

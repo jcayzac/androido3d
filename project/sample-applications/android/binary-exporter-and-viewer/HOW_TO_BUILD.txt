@@ -1,0 +1,19 @@
+Build instructions:
+===================
+
+1) Open Terminal (or iTerm2/etc.)
+2) Change to the exporter's root directory (the one this file is in!)
+
+	$ cd /path/to/androido3d/project/sample-applications/android/binary-exporter-and-viewer
+
+3) Create the local.properties file, and make the sdk.dir
+   property point to your Android SDK.
+
+   Note: You can skip this step if you have defined the
+   ANDROID_HOME environment variable in your bash.profile,
+   in this case the file will be created automatically.
+
+	$ echo 'sdk.dir = /path/to/android-sdk-mac_x86' >local.properties
+
+4) Run ant to build the application.
+

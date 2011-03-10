@@ -21,13 +21,21 @@ include $(O3D_START_MODULE)
 LOCAL_MODULE := o3dextra
 LOCAL_CPP_EXTENSION := .cc
 
+LOCAL_C_INCLUDES += \
+  $(O3D_THIRD_PARTY)/lzma/include \
+  $(O3D_THIRD_PARTY)/protobuf/include \
+  $(O3D_THIRD_PARTY)/protobuf-lzma/include \
+
 LOCAL_SRC_FILES := \
   $(addprefix cross/, \
+    binary.proto \
     unproject.cc \
     bounding_boxes_extra.cc \
     ray_primitive_intersection.cc \
     primitive_picking.cc \
     collision_detection.cc \
+    binary.cc \
+    file_resource.cc \
   )
 
 include $(O3D_BUILD_MODULE)

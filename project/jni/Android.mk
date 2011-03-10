@@ -34,6 +34,9 @@ include $(O3D_NATIVE_DIR)/third_party/libtxc_dxtn/files/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/libjpeg/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/libpng/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/zlib/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/lzma/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/loggingshim/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/protobuf/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/protobuf-lzma/Android.mk
 
 include $(O3D_BUILD_COMBINED_LIBRARY)

@@ -164,6 +164,7 @@ void Renderer::InitCommon() {
 
   DCHECK(!texture.IsNull());
   texture->set_name(O3D_STRING_CONSTANT("errorTexture"));
+  texture->CreateParam<ParamString>(O3D_STRING_CONSTANT("original_uri"))->set_value("#error");
   texture->set_alpha_is_one(true);
   static unsigned char error_texture_data[] = {
     0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF,

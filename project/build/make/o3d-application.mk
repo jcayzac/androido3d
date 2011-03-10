@@ -35,6 +35,7 @@ APP_CFLAGS := \
   -DGLES2_BACKEND_NATIVE_GLES2 \
   -DFCOLLADA_EXCEPTION=0 \
   -DUSE_FILE32API \
+  -DGOOGLE_PROTOBUF_NO_RTTI \
   -I$(O3D_NATIVE_DIR) \
   -I$(O3D_NATIVE_DIR)/third_party/loggingshim \
 
@@ -60,3 +61,4 @@ endif
 
 # Makefiles
 include $(O3D_DIR)/build/make/o3d-imports.mk
+include $(O3D_DIR)/build/make/o3d-protobuf.mk
