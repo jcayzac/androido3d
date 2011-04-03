@@ -1427,7 +1427,7 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
     // Bind bones to matrices
     size_t num_bones = instance->GetJointCount();
     if (num_bones > 0) {
-      matrices->CreateParam<ParamMatrix4>(num_bones - 1);
+      matrices->CreateParam<ParamMatrix4>(num_bones);
       for (size_t ii = 0; ii < num_bones; ++ii) {
         FCDSceneNode* node = instance->GetJoint(ii);
         LOG_ASSERT(node);
@@ -1456,6 +1456,9 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
         matrices->GetUntypedParam(ii)->Bind(
             bone->GetUntypedParam(Transform::kWorldMatrixParamName));
       }
+      // jcayzac: handle -1 indices in <vertex_weights>
+      matrices->GetUntypedParam(num_bones)->Bind(
+        parent->GetUntypedParam(Transform::kWorldMatrixParamName));
     }
 
     Matrix4 bind_shape_matrix(
@@ -1469,6 +1472,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
       skin->SetInverseBindPoseMatrix(
           ii, FMMatrix44ToMatrix4(joint->GetBindPoseInverse()));
     }
+    // jcayzac: handle -1 indices in <vertex_weights>
+    skin->SetInverseBindPoseMatrix(num_bones, inverse_bind_shape_matrix);
 
     // Get Influences.
     for (size_t ii = 0; ii < num_vertices; ++ii) {
@@ -1479,7 +1484,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
       size_t num_influences = vertex->GetPairCount();
       for (size_t jj = 0; jj < num_influences; ++jj) {
         FCDJointWeightPair* weight_pair = vertex->GetPair(jj);
-        influences.push_back(Skin::Influence(weight_pair->jointIndex,
+        unsigned index = (weight_pair->jointIndex<0)?num_bones:weight_pair->jointIndex;
+        influences.push_back(Skin::Influence(index,
                                              weight_pair->weight));
       }
       skin->SetVertexInfluences(ii, influences);
@@ -1608,6 +1614,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
                               num_vertices);
             // TODO(o3d): Remove this matrix multiply. I don't think it is
             //     needed.
+            // jcayzac: Sure it's needed! bind-shape matrix can be anything,
+            //          even if it's often set to identity.
             for (unsigned vv = 0; vv < num_vertices; ++vv) {
               float* values = &data[vv * num_source_components];
               switch (field.num_components()) {
