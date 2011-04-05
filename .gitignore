@@ -5,11 +5,33 @@
 # *.[oa]
 # *~
 
+# iOS intermediate files
 build
 build/*
+
+# android intermediate files
+armeabi-v7a
+armeabi
+obj
+bin
+gen
+.generated-sources
+.lastbuildmode
+
+# android local build properties
+local.properties
+
+# user-specific Xcode 3 files
 *.pbxuser
 *.mode1v3
 *.mode2v3
-*.swp
 
+# user-specific Xcode 4 files
+*.xcworkspace
+xcuserdata
+
+# misc pollution
+*.swp
+.DS_Store
+*.tmproj
 
