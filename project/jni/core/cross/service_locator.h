@@ -48,14 +48,14 @@ class ServiceImplementation;
 template <typename Interface>
 class ServiceDependency;
 
-// No virtual destructor for IServiceDependency because it is never destroyed
-// through this class and because if forces the destructor in derived template
-// classes to be instantiated early, causing a compilation error in some cases.
 class IServiceDependency {
   friend class ServiceLocator;
  private:
   virtual void Update(void* newService) = 0;
+ public:
+  virtual ~IServiceDependency() = 0;
 };
+inline IServiceDependency::~IServiceDependency() { }
 
 // A ServiceLocator tracks a number of services and connects them together
 // through their ServiceDependencies. When a service is constucted, one or

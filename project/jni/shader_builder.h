@@ -21,6 +21,7 @@ namespace o3d_utils {
 
 class ShaderBuilder {
  public:
+  virtual ~ShaderBuilder() { };
   static ShaderBuilder* Create();
 
   static bool isColladaLightingType(const std::string& lightingType);

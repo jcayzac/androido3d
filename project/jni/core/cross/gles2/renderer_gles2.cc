@@ -1331,43 +1331,38 @@ void RendererGLES2::Destroy() {
 bool RendererGLES2::MakeCurrent() {
 #ifdef OS_WIN
   if (!device_context_ || !gl_context_) return false;
-  bool result = ::wglMakeCurrent(device_context_, gl_context_) != 0;
-  return result;
-#endif
-#if defined(OS_MACOSX)
-#ifdef TARGET_OS_IPHONE
-	return true;
-#else
-  if (mac_cgl_context_ != NULL) {
+  return (bool) ::wglMakeCurrent(device_context_, gl_context_);
+#elif defined(TARGET_OS_IPHONE)
+  // the return value is never ever checked on iOS
+  return true;
+#elif defined(OS_ANDROID)
+  // the return value is never ever checked on Android
+  return true;
+#elif defined(OS_MACOSX)
+  // TARGET_OS_IPHONE is not defined, so it's desktop MacOS
+  if (mac_cgl_context_) {
     ::CGLSetCurrentContext(mac_cgl_context_);
     return true;
-  } else if (mac_agl_context_ != NULL) {
+  } else if (mac_agl_context_) {
     ::aglSetCurrentContext(mac_agl_context_);
     return true;
-  } else {
-    return false;
   }
-#endif // TARGET_OS_IPHONE
-#endif
-#ifdef OS_LINUX
-#if defined(GLES2_BACKEND_DESKTOP_GL)
-  if (context_ != NULL) {
-    bool result = ::glXMakeCurrent(display_, window_, context_) == True;
-    return result;
-  } else {
-    return false;
-  }
-#elif defined(GLES2_BACKEND_NATIVE_GLES2)
-  if (egl_context_ != NULL) {
-    EGLBoolean result = eglMakeCurrent(egl_display_, egl_surface_,
-                                       egl_surface_, egl_context_);
-    return result == EGL_TRUE;
-  } else {
-    return false;
-  }
+  else return false;
+#elif defined(OS_LINUX)
+  #if defined(GLES2_BACKEND_DESKTOP_GL)
+    if (context_)
+      return (::glXMakeCurrent(display_, window_, context_) == True);
+    else return false;
+  #elif defined(GLES2_BACKEND_NATIVE_GLES2)
+    if (egl_context_)
+      return (EGL_TRUE == eglMakeCurrent(egl_display_, egl_surface_,
+                                         egl_surface_, egl_context_));
+    else return false;
+  #else
+    #error Either GLES2_BACKEND_DESKTOP_GL or GLES2_BACKEND_NATIVE_GLES2 must be defined
+  #endif
 #else
-#error Not Implemented
-#endif
+  #error Unknown platform
 #endif
 }
 

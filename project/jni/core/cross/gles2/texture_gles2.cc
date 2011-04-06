@@ -971,7 +971,6 @@ bool TextureCUBEGLES2::PlatformSpecificUnlock(CubeFace face, int level) {
 
   if (!resize_to_pot_) {
     // See if we can throw away the backing bitmap.
-    Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
     bool has_locked_level = false;
     for (int i = 0; i < static_cast<int>(NUMBER_OF_FACES); ++i) {
       if (locked_levels_[i]) {
@@ -981,6 +980,7 @@ bool TextureCUBEGLES2::PlatformSpecificUnlock(CubeFace face, int level) {
     }
     if (!has_locked_level) {
       #ifndef O3D_RENDERER_MUST_BACK_RESOURCES
+      Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
       backing_bitmap->FreeData();
       #endif
       for (int i = 0; i < static_cast<int>(NUMBER_OF_FACES); ++i) {

@@ -263,7 +263,7 @@ void Client::RenderClientInner(bool present, bool send_callback) {
       // clear the client area.
       if (!rendergraph_root || rendergraph_root->children().empty()) {
           renderer_->Clear(Float4(0.4f, 0.3f, 0.3f, 1.0f),
-                           true, 1.0, true, 0, true);
+                           true, 1.0f, true, 0, true);
       } else if (rendergraph_root) {
         RenderTree(rendergraph_root);
       }

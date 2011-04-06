@@ -45,7 +45,7 @@ static void SetBoundingBox(Transform *transform, float width, float height)
 	// Tight bbox would be:
 	//   min = (-0.5f, -0.5f*aspect, 0.0f)
 	//   max = ( 0.5f,  0.5f*aspect, 0.0f)
-	float halfsize = 0.707106781;
+	float halfsize = 0.707106781f;
 	float aspect = height/width;
 	BoundingBox bbox(Point3(-halfsize, -halfsize*aspect, -halfsize),
 					 Point3( halfsize,  halfsize*aspect,  halfsize));

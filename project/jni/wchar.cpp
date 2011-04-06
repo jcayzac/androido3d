@@ -126,10 +126,12 @@ wchar_t *wmemset(
    wchar_t c,
    size_t count
 ) {
+  wchar_t* res = dest;
   wchar_t* end = dest + count;
   while (dest != end) {
     *dest++ = c;
   }
+  return res;
 }
 
 // TODO(gman): implement these

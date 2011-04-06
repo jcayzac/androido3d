@@ -252,10 +252,9 @@ void RenderNode::GetRenderNodesByNameInTreeFast(
 
   // Partition the container into two sections depending on whether the render
   // node name matches the desired name.
-  RenderNodeArray::iterator i =
-      std::partition(matching_nodes->begin(),
-                     matching_nodes->end(),
-                     CompareRenderNodeName(name));
+  std::partition(matching_nodes->begin(),
+                 matching_nodes->end(),
+                 CompareRenderNodeName(name));
 }
 
 // Slower version of function above for Javascript.

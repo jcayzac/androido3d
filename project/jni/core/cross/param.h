@@ -126,7 +126,7 @@ class Param : public NamedObjectBase {
   }
 
   // Returns a reference to the internal array of output references.
-  const ParamVector& output_connections() {
+  const ParamVector& output_connections() const {
     return output_connections_;
   }
 

@@ -281,6 +281,7 @@ bool O3DManager::ResizeViewport(int width, int height) {
 
   main_view_->draw_context()->set_view(camera_info->view);
   SetProjection(width, height);
+  return true;
 }
 
 o3d::Matrix4 lookAt2(

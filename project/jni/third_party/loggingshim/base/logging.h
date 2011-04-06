@@ -41,7 +41,7 @@ inline std::ostream& operator<<(std::ostream& stream, const std::wstring& s) {
 
 namespace logging {
 
-  static const char* sDebugTag = "O3D";
+  static const char* const sDebugTag = "O3D";
 
   class Logger {
     public:
@@ -120,10 +120,18 @@ namespace logging {
 
 #else
 
-#define DLOG(severity) logging::nullStream()
-#define DLOG_IF(severity, condition) logging::nullStream()
-#define DLOG_ASSERT(condition) logging::nullStream()
-#define DCHECK(condition) logging::nullStream()
+#define DLOG(severity) \
+  while (false && (severity)) logging::nullStream()
+
+#define DLOG_IF(severity, condition) \
+  while (false && (condition)) logging::nullStream()
+
+#define DLOG_ASSERT(condition) \
+  while (false && (condition)) logging::nullStream()
+
+#define DCHECK(condition) \
+  while (false && (condition)) logging::nullStream()
+
 #define DCHECK_EQ(val1, val2) \
   while (false && (val1) == (val2)) logging::nullStream()
 

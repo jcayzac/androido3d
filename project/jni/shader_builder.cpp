@@ -1093,7 +1093,6 @@ class GLSLShaderBuilder : public ShaderBuilder {
       std::string* description) {
     o3d::ParamSampler* bumpSampler =
         material->GetParam<o3d::ParamSampler>("bumpSampler");
-    int bumpUVInterpolant;
 
     // Create a shader string of the appropriate type, based on the
     // effectType.
@@ -1257,7 +1256,7 @@ void ShaderBuilder::createUniformParameters(
         if (o3d::ObjectBase::ClassIsA(
             info.class_type(),
             o3d::ParamSampler::GetApparentClass())) {
-          for (size_t jj = 0; jj < info.num_elements(); ++jj) {
+          for (size_t jj = 0; jj < (size_t)info.num_elements(); ++jj) {
             o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
             paramArray->GetParam<o3d::ParamSampler>(jj)->set_value(sampler);
           }

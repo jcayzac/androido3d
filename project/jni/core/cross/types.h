@@ -56,7 +56,7 @@
 #ifdef _DEBUG
 #define O3D_ASSERT(x)     assert((x))
 #else
-#define O3D_ASSERT(x)
+#define O3D_ASSERT(x)     while (false && (x))
 #endif
 // Add debug logging for the first N occurrences.
 // Add debug logging for every N occurrences.

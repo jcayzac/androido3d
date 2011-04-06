@@ -248,9 +248,9 @@ CameraInfo* Camera::getCameraFitToScene(o3d::Transform* treeRoot,
       (minExtent.getX() + maxExtent.getX()) / 2.0f,
       (minExtent.getY() + maxExtent.getY()) / 2.0f,
       (minExtent.getZ() + maxExtent.getZ()) / 2.0f);
-  o3d::Point3 eye(target + o3d::Vector3(boxDimensions.getX() * 0.3,
-                                        boxDimensions.getY() * 0.7,
-                                        diag * 1.5));
+  o3d::Point3 eye(target + o3d::Vector3(boxDimensions.getX() * 0.3f,
+                                        boxDimensions.getY() * 0.7f,
+                                        diag * 1.5f));
   float nearPlane = diag / 1000.0f;
   float farPlane = diag * 10.0f;
 
@@ -297,7 +297,7 @@ CameraInfo* Camera::getViewAndProjectionFromCameras(o3d::Transform* treeRoot,
 o3d::Matrix4 Camera::perspective(
     float fovy_in_radians, float aspect, float z_near, float z_far) {
   const float kEpsilon = 0.00001f;
-  float radians = fovy_in_radians * 0.5;
+  float radians = fovy_in_radians * 0.5f;
   float delta_z = z_far - z_near;
   float sine = sinf(radians);
 

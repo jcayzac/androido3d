@@ -168,9 +168,8 @@ void Bitmap::SetRect(
   DCHECK(dst_left + src_width <= mip_width &&
          dst_top + src_height <= mip_height);
   bool compressed = Texture::IsCompressedFormat(format());
-  bool entire_rect = dst_left == 0 && dst_top == 0 &&
-                     src_width == mip_width && src_height == mip_height;
-  DCHECK(!compressed || entire_rect);
+  DCHECK(!compressed || (dst_left == 0 && dst_top == 0 &&
+                     src_width == mip_width && src_height == mip_height));
 
   uint8* dst = GetPixelData(level, dst_left, dst_top);
 

@@ -61,7 +61,7 @@ ClearBuffer::ClearBuffer(ServiceLocator* service_locator)
   RegisterParamRef(kClearStencilParamName, &stencil_param_ref_);
   RegisterParamRef(kClearStencilFlagParamName, &stencil_flag_param_ref_);
 
-  set_clear_color(Float4(0.0, 0.0f, 0.0f, 1.0f));
+  set_clear_color(Float4(0.0f, 0.0f, 0.0f, 1.0f));
   set_clear_color_flag(true);
   set_clear_depth(1.0f);
   set_clear_depth_flag(true);

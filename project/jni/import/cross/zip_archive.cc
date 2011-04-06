@@ -708,7 +708,7 @@ void  ZipFileInfo::Print(bool print_header) {
     charCrypt = '*';
   }
 
-  const char *string_method;
+  const char *string_method = "Unkn. ";
   if (compression_method == 0) {
     string_method = "Stored";
   } else {
@@ -721,8 +721,6 @@ void  ZipFileInfo::Print(bool print_header) {
       } else if ((iLevel == 2) || (iLevel == 3)) {
         string_method = "Defl:F";  // 2:fast , 3 : extra fast
       }
-    } else {
-      string_method = "Unkn. ";
     }
   }
 
