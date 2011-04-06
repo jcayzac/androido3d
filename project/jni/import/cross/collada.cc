@@ -1298,6 +1298,20 @@ Shape* Collada::BuildShape(FCDocument* doc,
       if (!material) {
         material = GetDummyMaterial();
       }
+
+      // Added this check to diagnose weird collada models
+      if (!stream_bank->GetVertexStream(Stream::NORMAL, 0)) {
+        ParamString* lighting_param = material->GetParam<ParamString>(kLightingTypeParamName);
+        if (lighting_param) {
+          if (lighting_param->value().compare(Collada::kLightingTypeLambert) == 0 ||
+              lighting_param->value().compare(Collada::kLightingTypeBlinn) == 0 ||
+              lighting_param->value().compare(Collada::kLightingTypePhong) == 0) {
+            O3D_ERROR(service_locator_) << "Lighting mode requires normals, but these are missing.";
+            return NULL;
+          }
+        }
+      }
+
       // Create an index buffer for this group of polygons.
 
       String primitive_name(geom_name + "|" + material->name());
