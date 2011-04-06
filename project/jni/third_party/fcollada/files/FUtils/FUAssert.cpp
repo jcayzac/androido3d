@@ -16,6 +16,9 @@
 #endif // TARGET_OS_IPHONE
 #endif
 
+#if defined(__ANDROID__)
+#include <assert.h>
+#endif
 
 static FUAssertion::FUAssertCallback* curAssertCallback = NULL;
 
@@ -48,6 +51,8 @@ bool FUAssertion::OnAssertionFailed(const char* file, uint32 line)
 #elif defined (__APPLE__)
 		Debugger();
 		//SysBreak();
+#elif defined(__ANDROID__)
+    assert(false);
 #else
 		// AFAIK This is available on all X86 platforms
 		__asm__("int $0x03");
