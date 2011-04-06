@@ -1476,11 +1476,15 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
     skin->SetInverseBindPoseMatrix(num_bones, inverse_bind_shape_matrix);
 
     // Get Influences.
+    // jcayzac: declare influences vector outside the loop, so that
+    // no unnecessary deallocation/reallocation occurs.
+    Skin::Influences influences;
     for (size_t ii = 0; ii < num_vertices; ++ii) {
+      // jcayzac: this reset the vector's size, but doesn't touch its memory
+      influences.clear();
       unsigned old_index = new_to_old_indices[ii];
       FCDSkinControllerVertex* vertex =
           skin_controller->GetVertexInfluence(old_index);
-      Skin::Influences influences;
       size_t num_influences = vertex->GetPairCount();
       for (size_t jj = 0; jj < num_influences; ++jj) {
         FCDJointWeightPair* weight_pair = vertex->GetPair(jj);
@@ -1490,6 +1494,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
       }
       skin->SetVertexInfluences(ii, influences);
     }
+    // jcayzac: deallocate memory used by influences
+    Skin::Influences().swap(influences);
 
     Matrix4 matrix(bind_shape_matrix);
 
@@ -1593,6 +1599,9 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
       return NULL;
     }
 
+    // jcayzac: Allocate 'data' vector outside the loop,
+    // with enough space for 4-component elements
+    std::vector<float> data(num_vertices * 4);
     for (unsigned ii = 0; ii < source_stream_params.size(); ++ii) {
       const Stream& source_stream = source_stream_params[ii]->stream();
       const Field& field = source_stream.field();
@@ -1608,8 +1617,6 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
             copied = true;
             unsigned num_source_components = field.num_components();
             Field* source_field = source_fields[ii];
-
-            std::vector<float> data(num_vertices * num_source_components);
             field.GetAsFloats(0, &data[0], num_source_components,
                               num_vertices);
             // TODO(o3d): Remove this matrix multiply. I don't think it is
@@ -1673,6 +1680,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
         source_field->Copy(field);
       }
     }
+    // jcayzac: deallocate memory of 'data' vector
+    std::vector<float>().swap(data);
 
     // Set all primitives to use new stream bank.
     for (unsigned ii = 0; ii < elements.size(); ++ii) {
