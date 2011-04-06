@@ -217,7 +217,13 @@ bool PrepareFragmentShaderForPicking(std::string& source) {
   // Search for /void[[:space:]]+main/ and put the position of
   // 'main' in found_at
   std::stringstream ss;
-  ss.rdbuf()->pubsetbuf(&tmp[0], source.length()); // avoid an unnecessary copy
+  #if !defined (STLPORT)
+    // avoid an unnecessary copy
+    ss.rdbuf()->pubsetbuf(&tmp[0], source.length());
+  #else
+    // work around annoying STLPort bug, doing the effing copy
+    ss.str(tmp);
+  #endif
   size_t found_at=0;
   static const std::string _main0("main");
   static const std::string _main1("main(");
