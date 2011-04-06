@@ -17,27 +17,30 @@
 #pragma once
 #include "core/cross/types.h"
 
-namespace o3d {
-	class Renderer;
-}
-
 namespace o3d_utils {
-	class ViewInfo;
-}
-namespace o3d_extra {
+class ViewInfo;
+} // o3d_utils
 
-	/** @brief Unprojects a point from 2D screen coordinates to 3D view cordinates.
-	 *
-	 * @param view The view in which we want to unproject our point.
-	 * @param renderer Our renderer.
-	 * @param screenSpaceCoordinates Screen space coordinates. z==0 matches zNear in view space.
-	 *
-	 * @return View space coordinates for the point.
-	 */
-	o3d::Point3 unprojectPoint(
-		const o3d_utils::ViewInfo& view,
-		const o3d::Renderer& renderer,
-		const o3d::Point3& screenSpaceCoordinates
-	);
+namespace o3d {
+class Renderer;
 
-}
+namespace extra {
+
+/** @brief Unprojects a point from 2D screen coordinates to 3D view cordinates.
+ *
+ * @param view The view in which we want to unproject our point.
+ * @param renderer Our renderer.
+ * @param screenSpaceCoordinates Screen space coordinates. z==0 matches zNear in view space.
+ *
+ * @return View space coordinates for the point.
+ */
+Point3 unprojectPoint(
+  const ::o3d_utils::ViewInfo& view,
+  const Renderer& renderer,
+  const Point3& screenSpaceCoordinates
+);
+
+} // extra
+} // o3d
+
+/* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */

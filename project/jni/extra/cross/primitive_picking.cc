@@ -21,88 +21,94 @@
 #include "core/cross/transform.h"
 #include "core/cross/primitive.h"
 
-o3d::Transform* o3d_extra::intersectRayWithTree
-(
-	const o3d::Point3& rayOrigin,
-	const o3d::Vector3& rayDirection,
-	o3d::Transform& root,
-	o3d::Point3& intersectionPoint,
-	float& intersectionDistance,
-	float maxDistance
+namespace o3d {
+namespace extra {
+
+Transform* intersectRayWithTree(
+  const Point3& rayOrigin,
+  const Vector3& rayDirection,
+  Transform& root,
+  Point3& intersectionPoint,
+  float& intersectionDistance,
+  float maxDistance
 ) {
-	o3d::Transform* bestHit(0);
-	intersectionDistance=maxDistance;
+  Transform* bestHit(0);
+  intersectionDistance=maxDistance;
 
-	const o3d::Matrix4 toModelSpace(affineInverse(root.world_matrix())); // Assumes affine transform
-	const o3d::Point3 rayLocalOrigin((toModelSpace * rayOrigin).getXYZ());
-	const o3d::Vector3 rayLocalDirection(toModelSpace.getUpper3x3() * rayDirection);
+  const Matrix4 toModelSpace(affineInverse(root.world_matrix())); // Assumes affine transform
+  const Point3 rayLocalOrigin((toModelSpace * rayOrigin).getXYZ());
+  const Vector3 rayLocalDirection(toModelSpace.getUpper3x3() * rayDirection);
 
-	// Test ray against bounding box
-	o3d::RayIntersectionInfo rii;
-	root.bounding_box().IntersectRay(rayLocalOrigin, rayLocalOrigin+rayLocalDirection, &rii);
-	if (!rii.intersected()) return 0;
+  // Test ray against bounding box
+  RayIntersectionInfo rii;
+  root.bounding_box().IntersectRay(rayLocalOrigin, rayLocalOrigin+rayLocalDirection, &rii);
+  if (!rii.intersected()) return 0;
 
-	// Test against inner elements
-	const o3d::ShapeRefArray& shapes(root.GetShapeRefs());
-	for(size_t shape_index(0); shape_index<shapes.size(); ++shape_index) {
-		const o3d::Shape& shape(*shapes[shape_index]);
-		const o3d::ElementRefArray& elements(shape.GetElementRefs());
-		for(size_t element_index(0); element_index<elements.size(); ++element_index) {
-			o3d::Element* element(elements[element_index]);
+  // Test against inner elements
+  const ShapeRefArray& shapes(root.GetShapeRefs());
+  for(size_t shape_index(0); shape_index<shapes.size(); ++shape_index) {
+    const Shape& shape(*shapes[shape_index]);
+    const ElementRefArray& elements(shape.GetElementRefs());
+    for(size_t element_index(0); element_index<elements.size(); ++element_index) {
+      Element* element(elements[element_index]);
 
-			// Test against the element's bounding box
-			o3d::BoundingBox aabb;
-			element->GetBoundingBox(0, &aabb);
-			aabb.IntersectRay(rayLocalOrigin, rayLocalOrigin+rayLocalDirection, &rii);
-			if (!rii.intersected()) continue;
+      // Test against the element's bounding box
+      BoundingBox aabb;
+      element->GetBoundingBox(0, &aabb);
+      aabb.IntersectRay(rayLocalOrigin, rayLocalOrigin+rayLocalDirection, &rii);
+      if (!rii.intersected()) continue;
 
-			// Test against geometry
-			o3d::Primitive* primitive(reinterpret_cast<o3d::Primitive*>(element));
-			if (primitive) {
-				o3d_extra::RayPrimitiveIntersectionFunctor rpif(rayLocalOrigin, rayLocalDirection);
-				if (primitive->WalkPolygons(0, &rpif)) {
-					if (intersectionDistance>rpif.distance()) {
-						intersectionDistance=rpif.distance();
-						intersectionPoint=rayOrigin + rayDirection*rpif.distance();
-						bestHit=&root;
-					}
-				}
-			}
-		}
-	}
+      // Test against geometry
+      Primitive* primitive(reinterpret_cast<Primitive*>(element));
+      if (primitive) {
+        RayPrimitiveIntersectionFunctor rpif(rayLocalOrigin, rayLocalDirection);
+        if (primitive->WalkPolygons(0, &rpif)) {
+          if (intersectionDistance>rpif.distance()) {
+            intersectionDistance=rpif.distance();
+            intersectionPoint=rayOrigin + rayDirection*rpif.distance();
+            bestHit=&root;
+          }
+        }
+      }
+    }
+  }
 
-	// Then, test against childrens
-	const o3d::TransformRefArray& children(root.GetChildrenRefs());
-	for (size_t entity_index(0); entity_index<children.size(); ++entity_index) {
-		o3d::Transform& child(*children[entity_index]);
-		o3d::Point3 childIntersection;
-		o3d::Transform* hit = intersectRayWithTree(rayOrigin, rayDirection, child, childIntersection, intersectionDistance, intersectionDistance);
-		if (hit) {
-			intersectionPoint=childIntersection;
-			bestHit = hit;
-		}
-	}
+  // Then, test against childrens
+  const TransformRefArray& children(root.GetChildrenRefs());
+  for (size_t entity_index(0); entity_index<children.size(); ++entity_index) {
+    Transform& child(*children[entity_index]);
+    Point3 childIntersection;
+    Transform* hit = intersectRayWithTree(rayOrigin, rayDirection, child, childIntersection, intersectionDistance, intersectionDistance);
+    if (hit) {
+      intersectionPoint=childIntersection;
+      bestHit = hit;
+    }
+  }
 
-	return bestHit;
+  return bestHit;
 }
 
-o3d::Transform* o3d_extra::pickUsingStaticGeometry
-(
-	const o3d_utils::ViewInfo& view,
-	const o3d::Renderer& renderer,
-	int clientX,
-	int clientY,
-	o3d::Point3& intersectionPoint,
-	float& intersectionDistance
+Transform* pickUsingStaticGeometry(
+  const ::o3d_utils::ViewInfo& view,
+  const Renderer& renderer,
+  int clientX,
+  int clientY,
+  Point3& intersectionPoint,
+  float& intersectionDistance
 ) {
-	// Get the root of the scenegraph
-	o3d::Transform& root(*view.tree_root());
+  // Get the root of the scenegraph
+  Transform& root(*view.tree_root());
 
-	// Build World-space ray from screen-space coordinates
-	const o3d::Point3 rayWorldOrigin(unprojectPoint(view,renderer,o3d::Point3(clientX,clientY,0)));
-	const o3d::Point3 rayWorldEnd(unprojectPoint(view,renderer,o3d::Point3(clientX,clientY,1)));
-	const o3d::Vector3 rayWorldDirection(normalize(o3d::Vector3(rayWorldEnd-rayWorldOrigin)));
+  // Build World-space ray from screen-space coordinates
+  const Point3 rayWorldOrigin(unprojectPoint(view,renderer,Point3(clientX,clientY,0)));
+  const Point3 rayWorldEnd(unprojectPoint(view,renderer,Point3(clientX,clientY,1)));
+  const Vector3 rayWorldDirection(normalize(Vector3(rayWorldEnd-rayWorldOrigin)));
 
-	// Call the real method.
-	return intersectRayWithTree(rayWorldOrigin, rayWorldDirection, root, intersectionPoint, intersectionDistance);
+  // Call the real method.
+  return intersectRayWithTree(rayWorldOrigin, rayWorldDirection, root, intersectionPoint, intersectionDistance);
 }
+
+} // extra
+} // o3d
+
+/* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */

@@ -18,54 +18,54 @@
 #include "core/cross/types.h"
 #include <float.h>
 
-namespace o3d {
-	class Transform;
-	class Renderer;
-}
-
 namespace o3d_utils {
-	class ViewInfo;
-}
+class ViewInfo;
+} // o3d_utils
 
-namespace o3d_extra {
+namespace o3d {
+class Transform;
+class Renderer;
 
-	/** @brief Find the intersection between a ray and the scenegraph.
-	 *
-	 * @param rayOrigin			World-space coordinates of ray's origin.
-	 * @param rayDirection			World-space direction of ray.
-	 * @param root					Root transform of the tree.
-	 * @param intersectionPoint	Filled with World-space coordinates of closest intersection point, if any.
-	 * @param intersectionDistance	Filled with distance from ray's origin to closest intersection point, if any.
-	 * @param maxDistance			Maximum distance, beyond which any intersection point will be disregarded.
-	 * @return <code>Transform</code> object the intersected geometry is part of, or <code>NULL</code> if none was found.
-	 */
-	o3d::Transform* intersectRayWithTree
-	(
-		const o3d::Point3& rayOrigin,
-		const o3d::Vector3& rayDirection,
-		o3d::Transform& root,
-		o3d::Point3& intersectionPoint,
-		float& intersectionDistance,
-		float maxDistance=FLT_MAX
-	);
+namespace extra {
 
-	/** @brief Select nearest entity rendered at a certain pixel position, based on its static geometry.
-	 *
-	 * @param view The view in which the entity is rendered>
-	 * @param renderer Our renderer.
-	 * @param clientX X component of the screen space coordinates.
-	 * @param clientY Y component of the screen space coordinates.
-	 * @param intersectionPoint World-space coordinates of the intersection point between pixel coordinates and an entity, if any.
-	 * @param intersectionDistance Distance between the X,Y point on the view plane and the intersection, in world units.
-	 */
-	o3d::Transform* pickUsingStaticGeometry
-	(
-		const o3d_utils::ViewInfo& view,
-		const o3d::Renderer& renderer,
-		int clientX,
-		int clientY,
-		o3d::Point3& intersectionPoint,
-		float& intersectionDistance
-	) __attribute__((deprecated));
+/** @brief Find the intersection between a ray and the scenegraph.
+ *
+ * @param rayOrigin World-space coordinates of ray's origin.
+ * @param rayDirection World-space direction of ray.
+ * @param root Root transform of the tree.
+ * @param intersectionPoint Filled with World-space coordinates of closest intersection point, if any.
+ * @param intersectionDistance Filled with distance from ray's origin to closest intersection point, if any.
+ * @param maxDistance Maximum distance, beyond which any intersection point will be disregarded.
+ * @return <code>Transform</code> object the intersected geometry is part of, or <code>NULL</code> if none was found.
+ */
+Transform* intersectRayWithTree(
+  const Point3& rayOrigin,
+  const Vector3& rayDirection,
+  Transform& root,
+  Point3& intersectionPoint,
+  float& intersectionDistance,
+  float maxDistance=FLT_MAX
+);
 
-}
+/** @brief Select nearest entity rendered at a certain pixel position, based on its static geometry.
+ *
+ * @param view The view in which the entity is rendered>
+ * @param renderer Our renderer.
+ * @param clientX X component of the screen space coordinates.
+ * @param clientY Y component of the screen space coordinates.
+ * @param intersectionPoint World-space coordinates of the intersection point between pixel coordinates and an entity, if any.
+ * @param intersectionDistance Distance between the X,Y point on the view plane and the intersection, in world units.
+ */
+Transform* pickUsingStaticGeometry(
+  const ::o3d_utils::ViewInfo& view,
+  const Renderer& renderer,
+  int clientX,
+  int clientY,
+  Point3& intersectionPoint,
+  float& intersectionDistance
+) __attribute__((deprecated));
+
+} // extra
+} // o3d
+
+/* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */

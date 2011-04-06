@@ -17,33 +17,42 @@
 #include "extra/cross/bounding_boxes_extra.h"
 #include "core/cross/transform.h"
 
-void o3d_extra::updateBoundingBoxes(o3d::Transform& root) {
-	o3d::BoundingBox box;
+namespace o3d {
+namespace extra {
 
-	// Update children first, and add their bounding box to this
-	// entity's.
-	const o3d::TransformRefArray& children(root.GetChildrenRefs());
-	for (size_t i(0); i<children.size(); ++i) {
-		o3d::Transform& child(*children[i]);
-		updateBoundingBoxes(child);
-		o3d::BoundingBox childBox;
-		child.bounding_box().Mul(child.local_matrix(), &childBox);
-		childBox.Add(box, &box);
-	}
+void updateBoundingBoxes(Transform& root) {
+  BoundingBox box;
 
-	// Inflate this entity's bounding box with any geometry
-	// it might contain.
-	const o3d::ShapeRefArray& shapes(root.GetShapeRefs());
-	for (size_t i(0); i<shapes.size(); ++i) {
-		// TODO:
-		// if (isBillBoardShape(shapes[i])) continue;
-		o3d::Shape& shape(*shapes[i]);
-		const o3d::ElementRefArray& elements(shape.GetElementRefs());
-		for (size_t j(0); j<elements.size(); ++j) {
-			o3d::Element& element(*elements[j]);
-			element.bounding_box().Add(box, &box);
-		}
-	}
+  // Update children first, and add their bounding box to this
+  // entity's.
+  const TransformRefArray& children(root.GetChildrenRefs());
+  for (size_t i(0); i<children.size(); ++i) {
+    Transform& child(*children[i]);
+    updateBoundingBoxes(child);
+    BoundingBox childBox;
+    child.bounding_box().Mul(child.local_matrix(), &childBox);
+    childBox.Add(box, &box);
+  }
 
-	root.set_bounding_box(box);
+  // Inflate this entity's bounding box with any geometry
+  // it might contain.
+  const ShapeRefArray& shapes(root.GetShapeRefs());
+  for (size_t i(0); i<shapes.size(); ++i) {
+    // TODO:
+    // if (isBillBoardShape(shapes[i])) continue;
+    Shape& shape(*shapes[i]);
+    const ElementRefArray& elements(shape.GetElementRefs());
+    for (size_t j(0); j<elements.size(); ++j) {
+      Element& element(*elements[j]);
+      element.bounding_box().Add(box, &box);
+    }
+  }
+
+  root.set_bounding_box(box);
 }
+
+} // extra
+} // o3d
+
+/* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */
+
