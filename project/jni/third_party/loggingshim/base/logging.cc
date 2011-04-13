@@ -5,11 +5,11 @@
 #include <string>
 
 #if !defined(TARGET_OS_IPHONE)
-#define  LOGASSERT(_severity, _tag, _va_args)  __android_log_assert(_severity,_tag,_va_args)
-#define  LOGPRINT(_severity, _tag, _va_args)  __android_log_print(_severity,_tag,_va_args)
+#define  LOGASSERT(_severity, _tag, _va_args)  __android_log_assert(_severity,_tag.c_str(),_va_args)
+#define  LOGPRINT(_severity, _tag, _va_args)  __android_log_print(_severity,_tag.c_str(),_va_args)
 #else
-#define  LOGASSERT(_severity, _tag, _msg)  LOGE("%s [%s] %s\n",_tag, strrchr(mLocation,'/')+1, _msg)
-#define  LOGPRINT(_severity, _tag, _msg)  LOGW("%s [%s] %s\n",_tag, strrchr(mLocation,'/')+1, _msg)
+#define  LOGASSERT(_severity, _tag, _msg)  LOGE("%s [%s] %s\n",_tag.c_str(), strrchr(mLocation.c_str(),'/')+1, _msg)
+#define  LOGPRINT(_severity, _tag, _msg)  LOGW("%s [%s] %s\n",_tag.c_str(), strrchr(mLocation.c_str(),'/')+1, _msg)
 #endif
 
 namespace logging {
@@ -20,7 +20,7 @@ Logger::Logger(LogSeverity severity, const char* tag, const char* file, int line
           mTag(tag) { 
     std::ostringstream location;
     location << file << ":" << line; 
-    mLocation = location.str().c_str(); 
+    mLocation = location.str();
   }
 
  Logger::~Logger() {

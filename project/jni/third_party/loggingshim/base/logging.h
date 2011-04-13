@@ -57,8 +57,8 @@ namespace logging {
       std::ostringstream mInput;
       bool mShowLocation;
       LogSeverity mSeverity;
-      const char* mTag;
-      const char* mLocation;
+      std::string mTag;
+      std::string mLocation;
   };
 
 
