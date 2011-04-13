@@ -134,14 +134,14 @@ void CurveKey::Destroy() {
 }
 
 void CurveKey::SetInput(float new_input) {
-  if (new_input != input_) {
+  if (floats_are_different(new_input, input_)) {
     input_ = new_input;
     owner_->MarkAsUnsorted();
   }
 }
 
 void CurveKey::SetOutput(float new_output) {
-  if (new_output != output_) {
+  if (floats_are_different(new_output, output_)) {
     output_ = new_output;
     owner_->InvalidateCache();
   }
@@ -357,7 +357,7 @@ void Curve::SetSampleRate(float rate) {
         << "attempt to set sample rate to " << rate
         << " which is lower than the minimum of "
         << kMinimumSampleRate;
-  } else if (rate != sample_rate_) {
+  } else if (floats_are_different(rate, sample_rate_)) {
     sample_rate_ = rate;
     InvalidateCache();
   }
@@ -395,8 +395,8 @@ void Curve::CheckDiscontinuity() const {
   discontinuous_ = num_step_keys_ > 0 && num_step_keys_ != keys_.size();
   if (!discontinuous_ && keys_.size() > 1) {
     for (unsigned ii = 0; ii < keys_.size() - 1; ++ii) {
-      if (keys_[ii]->input() == keys_[ii + 1]->input() &&
-          keys_[ii]->output() != keys_[ii + 1]->output()) {
+      if (!floats_are_different(keys_[ii]->input(), keys_[ii + 1]->input()) &&
+          floats_are_different(keys_[ii]->output(), keys_[ii + 1]->output())) {
         discontinuous_ = true;
         break;
       }

@@ -338,9 +338,12 @@ void Renderer::Clear(const Float4 &color,
   bool covers_everything = false;
   if (!back_buffer_cleared_ && current_render_surface_is_back_buffer_) {
     covers_everything =
-        !(viewport_[0] != 0.0f || viewport_[1] != 0.0f ||
-          viewport_[2] != 1.0f || viewport_[3] != 1.0f ||
-          depth_range_[0] != 0.0f || depth_range_[1] != 1.0f) &&
+        !(floats_are_different(viewport_[0], 0.0f) ||
+          floats_are_different(viewport_[1], 0.0f) ||
+          floats_are_different(viewport_[2], 1.0f) ||
+          floats_are_different(viewport_[3], 1.0f) ||
+          floats_are_different(depth_range_[0], 0.0f) ||
+          floats_are_different(depth_range_[1], 1.0f)) &&
         color_flag && depth_flag && stencil_flag && write_mask_ == 0xF;
     if (!covers_everything) {
       ClearBackBuffer();

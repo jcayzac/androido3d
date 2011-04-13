@@ -144,4 +144,13 @@ typedef unsigned int Id;
 
 };  // namespace o3d
 
+namespace {
+static inline bool floats_are_different(const float& a, const float& b) {
+  union { float f; int i; } ua, ub;
+  ua.f = a;
+  ub.f = b;
+  return bool((ua.i-ub.i)&0x7FFFFFFC);
+}
+}; // anonymous namespace
+
 #endif  // O3D_CORE_CROSS_TYPES_H_

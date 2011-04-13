@@ -1797,8 +1797,8 @@ void RendererGLES2::ApplyDirtyStates() {
   }
 
   if (polygon_offset_changed_) {
-    bool enable = (polygon_offset_factor_ != 0.f) ||
-                  (polygon_offset_bias_ != 0.f);
+    bool enable = floats_are_different(polygon_offset_factor_, 0.f) ||
+                  floats_are_different(polygon_offset_bias_, 0.f);
     if (enable) {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
       ::glEnable(GL_POLYGON_OFFSET_POINT);

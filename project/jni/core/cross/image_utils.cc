@@ -335,8 +335,8 @@ void LanczosResize1D(const void* src_data, int src_pitch,
       float dx = ox + 0.5f - center;
       // lanczos filter
       if (dx <= -kFilterSize || dx >= kFilterSize) {
-        wtemp = 0.0;
-      } else if (dx == 0.0) {
+        wtemp = 0.0f;
+      } else if (!floats_are_different(dx, 0.0f)) {
         wtemp = 1.0f;
       } else {
         wtemp = kFilterSize * sinf(kPi * dx) * sinf(kPi / kFilterSize * dx) /

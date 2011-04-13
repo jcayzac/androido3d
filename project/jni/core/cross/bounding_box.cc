@@ -158,7 +158,7 @@ void BoundingBox::IntersectRay(const Point3& start,
     } else {
       // Calculate T distances to candidate planes.
       for (int i = 0; i < kNumberOfDimensions; ++i) {
-        if (quadrant[i] != kMiddle && dir[i] != 0.0f) {
+        if (floats_are_different(quadrant[i], kMiddle) && floats_are_different(dir[i], 0.0f)) {
           max_t[i] = (candidate_plane[i] - start[i]) / dir[i];
         } else {
           max_t[i] = -1.0f;

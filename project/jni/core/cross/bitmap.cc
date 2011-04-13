@@ -542,16 +542,13 @@ bool Bitmap::CheckAlphaIsOne() const {
       return true;
     case Texture::ABGR32F: {
       for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-        const uint8* data = GetMipData(level) + 12;
-        const uint8* end = data + image::ComputeBufferSize(
+        const float* data = (const float*)(GetMipData(level) + 12);
+        const float* end = data + (image::ComputeBufferSize(
             std::max(1U, width() >> level),
             std::max(1U, height() >> level),
-            format());
-        while (data < end) {
-          if (*(reinterpret_cast<const float*>(data)) != 1.0f) {
-            return false;
-          }
-          data += 16;
+            format())/sizeof(float));
+        for(; data < end; data += 4) {
+          if (floats_are_different(*data, 1.0f)) return false;
         }
       }
       break;

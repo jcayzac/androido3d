@@ -123,7 +123,7 @@ void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
           case Counter::CYCLE: {
             while (new_count >= end_count) {
               CallCallbacks(old_count, end_count, queue);
-              if (period == 0.0f) {
+              if (!floats_are_different(period, 0.0f)) {
                 break;
               }
               old_count = start_count;
@@ -143,7 +143,7 @@ void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
               delta -= amount;
               old_count = end_count;
               new_count = end_count;
-              if (delta <= 0.0f || period == 0.0f) {
+              if (delta <= 0.0f || !floats_are_different(period, 0.0f)) {
                 break;
               }
               new_count -= delta;
@@ -178,7 +178,7 @@ void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
           case Counter::CYCLE: {
             while (new_count <= start_count) {
               CallCallbacks(old_count, start_count, queue);
-              if (period == 0.0f) {
+              if (!floats_are_different(period, 0.0f)) {
                 break;
               }
               old_count = end_count;
@@ -198,7 +198,7 @@ void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
               delta += amount;
               old_count = start_count;
               new_count = start_count;
-              if (delta >= 0.0f || period == 0.0f) {
+              if (delta >= 0.0f || !floats_are_different(period, 0.0f)) {
                 break;
               }
               new_count -= delta;
@@ -344,7 +344,7 @@ void Counter::CallCallbacks(float start_count,
     // Going forward.
     // If next_callback is not valid, find the first possible callback.
     if (!next_callback_valid_ ||
-        start_count != last_call_callbacks_end_count_) {
+        floats_are_different(start_count, last_call_callbacks_end_count_)) {
       next_callback_ = callbacks_.begin();
       while (next_callback_ != callbacks_.end() &&
              next_callback_->count() < start_count) {
@@ -367,7 +367,7 @@ void Counter::CallCallbacks(float start_count,
     // Going backward.
     // If prev_callback is not valid, find the first possible callback.
     if (!prev_callback_valid_ ||
-        start_count != last_call_callbacks_end_count_) {
+        floats_are_different(start_count, last_call_callbacks_end_count_)) {
       prev_callback_ = callbacks_.rbegin();
       while (prev_callback_ != callbacks_.rend() &&
              prev_callback_->count() > start_count) {
@@ -408,7 +408,7 @@ void Counter::AddCallback(float count, CounterCallback* callback) {
     CounterCallbackInfoArray::iterator end(callbacks_.end());
     CounterCallbackInfoArray::iterator iter(callbacks_.begin());
     while (iter != end) {
-      if (iter->count() == count) {
+      if (!floats_are_different(iter->count(), count)) {
         iter->set_callback_manager(manager);
         return;
       } else if (iter->count() > count) {
@@ -425,7 +425,7 @@ bool Counter::RemoveCallback(float count) {
   for (CounterCallbackInfoArray::iterator iter(callbacks_.begin());
        iter != end;
        ++iter) {
-    if (iter->count() == count) {
+    if (!floats_are_different(iter->count(), count)) {
       next_callback_valid_ = false;
       prev_callback_valid_ = false;
       callbacks_.erase(iter);
