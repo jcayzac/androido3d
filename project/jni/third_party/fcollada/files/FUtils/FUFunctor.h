@@ -111,7 +111,7 @@ public:
 		@param function The static function.
 		@return Whether this pseudo-functor points towards the given function. */
 	virtual bool Compare(void* UNUSED(object), void* function) const
-	{ return (size_t)function == *(size_t*)(size_t)&m_pFunction; }
+	{ return function==m_pFunction; }
 
 	/** Returns a copy of this functor */
 	virtual IFunctor0<ReturnType>* Copy() const 
@@ -447,7 +447,7 @@ public:
 		@param function The static function.
 		@return Whether this pseudo-functor points towards the given function. */
 	virtual bool Compare(void* UNUSED(object), void* function) const
-	{ return (size_t)function == *(size_t*)(size_t)&m_pFunction; }
+	{ return function == m_pFunction; }
 
 	/** Returns a copy of this functor */
 	virtual IFunctor3<Arg1, Arg2, Arg3, ReturnType>* Copy() const

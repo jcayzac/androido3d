@@ -230,11 +230,9 @@ LOCAL_SRC_FILES := \
   FUtils/FUStringBuilder.cpp \
   FUtils/FUStringConversion.cpp \
   FUtils/FUSynchronizableObject.cpp \
-  FUtils/FUTestBed.cpp \
   FUtils/FUThread.cpp \
   FUtils/FUTracker.cpp \
   FUtils/FUUniqueStringMap.cpp \
-  FUtils/FUUniqueStringMapTest.cpp \
   FUtils/FUUri.cpp \
   FUtils/FUXmlDocument.cpp \
   FUtils/FUXmlParser.cpp \

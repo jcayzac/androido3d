@@ -103,8 +103,7 @@ public:
 		@param _function The static function callback to unregister. */
 	void ReleaseHandler(void (*_function)())
 	{
-		void* function = *(void**)(size_t)&_function;
-		ReleaseHandler(NULL, function);
+		ReleaseHandler(NULL, (void*) _function);
 	}
 
 	/** Triggers the event.

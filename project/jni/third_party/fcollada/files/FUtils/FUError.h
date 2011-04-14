@@ -308,8 +308,7 @@ public:
 		@@param _function The static function callback to unregister. */
 	static void RemoveErrorCallback(FUError::Level errorLevel, void (*_function)(FUError::Level, uint32, uint32))
 	{
-		void* function = *(void**)(size_t)&_function;
-		RemoveErrorCallback(errorLevel, NULL, function);
+		RemoveErrorCallback(errorLevel, NULL, (void*) _function);
 	}
 
 	/** Retrieves the string description of the error code
