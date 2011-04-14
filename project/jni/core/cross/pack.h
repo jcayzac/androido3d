@@ -61,6 +61,7 @@ class DrawContext;
 class IClassManager;
 class ObjectManager;
 class RenderDepthStencilSurface;
+class MemoryReadStream;
 
 // Type definitions ------------------------
 
@@ -221,6 +222,12 @@ class Pack : public NamedObject {
   // binary data in a known image file format (such as JPG or PNG)
   Texture* CreateTextureFromRawData(RawData* raw_data,
                                     bool generate_mips);
+
+  // Creates a new Texture object given a memory stream object which must contain
+  // binary data in a known image file format (such as JPG or PNG)
+  Texture* CreateTextureFromStream(MemoryReadStream* stream,
+                                   const String& uri,
+                                   bool generate_mips);
 
   // Creates a new Bitmap object of the specified size and format and
   // reserves the necessary resources for it.

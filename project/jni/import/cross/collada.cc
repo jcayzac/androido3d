@@ -1713,103 +1713,6 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
   return shape;
 }
 
-bool Collada::DecompressDDS(RawData* raw_data, BitmapRefArray* new_bitmaps) {
-  BitmapRefArray bitmaps;
-  bool is_cube_map = false;
-  if (!Bitmap::LoadFromRawData(raw_data, image::UNKNOWN, &bitmaps)) {
-    return false;
-  }
-  is_cube_map = bitmaps.size() == 6;
-  for (unsigned int i = 0; i < bitmaps.size(); i++) {
-    Bitmap* src_bitmap = bitmaps[i];
-    Bitmap::Ref bitmap(new Bitmap(service_locator_));
-    bitmap->Allocate(Texture::ARGB8,
-                     src_bitmap->width(),
-                     src_bitmap->height(),
-                     src_bitmap->num_mipmaps(),
-                     src_bitmap->semantic());
-    new_bitmaps->push_back(bitmap);
-  }
-  for (unsigned int i = 0; i < bitmaps.size(); i++) {
-    Bitmap* src_bitmap = bitmaps[i];
-    Bitmap* dst_bitmap = (*new_bitmaps)[i];
-    bool is_compressed =
-      (src_bitmap->format() == Texture::DXT1 ||
-       src_bitmap->format() == Texture::DXT3 ||
-       src_bitmap->format() == Texture::DXT5);
-    for (unsigned level = 0; level < src_bitmap->num_mipmaps(); ++level) {
-      int pitch = src_bitmap->GetMipPitch(level);
-      if (is_compressed) {
-        // The pitch returned by GetMipPitch for compressed textures
-        // is the number of bytes across a row of DXT blocks where as
-        // libtxc_dxtn wants the number of bytes across a row of pixels.
-        pitch /= 2;  // there are 4 rows in a block so I don't understand why 2
-                     // works.
-      }
-      uint8* data = src_bitmap->GetMipData(level);
-      int width = std::max(1U, src_bitmap->width() >> level);
-      int height = std::max(1U, src_bitmap->height() >> level);
-      int row_width = width * 4;
-      int decompressed_size = width * height * 4;
-      scoped_array<uint8> decompressed_data(new uint8[decompressed_size]);
-      memset(decompressed_data.get(), 0, decompressed_size);
-      if (is_compressed) {
-        for (int src_y = 0; src_y < height; src_y++) {
-          int dest_y = src_y;
-          if (is_cube_map) {
-            dest_y = height - src_y - 1;
-          }
-          for (int x = 0; x < width; x++) {
-            uint8* ptr =
-                &decompressed_data.get()[row_width * dest_y + 4 * x];
-            switch (src_bitmap->format()) {
-              case Texture::DXT1: {
-                fetch_2d_texel_rgba_dxt1(pitch, data, x, src_y, ptr);
-                break;
-              }
-              case Texture::DXT3: {
-                fetch_2d_texel_rgba_dxt3(pitch, data, x, src_y, ptr);
-                break;
-              }
-              case Texture::DXT5: {
-                fetch_2d_texel_rgba_dxt5(pitch, data, x, src_y, ptr);
-                break;
-              }
-              default:
-                O3D_ERROR(service_locator_)
-                    << "Unsupported DDS compressed texture format "
-                    << src_bitmap->format();
-                break;
-            }
-            // Need to swap the red and blue channels.
-            std::swap(ptr[0], ptr[2]);
-          }
-        }
-      } else if (src_bitmap->format() == Texture::XRGB8 ||
-                 src_bitmap->format() == Texture::ARGB8) {
-        for (int src_y = 0; src_y < height; src_y++) {
-          int dest_y = src_y;
-          if (is_cube_map) {
-            dest_y = height - src_y - 1;
-          }
-          memcpy(decompressed_data.get() + row_width * dest_y,
-                 data + pitch * src_y,
-                 row_width);
-        }
-      } else {
-        O3D_ERROR(service_locator_)
-            << "Unsupported DDS uncompressed texture format "
-            << src_bitmap->format();
-        return false;
-      }
-      dst_bitmap->SetRect(level, 0, 0, width, height,
-                          decompressed_data.get(),
-                          row_width);
-    }
-  }
-  return true;
-}
-
 Texture* Collada::BuildTextureFromImage(FCDImage* image) {
   const fstring filename = image->GetFilename();
   FilePath file_path = WideToFilePath(filename.c_str());
@@ -1847,26 +1750,10 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
       char* data = collada_zip_archive_->GetFileData(
           FilePathToUTF8(file_path), &data_size);
       if (data) {
-        RawData::Ref raw_data = RawData::Create(
-            service_locator_,
-            FilePathToUTF8(file_path),
-            data, data_size);
-        #ifdef O3D_IMPORT_DECOMPRESS_DXT
-        if (uri.MatchesExtension(UTF8ToFilePathStringType(".dds"))) {
-          BitmapRefArray bitmaps;
-          if (DecompressDDS(raw_data, &bitmaps)) {
-            tex = tex_pack->CreateTextureFromBitmaps(
-                bitmaps, FilePathToUTF8(file_path), true);
-          }
-        }
-        #endif
-
-        if (!tex) {
-          tex = Texture::Ref(
-            tex_pack->CreateTextureFromRawData(raw_data, true));
-        }
+        MemoryReadStream stream((const uint8*) data, data_size);
+        tex = Texture::Ref(tex_pack->CreateTextureFromStream(&stream, FilePathToUTF8(file_path), true));
+        free(data);
       }
-      free(data);
     } else {
       GetRelativePathIfPossible(base_path_, uri, &uri);
     }
@@ -1890,75 +1777,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
       tex->set_name(FilePathToUTF8(tex_id));
     }
 
-    bool inserted_original_data = false;
-
-    #if !defined(O3D_IMPORT_NO_DXT_TO_PNG)
-    bool is_dds = uri.MatchesExtension(UTF8ToFilePathStringType(".dds"));
-
-    if (is_dds &&
-        options_.convert_dds_to_png &&
-        options_.keep_original_data) {
-      // The Texture stubs used by the converter don't have a working
-      // PlatformSpecificLock, so we need to reload the images using
-      // the Bitmap class. We also need to do the DXTn decompression
-      // on the CPU because D3D wouldn't provide access to the
-      // decompressed data anyway.
-
-      // These need to match the order of TextureCUBE::CubeFace.
-      static const char* cube_suffixes[6] = {
-        "_posx", "_negx", "_posy", "_negy", "_posz", "_negz"
-      };
-      static const char* cube_prefixes[6] = {
-        "posx_", "negx_", "posy_", "negy_", "posz_", "negz_"
-      };
-
-      BitmapRefArray bitmaps;
-      RawData::Ref raw_data(
-        RawData::CreateFromFile(service_locator_, file_path, file_path)
-      bool is_cube_map = false;
-      if (DecompressDDS(raw_data, &bitmaps)) {
-        for (size_t bb = 0; bb < bitmaps.size(); ++bb) {
-          Bitmap* bitmap = bitmaps[bb];
-          std::vector<uint8> png_data;
-          if (!bitmap->WriteToPNGStream(&png_data)) {
-            DLOG(ERROR) << "Error writing PNG file for cube map";
-          }
-          FilePath png_uri = uri;
-          if (is_cube_map) {
-            png_uri = png_uri.InsertBeforeExtensionASCII(cube_suffixes[i]);
-          }
-          png_uri = png_uri.ReplaceExtension(UTF8ToFilePathStringType(".png"));
-          std::string contents;
-          contents.append(reinterpret_cast<char*>(&png_data.front()),
-                          png_data.size());
-          original_data_map_.AddData(png_uri, contents, service_locator_);
-          inserted_original_data = true;
-
-          // We need to rewrite the o3d.uri param in the Texture as
-          // well. For cube map textures, we insert six params named
-          // "o3d.negx_uri", etc. and remove the "o3d.uri" param.
-          ParamString* uri_param = NULL;
-          if (is_cube_map) {
-            String name(O3D_STRING_CONSTANT(""));
-            name = name.append(cube_prefixes[i]).append("uri");
-            uri_param = tex->CreateParam<ParamString>(name);
-          } else {
-            uri_param = tex->GetParam<ParamString>(O3D_STRING_CONSTANT("uri"));
-          }
-          DCHECK(uri_param != NULL);
-          uri_param->set_value(FilePathToUTF8(png_uri));
-        }
-      }
-      if (is_cube_map) {
-        ParamString* uri_param =
-            tex->GetParam<ParamString>(O3D_STRING_CONSTANT("uri"));
-        DCHECK(uri_param != NULL);
-        tex->RemoveParam(uri_param);
-      }
-    }
-    #endif  // !defined(O3D_IMPORT_NO_DXT_TO_PNG)
-
-    if (options_.keep_original_data && !inserted_original_data) {
+    if (options_.keep_original_data) {
       // Cache the original data by URI so we can recover it later.
       std::string contents;
       file_util::ReadFileToString(file_path, &contents);

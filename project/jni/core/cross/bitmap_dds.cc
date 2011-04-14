@@ -30,6 +30,9 @@
  */
 
 #include "build/build_config.h"
+#if defined(O3D_IMPORT_DECOMPRESS_DXT)
+  #include "libtxc_dxtn/files/txc_dxtn.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include <jni.h>
@@ -280,6 +283,90 @@ static void FlipBGRAImage(unsigned int width,
   }
 }
 
+#if defined(O3D_IMPORT_DECOMPRESS_DXT)
+static bool DecompressDDSBitmaps(ServiceLocator* service_locator, BitmapRefArray& bitmaps) {
+  bool is_cube_map(bitmaps.size() == 6);
+  for (unsigned int i = 0; i < bitmaps.size(); i++) {
+    Bitmap::Ref src_bitmap(bitmaps[i]);
+    Bitmap::Ref dst_bitmap(new Bitmap(service_locator));
+    dst_bitmap->Allocate(Texture::ARGB8,
+                         src_bitmap->width(),
+                         src_bitmap->height(),
+                         src_bitmap->num_mipmaps(),
+                         src_bitmap->semantic());
+    bitmaps[i] = dst_bitmap;
+    Texture::Format src_format(src_bitmap->format());
+    bool is_compressed =
+      (src_format == Texture::DXT1 ||
+       src_format == Texture::DXT3 ||
+       src_format == Texture::DXT5);
+    // (jcayzac) select the right convertion function outside of the pixel loop
+    void (*fetch_2d_texel_rgba)(GLint, const GLubyte*, GLint, GLint, GLvoid *) = 0;
+    switch (src_format) {
+      case Texture::DXT1: fetch_2d_texel_rgba=fetch_2d_texel_rgba_dxt1; break;
+      case Texture::DXT3: fetch_2d_texel_rgba=fetch_2d_texel_rgba_dxt3; break;
+      case Texture::DXT5: fetch_2d_texel_rgba=fetch_2d_texel_rgba_dxt5; break;
+      default: DLOG(ERROR) << "Unsupported DDS compressed texture format " << src_format;
+               return false;
+    }
+    for (unsigned level = 0; level < src_bitmap->num_mipmaps(); ++level) {
+      int pitch = src_bitmap->GetMipPitch(level);
+      if (is_compressed) {
+        // The pitch returned by GetMipPitch for compressed textures
+        // is the number of bytes across a row of DXT blocks where as
+        // libtxc_dxtn wants the number of bytes across a row of pixels.
+        pitch /= 2;  // there are 4 rows in a block so I don't understand why 2
+                     // works.
+      }
+      uint8* data = src_bitmap->GetMipData(level);
+      int width  = std::max(1U, src_bitmap->width() >> level);
+      int height = std::max(1U, src_bitmap->height() >> level);
+      int row_width = width * 4;
+      int decompressed_size = width * height * 4;
+      scoped_array<uint8> decompressed_data(new uint8[decompressed_size]);
+      memset(decompressed_data.get(), 0, decompressed_size);
+      if (is_compressed) {
+        for (int src_y = 0; src_y < height; src_y++) {
+          int dest_y = src_y;
+          if (is_cube_map) {
+            dest_y = height - src_y - 1;
+          }
+          for (int x = 0; x < width; ++x) {
+            uint8* ptr =
+                &decompressed_data.get()[row_width * dest_y + 4 * x];
+            fetch_2d_texel_rgba(pitch, data, x, src_y, ptr);
+            // Need to swap the red and blue channels.
+            std::swap(ptr[0], ptr[2]);
+          }
+        }
+      } else if (src_format == Texture::XRGB8 ||
+                 src_format == Texture::ARGB8) {
+        for (int src_y = 0; src_y < height; src_y++) {
+          int dest_y = src_y;
+          if (is_cube_map) {
+            dest_y = height - src_y - 1;
+          }
+          memcpy(decompressed_data.get() + row_width * dest_y,
+                 data + pitch * src_y,
+                 row_width);
+        }
+      } else {
+        DLOG(ERROR)
+            << "Unsupported DDS uncompressed texture format "
+            << src_bitmap->format();
+        return false;
+      }
+      dst_bitmap->SetRect(level, 0, 0, width, height,
+                          decompressed_data.get(),
+                          row_width);
+    }
+  }
+  return true;
+}
+#endif
+
+
+
 void Bitmap::FlipVertically() {
   if (format() == Texture::DXT1 ||
       format() == Texture::DXT3 ||
@@ -516,6 +603,13 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
                         &image_data);
     temp_bitmaps.push_back(bitmap);
   }
+
+#if defined(O3D_IMPORT_DECOMPRESS_DXT)
+  if (!DecompressDDSBitmaps(service_locator, temp_bitmaps)) {
+    DLOG(ERROR) << "Failed to decompress DDS bitmaps";
+    return false;
+  }
+#endif
 
   // Success.
   bitmaps->insert(bitmaps->end(), temp_bitmaps.begin(), temp_bitmaps.end());

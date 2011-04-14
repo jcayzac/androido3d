@@ -16,6 +16,7 @@ LOCAL_CFLAGS    := \
   -DO3D_NO_FILE_REQUEST \
   -DO3D_PLUGIN_VERSION=\"0.1.43.0\" \
   -DGLES2_BACKEND_NATIVE_GLES2 \
+  -DO3D_IMPORT_DECOMPRESS_DXT \
   -I$(LOCAL_PATH)/../third_party/libjpeg \
   -I$(LOCAL_PATH)/../third_party/libpng \
   -I$(LOCAL_PATH)/../third_party/loggingshim \

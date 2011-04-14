@@ -282,6 +282,26 @@ Texture* Pack::CreateTextureFromRawData(RawData *raw_data,
   return CreateTextureFromBitmaps(bitmap_refs, uri, generate_mips);
 }
 
+Texture* Pack::CreateTextureFromStream(MemoryReadStream* stream,
+                                       const String& uri,
+                                       bool generate_mips) {
+  if (!renderer_) {
+    O3D_ERROR(service_locator()) << "No Render Device Available";
+    return NULL;
+  }
+
+  DLOG(INFO) << "CreateTextureFromStream(uri='" << uri << "')";
+
+  BitmapRefArray bitmap_refs;
+  if (!Bitmap::LoadFromStream(service_locator(), stream, uri, image::UNKNOWN, &bitmap_refs)) {
+    O3D_ERROR(service_locator())
+        << "Failed to load bitmap from stream \"" << uri << "\"";
+    return NULL;
+  }
+
+  return CreateTextureFromBitmaps(bitmap_refs, uri, generate_mips);
+}
+
 // Create a bitmap object.
 Bitmap* Pack::CreateBitmap(int width, int height, Texture::Format format) {
   DCHECK(image::CheckImageDimensions(width, height));

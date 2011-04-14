@@ -241,28 +241,6 @@ class Bitmap : public ParamObject {
 
   bool WriteToPNGStream(std::vector<uint8>* stream);
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
-
-  // Sets the contents of a Bitmap replacing any previous contents.
-  // Parameters:
-  //   format: Format of the bitmap.
-  //   num_mipmaps: The number of mipmaps.
-  //   width: width in pixels.
-  //   height: height in pixels.
-  //   semantic: the semantic of the bitmap
-  //   image_data: The image data. The bitmap will take ownership of this data.
-  void SetContents(Texture::Format format,
-                   unsigned int num_mipmaps,
-                   unsigned int width,
-                   unsigned int height,
-                   Semantic semantic,
-                   scoped_array<uint8>* image_data);
-
-  // Converts a DDS file to a decompressed
-  Texture* DecompressDDS(RawData* data);
-
   // Loads bitmaps from a MemoryReadStream.
   // Parameters:
   //   stream: a stream for the bitmap data in one of the known formats
@@ -298,6 +276,25 @@ class Bitmap : public ParamObject {
                                  MemoryReadStream *stream,
                                  const String &filename,
                                  BitmapRefArray* bitmaps);
+
+ private:
+  friend class IClassManager;
+  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+
+  // Sets the contents of a Bitmap replacing any previous contents.
+  // Parameters:
+  //   format: Format of the bitmap.
+  //   num_mipmaps: The number of mipmaps.
+  //   width: width in pixels.
+  //   height: height in pixels.
+  //   semantic: the semantic of the bitmap
+  //   image_data: The image data. The bitmap will take ownership of this data.
+  void SetContents(Texture::Format format,
+                   unsigned int num_mipmaps,
+                   unsigned int width,
+                   unsigned int height,
+                   Semantic semantic,
+                   scoped_array<uint8>* image_data);
 
   bool GenerateMipmaps(unsigned int base_width,
                        unsigned int base_height,

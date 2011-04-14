@@ -163,7 +163,6 @@ class Collada {
           condition_document(false),
           up_axis(0.0f, 0.0f, 0.0f),
           base_path(FilePath::kCurrentDirectory),
-          convert_dds_to_png(false),
           texture_pack(NULL),
           store_textures_by_basename(false) {}
     // Whether or not to generate mip-maps on the textures we load.
@@ -186,10 +185,6 @@ class Collada {
 
     // A List of paths to search for files in.
     std::vector<FilePath> file_paths;
-
-    // True means convert DDS files to PNGs. For cube map textures, this
-    // implies writing six separate PNGs.
-    bool convert_dds_to_png;
 
     // If NOT NULL, Texture will be placed in this pack. If a texture of the
     // same name already exists in this pack it will be used instead of loading
@@ -294,9 +289,6 @@ class Collada {
   bool ImportTree(NodeInstance *instance,
                   Transform* parent,
                   ParamFloat* animation_input);
-
-  // Loads a DDS file and converts to RGBA bitmaps.
-  bool DecompressDDS(RawData* raw_data, BitmapRefArray* new_bitmaps);
 
   // Recursively imports a tree of instances (shapes, etc..) from FCollada,
   // rooted at the given node, into the O3D scene. This is a separate step
