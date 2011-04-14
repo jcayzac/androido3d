@@ -394,7 +394,7 @@ static String GetUUIDString() {
   return uuid_string;
 #endif
 
-#ifdef OS_LINUX
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   static unsigned int index = 0;
   char uuid[18] = {0};
   unsigned int pid = getpid();
