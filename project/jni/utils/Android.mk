@@ -7,7 +7,6 @@ LOCAL_CPP_EXTENSION := .cc
 LOCAL_C_INCLUDES += \
   $(O3D_THIRD_PARTY)/fcollada/files/LibXML/include \
   $(O3D_THIRD_PARTY)/fcollada/files \
-  $(O3D_THIRD_PARTY)/zlib \
 
 LOCAL_SRC_FILES := $(addprefix cross/, \
   base64.cc \
