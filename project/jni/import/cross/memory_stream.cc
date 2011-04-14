@@ -76,50 +76,36 @@ union UInt32FloatUnion {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 static int16 SwapInt16(const int16 *value) {
-  // endian-swap two bytes
-  uint8 p[2];
-  const char *q = reinterpret_cast<const char*>(value);
-  p[0] = q[1];
-  p[1] = q[0];
-
-  return *reinterpret_cast<int16*>(p);
+  Int16Union u;
+  u.i=*value;
+  std::swap(u.c[0], u.c[1]);
+  return u.i;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 static uint16 SwapUInt16(const uint16 *value) {
-  // endian-swap two bytes
-  uint8 p[2];
-  const char *q = reinterpret_cast<const char*>(value);
-  p[0] = q[1];
-  p[1] = q[0];
-
-  return *reinterpret_cast<const uint16*>(p);
+  UInt16Union u;
+  u.i=*value;
+  std::swap(u.c[0], u.c[1]);
+  return u.i;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 static int32 SwapInt32(const int32 *value) {
-  // endian-swap four bytes
-  char p[4];
-  const char *q = reinterpret_cast<const char*>(value);
-  p[0] = q[3];
-  p[1] = q[2];
-  p[2] = q[1];
-  p[3] = q[0];
-
-  return *reinterpret_cast<const int32*>(p);
+  Int32Union u;
+  u.i=*value;
+  std::swap(u.c[0], u.c[3]);
+  std::swap(u.c[1], u.c[2]);
+  return u.i;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 static uint32 SwapUInt32(const uint32 *value) {
-  // endian-swap four bytes
-  char p[4];
-  const char *q = reinterpret_cast<const char*>(value);
-  p[0] = q[3];
-  p[1] = q[2];
-  p[2] = q[1];
-  p[3] = q[0];
-
-  return *reinterpret_cast<const uint32*>(p);
+  UInt32Union u;
+  u.i=*value;
+  std::swap(u.c[0], u.c[3]);
+  std::swap(u.c[1], u.c[2]);
+  return u.i;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
