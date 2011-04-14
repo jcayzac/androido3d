@@ -85,14 +85,14 @@ void Scene::AddMissingTexCoordStreams(o3d::Element* element) {
       // the GPU to create an effect that doesn't need the extra streams
       // but this is a more generic solution because it means we can reuse
       // the same effect.
-      for (int ii = numTexCoordStreams;
-           ii < numTexCoordStreamsNeeded;
-           ++ii) {
-        streamBank->SetVertexStream(
+      if (lastTexCoordStream) {
+        for (int ii = numTexCoordStreams; ii < numTexCoordStreamsNeeded; ++ii) {
+          streamBank->SetVertexStream(
             lastTexCoordStream->semantic(),
             lastTexCoordStream->semantic_index() + ii - numTexCoordStreams + 1,
             &lastTexCoordStream->field(),
             lastTexCoordStream->start_index());
+        }
       }
     }
   }
@@ -151,8 +151,8 @@ Scene* Scene::LoadScene(
     const std::string& filename,
     o3d::Pack* effect_texture_pack) {
   o3d::Pack* pack = client->CreatePack();
-  o3d::Transform* root = pack->Create<o3d::Transform>();
-  o3d::ParamFloat* time = root->CreateParam<o3d::ParamFloat>("time");
+  pack->set_root(pack->Create<o3d::Transform>());
+  o3d::ParamFloat* time = pack->root()->CreateParam<o3d::ParamFloat>("time");
 
   o3d::Collada::Options options;
   options.up_axis = o3d::Vector3(0.0f, 1.0f, 0.0f);
@@ -161,7 +161,7 @@ Scene* Scene::LoadScene(
   if (!o3d::Collada::Import(
       pack,
       filename,
-      root,
+      pack->root(),
       time,
       options)) {
     // Make an error scene
@@ -185,9 +185,9 @@ Scene* Scene::LoadScene(
         "constant");
     material->CreateParam<o3d::ParamSampler>("emissiveSampler")->set_value(
         sampler);
-    root->AddShape(shape);
     prim->SetOwner(shape);
     prim->set_material(material);
+    pack->root()->AddShape(shape);
   }
 	
   Materials::PrepareMaterials(pack, view_info, effect_texture_pack);
@@ -206,7 +206,7 @@ Scene* Scene::LoadScene(
   }
   #endif
 
-  return new Scene(pack, root, time);
+  return new Scene(pack, pack->root(), time);
 }
 
 Scene::Scene(o3d::Pack* pack, o3d::Transform* root, o3d::ParamFloat* time)
@@ -369,19 +369,6 @@ class Cloner {
                 down_cast<o3d::Material*>(dst_value));
           } else
           if (dst_param->IsA(o3d::ParamParamArray::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamParamArray";
-            o3d::ParamArray* spa = down_cast<o3d::ParamArray*>(src_value);
-            o3d::ParamArray* dpa = down_cast<o3d::ParamArray*>(dst_value);
-            DCHECK(spa);
-            DCHECK(dpa);
-            //DLOG(INFO) << "Src ParamArray: "
-            //    << src->name() << ":" << src->GetClass()->name()
-            //    << src_param->name() << ":"
-            //    << spa->name();
-            //DLOG(INFO) << "Dst ParamArray: "
-            //    << dst->name() << ":" << dst->GetClass()->name()
-            //    << dst_param->name() << ":"
-            //    << (dpa ? dpa->name().c_str() : "*NULL*");
             down_cast<o3d::ParamParamArray*>(dst_param)->set_value(
                 down_cast<o3d::ParamArray*>(dst_value));
           } else
