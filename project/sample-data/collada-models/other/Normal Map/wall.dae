@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+	<asset>
+		<contributor>
+			<authoring_tool>Softimage|XSI version 7</authoring_tool>
+		</contributor>
+		<created>2008-11-23T08:11:40Z</created>
+		<modified>2008-11-23T08:11:40Z</modified>
+		<revision>1.4.1</revision>
+		<unit meter="0.1" name="decimetre"></unit>
+	</asset>
+	<library_cameras>
+		<camera id="cameras_0">
+			<optics>
+				<technique_common>
+					<perspective>
+						<yfov>53.638000</yfov>
+						<znear>0.100000</znear>
+						<zfar>32768.000000</zfar>
+					</perspective>
+				</technique_common>
+			</optics>
+		</camera>
+	</library_cameras>
+	<library_lights>
+		<light id="lights_0">
+			<technique_common>
+				<directional>
+					<color>1.000000 1.000000 1.000000</color>
+				</directional>
+			</technique_common>
+		</light>
+	</library_lights>
+	<library_images>
+		<image id="color_img" format="bitmap" height="700" width="466" depth="32">
+			<init_from>color.dds</init_from>
+		</image>
+		<image id="normal_img" format="bitmap" height="700" width="466" depth="32">
+			<init_from>normal.dds</init_from>
+		</image>
+	</library_images>
+	<library_effects>
+		<effect id="Material_fx">
+			<profile_COMMON>
+				<newparam sid="color_surface">
+					<surface type="2D">
+						<init_from>color_img</init_from>
+					</surface>
+				</newparam>
+				<newparam sid="color_sampler">
+					<sampler2D>
+						<source>color_surface</source>
+					</sampler2D>
+				</newparam>
+				<technique sid="default">
+					<phong>
+						<emission>
+							<color sid="emission">0 0 0 1</color>
+						</emission>
+						<ambient>
+							<color sid="emission">0 0 0 1</color>
+						</ambient>
+						<diffuse>
+							<texture texture="color_sampler" texcoord="diffuse_TEXCOORD"></texture>
+						</diffuse>
+						<specular>
+							<color sid="specular">1 1 1 0</color>
+						</specular>
+						<shininess>
+							<float sid="shininess">10.0</float>
+						</shininess>
+						<reflective>
+							<color sid="reflective">0 0 0 0</color>
+						</reflective>
+						<reflectivity>
+							<float sid="reflectivity">0.0</float>
+						</reflectivity>
+						<transparent opaque="RGB_ZERO">
+							<color sid="transparent">0 0 0 0</color>
+						</transparent>
+						<transparency>
+							<float sid="transparency">1.0</float>
+						</transparency>
+						<index_of_refraction>
+							<float sid="index_of_refraction">1.0</float>
+						</index_of_refraction>
+					</phong>
+					<extra>
+					  <technique profile="HANAMI">
+	  <newparam sid="normal_surface">
+                <surface type="2D">
+                  <init_from>normal_img</init_from>
+                </surface>
+              </newparam>
+              <newparam sid="normal_sampler">
+                <sampler2D>
+                  <source>normal_surface</source>
+                </sampler2D>
+              </newparam>
+              <normals>
+                <texture texture="normal_sampler" texcoord="diffuse_TEXCOORD"></texture>
+              </normals>
+            </technique>
+          </extra>
+
+				</technique>
+			</profile_COMMON>
+		</effect>
+		</library_effects>
+	<library_materials>
+		<material id="Material">
+			<instance_effect url="#Material_fx"></instance_effect>
+		</material>
+	</library_materials>
+	<library_geometries>
+		<geometry id="geometries_0">
+			<mesh>
+				<source id="geometries_0-Pos">
+					<float_array id="geometries_0-Pos-array" count="12">
+						-10.0 -10.0 0.0 
+						10.0 -10.0 0.0 
+						-10.0 10.0 0.0 
+						10.0 10.0 0.0 
+					</float_array>
+					<technique_common>
+						<accessor source="#geometries_0-Pos-array" count="4" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="geometries_0-Texture_Projection">
+					<float_array id="geometries_0-Texture_Projection-array" count="8">
+						1.0 0.0 
+						0.0 0.0
+						1.0 1.0 
+						0.0 1.0 
+						</float_array>
+					<technique_common>
+						<accessor source="#geometries_0-Texture_Projection-array" count="4" stride="2">
+							<param name="S" type="float"/>
+							<param name="T" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="geometries_0-Normals">
+					<float_array id="geometries_0-Normals-array" count="8">
+						0.0 0.0 -1.0
+						0.0 0.0 -1.0
+						0.0 0.0 -1.0
+						0.0 0.0 -1.0
+						</float_array>
+					<technique_common>
+						<accessor source="#geometries_0-Normals-array" count="4" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+
+				</source>
+				<source id="geometries_0-Tangents">
+					<float_array id="geometries_0-Tangents-array" count="8">
+						-1.0 0.0 0.0
+						-1.0 0.0 0.0
+						-1.0 0.0 0.0
+						-1.0 0.0 0.0
+						</float_array>
+					<technique_common>
+						<accessor source="#geometries_0-Tangents-array" count="4" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+
+				</source>
+
+
+				<vertices id="geometries_0-Vtx">
+					<input semantic="POSITION" source="#geometries_0-Pos"/>
+				</vertices>
+				<triangles count="2" material="Material">
+					<input semantic="VERTEX" source="#geometries_0-Vtx" offset="0"/>
+					<input semantic="TEXCOORD" source="#geometries_0-Texture_Projection" offset="1"/>
+					<input semantic="NORMAL" source="#geometries_0-Normals" offset="2"/>
+					<input semantic="TANGENT" source="#geometries_0-Tangents" offset="3"/>
+					<p>
+						0 0 0 0 
+						2 2 2 2 
+						3 3 3 3 
+						0 0 0 0 
+						3 3 3 3 
+						1 1 1 1
+					</p>
+				</triangles>
+			</mesh>
+		</geometry>
+	</library_geometries>
+	<library_visual_scenes>
+		<visual_scene id="visual_scenes_0" name="untitled">
+				<node id="cube">
+					<translate sid="translation">0.000000 0.000000 0.000000</translate>
+					<rotate sid="rotation_z">0.000000 0.000000 1.000000 0.000000</rotate>
+					<rotate sid="rotation_y">0.000000 1.000000 0.000000 0.000000</rotate>
+					<rotate sid="rotation_x">1.000000 0.000000 0.000000 0.000000</rotate>
+					<scale sid="scale">1.000000 1.000000 1.000000</scale>
+					<instance_geometry url="#geometries_0">
+						<bind_material>
+							<technique_common>
+								<instance_material symbol="Material" target="#Material">
+									<bind semantic="diffuse_TEXCOORD" target="geometries_0-"></bind>
+								</instance_material>
+							</technique_common>
+						</bind_material>
+					</instance_geometry>
+				</node>
+		</visual_scene>
+	</library_visual_scenes>
+	<scene>
+		<instance_visual_scene url="#visual_scenes_0"/>
+	</scene>
+</COLLADA>

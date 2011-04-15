@@ -1,0 +1,2 @@
+<../images/texture0.JPG> <../images/texture0.JPG>
+<../images/texture1.JPG> <../images/texture1.JPG>

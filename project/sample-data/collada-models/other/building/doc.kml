@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<kml xmlns='http://earth.google.com/kml/2.1'>
+<Folder>
+    <name>warehouse_model</name>
+    <description><![CDATA[Created with <a href="http://sketchup.google.com/">Google 3D Warehouse 1.0</a>]]></description>
+    <DocumentSource>SketchUp</DocumentSource>
+<visibility>1</visibility>
+<LookAt>
+<heading>356.299</heading>
+<tilt>72.7506</tilt>
+<latitude>55.74493724896666</latitude>
+<longitude>37.60556731950626</longitude>
+<range>321.723506793482</range>
+<altitude>251.3560423516961</altitude>
+</LookAt>
+<Folder>
+<name>Tour</name>
+<Placemark>
+<name><![CDATA[6281801]]></name>
+<visibility>1</visibility>
+<LookAt>
+<heading>213.075</heading>
+<tilt>80.635</tilt>
+<latitude>55.74453548659557</latitude>
+<longitude>37.6054664990393</longitude>
+<range>200.7151177786427</range>
+<altitude>3.082478615730122</altitude>
+</LookAt>
+</Placemark>
+<Placemark>
+<name><![CDATA[10563845]]></name>
+<visibility>1</visibility>
+<LookAt>
+<heading>180.25</heading>
+<tilt>74.2678</tilt>
+<latitude>55.74351803732939</latitude>
+<longitude>37.60747104429264</longitude>
+<range>207.6949155775294</range>
+<altitude>2.960846214941628</altitude>
+</LookAt>
+</Placemark>
+<Placemark>
+<name><![CDATA[17928723]]></name>
+<visibility>1</visibility>
+<LookAt>
+<heading>356.299</heading>
+<tilt>72.7506</tilt>
+<latitude>55.74493724896666</latitude>
+<longitude>37.60556731950626</longitude>
+<range>321.723506793482</range>
+<altitude>251.3560423516961</altitude>
+</LookAt>
+</Placemark>
+</Folder>
+  <Placemark>
+    <name>Model</name>
+    <description><![CDATA[]]></description>
+    <Style id='default'>
+    </Style>
+    <Model>
+        <altitudeMode>relativeToGround</altitudeMode>
+        <Location>
+            <longitude>37.604983399701</longitude>
+            <latitude>55.744642855609</latitude>
+            <altitude>0.000000000000</altitude>
+        </Location>
+        <Orientation>
+            <heading>358.846780174086</heading>
+            <tilt>0</tilt>
+            <roll>0</roll>
+        </Orientation>
+        <Scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </Scale>
+        <Link>
+            <href>models/warehouse_model.dae</href>
+        </Link>
+    </Model>
+  </Placemark></Folder>
+</kml>
