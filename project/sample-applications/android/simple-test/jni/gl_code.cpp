@@ -215,6 +215,8 @@ bool O3DManager::Initialize(int width, int height) {
       main_view_,
       "/sdcard/androido3d/collada/character.zip",
       effect_texture_pack_);
+  if (!scene_)
+    scene_ = o3d_utils::Scene::DummyScene(client_.get(), main_view_);
   scene_->SetParent(root_);
 
   o3d_utils::CameraInfo* camera_info =

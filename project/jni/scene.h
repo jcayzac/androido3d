@@ -72,6 +72,10 @@ class Scene {
       const std::string& filename,
       o3d::extra::IExternalResourceProvider& external_resource_provider);
 
+  static Scene* DummyScene(
+      o3d::Client* client,
+      o3d_utils::ViewInfo* view_info);
+
   o3d::Pack* pack() const {
     return pack_;
   }
@@ -102,7 +106,6 @@ class Scene {
   friend class Cloner;
 
   Scene(o3d::Pack* pack, o3d::Transform* root, o3d::ParamFloat* time);
-  static o3d::Shape* CreateErrorShape(o3d::Pack* pack);
 
   o3d::Pack* pack_;
   o3d::Transform* root_;

@@ -146,8 +146,17 @@ void Scene::PrepareShapes(o3d::Pack* pack) {
   }
 };
 
-o3d::Shape* Scene::CreateErrorShape(o3d::Pack* pack) {
+Scene* Scene::DummyScene(
+    o3d::Client* client,
+    o3d_utils::ViewInfo* view_info)
+{
+  o3d::Pack* pack = client->CreatePack();
+  pack->set_root(pack->Create<o3d::Transform>());
+  o3d::ParamFloat* time = pack->root()->CreateParam<o3d::ParamFloat>("time");
+
   o3d::Shape* shape = pack->Create<o3d::Shape>();
+  pack->root()->AddShape(shape);
+
   o3d::Primitive* prim = Primitives::CreateSphere(
       pack, 10.0f, 8, 5, NULL);
   // Setup the material with collada parameters so the shader builder will
@@ -169,7 +178,10 @@ o3d::Shape* Scene::CreateErrorShape(o3d::Pack* pack) {
       sampler);
   prim->SetOwner(shape);
   prim->set_material(material);
-  return shape;
+  Materials::PrepareMaterials(pack, view_info, 0);
+  PrepareShapes(pack);
+
+  return new Scene(pack, pack->root(), time);
 }
 
 Scene* Scene::LoadScene(
@@ -191,8 +203,8 @@ Scene* Scene::LoadScene(
       pack->root(),
       time,
       options)) {
-    // Make an error scene
-    pack->root()->AddShape(CreateErrorShape(pack));
+    pack->service_locator()->GetService<o3d::ObjectManager>()->DestroyPack(pack);
+    return 0;
   }
 
   Materials::PrepareMaterials(pack, view_info, effect_texture_pack);
@@ -232,11 +244,8 @@ Scene* Scene::LoadBinaryScene(
     DLOG(ERROR) << "Can't open " << filename;
   }
   if (!root) {
-    // Make an error scene
-    DLOG(ERROR) << "Making an error scene";
-    root = pack->Create<o3d::Transform>();
-    root->CreateParam<o3d::ParamFloat>("time");
-    root->AddShape(CreateErrorShape(pack));
+    pack->service_locator()->GetService<o3d::ObjectManager>()->DestroyPack(pack);
+    return 0;
   }
 
   pack->set_root(root);
