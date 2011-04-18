@@ -17,7 +17,7 @@ LOCAL_CFLAGS    += \
 
 LOCAL_C_INCLUDES += \
   $(O3D_THIRD_PARTY)/libjpeg/include \
-  $(O3D_THIRD_PARTY)/libpng \
+  $(O3D_THIRD_PARTY)/libpng/include \
 
 # -DCHROME_PNG_WRITE_SUPPORT \
 # -DPNG_USER_CONFIG \
@@ -124,7 +124,7 @@ LOCAL_CFLAGS += \
 
 LOCAL_C_INCLUDES += \
   $(O3D_THIRD_PARTY)/libjpeg/include \
-  $(O3D_THIRD_PARTY)/libpng \
+  $(O3D_THIRD_PARTY)/libpng/include \
 
 LOCAL_SRC_FILES := $(addprefix cross/gles2/, \
   buffer_gles2.cc \

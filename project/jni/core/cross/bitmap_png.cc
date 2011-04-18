@@ -110,7 +110,7 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
   // Allocate memory for image information
   info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
-    png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
+    png_destroy_read_struct(&png_ptr, 0, 0);
     DLOG(ERROR) << "Cannot allocate working memory for PNG load.";
     return false;
   }
@@ -128,7 +128,7 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
     DLOG(ERROR) << "Fatal error reading PNG file \"" << filename << "\"";
     if (row_pointers)
       png_free(png_ptr, row_pointers);
-    png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+    png_destroy_read_struct(&png_ptr, &info_ptr, 0);
     return false;
   }
 
@@ -192,7 +192,7 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
     }
     // Expand grayscale images to the full 8 bits from 2, or 4 bits/pixel
     // TODO(o3d): Do we want to expose L/A/LA texture formats ?
-    png_set_gray_1_2_4_to_8(png_ptr);
+    png_set_expand_gray_1_2_4_to_8(png_ptr);
     png_set_gray_to_rgb(png_ptr);
   }
   // Expand paletted or RGB images with transparency to full alpha channels
@@ -257,7 +257,7 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
 
   // Clean up after the read, and free any memory allocated - REQUIRED
   png_free(png_ptr, row_pointers);
-  png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+  png_destroy_read_struct(&png_ptr, &info_ptr, 0);
 
   // Success.
   Bitmap::Ref bitmap(new Bitmap(service_locator));
@@ -282,7 +282,7 @@ bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8>* buffer) {
   png_infop info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
     DLOG(ERROR) << "Could not create PNG info structure.";
-    png_destroy_write_struct(&png_ptr,  png_infopp_NULL);
+    png_destroy_write_struct(&png_ptr,  0);
     return false;
   }
 
@@ -308,7 +308,7 @@ bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8>* buffer) {
                PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
   png_set_bgr(png_ptr);
   png_set_rows(png_ptr, info_ptr, row_pointers.get());
-  png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, png_voidp_NULL);
+  png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, 0);
 
   png_destroy_write_struct(&png_ptr, &info_ptr);
   return true;
