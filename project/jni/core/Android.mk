@@ -16,7 +16,7 @@ LOCAL_CFLAGS    += \
   -DO3D_IMPORT_DECOMPRESS_DXT \
 
 LOCAL_C_INCLUDES += \
-  $(O3D_THIRD_PARTY)/libjpeg \
+  $(O3D_THIRD_PARTY)/libjpeg/include \
   $(O3D_THIRD_PARTY)/libpng \
 
 # -DCHROME_PNG_WRITE_SUPPORT \
@@ -123,7 +123,7 @@ LOCAL_CFLAGS += \
   -DO3D_RENDERER_MUST_BACK_RESOURCES \
 
 LOCAL_C_INCLUDES += \
-  $(O3D_THIRD_PARTY)/libjpeg \
+  $(O3D_THIRD_PARTY)/libjpeg/include \
   $(O3D_THIRD_PARTY)/libpng \
 
 LOCAL_SRC_FILES := $(addprefix cross/gles2/, \
