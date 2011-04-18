@@ -59,6 +59,17 @@ else
 
 endif
 
+ifeq ($(NEON), 1)
+  # Enable application wide NEON optimization
+  APP_CFLAGS += -mfpu=neon -mfloat-abi=softfp
+else
+  # Fallback to vfp3-d16 for ARMv7 cpus that
+  # don't support NEON.
+  # Tegra2, for instance, doesn't have a full
+  # VFPv3 with 32 registers, only 16.
+  APP_CFLAGS += -mfpu=vfpv3-d16 -mfloat-abi=softfp
+endif
+
 # Makefiles
 include $(O3D_DIR)/build/make/o3d-imports.mk
 include $(O3D_DIR)/build/make/o3d-protobuf.mk

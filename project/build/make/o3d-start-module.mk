@@ -31,15 +31,3 @@ LOCAL_C_INCLUDES := \
   $(LOCAL_PATH) \
   $(O3D_THIRD_PARTY) \
   $(O3D_THIRD_PARTY)/zlib/include \
-
-ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
-  # only enforce NEON flags if "NEON" if defined to 1 on the command line
-  ifeq ($(NEON), 1)
-    LOCAL_ARM_NEON := true
-  endif
-endif
-
-ifeq ($(TARGET_ARCH_ABI), armeabi)
-  # if building for armv5, disable thumb!
-  LOCAL_ARM_MODE := arm
-endif
