@@ -31,8 +31,10 @@ import java.io.File;
 
 public class NativeView extends GLSurfaceView  {
     private static String TAG = "NativeView";
+    private static final boolean DEBUG = false;
+
     static {
-      System.loadLibrary("o3dconditioner");
+        System.loadLibrary("o3dconditioner");
     }
     private long native_peer = 0;
     private static native long createPeer(long width, long height);
@@ -47,14 +49,14 @@ public class NativeView extends GLSurfaceView  {
     public interface OnCompleteListener {
         public abstract void onComplete(boolean result);
     }
+
     public NativeView(Context context) {
         super(context);
-        initNativeView();
     }
     public NativeView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initNativeView();
     }
+
     @Override
     protected void finalize() throws Throwable {
         if (native_peer!=0) {
@@ -65,14 +67,13 @@ public class NativeView extends GLSurfaceView  {
     }
     @Override
     public void onResume() {
-      super.onResume();
-//      initNativeView();
+        super.onResume();
     }
-    private final void initNativeView() {
-      getHolder().setFormat(PixelFormat.TRANSLUCENT);
-      setEGLContextFactory(new ContextFactory());
-      setEGLConfigChooser(new ConfigChooser());
-      setRenderer(new Renderer());
+    public final void start() {
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        setEGLConfigChooser(new ConfigChooser());
+        setEGLContextFactory(new ContextFactory());
+        setRenderer(new Renderer());
     }
     public void loadScene(final File src, final OnCompleteListener listener) {
         final String path = src.getAbsolutePath();
@@ -132,40 +133,136 @@ public class NativeView extends GLSurfaceView  {
             EGL10.EGL_BLUE_SIZE, 8,
             EGL10.EGL_ALPHA_SIZE, 8,
             EGL10.EGL_DEPTH_SIZE, 16,
+            EGL10.EGL_CONFIG_CAVEAT, EGL10.EGL_NONE,
             EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-            // Hum, turning FSAAx4 on makes things lil slow, surprisingly^^
-            EGL10.EGL_SAMPLE_BUFFERS, 1,
-            EGL10.EGL_SAMPLES, 4,
             EGL10.EGL_NONE
         };
         public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
-            /* Get the number of minimally matching EGL configurations
-             */
             egl.eglChooseConfig(display, s_configAttribs2, null, 0, mValue);
-
             int numConfigs = mValue[0];
-
             if (numConfigs <= 0) {
                 throw new IllegalArgumentException("No configs match configSpec");
             }
 
-            /* Allocate then read the array of minimally matching EGL configs
-             */
+            // Allocate then read the array of minimally matching EGL configs
             EGLConfig[] configs = new EGLConfig[numConfigs];
             egl.eglChooseConfig(display, s_configAttribs2, configs, numConfigs, mValue);
 
-            /* Now return the "best" one
-             */
+            // Dump configs
+            if (DEBUG) {
+                for(EGLConfig config : configs) {
+                    printConfig(egl, display, config);
+                }
+            }
+
+            // Return the "best" one
+            int bestConfig = -1;
+            int bestDepth  = -1;
             for(EGLConfig config : configs) {
-                if (16 > findConfigAttrib(egl, display, config, EGL10.EGL_DEPTH_SIZE, 0)) continue;
+	            if (bestDepth > findConfigAttrib(egl, display, config, EGL10.EGL_DEPTH_SIZE, 0)) continue;
                 if (8 != findConfigAttrib(egl, display, config, EGL10.EGL_RED_SIZE, 0)) continue;
                 if (8 != findConfigAttrib(egl, display, config, EGL10.EGL_GREEN_SIZE, 0)) continue;
                 if (8 != findConfigAttrib(egl, display, config, EGL10.EGL_BLUE_SIZE, 0)) continue;
                 if (8 != findConfigAttrib(egl, display, config, EGL10.EGL_ALPHA_SIZE, 0)) continue;
-                return config;
+                bestConfig = findConfigAttrib(egl, display, config, EGL10.EGL_CONFIG_ID, 0);
+            }
+            for(EGLConfig config : configs) {
+                if (bestConfig == findConfigAttrib(egl, display, config, EGL10.EGL_CONFIG_ID, 0)) {
+                    if (DEBUG) {
+                        printConfig(egl, display, config);
+                    }
+                    return config;
+                }
             }
             return null;
         }
+        private void printConfig(EGL10 egl, EGLDisplay display,
+                EGLConfig config) {
+            if (!DEBUG) return;
+            int[] attributes = {
+                EGL10.EGL_BUFFER_SIZE,
+                EGL10.EGL_ALPHA_SIZE,
+                EGL10.EGL_BLUE_SIZE,
+                EGL10.EGL_GREEN_SIZE,
+                EGL10.EGL_RED_SIZE,
+                EGL10.EGL_DEPTH_SIZE,
+                EGL10.EGL_STENCIL_SIZE,
+                EGL10.EGL_CONFIG_CAVEAT,
+                EGL10.EGL_CONFIG_ID,
+                EGL10.EGL_LEVEL,
+                EGL10.EGL_MAX_PBUFFER_HEIGHT,
+                EGL10.EGL_MAX_PBUFFER_PIXELS,
+                EGL10.EGL_MAX_PBUFFER_WIDTH,
+                EGL10.EGL_NATIVE_RENDERABLE,
+                EGL10.EGL_NATIVE_VISUAL_ID,
+                EGL10.EGL_NATIVE_VISUAL_TYPE,
+                0x3030, // EGL10.EGL_PRESERVED_RESOURCES,
+                EGL10.EGL_SAMPLES,
+                EGL10.EGL_SAMPLE_BUFFERS,
+                EGL10.EGL_SURFACE_TYPE,
+                EGL10.EGL_TRANSPARENT_TYPE,
+                EGL10.EGL_TRANSPARENT_RED_VALUE,
+                EGL10.EGL_TRANSPARENT_GREEN_VALUE,
+                EGL10.EGL_TRANSPARENT_BLUE_VALUE,
+                0x3039, // EGL10.EGL_BIND_TO_TEXTURE_RGB,
+                0x303A, // EGL10.EGL_BIND_TO_TEXTURE_RGBA,
+                0x303B, // EGL10.EGL_MIN_SWAP_INTERVAL,
+                0x303C, // EGL10.EGL_MAX_SWAP_INTERVAL,
+                EGL10.EGL_LUMINANCE_SIZE,
+                EGL10.EGL_ALPHA_MASK_SIZE,
+                EGL10.EGL_COLOR_BUFFER_TYPE,
+                EGL10.EGL_RENDERABLE_TYPE,
+                0x3042 // EGL10.EGL_CONFORMANT
+            };
+            String[] names = {
+                "EGL_BUFFER_SIZE",
+                "EGL_ALPHA_SIZE",
+                "EGL_BLUE_SIZE",
+                "EGL_GREEN_SIZE",
+                "EGL_RED_SIZE",
+                "EGL_DEPTH_SIZE",
+                "EGL_STENCIL_SIZE",
+                "EGL_CONFIG_CAVEAT",
+                "EGL_CONFIG_ID",
+                "EGL_LEVEL",
+                "EGL_MAX_PBUFFER_HEIGHT",
+                "EGL_MAX_PBUFFER_PIXELS",
+                "EGL_MAX_PBUFFER_WIDTH",
+                "EGL_NATIVE_RENDERABLE",
+                "EGL_NATIVE_VISUAL_ID",
+                "EGL_NATIVE_VISUAL_TYPE",
+                "EGL_PRESERVED_RESOURCES",
+                "EGL_SAMPLES",
+                "EGL_SAMPLE_BUFFERS",
+                "EGL_SURFACE_TYPE",
+                "EGL_TRANSPARENT_TYPE",
+                "EGL_TRANSPARENT_RED_VALUE",
+                "EGL_TRANSPARENT_GREEN_VALUE",
+                "EGL_TRANSPARENT_BLUE_VALUE",
+                "EGL_BIND_TO_TEXTURE_RGB",
+                "EGL_BIND_TO_TEXTURE_RGBA",
+                "EGL_MIN_SWAP_INTERVAL",
+                "EGL_MAX_SWAP_INTERVAL",
+                "EGL_LUMINANCE_SIZE",
+                "EGL_ALPHA_MASK_SIZE",
+                "EGL_COLOR_BUFFER_TYPE",
+                "EGL_RENDERABLE_TYPE",
+                "EGL_CONFORMANT"
+            };
+            Log.w(TAG, "[");
+            int[] value = new int[1];
+            for (int i = 0; i < attributes.length; i++) {
+                int attribute = attributes[i];
+                String name = names[i];
+                if ( egl.eglGetConfigAttrib(display, config, attribute, value)) {
+                    Log.w(TAG, String.format("\t%s: %d (0x%x)\n", name, value[0], value[0]));
+                } else {
+                    while (egl.eglGetError() != EGL10.EGL_SUCCESS);
+                }
+            }
+            Log.w(TAG, "]\n\n");
+        }
+
         private int findConfigAttrib(EGL10 egl, EGLDisplay display,
                                      EGLConfig config, int attribute, int defaultValue) {
             if (egl.eglGetConfigAttrib(display, config, attribute, mValue)) {

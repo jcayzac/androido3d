@@ -56,9 +56,7 @@ public class MainActivity extends RoboActivity {
     mAdapter = new FileListAdapter(this);
 
     setContentView(R.layout.main);
-    mNativeView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-    //mNativeView.setDrawingCacheEnabled(true);
-    //mNativeView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+    mNativeView.start();
 
     mGestureDetector = new GestureDetector(new SimpleOnGestureListener() {
       @Override
