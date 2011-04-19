@@ -28,13 +28,19 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 import java.io.File;
+import com.tonchidot.o3d.Utils;
 
 public class NativeView extends GLSurfaceView  {
     private static String TAG = "NativeView";
     private static final boolean DEBUG = false;
 
     static {
-        System.loadLibrary("o3dconditioner");
+        if (Utils.hasFeature("neon")) {
+            System.loadLibrary("o3dconditioner-neon");
+        }
+        else {
+            System.loadLibrary("o3dconditioner");
+        }
     }
     private long native_peer = 0;
     private static native long createPeer(long width, long height);

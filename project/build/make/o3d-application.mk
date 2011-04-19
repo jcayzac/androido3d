@@ -54,6 +54,7 @@ else
     -fgcse-las \
     -fgcse-after-reload \
     -funsafe-loop-optimizations \
+    -funsafe-math-optimizations \
     -fsee \
     -ftracer \
 

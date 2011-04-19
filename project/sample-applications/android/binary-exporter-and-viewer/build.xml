@@ -20,7 +20,22 @@
   <property name="o3d.dir" value="${basedir}/../../.." />
   <import file="${o3d.dir}/build/ant/o3d-setup.xml" />
   <target name="-pre-build" depends="-build-o3d">
-    <ndk-build path="." neon="true" />
+    <ndk-build path="." neon="true" params="_app=with-neon" />
+
+    <move todir="${basedir}/libs/armeabi-v7a">
+      <filelist dir="${basedir}/libs/armeabi-v7a">
+        <file name="libo3dconditioner.so" />
+      </filelist>
+      <mapper type="glob" from="*.so" to=".*-neon.so" />
+    </move>
+
+    <ndk-build path="." neon="false" params="_app=without-neon" />
+    <move todir="${basedir}/libs/armeabi-v7a">
+      <filelist dir="${basedir}/libs/armeabi-v7a">
+        <file name=".libo3dconditioner-neon.so" />
+      </filelist>
+      <mapper type="glob" from=".*.so" to="*.so" />
+    </move>
   </target>
   <setup />
 </project>
