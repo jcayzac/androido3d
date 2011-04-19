@@ -39,42 +39,54 @@
   <!-- set default values -->
   <property name="ndk.jobs" value="8" />
   <property name="ndk.verbose" value="false" />
-  <if condition="${build.mode.debug}">
-    <then><property name="ndk.debug" value="true" /></then>
-    <else><property name="ndk.debug" value="false" /></else>
-  </if>
 
   <macrodef name="ndk-build">
     <attribute name="path"/>
     <attribute name="params" default="" />
-    <attribute name="debug" default="${ndk.debug}" />
+    <attribute name="debug" default="default" />
     <attribute name="neon" default="false" />
     <attribute name="makevariant" default="false" />
     <sequential>
-      <local name="v" />
+
       <local name="debug" />
-      <local name="neon" />
-      <local name="neon.prefix" />
+      <condition property="debug">
+        <or>
+          <istrue value="@{debug}" />
+          <and>
+            <equals arg1="@{debug}" arg2="default" />
+            <istrue value="${build.mode.debug}" />
+          </and>
+        </or>
+      </condition>
+
+      <local name="debug.int" />
       <local name="variant" />
-      <local name="app.param" />
+      <if condition="${debug}">
+        <then><property name="debug.int" value="1" /><property name="variant" value="debug" /></then>
+        <else><property name="debug.int" value="0" /><property name="variant" value="release" /></else>
+      </if>
+
+      <local name="v" />
       <if condition="${ndk.verbose}">
         <then><property name="v" value="1" /></then>
         <else><property name="v" value="0" /></else>
       </if>
-      <if condition="@{debug}">
-        <then><property name="debug" value="1" /><property name="variant" value="debug" /></then>
-        <else><property name="debug" value="0" /><property name="variant" value="release" /></else>
-      </if>
+
+      <local name="neon" />
+      <local name="neon.prefix" />
       <if condition="@{neon}">
         <then><property name="neon" value="1" /><property name="neon.prefix" value="neon-" /></then>
         <else><property name="neon" value="0" /><property name="neon.prefix" value="" /></else>
       </if>
+
+      <local name="app.param" />
       <if condition="@{makevariant}">
         <then><property name="app.param" value="_app=${neon.prefix}${variant}" /></then>
         <else><property name="app.param" value="" /></else>
       </if>
+
       <exec executable="ndk-build" dir="@{path}" failonerror="true">
-        <arg line="-j${ndk.jobs} O3D_DIR=${o3d.dir} NDK_DEBUG=${debug} NEON=${neon} V=${v} ${app.param} @{params}" />
+        <arg line="-j${ndk.jobs} O3D_DIR=${o3d.dir} NDK_DEBUG=${debug.int} NEON=${neon} V=${v} ${app.param} @{params}" />
       </exec>
     </sequential>
   </macrodef>
