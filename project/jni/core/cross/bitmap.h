@@ -42,7 +42,6 @@
 
 #include <stdlib.h>
 #include <vector>
-#include "base/cross/bits.h"
 #include "core/cross/types.h"
 #include "core/cross/texture_base.h"
 #include "core/cross/image_utils.h"
@@ -51,9 +50,10 @@ class FilePath;
 
 namespace o3d {
 
+class ExternalResource;
 class MemoryReadStream;
-class RawData;
 class Pack;
+class RawData;
 
 // Bitmap provides an API for basic image operations on bitmap images,
 // including scale and crop. Bitmaps can be created from a RawData object via
@@ -114,7 +114,7 @@ class Bitmap : public ParamObject {
   // Allocates a bitmap with initialized parameters.
   // data is zero-initialized
   void AllocateData() {
-    image_data_.reset(new uint8[GetTotalSize()]);
+    image_data_.reset(new uint8_t[GetTotalSize()]);
     memset(image_data_.get(), 0, GetTotalSize());
   }
 
@@ -147,17 +147,17 @@ class Bitmap : public ParamObject {
   // Gets the image data for a given mip-map level.
   // Parameters:
   //   level: mip level to get.
-  uint8 *GetMipData(unsigned int level) const;
+  uint8_t *GetMipData(unsigned int level) const;
 
   // Gets the address of a particular pixel.
   // Parameters:
   //   level: mip level to get.
-  uint8 *GetPixelData(unsigned int level, unsigned int x, unsigned int y) const;
+  uint8_t *GetPixelData(unsigned int level, unsigned int x, unsigned int y) const;
 
   // Gets the size of mip.
   size_t GetMipSize(unsigned int level) const;
 
-  uint8 *image_data() const { return image_data_.get(); }
+  uint8_t *image_data() const { return image_data_.get(); }
   Texture::Format format() const { return format_; }
   unsigned int width() const { return width_; }
   unsigned int height() const { return height_; }
@@ -171,15 +171,15 @@ class Bitmap : public ParamObject {
     return image::IsPOT(width_, height_);
   }
 
-  // Loads a bitmap from a file.
+  // Loads a bitmap from an external resource.
   // Parameters:
   //   filename: the name of the file to load.
   //   file_type: the type of file to load. If UNKNOWN, the file type will be
   //              determined from the filename extension, and if it is not a
   //              known extension, all the loaders will be tried.
   //   bitmaps: An array to hold references to the loaded bitmaps.
-  static bool LoadFromFile(ServiceLocator* service_locator,
-                           const FilePath &filepath,
+  static bool LoadFromExternalResource(ServiceLocator* service_locator,
+                           const ExternalResource& resource,
                            image::ImageFileType file_type,
                            BitmapRefArray* bitmaps);
 
@@ -204,7 +204,7 @@ class Bitmap : public ParamObject {
   // Returns the contents of the bitmap as a data URL
   // Returns:
   //   A data url that represents the content of the bitmap.
-  String ToDataURL();
+  std::string ToDataURL();
 
   // Checks that the alpha channel for the entire bitmap is 1.0
   bool CheckAlphaIsOne() const;
@@ -239,7 +239,7 @@ class Bitmap : public ParamObject {
   // Generates Mips from the source_level for num_levels
   void GenerateMips(int source_level, int num_levels);
 
-  bool WriteToPNGStream(std::vector<uint8>* stream);
+  bool WriteToPNGStream(std::vector<uint8_t>* stream);
 
   // Loads bitmaps from a MemoryReadStream.
   // Parameters:
@@ -253,28 +253,28 @@ class Bitmap : public ParamObject {
   //   bitmaps: An array to hold references to the loaded bitmaps.
   static bool LoadFromStream(ServiceLocator* service_locator,
                              MemoryReadStream *stream,
-                             const String &filename,
+                             const std::string &filename,
                              image::ImageFileType file_type,
                              BitmapRefArray* bitmaps);
 
   static bool LoadFromPNGStream(ServiceLocator* service_locator,
                                 MemoryReadStream *stream,
-                                const String &filename,
+                                const std::string &filename,
                                 BitmapRefArray* bitmaps);
 
   static bool LoadFromTGAStream(ServiceLocator* service_locator,
                                 MemoryReadStream *stream,
-                                const String &filename,
+                                const std::string &filename,
                                 BitmapRefArray* bitmaps);
 
   static bool LoadFromDDSStream(ServiceLocator* service_locator,
                                 MemoryReadStream *stream,
-                                const String &filename,
+                                const std::string &filename,
                                 BitmapRefArray* bitmaps);
 
   static bool LoadFromJPEGStream(ServiceLocator* service_locator,
                                  MemoryReadStream *stream,
-                                 const String &filename,
+                                 const std::string &filename,
                                  BitmapRefArray* bitmaps);
 
  private:
@@ -294,13 +294,13 @@ class Bitmap : public ParamObject {
                    unsigned int width,
                    unsigned int height,
                    Semantic semantic,
-                   scoped_array<uint8>* image_data);
+                   ::o3d::base::scoped_array<uint8_t>* image_data);
 
   bool GenerateMipmaps(unsigned int base_width,
                        unsigned int base_height,
                        Texture::Format format,
                        unsigned int num_mipmaps,
-                       uint8 *data);
+                       uint8_t *data);
 
   // Gets the total size of the bitmap data, counting all faces and mip levels.
   size_t GetTotalSize() const {
@@ -313,7 +313,7 @@ class Bitmap : public ParamObject {
   // pointer to the raw bitmap data
   // NOTE: image_data_ is either NULL or it has space for the maximum number
   //     of mips for the current size bitmap, even if they are not used.
-  scoped_array<uint8> image_data_;
+  ::o3d::base::scoped_array<uint8_t> image_data_;
   // format of the texture this is meant to represent.
   Texture::Format format_;
   // width of the bitmap in pixels.
@@ -326,7 +326,7 @@ class Bitmap : public ParamObject {
   Semantic semantic_;
 
   O3D_DECL_CLASS(Bitmap, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Bitmap);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Bitmap);
 };
 
 typedef Bitmap::BitmapRefArray BitmapRefArray;
@@ -345,20 +345,20 @@ class TypedBitmapUncompressed : public BitmapUncompressed {
   }
 };
 
-class Bitmap8 : public TypedBitmapUncompressed<uint8> {
+class Bitmap8 : public TypedBitmapUncompressed<uint8_t> {
  public:
   explicit Bitmap8(ServiceLocator* service_locator);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Bitmap8);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Bitmap8);
 };
 
-class Bitmap16F : public TypedBitmapUncompressed<uint16> {
+class Bitmap16F : public TypedBitmapUncompressed<uint16_t> {
  public:
   explicit Bitmap16F(ServiceLocator* service_locator);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Bitmap16F);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Bitmap16F);
 };
 
 class Bitmap32F : public TypedBitmapUncompressed<float> {
@@ -366,7 +366,7 @@ class Bitmap32F : public TypedBitmapUncompressed<float> {
   explicit Bitmap32F(ServiceLocator* service_locator);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Bitmap32F);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Bitmap32F);
 };
 
 class BitmapCompressed : public Bitmap {
@@ -374,7 +374,7 @@ class BitmapCompressed : public Bitmap {
   explicit BitmapCompressed(ServiceLocator* service_locator);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BitmapCompressed);
+  O3D_DISALLOW_COPY_AND_ASSIGN(BitmapCompressed);
 };
 
 class BitmapDXT1 : public BitmapCompressed {
@@ -382,7 +382,7 @@ class BitmapDXT1 : public BitmapCompressed {
   explicit BitmapDXT1(ServiceLocator* service_locator);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BitmapDXT1);
+  O3D_DISALLOW_COPY_AND_ASSIGN(BitmapDXT1);
 };
 
 class BitmapDXT3 : public BitmapCompressed {
@@ -390,7 +390,7 @@ class BitmapDXT3 : public BitmapCompressed {
   explicit BitmapDXT3(ServiceLocator* service_locator);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BitmapDXT3);
+  O3D_DISALLOW_COPY_AND_ASSIGN(BitmapDXT3);
 };
 
 class BitmapDXT5 : public BitmapCompressed {
@@ -398,7 +398,7 @@ class BitmapDXT5 : public BitmapCompressed {
   explicit BitmapDXT5(ServiceLocator* service_locator);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BitmapDXT5);
+  O3D_DISALLOW_COPY_AND_ASSIGN(BitmapDXT5);
 };
 
 }  // namespace o3d

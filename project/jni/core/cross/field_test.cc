@@ -50,26 +50,26 @@ static const float kInFloats[][4] = {
   { 10.0f, 11.0f, 12.0f, 13.0f, },
   { 0.3f, 0.4f, 0.5f, -1.3f, },
 };
-const unsigned kFloatsNumComponents = arraysize(kInFloats[0]);
-const unsigned kFloatsNumElements = arraysize(kInFloats);
+const unsigned kFloatsNumComponents = o3d_arraysize(kInFloats[0]);
+const unsigned kFloatsNumElements = o3d_arraysize(kInFloats);
 const unsigned kFloatsStride = kFloatsNumComponents;
 
-static const uint32 kInUInt32s[][4] = {
+static const uint32_t kInUInt32s[][4] = {
   { 1234, 67, 160000, 667, },
   { 0, 342353, 13443, 13, },
 };
 
-const unsigned kUInt32sNumComponents = arraysize(kInUInt32s[0]);
-const unsigned kUInt32sNumElements = arraysize(kInUInt32s);
+const unsigned kUInt32sNumComponents = o3d_arraysize(kInUInt32s[0]);
+const unsigned kUInt32sNumElements = o3d_arraysize(kInUInt32s);
 const unsigned kUInt32sStride = kUInt32sNumComponents;
 
-static const uint8 kInUByteNs[][4] = {
+static const uint8_t kInUByteNs[][4] = {
   { 64, 255, 128, 254, },
   { 192, 0, 32, 1, },
 };
 
-const unsigned kUByteNsNumComponents = arraysize(kInUByteNs[0]);
-const unsigned kUByteNsNumElements = arraysize(kInUByteNs);
+const unsigned kUByteNsNumComponents = o3d_arraysize(kInUByteNs[0]);
+const unsigned kUByteNsNumElements = o3d_arraysize(kInUByteNs);
 const unsigned kUByteNsStride = kUByteNsNumComponents;
 
 // Checks if an error has occured on the client then clears the error.
@@ -96,7 +96,7 @@ bool CompareElements(const float* floats_1,
   return true;
 }
 
-bool CompareUInt32sAsFloat(const uint32* uint32s,
+bool CompareUInt32sAsFloat(const uint32_t* uint32s,
                            const float* floats,
                            unsigned num_elements,
                            unsigned num_components) {
@@ -113,7 +113,7 @@ bool CompareUInt32sAsFloat(const uint32* uint32s,
   return true;
 }
 
-bool CompareUByteNsAsFloat(const uint8* uint8s,
+bool CompareUByteNsAsFloat(const uint8_t* uint8s,
                            const float* floats,
                            unsigned num_elements,
                            unsigned num_components) {
@@ -350,8 +350,8 @@ TEST_F(UInt32FieldTest, TestBasic) {
 
   for (unsigned jj = 0; jj < kFloatsNumElements; ++jj) {
     for (unsigned ii = 0; ii < kFloatsNumComponents; ++ii) {
-      uint32 in_value = static_cast<uint32>(std::max(0.f, kInFloats[jj][ii]));
-      uint32 out_value = static_cast<uint32>(std::max(0.f, out_floats[jj][ii]));
+      uint32_t in_value = static_cast<uint32_t>(std::max(0.f, kInFloats[jj][ii]));
+      uint32_t out_value = static_cast<uint32_t>(std::max(0.f, out_floats[jj][ii]));
       EXPECT_EQ(in_value, out_value);
     }
   }
@@ -359,7 +359,7 @@ TEST_F(UInt32FieldTest, TestBasic) {
   field->SetFromUInt32s(&kInUInt32s[0][0], kUInt32sStride, 0,
                         kUInt32sNumElements);
 
-  uint32 out_uint32s[kUInt32sNumElements][kUInt32sNumComponents];
+  uint32_t out_uint32s[kUInt32sNumElements][kUInt32sNumComponents];
   memset(&out_uint32s, 0, sizeof(out_uint32s));
   UInt32Field* uint32_field = down_cast<UInt32Field*>(field);
   uint32_field->GetAsUInt32s(0, &out_uint32s[0][0], kUInt32sStride,
@@ -444,7 +444,7 @@ TEST_F(UByteNFieldTest, TestBasic) {
   ASSERT_TRUE(field->IsA(UByteNField::GetApparentClass()));
   ASSERT_TRUE(field->IsA(Field::GetApparentClass()));
 
-  EXPECT_EQ(field->GetFieldComponentSize(), sizeof(uint8));  // NOLINT
+  EXPECT_EQ(field->GetFieldComponentSize(), sizeof(uint8_t));  // NOLINT
 
   ASSERT_TRUE(buffer()->AllocateElements(kFloatsNumElements));
   field->SetFromFloats(&kInFloats[0][0], kFloatsStride, 0, kFloatsNumElements);
@@ -473,7 +473,7 @@ TEST_F(UByteNFieldTest, TestBasic) {
   for (unsigned jj = 0; jj < kUInt32sNumElements; ++jj) {
     for (unsigned ii = 0; ii < kUByteNsNumComponents; ++ii) {
       float check =
-          static_cast<float>(std::min<uint32>(255, kInUInt32s[jj][ii])) /
+          static_cast<float>(std::min<uint32_t>(255, kInUInt32s[jj][ii])) /
           255.0f;
       EXPECT_EQ(check, out_floats[jj][ii]);
     }
@@ -481,7 +481,7 @@ TEST_F(UByteNFieldTest, TestBasic) {
 
   field->SetFromUByteNs(&kInUByteNs[0][0], kUByteNsStride, 0,
                         kUByteNsNumElements);
-  uint8 out_ubytens[kUByteNsNumElements][kUByteNsNumComponents];
+  uint8_t out_ubytens[kUByteNsNumElements][kUByteNsNumComponents];
   memset(&out_ubytens, 0, sizeof(out_ubytens));
   down_cast<UByteNField*>(field)->GetAsUByteNs(
       0, &out_ubytens[0][0], kUByteNsStride, kUByteNsNumElements);

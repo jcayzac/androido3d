@@ -36,7 +36,7 @@
 
 #include "core/cross/performance_timer.h"
 
-#include "base/logging.h"
+#include "base/cross/log.h"
 
 namespace o3d {
 
@@ -75,14 +75,14 @@ double PerformanceTimer::GetElapsedTime() {
   return static_cast<float>(accum_time_ * 1.e-6);
 #else
   Nanoseconds ns = AbsoluteToNanoseconds(accum_time_);
-  uint64 ns64 = UnsignedWideToUInt64(ns);
+  uint64_t ns64 = UnsignedWideToUInt64(ns);
 
   return static_cast<double>(ns64) * 0.000000001;
 #endif
 }
 
 void PerformanceTimer::Print() {
-  LOG(INFO) << name_.c_str() << " " << GetElapsedTime() << " seconds";
+  O3D_LOG(INFO) << name_.c_str() << " " << GetElapsedTime() << " seconds";
 }
 
 void PerformanceTimer::StopAndPrint() {

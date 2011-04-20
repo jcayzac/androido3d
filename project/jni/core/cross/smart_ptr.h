@@ -35,7 +35,7 @@
 #ifndef O3D_CORE_CROSS_SMART_PTR_H_
 #define O3D_CORE_CROSS_SMART_PTR_H_
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 namespace o3d {
 
@@ -61,7 +61,7 @@ class RefCounted {
 
  private:
   mutable int reference_count_;
-  DISALLOW_COPY_AND_ASSIGN(RefCounted);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RefCounted);
 };
 
 

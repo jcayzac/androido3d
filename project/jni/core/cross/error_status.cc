@@ -31,6 +31,7 @@
 
 
 #include "core/cross/error_status.h"
+#include <sstream>
 
 namespace o3d {
 
@@ -50,22 +51,23 @@ IErrorStatus::ErrorCallback* ErrorStatus::Exchange(ErrorCallback* callback) {
 }
 
 #ifndef NDEBUG
-void ErrorStatus::SetLastError(const String& error, const char *file,
+void ErrorStatus::SetLastError(const std::string& error, const char *file,
     int line) {
   if (log_to_file_) {
-//    logging::LogMessage(file, line, ERROR).stream() << error;
-    LOG_MANUAL(ERROR, file, line) << error;
+    std::stringstream ss;
+    ss << "[" << file << ":" << line << "] ";
+    O3D_LOG_NAKED(ERROR) << ss.str() << error;
   }
   SetLastError(error);
 }
 #endif
 
-void ErrorStatus::SetLastError(const String& error) {
+void ErrorStatus::SetLastError(const std::string& error) {
   error_string_ = error;
   error_callback_manager_.Run(error_string_);
 }
 
-const String& ErrorStatus::GetLastError() const {
+const std::string& ErrorStatus::GetLastError() const {
   return error_string_;
 }
 
@@ -82,8 +84,8 @@ ErrorCollector::~ErrorCollector() {
   error_status_->Exchange(old_callback_);
 }
 
-void ErrorCollector::Run(const String& error) {
-  errors_ += (errors_.empty() ? String("") : String("\n")) + error;
+void ErrorCollector::Run(const std::string& error) {
+  errors_ += (errors_.empty() ? std::string("") : std::string("\n")) + error;
 }
 
 ErrorSuppressor::ErrorSuppressor(ServiceLocator* service_locator)

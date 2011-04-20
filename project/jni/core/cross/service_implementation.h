@@ -35,7 +35,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 #include "core/cross/service_locator.h"
 
 namespace o3d {
@@ -64,7 +64,7 @@ class ServiceImplementation {
  private:
   ServiceLocator* service_locator_;
   Interface* service_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceImplementation);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ServiceImplementation);
 };
 }  // namespace o3d
 

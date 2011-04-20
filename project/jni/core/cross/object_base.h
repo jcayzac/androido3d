@@ -58,13 +58,13 @@
 #define O3D_OBJECT_BASE_DECL_CLASS(CLASS, BASE)                          \
  public:                                                                 \
   static const ObjectBase::Class *GetApparentClass() { return &class_; } \
-  static const String GetApparentClassName() {                           \
+  static const std::string GetApparentClassName() {                           \
     return class_.name();                                                \
   }                                                                      \
   virtual const ObjectBase::Class *GetClass() const {                    \
     return GetApparentClass();                                           \
   }                                                                      \
-  virtual String GetClassName() const {                                  \
+  virtual std::string GetClassName() const {                                  \
     return GetApparentClass()->name();                                   \
   }                                                                      \
  private:                                                                \
@@ -189,7 +189,7 @@ class ObjectBase : public RefCounted {
 
   // Returns whether a class derives from a base class by class name
   static bool ClassIsAClassName(const Class* derived,
-                                const String& class_name);
+                                const std::string& class_name);
 
   // Returns the class descriptor for this instance.
   virtual const Class *GetClass() const {
@@ -197,7 +197,7 @@ class ObjectBase : public RefCounted {
   }
 
   // Returns the class name for this instance.
-  virtual String GetClassName() const {
+  virtual std::string GetClassName() const {
     return GetApparentClass()->name();
   }
 
@@ -209,7 +209,7 @@ class ObjectBase : public RefCounted {
 
   // Returns whether this instance "is a" another type by class name (its class
   // derives from the other class).
-  bool IsAClassName(const String& class_name) {
+  bool IsAClassName(const std::string& class_name) {
     return ClassIsAClassName(GetClass(), class_name);
   }
 

@@ -16,6 +16,7 @@
 
 #include "extra/cross/ray_primitive_intersection.h"
 #include <float.h>
+#include <cmath>
 
 namespace o3d{
 namespace extra {

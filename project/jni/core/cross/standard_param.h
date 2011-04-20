@@ -156,7 +156,7 @@ template <Semantic S> class StandardParamMatrix4 : public ParamMatrix4 {
 
  private:
   TransformationContext* transformation_context_;
-  DISALLOW_COPY_AND_ASSIGN(StandardParamMatrix4<S>);
+  O3D_DISALLOW_COPY_AND_ASSIGN(StandardParamMatrix4<S>);
 };
 
 #undef O3D_STANDARD_ANNOTATION_ENTRY

@@ -55,7 +55,7 @@ LocalTriangulator::Vertex* LocalTriangulator::Triangle::NextVertex(
     LocalTriangulator::Vertex* cur,
     bool ccw) {
   int idx = IndexForVertex(cur);
-  DCHECK(idx >= 0);
+  O3D_ASSERT(idx >= 0);
   if (ccw) {
     ++idx;
   } else {
@@ -274,12 +274,12 @@ void LocalTriangulator::Triangulate(bool compute_interior_vertices,
 }
 
 void LocalTriangulator::AddTriangle(Vertex* v0, Vertex* v1, Vertex* v2) {
-  DCHECK(num_triangles_ < 3);
+  O3D_ASSERT(num_triangles_ < 3);
   triangles_[num_triangles_++].SetVertices(v0, v1, v2);
 }
 
 void LocalTriangulator::AddInteriorVertex(Vertex* v) {
-  DCHECK(num_interior_vertices_ < 4);
+  O3D_ASSERT(num_interior_vertices_ < 4);
   interior_vertices_[num_interior_vertices_++] = v;
   v->set_marked(true);
 }

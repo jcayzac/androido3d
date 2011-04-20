@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "build/build_config.h"
-#if defined(O3D_IMPORT_DECOMPRESS_DXT)
+#include "base/cross/config.h"
+#if defined(O3D_DECOMPRESS_DXT)
   #include "libtxc_dxtn/files/txc_dxtn.h"
 #endif
 
@@ -48,33 +48,31 @@
 
 // This file contains the image codec operations for DDS files.
 
-#include <stdio.h>
+#include "core/cross/error.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/ddsurfacedesc.h"
 #include "utils/cross/file_path_utils.h"
-#include "base/file_util.h"
+#include "base/cross/file_util.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
-
-using file_util::OpenFile;
-using file_util::CloseFile;
+#include <cstring>
 
 namespace o3d {
 
 // LoadFromDDSFile -------------------------------------------------------------
 
 // A function that flips a DXTC block.
-typedef void (* FlipBlockFunction)(uint8 *block);
+typedef void (* FlipBlockFunction)(uint8_t *block);
 
 // Flips a full DXT1 block in the y direction.
-static void FlipDXT1BlockFull(uint8 *block) {
+static void FlipDXT1BlockFull(uint8_t *block) {
   // A DXT1 block layout is:
   // [0-1] color0.
   // [2-3] color1.
   // [4-7] color bitmap, 2 bits per pixel.
   // So each of the 4-7 bytes represents one line, flipping a block is just
   // flipping those bytes.
-  uint8 tmp = block[4];
+  uint8_t tmp = block[4];
   block[4] = block[7];
   block[7] = tmp;
   tmp = block[5];
@@ -83,21 +81,21 @@ static void FlipDXT1BlockFull(uint8 *block) {
 }
 
 // Flips the first 2 lines of a DXT1 block in the y direction.
-static void FlipDXT1BlockHalf(uint8 *block) {
+static void FlipDXT1BlockHalf(uint8_t *block) {
   // See layout above.
-  uint8 tmp = block[4];
+  uint8_t tmp = block[4];
   block[4] = block[5];
   block[5] = tmp;
 }
 
 // Flips a full DXT3 block in the y direction.
-static void FlipDXT3BlockFull(uint8 *block) {
+static void FlipDXT3BlockFull(uint8_t *block) {
   // A DXT3 block layout is:
   // [0-7]  alpha bitmap, 4 bits per pixel.
   // [8-15] a DXT1 block.
 
   // We can flip the alpha bits at the byte level (2 bytes per line).
-  uint8 tmp = block[0];
+  uint8_t tmp = block[0];
   block[0] = block[6];
   block[6] = tmp;
   tmp = block[1];
@@ -115,9 +113,9 @@ static void FlipDXT3BlockFull(uint8 *block) {
 }
 
 // Flips the first 2 lines of a DXT3 block in the y direction.
-static void FlipDXT3BlockHalf(uint8 *block) {
+static void FlipDXT3BlockHalf(uint8_t *block) {
   // See layout above.
-  uint8 tmp = block[0];
+  uint8_t tmp = block[0];
   block[0] = block[2];
   block[2] = tmp;
   tmp = block[1];
@@ -127,7 +125,7 @@ static void FlipDXT3BlockHalf(uint8 *block) {
 }
 
 // Flips a full DXT5 block in the y direction.
-static void FlipDXT5BlockFull(uint8 *block) {
+static void FlipDXT5BlockFull(uint8_t *block) {
   // A DXT5 block layout is:
   // [0]    alpha0.
   // [1]    alpha1.
@@ -170,7 +168,7 @@ static void FlipDXT5BlockFull(uint8 *block) {
 }
 
 // Flips the first 2 lines of a DXT5 block in the y direction.
-static void FlipDXT5BlockHalf(uint8 *block) {
+static void FlipDXT5BlockHalf(uint8_t *block) {
   // See layout above.
   unsigned int line_0_1 = block[2] + 256 * (block[3] + 256 * block[4]);
   unsigned int line_1_0 = ((line_0_1 & 0x000fff) << 12) |
@@ -186,10 +184,10 @@ static void FlipDXTCImage(unsigned int width,
                           unsigned int height,
                           unsigned int levels,
                           Texture::Format format,
-                          uint8 *data) {
-  DCHECK(image::CheckImageDimensions(width, height));
+                          uint8_t *data) {
+  O3D_ASSERT(image::CheckImageDimensions(width, height));
   // Height must be a power-of-two.
-  DCHECK_EQ(height & (height - 1), 0u);
+  O3D_ASSERT((height & (height - 1)) == 0u);
   FlipBlockFunction full_block_function = NULL;
   FlipBlockFunction half_block_function = NULL;
   unsigned int block_bytes = 0;
@@ -210,7 +208,7 @@ static void FlipDXTCImage(unsigned int width,
       block_bytes = 16;
       break;
     default:
-      DLOG(FATAL) << "Not Reached";
+      O3D_NEVER_REACHED();
       return;
   }
   unsigned int mip_width = width;
@@ -236,10 +234,10 @@ static void FlipDXTCImage(unsigned int width,
       // corresponding one in the second half.
       // note that this is a no-op if mip_height is 4.
       unsigned int row_bytes = block_bytes * blocks_per_row;
-      scoped_array<uint8> temp_line(new uint8[row_bytes]);
+      ::o3d::base::scoped_array<uint8_t> temp_line(new uint8_t[row_bytes]);
       for (unsigned int y = 0; y < blocks_per_col / 2; ++y) {
-        uint8 *line1 = data + y * row_bytes;
-        uint8 *line2 = data + (blocks_per_col - y - 1) * row_bytes;
+        uint8_t *line1 = data + y * row_bytes;
+        uint8_t *line2 = data + (blocks_per_col - y - 1) * row_bytes;
         memcpy(temp_line.get(), line1, row_bytes);
         memcpy(line1, line2, row_bytes);
         memcpy(line2, temp_line.get(), row_bytes);
@@ -257,21 +255,21 @@ static void FlipBGRAImage(unsigned int width,
                           unsigned int height,
                           unsigned int levels,
                           Texture::Format format,
-                          uint8 *data) {
-  DCHECK(image::CheckImageDimensions(width, height));
-  DCHECK(format != Texture::DXT1 && format != Texture::DXT3 &&
+                          uint8_t *data) {
+  O3D_ASSERT(image::CheckImageDimensions(width, height));
+  O3D_ASSERT(format != Texture::DXT1 && format != Texture::DXT3 &&
          format != Texture::DXT5);
   size_t pixel_bytes = image::ComputeMipChainSize(1, 1, format, 1);
   unsigned int mip_width = width;
   unsigned int mip_height = height;
   // rows are at most as big as the first one.
-  scoped_array<uint8> temp_line(
-      new uint8[mip_width * pixel_bytes]);
+  ::o3d::base::scoped_array<uint8_t> temp_line(
+      new uint8_t[mip_width * pixel_bytes]);
   for (unsigned int i = 0; i < levels; ++i) {
     unsigned int row_bytes = pixel_bytes * mip_width;
     for (unsigned int y = 0; y < mip_height / 2; ++y) {
-      uint8 *line1 = data + y * row_bytes;
-      uint8 *line2 = data + (mip_height - y - 1) * row_bytes;
+      uint8_t *line1 = data + y * row_bytes;
+      uint8_t *line2 = data + (mip_height - y - 1) * row_bytes;
       memcpy(temp_line.get(), line1, row_bytes);
       memcpy(line1, line2, row_bytes);
       memcpy(line2, temp_line.get(), row_bytes);
@@ -283,7 +281,7 @@ static void FlipBGRAImage(unsigned int width,
   }
 }
 
-#if defined(O3D_IMPORT_DECOMPRESS_DXT)
+#if defined(O3D_DECOMPRESS_DXT)
 static bool DecompressDDSBitmaps(ServiceLocator* service_locator, BitmapRefArray& bitmaps) {
   bool is_cube_map(bitmaps.size() == 6);
   for (unsigned int i = 0; i < bitmaps.size(); i++) {
@@ -306,7 +304,7 @@ static bool DecompressDDSBitmaps(ServiceLocator* service_locator, BitmapRefArray
       case Texture::DXT1: fetch_2d_texel_rgba=fetch_2d_texel_rgba_dxt1; break;
       case Texture::DXT3: fetch_2d_texel_rgba=fetch_2d_texel_rgba_dxt3; break;
       case Texture::DXT5: fetch_2d_texel_rgba=fetch_2d_texel_rgba_dxt5; break;
-      default: DLOG(ERROR) << "Unsupported DDS compressed texture format " << src_format;
+      default: O3D_ERROR(service_locator) << "Unsupported DDS compressed texture format " << src_format;
                return false;
     }
     for (unsigned level = 0; level < src_bitmap->num_mipmaps(); ++level) {
@@ -318,12 +316,12 @@ static bool DecompressDDSBitmaps(ServiceLocator* service_locator, BitmapRefArray
         pitch /= 2;  // there are 4 rows in a block so I don't understand why 2
                      // works.
       }
-      uint8* data = src_bitmap->GetMipData(level);
+      uint8_t* data = src_bitmap->GetMipData(level);
       int width  = std::max(1U, src_bitmap->width() >> level);
       int height = std::max(1U, src_bitmap->height() >> level);
       int row_width = width * 4;
       int decompressed_size = width * height * 4;
-      scoped_array<uint8> decompressed_data(new uint8[decompressed_size]);
+      ::o3d::base::scoped_array<uint8_t> decompressed_data(new uint8_t[decompressed_size]);
       memset(decompressed_data.get(), 0, decompressed_size);
       if (is_compressed) {
         for (int src_y = 0; src_y < height; src_y++) {
@@ -332,7 +330,7 @@ static bool DecompressDDSBitmaps(ServiceLocator* service_locator, BitmapRefArray
             dest_y = height - src_y - 1;
           }
           for (int x = 0; x < width; ++x) {
-            uint8* ptr =
+            uint8_t* ptr =
                 &decompressed_data.get()[row_width * dest_y + 4 * x];
             fetch_2d_texel_rgba(pitch, data, x, src_y, ptr);
             // Need to swap the red and blue channels.
@@ -351,7 +349,7 @@ static bool DecompressDDSBitmaps(ServiceLocator* service_locator, BitmapRefArray
                  row_width);
         }
       } else {
-        DLOG(ERROR)
+        O3D_ERROR(service_locator)
             << "Unsupported DDS uncompressed texture format "
             << src_bitmap->format();
         return false;
@@ -383,23 +381,23 @@ void Bitmap::FlipVertically() {
 // DXT3 and DXT5.
 bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
                                MemoryReadStream *stream,
-                               const String &filename,
+                               const std::string &filename,
                                BitmapRefArray* bitmaps) {
   // Verify the file is a true .dds file
   char magic[4];
   size_t bytes_read = stream->Read(magic, sizeof(magic));
   if (bytes_read != sizeof(magic)) {
-    DLOG(ERROR) << "DDS magic header not read \"" << filename << "\"";
+    O3D_ERROR(service_locator) << "DDS magic header not read \"" << filename << "\"";
     return false;
   }
   if (std::strncmp(magic, "DDS ", 4) != 0) {
-    DLOG(ERROR) << "DDS magic header not recognized \"" << filename << "\"";
+    O3D_ERROR(service_locator) << "DDS magic header not recognized \"" << filename << "\"";
     return false;
   }
   // Get the DirectDraw Surface Descriptor
   DDSURFACEDESC2 dd_surface_descriptor;
   if (!stream->ReadAs<DDSURFACEDESC2>(&dd_surface_descriptor)) {
-    DLOG(ERROR) << "DDS header not read \"" << filename << "\"";
+    O3D_ERROR(service_locator) << "DDS header not read \"" << filename << "\"";
     return false;
   }
   const unsigned int kRequiredFlags =
@@ -408,7 +406,7 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
       DDSD_WIDTH |
       DDSD_PIXELFORMAT;
   if ((dd_surface_descriptor.dwFlags & kRequiredFlags) != kRequiredFlags) {
-    DLOG(ERROR) << "Required DDS flags are absent in \"" << filename << "\".";
+    O3D_ERROR(service_locator) << "Required DDS flags are absent in \"" << filename << "\".";
     return false;
   }
   // NOTE: Add permissible flags as appropriate here when supporting new
@@ -417,7 +415,7 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
       DDSD_MIPMAPCOUNT |
       DDSD_LINEARSIZE;
   if (dd_surface_descriptor.dwFlags & ~kValidFlags) {
-    DLOG(ERROR) << "Invalid DDS flags combination \"" << filename << "\".";
+    O3D_ERROR(service_locator) << "Invalid DDS flags combination \"" << filename << "\".";
     return false;
   }
   unsigned int mip_count = (dd_surface_descriptor.dwFlags & DDSD_MIPMAPCOUNT) ?
@@ -425,14 +423,14 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
   unsigned int dds_width = dd_surface_descriptor.dwWidth;
   unsigned int dds_height = dd_surface_descriptor.dwHeight;
   if (!image::CheckImageDimensions(dds_width, dds_height)) {
-    DLOG(ERROR) << "Failed to load " << filename
+    O3D_ERROR(service_locator) << "Failed to load " << filename
                 << ": dimensions are too large (" << dds_width
                 << ", " << dds_height << ").";
     return false;
   }
 
   if (mip_count > image::ComputeMipMapCount(dds_width, dds_height)) {
-    DLOG(ERROR) << "Failed to load " << filename
+    O3D_ERROR(service_locator) << "Failed to load " << filename
                 << ": mip count " << mip_count
                 << "is inconsistent with image dimensions ("
                 <<  dds_width<< ", " << dds_height << ").";
@@ -447,12 +445,12 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
   if (is_cubemap) {
     if ((dd_surface_descriptor.ddsCaps.dwCaps2 & DDSCAPS2_CUBEMAP_ALLFACES) !=
         DDSCAPS2_CUBEMAP_ALLFACES) {
-      DLOG(ERROR) << "DDS file \"" << filename
+      O3D_ERROR(service_locator) << "DDS file \"" << filename
                   << "\" is a cube map but doesn't have all the faces.";
       return false;
     }
     if (dds_width != dds_height) {
-      DLOG(ERROR) << "DDS file \"" << filename
+      O3D_ERROR(service_locator) << "DDS file \"" << filename
                   << "\" is a cube map but doesn't have square dimensions.";
       return false;
     }
@@ -487,8 +485,7 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
         break;
       }
       default : {
-        DLOG(ERROR) << "DDS format not DXT1, DXT3 or DXT5. \""
-                    << filename << "\"";
+        O3D_ERROR(service_locator) << "DDS format not DXT1, DXT3 or DXT5. \"" << filename << "\"";
         return false;
       }
     }
@@ -498,7 +495,7 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
       size_t expected_size =
           image::ComputeBufferSize(dds_width, dds_height, format);
       if (expected_size != dd_surface_descriptor.dwLinearSize) {
-        DLOG(ERROR) << "Advertised buffer size in \"" << filename
+        O3D_ERROR(service_locator) << "Advertised buffer size in \"" << filename
                     << "\" differs from expected size.";
         return false;
       }
@@ -511,7 +508,7 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
       // practice we need power-of-two restriction.
       if ((dds_width & (dds_width - 1)) != 0 ||
           (dds_height & (dds_height - 1)) != 0) {
-        DLOG(ERROR) << "Invalid dimensions in DXTC file \""
+        O3D_ERROR(service_locator) << "Invalid dimensions in DXTC file \""
                     << filename << "\": must be power-of-two.";
         return false;
       }
@@ -521,7 +518,7 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
       // Pixel format with alpha. Check that the alpha bits are at the expected
       // place.
       if (pixel_format.dwRGBAlphaBitMask != 0xff000000) {
-        DLOG(ERROR) << "unexpected alpha mask in DDS image format \""
+        O3D_ERROR(service_locator) << "unexpected alpha mask in DDS image format \""
                     << filename << "\"";
         return false;
       }
@@ -540,14 +537,14 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
       // RGB(A) format. Convert to BGR(A).
       rgb_to_bgr = true;
     } else {
-      DLOG(ERROR) << "unknown uncompressed DDS image format \""
+      O3D_ERROR(service_locator) << "unknown uncompressed DDS image format \""
                   << filename << "\"";
       return false;
     }
     // components per pixel in the file.
     components_per_pixel = add_filler_alpha ? 3 : 4;
     if (components_per_pixel * 8 != pixel_format.dwRGBBitCount) {
-      DLOG(ERROR) << "unexpected bit count in DDS image format \""
+      O3D_ERROR(service_locator) << "unexpected bit count in DDS image format \""
                   << filename << "\"";
       return false;
     }
@@ -572,25 +569,25 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
 
   for (unsigned int face = 0; face < num_bitmaps; ++face) {
     // Allocate and load bitmap data.
-    scoped_array<uint8> image_data(new uint8[face_size]);
+    ::o3d::base::scoped_array<uint8_t> image_data(new uint8_t[face_size]);
 
     char *data = reinterpret_cast<char*>(image_data.get());
     bytes_read = stream->Read(data, disk_face_size);
     if (bytes_read != disk_face_size) {
-      DLOG(ERROR) << "DDS failed to read image data \"" << filename << "\"";
+      O3D_ERROR(service_locator) << "DDS failed to read image data \"" << filename << "\"";
       return false;
     }
 
     // Do pixel conversions on non-DXT images.
     if (!is_dxtc) {
-      DCHECK(components_per_pixel == 3 || components_per_pixel == 4);
+      O3D_ASSERT(components_per_pixel == 3 || components_per_pixel == 4);
       unsigned int pixel_count = disk_face_size / components_per_pixel;
       // convert to four components per pixel if necessary
       if (add_filler_alpha) {
-        DCHECK_EQ(components_per_pixel, 3u);
+        O3D_ASSERT(components_per_pixel == 3u);
         image::XYZToXYZA(image_data.get(), pixel_count);
       } else {
-        DCHECK_EQ(components_per_pixel, 4u);
+        O3D_ASSERT(components_per_pixel == 4u);
       }
       if (rgb_to_bgr) {
         image::RGBAToBGRA(image_data.get(), pixel_count);
@@ -604,9 +601,9 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
     temp_bitmaps.push_back(bitmap);
   }
 
-#if defined(O3D_IMPORT_DECOMPRESS_DXT)
+#if defined(O3D_DECOMPRESS_DXT)
   if (!DecompressDDSBitmaps(service_locator, temp_bitmaps)) {
-    DLOG(ERROR) << "Failed to decompress DDS bitmaps";
+    O3D_ERROR(service_locator) << "Failed to decompress DDS bitmaps";
     return false;
   }
 #endif

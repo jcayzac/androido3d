@@ -158,7 +158,7 @@ class State : public ParamObject {
   //   state_name: name of the state
   // Returns:
   //   Pointer to param or NULL if no matching state.
-  Param* GetUntypedStateParam(const String& state_name);
+  Param* GetUntypedStateParam(const std::string& state_name);
 
   // Returns a Param for a given state. If the param does not already exist it
   // will be created. If the state_name is invalid it will return NULL.  If
@@ -170,7 +170,7 @@ class State : public ParamObject {
   // Returns:
   //   Pointer to param or NULL if no matching state.
   template<class T>
-  T* GetStateParam(const String& state_name) {
+  T* GetStateParam(const std::string& state_name) {
     return ObjectBase::rtti_dynamic_cast<T>(GetUntypedStateParam(state_name));
   }
 
@@ -193,7 +193,7 @@ class State : public ParamObject {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(State, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(State);
+  O3D_DISALLOW_COPY_AND_ASSIGN(State);
 };  // State
 
 class ParamState : public TypedRefParam<State> {

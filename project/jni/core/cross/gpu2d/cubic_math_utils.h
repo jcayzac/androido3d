@@ -34,7 +34,7 @@
 
 #include <math.h>
 
-#include "core/cross/math_types.h"
+#include "base/cross/types.h"
 
 namespace o3d {
 namespace gpu2d {

@@ -110,7 +110,7 @@ class Event {
         return "contextmenu";
       case TYPE_INVALID:
       default:
-        DCHECK(false);
+        O3D_ASSERT(false);
         return "invalid";
     }
   }
@@ -170,13 +170,13 @@ class Event {
 
 
   Type type() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return type_;
   }
   // This is generally used only for overriding a type on a copied event [to
   // create a click from a mouseup, for example].
   void set_type(Type type) {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     type_ = type;
   }
   const char *type_string() const {
@@ -186,12 +186,12 @@ class Event {
   // Button is valid on mousedown, mouseup, click, and dblclick.
   // It indicates which button actually caused the event.
   int button() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return button_valid_ ? button_ : 0;
   }
   void set_button(int button) {
-    DCHECK(valid_);
-    DCHECK(button >= 0 && button < NUM_BUTTONS);
+    O3D_ASSERT(valid_);
+    O3D_ASSERT(button >= 0 && button < NUM_BUTTONS);
     button_valid_ = true;
     button_ = button;
   }
@@ -199,12 +199,12 @@ class Event {
   void clear_button() { button_valid_ = false; }
 
   int modifier_state() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return modifier_state_valid_ ? modifier_state_ : 0;
   }
   void set_modifier_state(int state) {
-    DCHECK(valid_);
-    DCHECK(!(state & ~MODIFIER_MASK));
+    O3D_ASSERT(valid_);
+    O3D_ASSERT(!(state & ~MODIFIER_MASK));
     modifier_state_valid_ = true;
     modifier_state_ = state;
   }
@@ -212,33 +212,33 @@ class Event {
   void clear_modifier_state() { modifier_state_valid_ = false; }
 
   bool ctrl_key() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return modifier_state_valid_ ?
         (modifier_state_ & MODIFIER_CTRL) != 0 : false;
   }
   bool alt_key() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return modifier_state_valid_ ?
         (modifier_state_ & MODIFIER_ALT) != 0 : false;
   }
   bool shift_key() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return modifier_state_valid_ ?
         (modifier_state_ & MODIFIER_SHIFT) != 0 : false;
   }
   bool meta_key() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return modifier_state_valid_ ?
         (modifier_state_ & MODIFIER_META) != 0 : false;
   }
 
   // Key code is valid on keydown and keyup events only.
   int key_code() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return key_code_valid_ ? key_code_ : 0;
   }
   void set_key_code(int key_code) {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     key_code_valid_ = true;
     key_code_ = key_code;
   }
@@ -247,12 +247,12 @@ class Event {
 
   // Key char is valid on keypress events only.
   void set_char_code(int char_code) {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     char_code_valid_ = true;
     char_code_ = char_code;
   }
   int char_code() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return char_code_valid_ ? char_code_ : 0;
   }
   bool char_code_valid() const { return char_code_valid_; }
@@ -260,19 +260,19 @@ class Event {
 
   // Position is valid on mouse events only.
   int x() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return position_valid_ ? x_ : 0;
   }
   int y() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return position_valid_ ? y_ : 0;
   }
   int screen_x() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return position_valid_ ? screen_x_ : 0;
   }
   int screen_y() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return position_valid_ ? screen_y_ : 0;
   }
 
@@ -284,11 +284,11 @@ class Event {
   // for mousedown and mouseup, but the interface is simpler to require it on
   // all positioned events, and it might be useful.
   bool in_plugin() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return position_valid_ ? in_plugin_ : false;
   }
   void set_position(int x, int y, int screen_x, int screen_y, bool inPlugin) {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     position_valid_ = true;
     x_ = x;
     y_ = y;
@@ -303,16 +303,16 @@ class Event {
   // always be zero, as some platforms can only detect one axis at a time.
   // We'll want to add a z axis at some point.
   int delta_x() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return delta_valid_ ? delta_x_ : 0;
   }
   int delta_y() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return delta_valid_ ? delta_y_ : 0;
   }
   void set_delta(int delta_x, int delta_y) {
-    DCHECK(valid_);
-    DCHECK(!delta_x || !delta_y);
+    O3D_ASSERT(valid_);
+    O3D_ASSERT(!delta_x || !delta_y);
     delta_valid_ = true;
     delta_x_ = delta_x;
     delta_y_ = delta_y;
@@ -322,19 +322,19 @@ class Event {
 
   // Width, height, and fullscreen are valid on resize events only.
   int width() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return size_valid_ ? width_ : 0;
   }
   int height() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return size_valid_ ? height_ : 0;
   }
   bool fullscreen() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return size_valid_ ? fullscreen_ : false;
   }
   void set_size(int width, int height, bool fullscreen) {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     size_valid_ = true;
     width_ = width;
     height_ = height;

@@ -31,7 +31,7 @@
 
 
 #include "core/cross/error_stream_manager.h"
-#include "base/logging.h"
+#include "base/cross/log.h"
 
 namespace o3d {
 
@@ -53,9 +53,9 @@ ErrorStreamManager::ErrorStreamManager(ServiceLocator* service_locator,
 ErrorStreamManager::~ErrorStreamManager() {
   if (error_status_ != NULL)
 #ifdef NDEBUG
-    error_status_->SetLastError(String(stream_.str()));
+    error_status_->SetLastError(std::string(stream_.str()));
 #else
-    error_status_->SetLastError(String(stream_.str()), file_, line_);
+    error_status_->SetLastError(std::string(stream_.str()), file_, line_);
 #endif
 }
 }  // namespace o3d

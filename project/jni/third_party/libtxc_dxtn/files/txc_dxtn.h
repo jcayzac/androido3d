@@ -22,16 +22,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
-typedef uint32 GLenum;
-typedef int32  GLint;
-typedef int16  GLshort;
-typedef uint8  GLubyte;
-typedef uint16 GLushort;
-typedef uint32 GLuint;
+typedef uint32_t GLenum;
+typedef int32_t  GLint;
+typedef int16_t  GLshort;
+typedef uint8_t  GLubyte;
+typedef uint16_t GLushort;
+typedef uint32_t GLuint;
 typedef void   GLvoid;
-typedef uint8  GLboolean;
+typedef uint8_t  GLboolean;
 
 typedef GLubyte GLchan;
 #define UBYTE_TO_CHAN(b)  (b)

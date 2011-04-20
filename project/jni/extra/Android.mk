@@ -35,7 +35,6 @@ LOCAL_SRC_FILES := \
     primitive_picking.cc \
     collision_detection.cc \
     binary.cc \
-    file_resource.cc \
   )
 
 include $(O3D_BUILD_MODULE)

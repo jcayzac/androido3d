@@ -70,10 +70,10 @@ class DestinationBuffer : public VertexBuffer {
   friend class IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  scoped_array<char> buffer_;  // The actual data for this buffer.
+  ::o3d::base::scoped_array<char> buffer_;  // The actual data for this buffer.
 
   O3D_OBJECT_BASE_DECL_CLASS(DestinationBuffer, VertexBuffer);
-  DISALLOW_COPY_AND_ASSIGN(DestinationBuffer);
+  O3D_DISALLOW_COPY_AND_ASSIGN(DestinationBuffer);
 };
 
 

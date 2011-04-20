@@ -135,7 +135,7 @@ class Renderer {
 
     // Sets the index of this state handler.
     void set_index(int index) {
-      DLOG_ASSERT(index_ < 0);  // Can only be set once.
+      O3D_ASSERT(index_ < 0);  // Can only be set once.
       index_ = index;
     }
 
@@ -425,7 +425,7 @@ class Renderer {
   ServiceLocator* service_locator() const { return service_locator_; }
 
   // Returns the type of Param needed for a particular state.
-  const ObjectBase::Class* GetStateParamType(const String& state_name) const;
+  const ObjectBase::Class* GetStateParamType(const std::string& state_name) const;
 
   // Whether we are currently rendering (between StartRendering /
   // FinishRendering calls).
@@ -579,7 +579,7 @@ class Renderer {
   }
 
  protected:
-  typedef vector_map<String, StateHandler*> StateHandlerMap;
+  typedef vector_map<std::string, StateHandler*> StateHandlerMap;
   typedef std::vector<ParamVector> ParamVectorArray;
   typedef std::vector<State*> StateArray;
 
@@ -594,7 +594,7 @@ class Renderer {
   // Parameters:
   //   state_name: Name of the state.
   //   state_handler: a concrete state handler.
-  void AddStateHandler(const String& state_name, StateHandler* state_handler);
+  void AddStateHandler(const std::string& state_name, StateHandler* state_handler);
 
   // Gets a state handler based on a Param
   // Parameters:
@@ -815,7 +815,7 @@ class Renderer {
   // Maximum frames per second.
   int max_fps_;
 
-  DISALLOW_COPY_AND_ASSIGN(Renderer);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Renderer);
 };
 
 }  // namespace o3d

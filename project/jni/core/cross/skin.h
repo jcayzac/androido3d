@@ -174,7 +174,7 @@ class Skin : public NamedObject {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(Skin, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(Skin);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Skin);
 };
 
 // A Param that holds a weak reference to a Skin.
@@ -287,7 +287,7 @@ class SkinEval : public VertexSource {
 
    private:
     SkinEval* master_;
-    DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
+    O3D_DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
   };
 
   typedef std::vector<Matrix4> Matrix4Vector;
@@ -377,7 +377,7 @@ class SkinEval : public VertexSource {
   StreamInfoVectorVector output_stream_infos_;
 
   O3D_DECL_CLASS(SkinEval, VertexSource);
-  DISALLOW_COPY_AND_ASSIGN(SkinEval);
+  O3D_DISALLOW_COPY_AND_ASSIGN(SkinEval);
 };
 
 }  // namespace o3d

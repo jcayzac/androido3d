@@ -175,7 +175,7 @@ bool Transform::RemoveChild(Transform *child) {
                                                 Transform::Ref(child));
 
   // child should never be in the child array more than once.
-  DLOG_ASSERT(std::distance(end, child_array_.end()) <= 1);
+  O3D_ASSERT(std::distance(end, child_array_.end()) <= 1);
 
   // The child was never found.
   if (end == child_array_.end())
@@ -212,18 +212,18 @@ TransformArray Transform::GetTransformsInTree() const {
 namespace {
 class CompareTransformName {
  public:
-  explicit CompareTransformName(const String& n) : test_name_(n) {}
+  explicit CompareTransformName(const std::string& n) : test_name_(n) {}
   bool operator()(Transform*& transform) {
     return transform->name() == test_name_;
   }
  private:
-  String test_name_;
+  std::string test_name_;
 };
 }
 
 // Search for transforms by name in the subtree below this transform including
 // this transform.
-TransformArray Transform::GetTransformsByNameInTree(const String& name) const {
+TransformArray Transform::GetTransformsByNameInTree(const std::string& name) const {
   // Get all the transforms in the subtree
   TransformArray transforms = GetTransformsInTree();
   // Partition the container into two sections depending on whether the
@@ -259,7 +259,7 @@ void Transform::SetParent(Transform *new_parent) {
   // remove it from its current parent first.
   if (parent_ != NULL) {
     bool removed = parent_->RemoveChild(this);
-    DLOG_ASSERT(removed);
+    O3D_ASSERT(removed);
     if (!removed)
       return;
   }
@@ -273,7 +273,7 @@ void Transform::SetParent(Transform *new_parent) {
   // Add the transform as a child of its new parent.
   parent_ = new_parent;
   bool added = new_parent->AddChild(this);
-  DLOG_ASSERT(added);
+  O3D_ASSERT(added);
 
   // If we failed to add the child to the parent then leave the child transform
   // an orphan in order to avoid any inconsistencies in the scenegraph

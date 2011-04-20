@@ -34,7 +34,7 @@
 
 #include "core/cross/features.h"
 #include <vector>
-#include "base/string_util.h"
+#include "base/cross/string_util.h"
 #include "core/cross/types.h"
 
 namespace o3d {
@@ -71,7 +71,7 @@ void Features::ParseFeatures(const std::vector<std::string>& features,
         int version[4] = { 0, };
         std::vector<std::string> parts;
         SplitString(arguments[0], '.', &parts);
-        size_t num_parts = std::min(parts.size(), arraysize(version));
+        size_t num_parts = std::min(parts.size(), o3d_arraysize(version));
         for (size_t ii = 0; ii < num_parts; ++ii) {
           StringToInt(parts[ii], &version[ii]);
         }
@@ -103,7 +103,7 @@ void Features::ParseFeatures(const std::vector<std::string>& features,
   }
 }
 
-void Features::Init(const String& requested_features) {
+void Features::Init(const std::string& requested_features) {
   large_geometry_ = false;
   floating_point_textures_ = false;
 

@@ -14,26 +14,7 @@
  * limitations under the License.
  */
 
-// Sample code using O3D library.
-
-#include "build/build_config.h"
-
-#if defined(OS_ANDROID)
-#include <jni.h>
-#include <android/log.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#elif defined(TARGET_OS_IPHONE)
-#include "iOS/iphoneo3d/log.h"
-#import <OpenGLES/ES2/gl.h>
-#import <OpenGLES/ES2/glext.h>
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
-#include "base/logging.h"
+#include "base/cross/log.h"
 #include "core/cross/service_locator.h"
 #include "core/cross/evaluation_counter.h"
 #include "core/cross/client.h"
@@ -56,23 +37,18 @@
 #include "render_graph.h"
 #include "scene.h"
 
-#if defined(OS_ANDROID)
-#define  LOG_TAG    "libo3djni"
-#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#include <jni.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
-#elif defined(TARGET_OS_IPHONE)
-#define JNIEXPORT static
-#define JNICALL
-#define JNIEnv void
-#define jobject int
-#define jint int
-#define jfloat float
-#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-class DisplayWindowAndroid : public o3d::DisplayWindow {
+
+class fake_window_t: public o3d::DisplayWindow {
  public:
-  ~DisplayWindowAndroid() { }
+  ~fake_window_t() { }
 };
 
 struct ImgInfo {
@@ -84,10 +60,10 @@ struct ImgInfo {
 };
 
 static ImgInfo imgs[] = {
-  { true, 699, 387, 1, "/sdcard/androido3d/images/egg.png", },
-  { false, 26, 25, 2, "/sdcard/androido3d/images/gaugeback.png", },
-  { false, 26 + 6, 25 + 11, 1,"/sdcard/androido3d/images/1x1white.png", },
-  { false, 596, 16, 1, "/sdcard/androido3d/images/radar.png", },
+  {  true, 699, 387, 1, "/sdcard/androido3d/images/egg.png" },
+  { false,  26,  25, 2, "/sdcard/androido3d/images/gaugeback.png" },
+  { false,  32,  36, 1, "/sdcard/androido3d/images/1x1white.png" },
+  { false, 596,  16, 1, "/sdcard/androido3d/images/radar.png" }
 };
 
 class O3DManager {
@@ -112,16 +88,15 @@ class O3DManager {
   void CheckError();
 
  private:
-  DisplayWindowAndroid display_window_;
   o3d::ServiceLocator service_locator_;
   o3d::Renderer* renderer_;
-  scoped_ptr<o3d::EvaluationCounter> evaluation_counter_;
-  scoped_ptr<o3d::ClassManager> class_manager_;
-  scoped_ptr<o3d::ClientInfoManager> client_info_manager_;
-  scoped_ptr<o3d::ObjectManager> object_manager_;
-  scoped_ptr<o3d::Profiler> profiler_;
-  scoped_ptr<o3d::Features> features_;
-  scoped_ptr<o3d::Client> client_;
+  o3d::base::scoped_ptr<o3d::EvaluationCounter> evaluation_counter_;
+  o3d::base::scoped_ptr<o3d::ClassManager> class_manager_;
+  o3d::base::scoped_ptr<o3d::ClientInfoManager> client_info_manager_;
+  o3d::base::scoped_ptr<o3d::ObjectManager> object_manager_;
+  o3d::base::scoped_ptr<o3d::Profiler> profiler_;
+  o3d::base::scoped_ptr<o3d::Features> features_;
+  o3d::base::scoped_ptr<o3d::Client> client_;
 
   o3d::Transform* root_;
   o3d::Transform* hud_root_;
@@ -129,7 +104,7 @@ class O3DManager {
   o3d::Pack* pack_;
   o3d_utils::ViewInfo* main_view_;
   o3d_utils::ViewInfo* hud_view_;
-  o3d_utils::ImagePlane* images_[arraysize(imgs)];
+  o3d_utils::ImagePlane* images_[o3d_arraysize(imgs)];
   o3d_utils::Scene* scene_;
   o3d::ElapsedTimeTimer timer_;
   float time_;
@@ -156,14 +131,10 @@ bool O3DManager::Initialize(int width, int height) {
   // create a renderer device based on the current platform
   renderer_ = o3d::Renderer::CreateDefaultRenderer(&service_locator_);
 
-  LOGI("-----------------------------HERE1\n");
-
-  if (renderer_->Init(display_window_, false) != o3d::Renderer::SUCCESS) {
-    DLOG(ERROR) << "Window initialization failed!";
+  if (renderer_->Init(fake_window_t(), false) != o3d::Renderer::SUCCESS) {
+    O3D_LOG(ERROR) << "Window initialization failed!";
     return false;
   }
-
-  LOGI("-----------------------------HERE2\n");
 
   client_.reset(new o3d::Client(&service_locator_));
   client_->Init();
@@ -198,7 +169,7 @@ bool O3DManager::Initialize(int width, int height) {
       o3d::Point3(0.0f, 0.0f, 0.0f),
       o3d::Vector3(0.0f, 1.0f, 0.0f)));
 
-  for (size_t ii = 0; ii < arraysize(images_); ++ii) {
+  for (size_t ii = 0; ii < o3d_arraysize(images_); ++ii) {
     const ImgInfo& info = imgs[ii];
     images_[ii] = o3d_utils::ImagePlane::Create(
         pack_, pack_, hud_view_, info.filename, info.center);
@@ -256,7 +227,7 @@ bool O3DManager::OnContextRestored() {
   timer_.GetElapsedTimeAndReset();
 
   // Restore the resources.
-  return down_cast<o3d::RendererGLES2*>(renderer_)->OnContextRestored();
+  return o3d::down_cast<o3d::RendererGLES2*>(renderer_)->OnContextRestored();
 }
 
 void O3DManager::SetProjection(float width, float height) {
@@ -266,12 +237,12 @@ void O3DManager::SetProjection(float width, float height) {
 
   hud_view_->draw_context()->set_projection(
       o3d::Matrix4::orthographic(
-          0,
+          .0f,
           width,
           height,
-          0,
-          0.001,
-          1000));
+          .0f,
+          .001f,
+          1000.f));
 }
 
 bool O3DManager::ResizeViewport(int width, int height) {
@@ -379,20 +350,6 @@ bool O3DManager::Render() {
   client_->RenderClient(true);
   CheckError();
 
-  //{
-  //  static bool once = false;
-  //  if (once) {
-  //    return true;
-  //  }
-  //  once = true;
-  //}
-  //LOGI("transforms processed   : %d\n", renderer_->transforms_processed());
-  //LOGI("transforms culled      : %d\n", renderer_->transforms_culled());
-  //LOGI("draw elements processed: %d\n", renderer_->draw_elements_processed());
-  //LOGI("draw elements culled   : %d\n", renderer_->draw_elements_culled());
-  //LOGI("draw elements rendered : %d\n", renderer_->draw_elements_rendered());
-  //LOGI("primtives_rendered     : %d\n", renderer_->primitives_rendered());
-
   return true;
 }
 
@@ -407,69 +364,54 @@ o3d_utils::Scene* O3DManager::GetScene() {
 void O3DManager::CheckError() {
   const std::string& error = client_->GetLastError();
   if (!error.empty()) {
-    LOGI("================O3D ERROR====================\n%s", error.c_str());
+    O3D_LOG(ERROR) << error;
     client_->ClearLastError();
   }
 };
 
 static O3DManager* g_mgr = NULL;
 
-extern "C" {
-    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
-    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_surfaceCreated(JNIEnv * env, jobject obj);
-    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj);
-    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyDown(JNIEnv * env, jobject obj,  jint keycode);
-    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, jobject obj,  jint keycode);
-    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
-        jint x, jint y, jfloat directionX, jfloat directionY);
-    JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
-    		jfloat directionX, jfloat directionY);
-};
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_init(JNIEnv * env, jobject obj,  jint width, jint height) {
-  LOGI("init %dx%d", width, height);
+
+
+#define JNIFUNC(x) extern "C" JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_##x
+
+JNIFUNC(init) (JNIEnv * env, jobject obj,  jint width, jint height) {
   glViewport(0, 0, width, height);
-
-  if (g_mgr != NULL) {
-    g_mgr->ResizeViewport(width, height);
-  } else {
+  if (g_mgr) g_mgr->ResizeViewport(width, height);
+  else {
     g_mgr = new O3DManager();
     g_mgr->Initialize(width, height);
   }
 }
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_surfaceCreated(JNIEnv * env, jobject obj) {
+JNIFUNC(surfaceCreated) (JNIEnv * env, jobject obj) {
   // Called when the EGL surface is created, such as on boot and after a context loss.
-  LOGI("surfaceCreated\n");
   if (g_mgr) {
-    LOGI("Restoring Resources\n");
+    O3D_LOG(INFO) << "Restoring Resources";
     if (!g_mgr->OnContextRestored()) {
-      LOGI("Failed to restore resources");
+      O3D_LOG(ERROR) << "Failed to restore resources";
       g_mgr->CheckError();
     }
   }
 }
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_step(JNIEnv * env, jobject obj) {
+JNIFUNC(step) (JNIEnv * env, jobject obj) {
   g_mgr->Render();
 }
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyDown(JNIEnv * env, jobject obj,  jint keycode) {
-  LOG(INFO) << "onKeyDown: " << keycode;
+JNIFUNC(onKeyDown) (JNIEnv * env, jobject obj,  jint keycode) {
+  O3D_LOG(INFO) << "onKeyDown: " << keycode;
 }
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onKeyUp(JNIEnv * env, jobject obj,  jint keycode) {
-  LOG(INFO) << "onKeyUp: " << keycode;
+JNIFUNC(onKeyUp) (JNIEnv * env, jobject obj,  jint keycode) {
+  O3D_LOG(INFO) << "onKeyUp: " << keycode;
 }
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onTouch(JNIEnv * env, jobject obj,
-    jint x, jint y, jfloat directionX, jfloat directionY) {
-  LOG(INFO) << "onTouch: (" << x << ", " << y << ")";
+JNIFUNC(onTouch) (JNIEnv * env, jobject obj, jint x, jint y, jfloat directionX, jfloat directionY) {
+  O3D_LOG(INFO) << "onTouch: (" << x << ", " << y << ")";
 }
 
-JNIEXPORT void JNICALL Java_com_android_o3djni_O3DJNILib_onRoll(JNIEnv * env, jobject obj,
-		jfloat directionX, jfloat directionY) {
-	LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
+JNIFUNC(onRoll) (JNIEnv * env, jobject obj, jfloat directionX, jfloat directionY) {
+	O3D_LOG(INFO) << "onRoll: (" << directionX << ", " << directionY << ")";
 }
-
-

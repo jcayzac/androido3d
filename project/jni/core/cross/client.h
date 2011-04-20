@@ -36,15 +36,15 @@
 #ifndef O3D_CORE_CROSS_CLIENT_H_
 #define O3D_CORE_CROSS_CLIENT_H_
 
-#include "build/build_config.h"
+#include "base/cross/config.h"
 #include <map>
 #include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/cross/log.h"
+#include "base/cross/scoped_ptr.h"
 #include "core/cross/service_dependency.h"
 #include "core/cross/error_status.h"
 #include "core/cross/draw_list_manager.h"
@@ -67,7 +67,6 @@
 #include "core/cross/transform.h"
 
 namespace o3d {
-class MessageQueue;
 class Profiler;
 class State;
 class Pack;
@@ -162,7 +161,7 @@ class Client {
   //  name: Node name to look for.
   //  render_nodes: RenderNodeArray to receive list of nodes. It anything is in
   //                the array will be cleared.
-  void GetRenderNodesFast(const String& name,
+  void GetRenderNodesFast(const std::string& name,
                           RenderNodeArray* render_nodes) const;
 
   // Renders a subtree of the rendergraph.
@@ -197,11 +196,11 @@ class Client {
   //                   type occurs.
   //   type: Type of event this callback handles.
   void SetEventCallback(Event::Type type, EventCallback* render_callback);
-  void SetEventCallback(String type_name, EventCallback* render_callback);
+  void SetEventCallback(std::string type_name, EventCallback* render_callback);
 
   // Clears the callback for events of a given type.
   void ClearEventCallback(Event::Type type);
-  void ClearEventCallback(String type_name);
+  void ClearEventCallback(std::string type_name);
 
   // Automatically drops some events to throttle event bandwidth.
   void AddEventToQueue(const Event& event);
@@ -315,8 +314,8 @@ class Client {
   //   type_name: name of class to look for.
   // Returns:
   //   Array of raw pointers to the found objects.
-  ObjectBaseArray GetObjects(const String& name,
-                             const String& type_name) const {
+  ObjectBaseArray GetObjects(const std::string& name,
+                             const std::string& type_name) const {
     return object_manager_->GetObjects(name, type_name);
   }
 
@@ -350,17 +349,13 @@ class Client {
   //                   both Transforms and Shapes.
   // Returns:
   //   Array of Object Pointers.
-  ObjectBaseArray GetObjectsByClassName(const String& class_type_name) const {
+  ObjectBaseArray GetObjectsByClassName(const std::string& class_type_name) const {
     return object_manager_->GetObjectsByClassName(class_type_name);
   }
 
-  // Returns the socket address of the IMC message queue associated with the
-  // Client.
-  String GetMessageQueueAddress() const;
-
   // Error Methods ----------------
 
-  typedef Callback1<const String&> ErrorCallback;
+  typedef Callback1<const std::string&> ErrorCallback;
 
   // Sets the error callback. NOTE: The client takes ownership of the
   // ErrorCallback you pass in. It will be deleted if you call SetErrorCallback
@@ -377,7 +372,7 @@ class Client {
   void ClearErrorCallback();
 
   // Gets the last reported error.
-  const String& GetLastError() const;
+  const std::string& GetLastError() const;
 
   // Clears the stored last error.
   void ClearLastError();
@@ -398,11 +393,8 @@ class Client {
   // Resets the profiler, clearing out all data.
   void ProfileReset();
 
-  // Dumps all profiler state to a string.
-  String ProfileToString();
-
-  // Reutrns a data: URL of the client area in png format.
-  String ToDataURL();
+  // Returns a data: URL of the client area in png format.
+  std::string ToDataURL();
 
   // This class is intended to be used on the stack, such that the variable gets
   // incremented on scope entry and decremented on scope exit.  It's currently
@@ -411,18 +403,18 @@ class Client {
   class ScopedIncrement {
    public:
     explicit ScopedIncrement(Client *client) {
-      DCHECK(client);
+      O3D_ASSERT(client);
       client_ = client;
       ++client_->calls_;
-      DCHECK_GT(client_->calls_, 0);
+      O3D_ASSERT(client_->calls_ > 0);
     }
     int get() {
-      DCHECK(client_);  // Don't call this after decrement!
+      O3D_ASSERT(client_);  // Don't call this after decrement!
       return client_->calls_;
     }
     void decrement() {
       if (client_) {
-        DCHECK_GT(client_->calls_, 0);
+        O3D_ASSERT(client_->calls_ > 0);
         --client_->calls_;
         client_ = NULL;
       }
@@ -432,7 +424,7 @@ class Client {
     }
    private:
     Client *client_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedIncrement);
+    O3D_DISALLOW_COPY_AND_ASSIGN(ScopedIncrement);
   };
 
   // Offscreen rendering methods -------------------
@@ -448,12 +440,7 @@ class Client {
   void RenderClientInner(bool present, bool send_callback);
 
   // Gets a screenshot.
-  String GetScreenshotAsDataURL();
-
-  // MessageQueue that allows external code to communicate with the Client.
-#if !defined(O3D_NO_IPC)
-  scoped_ptr<MessageQueue> message_queue_;
-#endif
+  std::string GetScreenshotAsDataURL();
 
   ServiceLocator* service_locator_;
   ServiceDependency<ObjectManager> object_manager_;
@@ -522,7 +509,7 @@ class Client {
   RenderSurface::Ref offscreen_render_surface_;
   RenderDepthStencilSurface::Ref offscreen_depth_render_surface_;
 
-  DISALLOW_COPY_AND_ASSIGN(Client);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Client);
 };  // Client
 
 }  // namespace o3d

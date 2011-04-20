@@ -88,7 +88,7 @@ class Matrix4Scale : public ParamObject {
   SlaveParamMatrix4::Ref output_matrix_param_;
 
   O3D_DECL_CLASS(Matrix4Scale, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Matrix4Scale);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4Scale);
 };
 }  // namespace o3d
 

@@ -160,7 +160,7 @@ class Texture : public ParamObject {
   bool render_surfaces_enabled_;
 
   O3D_DECL_CLASS(Texture, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Texture);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Texture);
 };
 
 class ParamTexture : public TypedRefParam<Texture> {
@@ -175,7 +175,7 @@ class ParamTexture : public TypedRefParam<Texture> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamTexture, RefParamBase);
-  DISALLOW_COPY_AND_ASSIGN(ParamTexture);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamTexture);
 };
 
 }  // namespace o3d

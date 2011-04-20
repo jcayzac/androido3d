@@ -38,26 +38,10 @@
 
 #include <string>
 #include <vector>
-#include "base/file_path.h"
+#include "base/cross/file_path.h"
 #include "core/cross/types.h"
 
 namespace o3d {
-// TODO: Go through the process to add these to FilePath
-// itself in the Chromium depot.
-
-std::wstring FilePathToWide(const FilePath& input);
-FilePath WideToFilePath(const std::wstring& input);
-String FilePathToUTF8(const FilePath& input);
-FilePath UTF8ToFilePath(const String& input);
-FilePath::StringType UTF8ToFilePathStringType(const String& input);
-
-// On Windows, this is just the same as file_util::AbsolutePath.
-// On the Posix implementation of file_util::AbsolutePath,
-// realpath() is used, which only works if the path actually exists.
-// So, we try using AbsolutePath, and if it doesn't work, we fake it
-// by just prepending the cwd if it's not already an absolute path.
-bool AbsolutePath(FilePath* abs_path);
-
 // If the candidate is a child (a file or directory in a subdir of the
 // base directory or the base directory itself), then we figure out
 // the relative path to it.  If not, then we just return the absolute

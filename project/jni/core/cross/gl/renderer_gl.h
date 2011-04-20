@@ -38,7 +38,7 @@
 #define O3D_CORE_CROSS_GL_RENDERER_GL_H_
 
 #include "core/cross/gl/gl_headers.h"
-#include <build/build_config.h>
+#include "base/cross/config.h"
 #include "core/cross/renderer.h"
 #include "core/cross/renderer_platform.h"
 #include "core/cross/types.h"
@@ -138,11 +138,6 @@ class RendererGL : public Renderer {
                (mac_cgl_context_ == CGLGetCurrentContext())) {
       return true;
     }
-#elif defined(OS_WIN)
-    if ((gl_context_ != NULL) &&
-        (gl_context_ == wglGetCurrentContext())) {
-      return true;
-    }
 #elif defined(OS_LINUX)
     if ((context_ != NULL) &&
         (context_ == glXGetCurrentContext())) {
@@ -240,14 +235,6 @@ class RendererGL : public Renderer {
 
   // Indicates we're rendering fullscreen rather than in the plugin region.
   bool fullscreen_;
-
-
-#ifdef OS_WIN
-  // Handle to the GL device.
-  HWND window_;
-  HDC device_context_;
-  HGLRC gl_context_;
-#endif
 
 #ifdef OS_MACOSX
   AGLContext    mac_agl_context_;

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <base/cross/log.h>
 #include "native_view.h"
 #include <android/log.h>
 #include <math.h>
@@ -21,29 +22,14 @@
 #include <sstream>
 #include <fstream>
 #include <debug.h>
-#include <extra/cross/file_resource.h>
+#include <core/cross/file_resource.h>
 #include <extra/cross/bounding_boxes_extra.h>
 #define MAX_ANIM_DURATION 10.f
 
 class fake_window_t: public o3d::DisplayWindow {
-public:
+ public:
   ~fake_window_t() { }
 };
-
-class nano_logger_t {
- public:
-  nano_logger_t(android_LogPriority pri): mPriority(pri) { }
-  ~nano_logger_t() {
-    __android_log_print(mPriority, "O3DConditioner", mStream.str().c_str());
-  }
-  std::stringstream& operator()() { return mStream; }
- private:
-  android_LogPriority mPriority;
-  std::stringstream   mStream;
-};
-#define LOG_XXX(x, xxx) { nano_logger_t log(xxx); log() << "[" << __FILE__ << ":" << __LINE__ << "] (" << __PRETTY_FUNCTION__ << ")\n" << x; }
-#define LOG_ERROR(x) LOG_XXX(x, ANDROID_LOG_ERROR)
-#define LOG_INFO(x)  LOG_XXX(x, ANDROID_LOG_INFO)
 
 NativeView::NativeView(size_t width, size_t height)
 : mRenderer(o3d::Renderer::CreateDefaultRenderer(&mServiceLocator))
@@ -62,7 +48,7 @@ NativeView::NativeView(size_t width, size_t height)
 , mHeight(height)
 , mAngleY(.0f)
 {
-  LOG_INFO("Dimensions = " << width << "x" << height);
+  O3D_LOG(INFO) << "Dimensions = " << width << "x" << height;
   mRenderer->Init(fake_window_t(), false);
   mClient->Init();
   mPack = mClient->CreatePack();
@@ -71,19 +57,6 @@ NativeView::NativeView(size_t width, size_t height)
   mView->draw_context()->set_projection(o3d_utils::Camera::perspective(.5f, (float)mWidth/(float)mHeight, 10.f, 1000.f));
   mView->clear_buffer()->set_clear_color(o3d::Float4(.5f,1.f,.2f,.5f));
   mTimer.GetElapsedTimeAndReset();
-/*
-  o3d::State* state(mView->z_ordered_draw_pass_info()->state());
-  state->GetStateParam<o3d::ParamBoolean>(o3d::State::kAlphaBlendEnableParamName)->set_value(true);
-  state->GetStateParam<o3d::ParamBoolean>(o3d::State::kDitherEnableParamName)->set_value(true);
-
-  state = mView->performance_draw_pass_info()->state();
-  state->GetStateParam<o3d::ParamBoolean>(o3d::State::kDitherEnableParamName)->set_value(true);
-  state->GetStateParam<o3d::ParamInteger>(o3d::State::kCullModeParamName)->set_value(o3d::State::CULL_CW);
-  
-  state->GetStateParam<o3d::ParamBoolean>(o3d::State::kZEnableParamName)->set_value(true);
-  state->GetStateParam<o3d::ParamBoolean>(o3d::State::kZWriteEnableParamName)->set_value(true);
-  state->GetStateParam<o3d::ParamInteger>(o3d::State::kZComparisonFunctionParamName)->set_value(o3d::State::CMP_LESS);
-*/
 }
 
 NativeView::~NativeView() {
@@ -114,8 +87,6 @@ void NativeView::Render(bool animate) {
 }
 
 void NativeView::OnResized(size_t width, size_t height) {
-  LOG_INFO("Entering");
-  LOG_INFO("Dimensions = " << width << "x" << height);
   mWidth  = width;
   mHeight = height;
   mRenderer->Resize(mWidth, mHeight);
@@ -127,14 +98,10 @@ void NativeView::OnResized(size_t width, size_t height) {
     mView->draw_context()->set_projection(camera_info->projection);
     delete camera_info;
   }
-
-  LOG_INFO("Leaving");
 }
 
 void NativeView::OnContextRestored() {
-  LOG_INFO("Entering");
-  down_cast<o3d::RendererGLES2*>(mRenderer)->OnContextRestored();
-  LOG_INFO("Leaving");
+  o3d::down_cast<o3d::RendererGLES2*>(mRenderer)->OnContextRestored();
 }
 
 bool NativeView::LoadScene(const std::string& path) {
@@ -146,13 +113,10 @@ bool NativeView::LoadBinaryScene(const std::string& path) {
 }
 
 bool NativeView::LoadScene(const std::string& path, bool binary) {
-  LOG_INFO("Entering");
-  LOG_INFO("Path = " << path);
   o3d_utils::Scene* newScene = 0;
   if (binary) newScene = o3d_utils::Scene::LoadBinaryScene(&*mClient, mView, path, *this);
   else newScene = o3d_utils::Scene::LoadScene(&*mClient, mView, path, 0);
   if (!newScene) {
-    LOG_INFO("Leaving");
     return false;
   }
 
@@ -161,15 +125,13 @@ bool NativeView::LoadScene(const std::string& path, bool binary) {
 }
 
 bool NativeView::ExportScene(const std::string& path) {
-  LOG_INFO("Entering");
-  LOG_INFO("Path = " << path);
   if (!mCurrentScene) {
-    LOG_ERROR("Nothing to export");
+    O3D_LOG(ERROR) << "Nothing to export";
     return false;
   }
   std::ofstream ofs(path.c_str(), std::ios::binary|std::ios::trunc);
   if (!ofs.is_open()) {
-    LOG_ERROR("Can't open [" << path << "] for writing");
+    O3D_LOG(ERROR) << "Can't open [" << path << "] for writing";
     return false;
   }
   // Reset everything so that time-bound params are in a proper state
@@ -181,7 +143,7 @@ bool NativeView::ExportScene(const std::string& path) {
   const bool success(o3d::extra::SaveToBinaryStream(ofs, *mCurrentScene->root()));
   ofs.close();
   if (!success) {
-    LOG_ERROR("Couldn't export the model");
+    O3D_LOG(ERROR) << "Couldn't export the model";
   }
   return success;
 }
@@ -218,11 +180,10 @@ void NativeView::SetCurrentScene(o3d_utils::Scene* newScene) {
   }
 }
 
-o3d::extra::ExternalResource::Ref NativeView::GetExternalResourceForURI(o3d::Pack& pack, const std::string& uri) {
-  LOG_INFO("Requesting resource for URI = [" << uri << "]");
-  o3d::extra::ExternalResource::Ref res(new o3d::extra::FileResource(uri));
+o3d::ExternalResource::Ref NativeView::GetExternalResourceForURI(o3d::Pack& pack, const std::string& uri) {
+  o3d::ExternalResource::Ref res(new o3d::FileResource(uri));
   if (!res->data())
-    return o3d::extra::ExternalResource::Ref();
+    return o3d::ExternalResource::Ref();
   return res;
 }
 
@@ -232,16 +193,12 @@ o3d::extra::ExternalResource::Ref NativeView::GetExternalResourceForURI(o3d::Pac
 #define JNIFUNC(x, y) extern "C" JNIEXPORT x JNICALL Java_com_tonchidot_O3DConditioner_NativeView_##y
 
 JNIFUNC(jlong, createPeer) (JNIEnv* env, jclass, jlong width, jlong height) {
-  LOG_INFO("Entering");
   NativeView* peer = new NativeView((size_t) width, (size_t) height);
-  LOG_INFO("Leaving");
   return (jlong) peer;
 }
 
 JNIFUNC(void, destroyPeer) (JNIEnv* env, jclass, jlong handle) {
-  LOG_INFO("Entering");
   delete reinterpret_cast<NativeView*>(handle);
-  LOG_INFO("Leaving");
 }
 
 JNIFUNC(void, render) (JNIEnv* env, jclass, jlong handle) {
@@ -249,41 +206,31 @@ JNIFUNC(void, render) (JNIEnv* env, jclass, jlong handle) {
 }
 
 JNIFUNC(void, onResized) (JNIEnv* env, jclass, jlong handle, jlong width, jlong height) {
-  LOG_INFO("Entering");
   reinterpret_cast<NativeView*>(handle)->OnResized((size_t) width, (size_t) height);
-  LOG_INFO("Leaving");
 }
 
 JNIFUNC(void, onContextRestored) (JNIEnv* env, jclass, jlong handle) {
-  LOG_INFO("Entering");
   reinterpret_cast<NativeView*>(handle)->OnContextRestored();
-  LOG_INFO("Leaving");
 }
 
 JNIFUNC(jboolean, loadScene) (JNIEnv* env, jclass, jlong handle, jstring path) {
-  LOG_INFO("Entering");
   const char *path_utf8 = env->GetStringUTFChars(path, 0);
   const bool result(reinterpret_cast<NativeView*>(handle)->LoadScene(path_utf8));
   env->ReleaseStringUTFChars(path, path_utf8);
-  LOG_INFO("Leaving (" << result << ")");
   return (jboolean) result;
 }
 
 JNIFUNC(jboolean, loadBinaryScene) (JNIEnv* env, jclass, jlong handle, jstring path) {
-  LOG_INFO("Entering");
   const char *path_utf8 = env->GetStringUTFChars(path, 0);
   const bool result(reinterpret_cast<NativeView*>(handle)->LoadBinaryScene(path_utf8));
   env->ReleaseStringUTFChars(path, path_utf8);
-  LOG_INFO("Leaving (" << result << ")");
   return (jboolean) result;
 }
 
 JNIFUNC(jboolean, exportScene) (JNIEnv* env, jclass, jlong handle, jstring path) {
-  LOG_INFO("Entering");
   const char *path_utf8 = env->GetStringUTFChars(path, 0);
   const bool result(reinterpret_cast<NativeView*>(handle)->ExportScene(path_utf8));
   env->ReleaseStringUTFChars(path, path_utf8);
-  LOG_INFO("Leaving (" << result << ")");
   return (jboolean) result;
 }
 

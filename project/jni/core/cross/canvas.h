@@ -89,24 +89,24 @@ class Canvas : public ParamObject {
   // Draws the text, with origin at (x,y), using the specified paint. The origin
   // is interpreted based on the textAlign property in the paint.
   // Parameters:
-  //   text: String of text to be drawn
+  //   text: std::string of text to be drawn
   //   x: The x coordinate for the text origin
   //   y: The y coordinate for the text origin
   //   paint: The CanvasPaint object that specifies the text style, size, etc
-  void DrawText(const String& text, float x, float y, CanvasPaint* paint);
+  void DrawText(const std::string& text, float x, float y, CanvasPaint* paint);
 
   // Draws the text with its baseline along the
   // specified path. The paint's textAlign property determines where along the
   // path to start the text.  The path must contain at least two positions.
   // Parameters:
-  //  text: String of text to be drawn
+  //  text: std::string of text to be drawn
   //  positions: An array of x,y positions making up the path.
   //  horizonal_offset: The distance along the path to add to the text starting
   //                    position.
   //  vertical_offset: The distance above(-) or below(+) the path to position
   //                   the text.
   //  paint: The CanvasPaint object that specifies the text style, size, etc.
-  void DrawTextOnPath(const String& text,
+  void DrawTextOnPath(const std::string& text,
                       std::vector<Float2> positions,
                       float horizontal_offset,
                       float vertical_offset,
@@ -115,7 +115,7 @@ class Canvas : public ParamObject {
   // Draws the contents of the specified texture onto the canvas surface.
   // The bottom left corner of the bitmap will be at (x, y) and transformed by
   // the current matrix.
-  // DEPRECATED
+  // O3D_DEPRECATED
   // Parameters:
   //   texture: Pointer to Texture2D object where the bitmap is extracted from
   //   left: The position of the left side of the bitmap.
@@ -154,7 +154,7 @@ class Canvas : public ParamObject {
   // Copies the contents of the Canvas bitmap to a Texture2D object.  The
   // texture object must have the same size as the canvas and a ARGB8 or XRGB8
   // format.  All mip levels of the the texture will be filled.
-  // DEPRECATED
+  // O3D_DEPRECATED
   // Parameters:
   //   texture_2d:  The texture object to copy the bitmap to.
   bool CopyToTexture(Texture2D* texture_2d) const;
@@ -166,8 +166,8 @@ class Canvas : public ParamObject {
   int height() const { return height_; }
 
   // Returns the actual pixels of the canvas
-  const uint8* GetPixelData(int x, int y) const {
-    return static_cast<const uint8*>(sk_bitmap_.getPixels()) +
+  const uint8_t* GetPixelData(int x, int y) const {
+    return static_cast<const uint8_t*>(sk_bitmap_.getPixels()) +
            y * GetPitch() + x * 4;
   }
 
@@ -195,7 +195,7 @@ class Canvas : public ParamObject {
   bool flip_;
 
   O3D_DECL_CLASS(Canvas, ParamObject)
-  DISALLOW_COPY_AND_ASSIGN(Canvas);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Canvas);
 };
 
 

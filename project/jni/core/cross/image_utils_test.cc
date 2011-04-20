@@ -33,7 +33,7 @@
 #include "core/cross/client.h"
 #include "core/cross/image_utils.h"
 #include "tests/common/win/testing_common.h"
-#include "base/file_path.h"
+#include "base/cross/file_path.h"
 #include "utils/cross/file_path_utils.h"
 #include "core/cross/math_utilities.h"
 
@@ -41,7 +41,7 @@ namespace o3d {
 
 namespace {
 
-void ConvertToHalf(const float* src, size_t count, uint16* dst) {
+void ConvertToHalf(const float* src, size_t count, uint16_t* dst) {
   for (; count != 0; --count) {
     *dst++ = Vectormath::Aos::FloatToHalf(*src++);
   }
@@ -59,7 +59,7 @@ bool CompareFloats(const float* src_1, const float* src_2, size_t num_floats) {
   return true;
 }
 
-bool CompareHalfs(const uint16* src_1, const uint16* src_2, size_t num_floats) {
+bool CompareHalfs(const uint16_t* src_1, const uint16_t* src_2, size_t num_floats) {
   const float kEpsilon = 0.001f;
   for (; num_floats != 0; --num_floats) {
     float s1 = Vectormath::Aos::HalfToFloat(*src_1);
@@ -137,7 +137,7 @@ TEST_F(ImageTest, CanMakeMips) {
   EXPECT_FALSE(image::CanMakeMips(Texture::DXT5));
 };
 
-static const uint8 kScaleUPDataNPOT[] = {
+static const uint8_t kScaleUPDataNPOT[] = {
   // This is a 3x3 image.
   0x75, 0x58, 0x7b, 0x76,
   0x8a, 0x54, 0x85, 0x6f,
@@ -152,7 +152,7 @@ static const uint8 kScaleUPDataNPOT[] = {
   0x97, 0x87, 0x78, 0xa2,
 };
 
-static const uint8 kScaleUPDataPOT[] = {
+static const uint8_t kScaleUPDataPOT[] = {
   // This is the 4x4 scaled-up version of the above.
   0x75, 0x58, 0x7b, 0x76,
   0x8a, 0x54, 0x85, 0x6f,
@@ -188,7 +188,7 @@ TEST_F(ImageTest, ScaleUpToPOT) {
   ASSERT_EQ(sizeof(kScaleUPDataNPOT), src_size);
   size_t dst_size = image::ComputeBufferSize(kPOTWidth, kPOTHeight, format);
   ASSERT_EQ(sizeof(kScaleUPDataPOT), dst_size);
-  scoped_array<uint8> data(new uint8[dst_size]);
+  ::o3d::base::scoped_array<uint8_t> data(new uint8_t[dst_size]);
   ASSERT_TRUE(data.get() != NULL);
   // Check that scaling works when source and destination don't alias
   image::ScaleUpToPOT(kWidth, kHeight, format, kScaleUPDataNPOT, data.get(),
@@ -210,7 +210,7 @@ TEST_F(ImageTest, ScaleUpToPOT) {
 //    dds 3D textures
 
 
-static const uint8 kMipmapDataPOT[] = {
+static const uint8_t kMipmapDataPOT[] = {
   // This is a 4x4 image
   0x7D, 0xE4, 0x0F, 0xff, 0x71, 0x7B, 0x9C, 0xff,
   0xDD, 0xF0, 0x9D, 0xff, 0xFA, 0x08, 0x49, 0xff,
@@ -237,7 +237,7 @@ TEST_F(ImageTest, GenerateMipmapsPOTUInt8) {
   EXPECT_EQ(3u, mipmaps);
   size_t size = image::ComputeMipChainSize(kWidth, kHeight, format, mipmaps);
   ASSERT_EQ(sizeof(kMipmapDataPOT), size);
-  scoped_array<uint8> data(new uint8[size]);
+  ::o3d::base::scoped_array<uint8_t> data(new uint8_t[size]);
   ASSERT_TRUE(data.get() != NULL);
   // Copy first level into the buffer.
   size_t base_size = image::ComputeMipChainSize(kWidth, kHeight, format, 1);
@@ -289,8 +289,8 @@ TEST_F(ImageTest, GenerateMipmapsPOTFloat) {
       mip2,
       image::ComputeMipPitch(kFormat, 2, kWidth));
   // Check the result.
-  EXPECT_TRUE(CompareFloats(mip1, expected_mip1, arraysize(expected_mip1)));
-  EXPECT_TRUE(CompareFloats(mip2, expected_mip2, arraysize(expected_mip2)));
+  EXPECT_TRUE(CompareFloats(mip1, expected_mip1, o3d_arraysize(expected_mip1)));
+  EXPECT_TRUE(CompareFloats(mip2, expected_mip2, o3d_arraysize(expected_mip2)));
   EXPECT_EQ(mip1[2], kSentinel);
   EXPECT_EQ(mip2[1], kSentinel);
 }
@@ -310,24 +310,24 @@ TEST_F(ImageTest, GenerateMipmapsPOTHalf) {
     2.5f, 2.5f, 2.5f, 2.5f,
   };
 
-  uint16 original[arraysize(original_f)];
-  uint16 expected_mip1[arraysize(expected_mip1_f)];
-  uint16 expected_mip2[arraysize(expected_mip2_f)];
+  uint16_t original[o3d_arraysize(original_f)];
+  uint16_t expected_mip1[o3d_arraysize(expected_mip1_f)];
+  uint16_t expected_mip2[o3d_arraysize(expected_mip2_f)];
 
-  ConvertToHalf(original_f, arraysize(original_f), original);
-  ConvertToHalf(expected_mip1_f, arraysize(expected_mip1_f), expected_mip1);
-  ConvertToHalf(expected_mip2_f, arraysize(expected_mip2_f), expected_mip2);
+  ConvertToHalf(original_f, o3d_arraysize(original_f), original);
+  ConvertToHalf(expected_mip1_f, o3d_arraysize(expected_mip1_f), expected_mip1);
+  ConvertToHalf(expected_mip2_f, o3d_arraysize(expected_mip2_f), expected_mip2);
 
   const unsigned int kWidth = 4;
   const unsigned int kHeight = 1;
   const Texture::Format kFormat = Texture::ABGR16F;
   unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
   EXPECT_EQ(3u, mipmaps);
-  uint16 mip1[2 * 4 + 1];
-  uint16 mip2[1 * 4 + 1];
+  uint16_t mip1[2 * 4 + 1];
+  uint16_t mip2[1 * 4 + 1];
   // Put sentinels at the ends
   const float kSentinel = 123.12345f;
-  uint16 sentinel = Vectormath::Aos::FloatToHalf(kSentinel);
+  uint16_t sentinel = Vectormath::Aos::FloatToHalf(kSentinel);
   mip1[2 * 4] = sentinel;
   mip2[1 * 4] = sentinel;
   image::GenerateMipmap(
@@ -344,13 +344,13 @@ TEST_F(ImageTest, GenerateMipmapsPOTHalf) {
       mip2,
       image::ComputeMipPitch(kFormat, 2, kWidth));
   // Check the result.
-  EXPECT_TRUE(CompareHalfs(mip1, expected_mip1, arraysize(expected_mip1)));
-  EXPECT_TRUE(CompareHalfs(mip2, expected_mip2, arraysize(expected_mip2)));
+  EXPECT_TRUE(CompareHalfs(mip1, expected_mip1, o3d_arraysize(expected_mip1)));
+  EXPECT_TRUE(CompareHalfs(mip2, expected_mip2, o3d_arraysize(expected_mip2)));
   EXPECT_EQ(mip1[2 * 4], sentinel);
   EXPECT_EQ(mip2[1 * 4], sentinel);
 }
 
-static const uint8 kMipmapDataNPOT[] = {
+static const uint8_t kMipmapDataNPOT[] = {
   // This is a 7x7 image
   0x0d, 0x16, 0x68, 0x1b, 0xe6, 0x09, 0x89, 0x55,
   0xda, 0x28, 0x56, 0x55, 0x3e, 0x00, 0x6f, 0x16,
@@ -397,7 +397,7 @@ TEST_F(ImageTest, GenerateMipmapsNPOT) {
   EXPECT_EQ(3u, mipmaps);
   size_t size = image::ComputeMipChainSize(kWidth, kHeight, format, mipmaps);
   ASSERT_EQ(sizeof(kMipmapDataNPOT), size);
-  scoped_array<uint8> data(new uint8[size]);
+  ::o3d::base::scoped_array<uint8_t> data(new uint8_t[size]);
   ASSERT_TRUE(data.get() != NULL);
   // Copy first level into the buffer.
   size_t base_size = image::ComputeMipChainSize(kWidth, kHeight, format, 1);
@@ -478,24 +478,24 @@ TEST_F(ImageTest, LanczosScaleFloat) {
       0, 0, 1, 1,
       1);
   // Check the result.
-  EXPECT_TRUE(CompareFloats(mip1, expected_mip1, arraysize(expected_mip1)));
-  EXPECT_TRUE(CompareFloats(mip2, expected_mip2, arraysize(expected_mip2)));
+  EXPECT_TRUE(CompareFloats(mip1, expected_mip1, o3d_arraysize(expected_mip1)));
+  EXPECT_TRUE(CompareFloats(mip2, expected_mip2, o3d_arraysize(expected_mip2)));
   EXPECT_EQ(mip1[2], kSentinel);
   EXPECT_EQ(mip2[1], kSentinel);
 }
 
 TEST_F(ImageTest, LanczosScaleHalf) {
-  static const uint16 original[] = {
+  static const uint16_t original[] = {
     0x0000, 0x0000, 0x0000, 0x0000,
     0x4000, 0x4000, 0x4000, 0x4000,
     0x4200, 0x4200, 0x4200, 0x4200,
     0x4500, 0x4500, 0x4500, 0x4500,
   };
-  static const uint16 expected_mip1[] = {
+  static const uint16_t expected_mip1[] = {
     0x3abf, 0x3abf, 0x3abf, 0x3abf,
     0x4428, 0x4428, 0x4428, 0x4428,
   };
-  static const uint16 expected_mip2[] = {
+  static const uint16_t expected_mip2[] = {
     0x40ff, 0x40ff, 0x40ff, 0x40ff,
   };
 
@@ -504,11 +504,11 @@ TEST_F(ImageTest, LanczosScaleHalf) {
   const Texture::Format kFormat = Texture::ABGR16F;
   unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
   EXPECT_EQ(3u, mipmaps);
-  uint16 mip1[2 * 4 + 1];
-  uint16 mip2[1 * 4 + 1];
+  uint16_t mip1[2 * 4 + 1];
+  uint16_t mip2[1 * 4 + 1];
   // Put sentinels at the ends
   const float kSentinel = 123.12345f;
-  uint16 sentinel = Vectormath::Aos::FloatToHalf(kSentinel);
+  uint16_t sentinel = Vectormath::Aos::FloatToHalf(kSentinel);
   mip1[2 * 4] = sentinel;
   mip2[1 * 4] = sentinel;
   image::LanczosScale(
@@ -527,8 +527,8 @@ TEST_F(ImageTest, LanczosScaleHalf) {
       0, 0, 1, 1,
       4);
   // Check the result.
-  EXPECT_TRUE(CompareHalfs(mip1, expected_mip1, arraysize(expected_mip1)));
-  EXPECT_TRUE(CompareHalfs(mip2, expected_mip2, arraysize(expected_mip2)));
+  EXPECT_TRUE(CompareHalfs(mip1, expected_mip1, o3d_arraysize(expected_mip1)));
+  EXPECT_TRUE(CompareHalfs(mip2, expected_mip2, o3d_arraysize(expected_mip2)));
   EXPECT_EQ(mip1[2 * 4], sentinel);
   EXPECT_EQ(mip2[1 * 4], sentinel);
 }

@@ -7,3 +7,4 @@ LDFLAGS=-L${P}/usr/lib\ -Wl,-rpath-link=${P}/usr/lib\ -nostdlib\ ${P}/usr/lib/cr
 ./configure --host=arm-linux-androideabi --program-prefix=arm-linux-androideabi- --disable-shared --enable-static && \
 make pnglibconf.h
 
+Maybe we could use PNG_USER_CONFIG ?

@@ -35,7 +35,7 @@
 #ifndef O3D_CORE_CROSS_WEAK_PTR_H_
 #define O3D_CORE_CROSS_WEAK_PTR_H_
 
-#include "base/logging.h"
+#include "base/cross/log.h"
 #include "core/cross/smart_ptr.h"
 
 namespace o3d {
@@ -144,7 +144,7 @@ class WeakPointer {
    private:
     Pointer data_;
 
-    DISALLOW_COPY_AND_ASSIGN(WeakPointerHandle);
+    O3D_DISALLOW_COPY_AND_ASSIGN(WeakPointerHandle);
   };
 
   explicit WeakPointer(const WeakPointerHandle* handle)

@@ -242,7 +242,7 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #endif
 
 // ===================================================================
-// from google3/base/basictypes.h
+// from google3/base/cross/config.h
 
 // The GOOGLE_ARRAYSIZE(arr) macro returns the # of elements in an array arr.
 // The expression is a compile-time constant, and therefore can be
@@ -419,7 +419,7 @@ struct CompileAssert {
 //   causes ((0.0) ? 1 : -1) to incorrectly evaluate to 1.
 
 // ===================================================================
-// from google3/base/scoped_ptr.h
+// from google3/base/cross/scoped_ptr.h
 
 namespace internal {
 

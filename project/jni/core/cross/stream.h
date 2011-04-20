@@ -115,7 +115,7 @@ class Stream : public ObjectBase {
   int semantic_index_;
 
   O3D_DECL_CLASS(Stream, ObjectBase);
-  DISALLOW_COPY_AND_ASSIGN(Stream);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Stream);
 };
 
 // Defines a type for an array Stream objects.
@@ -146,7 +146,7 @@ class ParamVertexBufferStream : public TypedParamBase<char> {
                           bool read_only)
       : TypedParamBase<char>(service_locator, dynamic, read_only),
         stream_(stream) {
-    DCHECK(stream);
+    O3D_ASSERT(stream);
   }
 
   virtual void CopyDataFromParam(Param *source_param);
@@ -171,7 +171,7 @@ class ParamVertexBufferStream : public TypedParamBase<char> {
   Stream::Ref stream_;
 
   O3D_DECL_CLASS(ParamVertexBufferStream, Param);
-  DISALLOW_COPY_AND_ASSIGN(ParamVertexBufferStream);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamVertexBufferStream);
 };
 
 typedef std::vector<ParamVertexBufferStream::Ref> StreamParamVector;

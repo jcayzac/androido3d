@@ -53,7 +53,7 @@ private:
 public:
 	PickableStack(PickingContext* context, ParamObject* candidate, bool really_do_it)
 	: context(context), previous_pickable(context->pickable()) {
-		DCHECK(candidate);
+		O3D_ASSERT(candidate);
 		ParamBoolean* p = candidate->GetParam<ParamBoolean>("pickable");
 		if (really_do_it && p) {
 			if (p->value()) {
@@ -87,8 +87,8 @@ void TreeTraversal::RegisterDrawList(
     DrawList* draw_list,
     DrawContext* draw_context,
     bool reset) {
-  DCHECK(draw_list);
-  DCHECK(draw_context);
+  O3D_ASSERT(draw_list);
+  O3D_ASSERT(draw_context);
 
   draw_list_draw_context_info_map_[DrawList::Ref(draw_list)] =
       DrawContextInfo(draw_context, reset);
@@ -196,7 +196,7 @@ void TreeTraversal::WalkTransform(RenderContext* render_context,
     DrawContextInfo* draw_context_info =
         draw_context_infos_by_draw_list_global_index_[
             draw_list->global_index()];
-    DLOG_ASSERT(draw_context_info);
+    O3D_ASSERT(draw_context_info);
 
     // Before we cull, if the cull or bounding box params have input
     // connections we need to setup the standard params.
@@ -285,7 +285,7 @@ void TreeTraversal::WalkTransform(RenderContext* render_context,
       DrawContextInfo* draw_context_info =
           draw_context_infos_by_draw_list_global_index_[
               draw_list->global_index()];
-      DLOG_ASSERT(draw_context_info);
+      O3D_ASSERT(draw_context_info);
 
       if (draw_context_info->cull_depth() == depth) {
         draw_context_info->ResetCullDepth();

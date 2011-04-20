@@ -15,73 +15,23 @@
  */
 
 #pragma once
-#include <core/cross/types.h>
-#include <core/cross/object_base.h>
+#include "base/cross/config.h"
+#include "base/cross/log.h"
+#include "core/cross/types.h"
+#include "core/cross/object_base.h"
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <third_party/loggingshim/base/logging.h>
 #include <algorithm>
-#include <functional>
-#if defined (STLPORT)
-  #include <unordered_map>
-#else
-  #include <tr1/unordered_map>
-#endif
+#include <cmath>
+#include <tr1/functional>
+#include <tr1/unordered_map>
 
 // These two macros are used in various places
 // in this file, and get undefined at the end of it
 #define EPSILON 1e-05f
 #define SQUARE_EPSILON (EPSILON*EPSILON)
 
-// A quick hash function
-static inline unsigned int compute_hash_value(const unsigned int& v, const unsigned int& s) {
-  return v + 0x9e3779b9u + (s<<6) + (s>>2);
-}
-
-// Standard additions
-namespace std {
-// Specialize std::hash<> for o3d::Matrix4
-template<>
-struct hash<o3d::Matrix4> {
-  size_t operator()(const o3d::Matrix4& m) const {
-    unsigned int res(0);
-    for (size_t i(0); i<16; ++i) {
-      union { float value; unsigned int bits; } x;
-      x.value = m[i>>2][i&3];
-      // if value is negligible, make it zero
-      if (std::abs(x.value) < EPSILON) x.bits=0;
-      else switch(fpclassify(x.value)) {
-        case FP_ZERO:      x.bits=0; break;
-        case FP_INFINITE:  x.bits=(unsigned int)(x.value>0?-1:-2); break;
-        case FP_NAN:       x.bits=(unsigned int)(-3); break;
-        // Right shift to remove some mantissa precision
-        // (thus making the hash a bit fuzzy, to cope with ieee-754
-        // equality checking problems)
-        default: x.bits=x.bits>>6; break;
-      }
-      res = compute_hash_value(x.bits, res);
-    }
-    return (size_t) res;
-  }
-};
-
-// Specialize std::equal_to<> for o3d::Matrix4
-template<>
-struct equal_to<o3d::Matrix4> {
-  bool operator()(const o3d::Matrix4& a, const o3d::Matrix4& b) const {
-    bool res(true);
-    for (size_t i(0); i<4; ++i)
-      res = res && (dot(a[i]-b[i],a[i]-b[i]) < SQUARE_EPSILON);
-    return res;
-  }
-};
-} // std
-
 namespace o3d {
-
-// o3d doesn't define a typedef for quaternions
-typedef ::Vectormath::Aos::Quat Quat;
-
 namespace extra {
 
 // I'm getting really tired of GetApparentClass()
@@ -115,7 +65,7 @@ struct pbx {
 
   // Deserialize a bounded protocol buffer
   static inline bool read(pb::MessageLite& msg, pb::io::ZeroCopyInputStream& stream) {
-    uint32 size(0);
+    uint32_t size(0);
     do {
       pb::io::CodedInputStream tmp(&stream);
       if (!tmp.ReadVarint32(&size)) return false;
@@ -128,7 +78,15 @@ struct pbx {
   struct log_handler {
     pb::LogHandler* old_value;
     static void write(pb::LogLevel level, const char* filename, int line, const std::string& message) {
-      LOG_MANUAL((level==pb::LOGLEVEL_ERROR)?ERROR:INFO, filename, line) << message;
+      std::stringstream ss;
+      ss << "[" << filename << ":" << line << "] " << message;
+      std::string msg(ss.str());
+      if (level==pb::LOGLEVEL_ERROR) {
+        O3D_LOG_NAKED(ERROR) << msg.c_str();
+      }
+      else {
+        O3D_LOG_NAKED(INFO) << msg;
+      }
     }
     log_handler(): old_value(pb::SetLogHandler(write)) { }
     ~log_handler() { pb::SetLogHandler(old_value); }
@@ -187,7 +145,7 @@ struct matrix4_extra {
 };
 
 // template class for mapping an index to an object and an object to its index
-template<class T, class Hash=std::hash<T>, class Pred=std::equal_to<T> >
+template<class T, class Hash=std::tr1::hash<T>, class Pred=std::equal_to<T> >
 struct bidirectional_index {
   // key-to-value map type
   typedef std::vector<T> db_type;

@@ -586,7 +586,7 @@ TEST_F(SkinTest, SkinRawDataEmpty) {
   Skin* skin = pack()->Create<Skin>();
   ASSERT_TRUE(skin != NULL);
 
-  uint8 p[2];
+  uint8_t p[2];
   MemoryReadStream read_stream(p, 0);  // empty stream
 
   bool success = skin->LoadFromBinaryData(&read_stream);
@@ -601,7 +601,7 @@ TEST_F(SkinTest, SkinRawDataCorrupt) {
   ASSERT_TRUE(skin != NULL);
 
   const int kDataLength = 512;  // enough storage for test
-  MemoryBuffer<uint8> buffer(kDataLength);
+  MemoryBuffer<uint8_t> buffer(kDataLength);
   MemoryWriteStream write_stream(buffer, kDataLength);
 
   // write out serialization ID
@@ -628,7 +628,7 @@ TEST_F(SkinTest, SkinRawDataIncomplete) {
   ASSERT_TRUE(skin != NULL);
 
   const int kDataLength = 512;  // enough storage for test
-  MemoryBuffer<uint8> buffer(kDataLength);
+  MemoryBuffer<uint8_t> buffer(kDataLength);
   MemoryWriteStream write_stream(buffer, kDataLength);
 
   // write out serialization ID
@@ -659,7 +659,7 @@ TEST_F(SkinTest, SkinRawDataValid) {
   ASSERT_TRUE(skin != NULL);
 
   const int kDataLength = 512;  // enough storage for test
-  MemoryBuffer<uint8> buffer(kDataLength);
+  MemoryBuffer<uint8_t> buffer(kDataLength);
   MemoryWriteStream write_stream(buffer, kDataLength);
 
   // write out serialization ID
@@ -705,15 +705,15 @@ TEST_F(SkinTest, SkinRawDataValid) {
 
   // Now, let's try a very nice test to verify that we properly
   // serialize -- this is a round trip test
-  MemoryBuffer<uint8> serialized_data;
+  MemoryBuffer<uint8_t> serialized_data;
   SerializeSkin(*skin, &serialized_data);
 
   // Make sure serialized data length is identical to what we made
   ASSERT_EQ(data_size, serialized_data.GetLength());
 
   // Make sure the data matches
-  uint8 *original = buffer;
-  uint8 *serialized = serialized_data;
+  uint8_t *original = buffer;
+  uint8_t *serialized = serialized_data;
   EXPECT_EQ(0, memcmp(original, serialized, data_size));
 }
 

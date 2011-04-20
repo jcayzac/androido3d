@@ -30,12 +30,9 @@
  */
 
 
-// This file contains functions for importing COLLADA files into O3D.
-#include "import/cross/precompile.h"
-
-#include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/string_util.h"
+#include "base/cross/file_path.h"
+#include "base/cross/file_util.h"
+#include "base/cross/string_util.h"
 #include "core/cross/class_manager.h"
 #include "core/cross/curve.h"
 #include "core/cross/error.h"
@@ -52,18 +49,70 @@
 #include "core/cross/sampler.h"
 #include "core/cross/skin.h"
 #include "core/cross/stream.h"
+#include "core/cross/file_resource.h"
 #include "import/cross/collada.h"
-#if !defined(O3D_IMPORT_NO_CONDITIONER)
-#include "import/cross/collada_conditioner.h"
-#endif
 #include "import/cross/collada_zip_archive.h"
 #include "import/cross/destination_buffer.h"
-#include "import/cross/file_output_stream_processor.h"
+#include "import/cross/memory_stream.h"
 #include "import/cross/raw_data.h"
 #include "utils/cross/file_path_utils.h"
-#if !defined(O3D_IMPORT_NO_DXT_TO_PNG) || defined(O3D_IMPORT_DECOMPRESS_DXT)
-#include "third_party/libtxc_dxtn/files/txc_dxtn.h"
-#endif
+
+#if defined(O3D_RENDERER_GL)
+#include <GL/glew.h>
+#endif  // defined(O3D_RENDERER_GL)
+
+// FCollada is build without exception support
+#define FCOLLADA_EXCEPTION 0
+
+#include <FCollada.h>
+#include <FCDocument/FCDocument.h>
+#include <FCDocument/FCDocumentTools.h>
+#include <FCDocument/FCDAnimated.h>
+#include <FCDocument/FCDAnimationCurve.h>
+#include <FCDocument/FCDAnimationKey.h>
+#include <FCDocument/FCDEffect.h>
+#include <FCDocument/FCDEffectCode.h>
+#include <FCDocument/FCDEffectParameter.h>
+#include <FCDocument/FCDEffectParameterSurface.h>
+#include <FCDocument/FCDEffectParameterSampler.h>
+#include <FCDocument/FCDEffectPass.h>
+#include <FCDocument/FCDEffectPassShader.h>
+#include <FCDocument/FCDEffectPassState.h>
+#include <FCDocument/FCDEffectProfile.h>
+#include <FCDocument/FCDEffectProfileFX.h>
+#include <FCDocument/FCDEffectStandard.h>
+#include <FCDocument/FCDEffectTechnique.h>
+#include <FCDocument/FCDExtra.h>
+#include <FCDocument/FCDEntity.h>
+#include <FCDocument/FCDImage.h>
+#include <FCDocument/FCDMaterial.h>
+#include <FCDocument/FCDMaterialInstance.h>
+#include <FCDocument/FCDLibrary.h>
+#include <FCDocument/FCDSceneNode.h>
+#include <FCDocument/FCDCamera.h>
+#include <FCDocument/FCDGeometry.h>
+#include <FCDocument/FCDGeometryInstance.h>
+#include <FCDocument/FCDGeometryMesh.h>
+#include <FCDocument/FCDGeometryPolygons.h>
+#include <FCDocument/FCDGeometryPolygonsInput.h>
+#include <FCDocument/FCDGeometryPolygonsTools.h>
+#include <FCDocument/FCDGeometrySource.h>
+#include <FCDocument/FCDController.h>
+#include <FCDocument/FCDControllerInstance.h>
+#include <FCDocument/FCDSkinController.h>
+#include <FCDocument/FCDTexture.h>
+#include <FCDocument/FCDTransform.h>
+#include <FUtils/FUFileManager.h>
+#include <FUtils/FUUri.h>
+#include <FUtils/FUXmlParser.h>
+
+#undef FCOLLADA_EXCEPTION
+
+#include <vector>
+using std::min;
+using std::max;
+
+#include <sstream>
 
 #define COLLADA_NAMESPACE "collada"
 #define COLLADA_NAMESPACE_SEPARATOR "."
@@ -73,8 +122,8 @@
 #define COLLADA_STRING_CONSTANT(value)                  \
   (COLLADA_NAMESPACE COLLADA_NAMESPACE_SEPARATOR value)
 
-
 namespace o3d {
+static const float kPi = 3.14159265358979f;
 
 const char* Collada::kLightingTypeParamName =
     COLLADA_STRING_CONSTANT("lightingType");
@@ -134,44 +183,6 @@ Matrix4 FMMatrix44ToMatrix4(const FMMatrix44& fmmatrix44) {
 }
 }  // anonymous namespace
 
-void ColladaDataMap::Clear() {
-  original_data_.clear();
-}
-
-bool ColladaDataMap::AddData(const FilePath& file_path,
-                             const std::string& data,
-                             ServiceLocator* service_locator) {
-  std::pair<OriginalDataMap::iterator, bool> result =
-      original_data_.insert(std::pair<FilePath, std::string>(file_path, data));
-  if (!result.second) {
-    O3D_ERROR(service_locator)
-        << "Attempt to map 2 resources to the same file path:"
-        << FilePathToUTF8(file_path).c_str();
-  }
-  return result.second;
-}
-
-std::vector<FilePath> ColladaDataMap::GetOriginalDataFilenames() const {
-  std::vector<FilePath> result;
-  for (OriginalDataMap::const_iterator iter = original_data_.begin();
-       iter != original_data_.end();
-       ++iter) {
-    result.push_back(iter->first);
-  }
-  return result;
-}
-
-const std::string& ColladaDataMap::GetOriginalData(
-    const FilePath& filename) const {
-  static const std::string empty;
-  OriginalDataMap::const_iterator entry = original_data_.find(filename);
-  if (entry != original_data_.end()) {
-    return entry->second;
-  } else {
-    return empty;
-  }
-}
-
 // Import the given COLLADA file or ZIP file into the given scene.
 // This is the external interface to o3d.
 bool Collada::Import(Pack* pack,
@@ -184,12 +195,12 @@ bool Collada::Import(Pack* pack,
 }
 
 bool Collada::Import(Pack* pack,
-                     const String& filename,
+                     const std::string& filename,
                      Transform* parent,
                      ParamFloat* animation_input,
                      const Options& options) {
   return Collada::Import(pack,
-                         UTF8ToFilePath(filename),
+                         FilePath(filename),
                          parent,
                          animation_input,
                          options);
@@ -224,7 +235,6 @@ Collada::~Collada() {
 
 void Collada::ClearData() {
   textures_.clear();
-  original_data_map_.Clear();
   effects_.clear();
   shapes_.clear();
   skinned_shapes_.clear();
@@ -252,7 +262,7 @@ void Collada::ClearData() {
 // Returns true on success.
 bool Collada::ImportFile(const FilePath& filename, Transform* parent,
                          ParamFloat* animation_input) {
-  DLOG(INFO) << "ImportFile:" << filename.value();
+  O3D_LOG(INFO) << "ImportFile:" << filename.value();
   // Each time we start a new import, we need to clear out data from
   // the last import (if any).
   ClearData();
@@ -262,7 +272,7 @@ bool Collada::ImportFile(const FilePath& filename, Transform* parent,
   file_util::AbsolutePath(&base_path_);
 
   bool status = false;
-  if (ZipArchive::IsZipFile(FilePathToUTF8(filename))) {
+  if (ZipArchive::IsZipFile(filename.value())) {
     status = ImportZIP(filename, parent, animation_input);
   } else {
     status = ImportDAE(filename, parent, animation_input);
@@ -272,7 +282,7 @@ bool Collada::ImportFile(const FilePath& filename, Transform* parent,
     // TODO(o3d): this could probably be the original URI instead of some
     //     filename in the temp folder.
     O3D_ERROR(service_locator_) << "Unable to import: "
-                                << FilePathToUTF8(filename).c_str();
+                                << filename.value();
   }
 
   return status;
@@ -283,17 +293,16 @@ bool Collada::ImportFile(const FilePath& filename, Transform* parent,
 // Returns true on success.
 bool Collada::ImportZIP(const FilePath& filename, Transform* parent,
                         ParamFloat* animation_input) {
-  DLOG(INFO) << "ImportZip:" << filename.value();
+  O3D_LOG(INFO) << "ImportZip:" << filename.value();
   // This uses minizip, which avoids decompressing the zip archive to a
   // temp directory...
   //
   bool status = false;
   int result = 0;
 
-  String filename_str = FilePathToUTF8(filename);
-  collada_zip_archive_ = new ColladaZipArchive(filename_str, &result);
+  collada_zip_archive_ = new ColladaZipArchive(filename.value(), &result);
 
-  if (result == UNZ_OK) {
+  if (result == 0) {
     FCollada::Initialize();
     FCDocument* doc = FCollada::NewTopDocument();
 
@@ -305,35 +314,18 @@ bool Collada::ImportZIP(const FilePath& filename, Transform* parent,
                                                            &doc_buffer_size);
 
       if (doc_buffer && doc_buffer_size > 0) {
-        DLOG(INFO) << "Loading Collada model \""
+        O3D_LOG(INFO) << "Loading Collada model \""
                    << model_path << "\" from zip file \""
-                   << filename_str << "\"";
+                   << filename.value() << "\"";
 
-        std::wstring model_path_w = UTF8ToWide(model_path);
-
-        bool fc_status = FCollada::LoadDocumentFromMemory(model_path_w.c_str(),
+        bool fc_status = FCollada::LoadDocumentFromMemory(model_path.c_str(),
                                                           doc,
                                                           doc_buffer,
                                                           doc_buffer_size);
 
 
-        if (fc_status) {
-          if (options_.condition_document) {
-            #if !defined(O3D_IMPORT_NO_CONDITIONER)
-            ColladaConditioner conditioner(service_locator_);
-            if (conditioner.ConditionDocument(doc, collada_zip_archive_)) {
-              status = ImportDAEDocument(doc,
-                                         fc_status,
-                                         parent,
-                                         animation_input);
-            }
-            #else
-            CHECK(false) << "no conditioner";
-            #endif  // !defined(O3D_IMPORT_NO_CONDITIONER)
-          } else {
-            status = ImportDAEDocument(doc, fc_status, parent, animation_input);
-          }
-        }
+        if (fc_status)
+          status = ImportDAEDocument(doc, fc_status, parent, animation_input);
       }
       doc->Release();
     }
@@ -356,7 +348,7 @@ bool Collada::ImportZIP(const FilePath& filename, Transform* parent,
 bool Collada::ImportDAE(const FilePath& filename,
                         Transform* parent,
                         ParamFloat* animation_input) {
-  DLOG(INFO) << "ImportDAE:" << filename.value();
+  O3D_LOG(INFO) << "ImportDAE:" << filename.value();
   if (!parent) {
     return false;
   }
@@ -364,20 +356,8 @@ bool Collada::ImportDAE(const FilePath& filename,
   FCollada::Initialize();
   FCDocument* doc = FCollada::NewTopDocument();
   if (doc) {
-    std::wstring filename_w = FilePathToWide(filename);
-    bool fc_status = FCollada::LoadDocumentFromFile(doc, filename_w.c_str());
-    if (options_.condition_document) {
-      #if !defined(O3D_IMPORT_NO_CONDITIONER)
-      ColladaConditioner conditioner(service_locator_);
-      if (conditioner.ConditionDocument(doc, NULL)) {
-        status = ImportDAEDocument(doc, fc_status, parent, animation_input);
-      }
-      #else
-        CHECK(false) << "no conditioner";
-      #endif  // !defined(O3D_IMPORT_NO_CONDITIONER)
-    } else {
-      status = ImportDAEDocument(doc, fc_status, parent, animation_input);
-    }
+    bool fc_status = FCollada::LoadDocumentFromFile(doc, filename.value().c_str());
+    status = ImportDAEDocument(doc, fc_status, parent, animation_input);
     doc->Release();
   }
   FCollada::Release();
@@ -391,7 +371,7 @@ bool Collada::ImportDAEDocument(FCDocument* doc,
                                 bool fc_status,
                                 Transform* parent,
                                 ParamFloat* animation_input) {
-  DLOG(INFO) << "ImportDAEDocument:";
+  O3D_LOG(INFO) << "ImportDAEDocument:";
   if (!parent) {
     return false;
   }
@@ -411,10 +391,10 @@ bool Collada::ImportDAEDocument(FCDocument* doc,
       // TODO(o3d): Add option to skip this step if user just wants what's
       // actually used by models. The rest of the code already deals with this.
       FCDImageLibrary* image_library = doc->GetImageLibrary();
-      for (uint32 i = 0; i < image_library->GetEntityCount(); i++) {
+      for (uint32_t i = 0; i < image_library->GetEntityCount(); i++) {
         FCDEntity* entity = image_library->GetEntity(i);
-        LOG_ASSERT(entity);
-        LOG_ASSERT(entity->GetType() == FCDEntity::IMAGE);
+        O3D_ASSERT(entity);
+        O3D_ASSERT(entity->GetType() == FCDEntity::IMAGE);
         FCDImage* image = down_cast<FCDImage*>(entity);
         BuildTextureFromImage(image);
       }
@@ -425,10 +405,10 @@ bool Collada::ImportDAEDocument(FCDocument* doc,
       // TODO(o3d): Add option to skip this step if user just wants what's
       // actually used by models. The rest of the code already deals with this.
       FCDMaterialLibrary* material_library = doc->GetMaterialLibrary();
-      for (uint32 i = 0; i < material_library->GetEntityCount(); i++) {
+      for (uint32_t i = 0; i < material_library->GetEntityCount(); i++) {
         FCDEntity* entity = material_library->GetEntity(i);
-        LOG_ASSERT(entity);
-        LOG_ASSERT(entity->GetType() == FCDEntity::MATERIAL);
+        O3D_ASSERT(entity);
+        O3D_ASSERT(entity->GetType() == FCDEntity::MATERIAL);
         FCDMaterial* collada_material = down_cast<FCDMaterial*>(entity);
         BuildMaterial(doc, collada_material);
       }
@@ -500,31 +480,31 @@ BezierCurveKey* BuildBezierKey(Curve* curve, FCDAnimationKeyBezier* fcd_key,
 void BindParams(ParamObject* input_object, const char* input_param_name,
                 ParamObject* output_object, const char* output_param_name) {
   Param* input_param = input_object->GetUntypedParam(input_param_name);
-  DCHECK(input_param);
+  O3D_ASSERT(input_param);
 
   Param* output_param = output_object->GetUntypedParam(output_param_name);
-  DCHECK(output_param);
+  O3D_ASSERT(output_param);
 
   bool ok = input_param->Bind(output_param);
-  DCHECK_EQ(ok, true);
+  O3D_ASSERT(ok);
 }
 
 void BindParams(ParamObject* input_object, const char* input_param_name,
                 Param* output_param) {
   Param* input_param = input_object->GetUntypedParam(input_param_name);
-  DCHECK(input_param);
+  O3D_ASSERT(input_param);
 
   bool ok = input_param->Bind(output_param);
-  DCHECK_EQ(ok, true);
+  O3D_ASSERT(ok);
 }
 
 void BindParams(Param* input_param,
                 ParamObject* output_object, const char* output_param_name) {
   Param* output_param = output_object->GetUntypedParam(output_param_name);
-  DCHECK(output_param);
+  O3D_ASSERT(output_param);
 
   bool ok = input_param->Bind(output_param);
-  DCHECK_EQ(ok, true);
+  O3D_ASSERT(ok);
 }
 }  // namespace anonymous
 
@@ -722,10 +702,8 @@ ParamMatrix4* Collada::BuildScaling(FCDTScale* transform,
 Transform* Collada::BuildTransform(FCDSceneNode* node,
                                    Transform* parent_transform,
                                    ParamFloat* animation_input) {
-  const wchar_t* name = node->GetName().c_str();
-
-  String name_utf8 =  WideToUTF8(name);
-  DLOG(INFO) << "BuildTransform:" << name_utf8;
+  std::string name_utf8(node->GetName());
+  O3D_LOG(INFO) << "BuildTransform:" << name_utf8;
 
   Transform* transform = pack_->Create<Transform>();
   transform->set_name(name_utf8);
@@ -865,7 +843,7 @@ bool Collada::ImportTree(NodeInstance *instance,
 
 bool Collada::ImportTreeInstances(FCDocument* doc,
                                   NodeInstance *node_instance) {
-  DLOG(INFO) << "ImportTreeInstances:";
+  O3D_LOG(INFO) << "ImportTreeInstances:";
   FCDSceneNode *node = node_instance->node();
   // recursively import the rest of the nodes in the tree
   const NodeInstance::NodeInstanceList &children = node_instance->children();
@@ -881,7 +859,7 @@ bool Collada::ImportTreeInstances(FCDocument* doc,
     FCDCamera* camera(NULL);
     FCDGeometryInstance* geom_instance(NULL);
 
-    LOG_ASSERT(instance != 0);
+    O3D_ASSERT(instance != 0);
     // Import each node based on what kind of entity it is
     // TODO(o3d): add more entity types as they are supported
     switch (instance->GetEntityType()) {
@@ -957,10 +935,10 @@ void Collada::BuildCamera(FCDocument* doc,
                           FCDCamera* camera,
                           Transform* transform,
                           FCDSceneNode* parent_node) {
-  LOG_ASSERT(doc && camera && transform && parent_node);
+  O3D_ASSERT(doc && camera && transform && parent_node);
 
   // Create a transform node for the camera
-  String camera_name = WideToUTF8(camera->GetName().c_str());
+  std::string camera_name(camera->GetName());
 
   // Tag this node as a camera
   ParamString* param_tag = transform->CreateParam<ParamString>(
@@ -1155,15 +1133,15 @@ Shape* Collada::BuildShape(FCDocument* doc,
                            FCDGeometry* geom,
                            TranslationMap* translationMap,
                            const ObjectBase::Class* buffer_class) {
-  DLOG(INFO) << "Collada::BuildShape\n";
+  O3D_LOG(INFO) << "Collada::BuildShape\n";
   Shape* shape = NULL;
-  LOG_ASSERT(doc && geom_instance && geom);
+  O3D_ASSERT(doc && geom_instance && geom);
   if (geom && geom->IsMesh()) {
-    String geom_name = WideToUTF8(geom->GetName().c_str());
+    std::string geom_name(geom->GetName());
     shape = pack_->Create<Shape>();
     shape->set_name(geom_name);
     FCDGeometryMesh* mesh = geom->GetMesh();
-    LOG_ASSERT(mesh);
+    O3D_ASSERT(mesh);
     FCDGeometryPolygonsTools::Triangulate(mesh);
     FCDGeometryPolygonsTools::GenerateUniqueIndices(mesh, NULL, translationMap);
     size_t num_polygons = mesh->GetPolygonsCount();
@@ -1184,7 +1162,7 @@ Shape* Collada::BuildShape(FCDocument* doc,
 
     int semantic_counts[Stream::TEXCOORD + 1] = { 0, };
 
-    scoped_array<Field*> fields(new Field*[num_sources]);
+    ::o3d::base::scoped_array<Field*> fields(new Field*[num_sources]);
 
     Buffer* vertex_buffer = down_cast<Buffer*>(
         pack_->CreateObjectByClass(
@@ -1194,14 +1172,14 @@ Shape* Collada::BuildShape(FCDocument* doc,
     // first create all the fields.
     for (size_t s = 0; s < num_sources; ++s) {
       FCDGeometrySource* source = mesh->GetSource(s);
-      LOG_ASSERT(source);
+      O3D_ASSERT(source);
       Stream::Semantic semantic = C2G3DSemantic(source->GetType());
-      LOG_ASSERT(semantic <= Stream::TEXCOORD);
+      O3D_ASSERT(semantic <= Stream::TEXCOORD);
       if (semantic == Stream::UNKNOWN_SEMANTIC) continue;
 
       // The call to GenerateUniqueIndices() above should have made
       // all sources the same length.
-      LOG_ASSERT(source->GetValueCount() == num_vertices);
+      O3D_ASSERT(source->GetValueCount() == num_vertices);
 
       int stride = source->GetStride();
       if (semantic == Stream::COLOR && stride == 4) {
@@ -1220,9 +1198,9 @@ Shape* Collada::BuildShape(FCDocument* doc,
 
     for (size_t s = 0; s < num_sources; ++s) {
       FCDGeometrySource* source = mesh->GetSource(s);
-      LOG_ASSERT(source);
+      O3D_ASSERT(source);
       Stream::Semantic semantic = C2G3DSemantic(source->GetType());
-      LOG_ASSERT(semantic <= Stream::TEXCOORD);
+      O3D_ASSERT(semantic <= Stream::TEXCOORD);
       if (semantic == Stream::UNKNOWN_SEMANTIC) continue;
       int stride = source->GetStride();
 
@@ -1235,7 +1213,7 @@ Shape* Collada::BuildShape(FCDocument* doc,
         // example, tools that convert height maps to normal maps tend to
         // assume. It is also what the O3D shaders assume.
         size_t num_values = source->GetDataCount();
-        scoped_array<float>values(new float[num_values]);
+        ::o3d::base::scoped_array<float>values(new float[num_values]);
         for (size_t i = 0; i < num_values ; ++i) {
           values[i] = -source_data[i];
         }
@@ -1314,7 +1292,7 @@ Shape* Collada::BuildShape(FCDocument* doc,
 
       // Create an index buffer for this group of polygons.
 
-      String primitive_name(geom_name + "|" + material->name());
+      std::string primitive_name(geom_name + "|" + material->name());
 
       IndexBuffer* indexBuffer = pack_->Create<IndexBuffer>();
       indexBuffer->set_name(primitive_name);
@@ -1352,12 +1330,12 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
                                   FCDControllerInstance* instance,
                                   NodeInstance *parent_node_instance,
                                   Transform* parent) {
-  DLOG(INFO) << "Collada::BuildSkinnedShape\n";
+  O3D_LOG(INFO) << "Collada::BuildSkinnedShape\n";
   // TODO(o3d): Handle chained controllers. Morph->Skin->...
   // TODO(gman): Change this to correctly create the skin, separate from
   //     ParamArray and SkinEval so that we can support instanced skins.
   Shape* shape = NULL;
-  LOG_ASSERT(doc && instance);
+  O3D_ASSERT(doc && instance);
   FCDController* controller =
       static_cast<FCDController*>(instance->GetEntity());
   if (controller && controller->IsSkin()) {
@@ -1394,7 +1372,7 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
         const UInt32List& intlist = it->second;
         for (size_t gg = 0; gg < intlist.size(); ++gg) {
           unsigned new_index = intlist[gg];
-          LOG_ASSERT(new_to_old_indices.at(new_index) == UINT_MAX);
+          O3D_ASSERT(new_to_old_indices.at(new_index) == UINT_MAX);
           new_to_old_indices[new_index] = it->first;
         }
       }
@@ -1425,7 +1403,7 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
     }
     Primitive* primitive = down_cast<Primitive*>(elements[0].Get());
 
-    String controller_name = WideToUTF8(controller->GetName().c_str());
+    std::string controller_name(controller->GetName());
 
     ParamArray* matrices = pack_->Create<ParamArray>();
     Skin* skin = pack_->Create<Skin>();
@@ -1444,7 +1422,7 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
       matrices->CreateParam<ParamMatrix4>(num_bones);
       for (size_t ii = 0; ii < num_bones; ++ii) {
         FCDSceneNode* node = instance->GetJoint(ii);
-        LOG_ASSERT(node);
+        O3D_ASSERT(node);
         // Note: in case of instancing, the intended instance is ill-defined,
         // but that is a problem in the Collada document itself. So we'll assume
         // the file is somewhat well defined.
@@ -1460,13 +1438,13 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
           node_instance = instance_root_->FindNodeInTree(node);
         }
         if (!node_instance) {
-          String bone_name = WideToUTF8(node->GetName().c_str());
+          std::string bone_name(node->GetName());
           O3D_ERROR(service_locator_)
               << "Could not find node instance for bone " << bone_name.c_str();
           continue;
         }
         Transform* bone = node_instance->transform();
-        LOG_ASSERT(bone);
+        O3D_ASSERT(bone);
         matrices->GetUntypedParam(ii)->Bind(
             bone->GetUntypedParam(Transform::kWorldMatrixParamName));
       }
@@ -1480,7 +1458,7 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
     Matrix4 inverse_bind_shape_matrix(inverse(bind_shape_matrix));
 
     // Get the bind pose inverse matrices
-    LOG_ASSERT(num_bones == skin_controller->GetJointCount());
+    O3D_ASSERT(num_bones == skin_controller->GetJointCount());
     for (size_t ii = 0; ii < num_bones; ++ii) {
       FCDSkinControllerJoint* joint = skin_controller->GetJoint(ii);
       skin->SetInverseBindPoseMatrix(
@@ -1530,7 +1508,7 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
     // a separate VertexBuffer.
     StreamBank* old_stream_bank = primitive->stream_bank();
     StreamBank* new_stream_bank = pack_->Create<StreamBank>();
-    new_stream_bank->set_name(String("skinned_") + old_stream_bank->name());
+    new_stream_bank->set_name(std::string("skinned_") + old_stream_bank->name());
     Buffer* old_buffer = NULL;
     SourceBuffer* source_buffer = pack_->Create<SourceBuffer>();
     VertexBuffer* shared_buffer = pack_->Create<VertexBuffer>();
@@ -1574,10 +1552,10 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
             }
             source_fields[ii] = source_buffer->CreateField(
                 FloatField::GetApparentClass(), num_source_components);
-            DCHECK(source_fields[ii]);
+            O3D_ASSERT(source_fields[ii]);
             dest_fields[ii] = dest_buffer->CreateField(
                 FloatField::GetApparentClass(), num_source_components);
-            DCHECK(dest_fields[ii]);
+            O3D_ASSERT(dest_fields[ii]);
             if (!new_stream_bank->SetVertexStream(
                 source_stream.semantic(),
                 source_stream.semantic_index(),
@@ -1704,9 +1682,9 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
     }
     pack_->RemoveObject(old_stream_bank);
     if (old_buffer) {
-      source_buffer->set_name(String("source_") + old_buffer->name());
-      dest_buffer->set_name(String("skinned_") + old_buffer->name());
-      shared_buffer->set_name(String("shared_") + old_buffer->name());
+      source_buffer->set_name(std::string("source_") + old_buffer->name());
+      dest_buffer->set_name(std::string("skinned_") + old_buffer->name());
+      shared_buffer->set_name(std::string("shared_") + old_buffer->name());
       pack_->RemoveObject(old_buffer);
     }
   }
@@ -1714,8 +1692,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
 }
 
 Texture* Collada::BuildTextureFromImage(FCDImage* image) {
-  const fstring filename = image->GetFilename();
-  FilePath file_path = WideToFilePath(filename.c_str());
+  const std::string filename(image->GetFilename());
+  FilePath file_path(filename);
   FilePath uri = file_path;
   FilePath original_uri = file_path;
   FilePath tex_id = options_.store_textures_by_basename ? file_path.BaseName() :
@@ -1725,34 +1703,32 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
     // the "/" from the beginning of the name, since that represents
     // the root of the archive, and we can assume all the paths in
     // the archive are relative to that.
-    if (uri.value()[0] == FILE_PATH_LITERAL('/')) {
+    if (uri.value()[0] == '/') {
       uri = FilePath(uri.value().substr(1));
     }
-    if (tex_id.value()[0] == FILE_PATH_LITERAL('/')) {
+    if (tex_id.value()[0] == '/') {
       tex_id = FilePath(tex_id.value().substr(1));
     }
   }
 
   Texture* tex = textures_[tex_id];
   if (!tex && options_.texture_pack) {
-    std::vector<Texture*> textures = options_.texture_pack->Get<Texture>(
-        FilePathToUTF8(tex_id));
+    std::vector<Texture*> textures = options_.texture_pack->Get<Texture>(tex_id.value());
     if (!textures.empty()) {
       tex = textures[0];
     }
   }
 
   if (!tex) {
-    DLOG(INFO) << "BuildTextureFromImage:" << uri.value();
+    O3D_LOG(INFO) << "BuildTextureFromImage:" << uri.value();
     Pack* tex_pack = options_.texture_pack ? options_.texture_pack : pack_;
     std::string tempfile;
     if (collada_zip_archive_) {
       size_t data_size = 0;
-      char* data = collada_zip_archive_->GetFileData(
-          FilePathToUTF8(file_path), &data_size);
+      char* data = collada_zip_archive_->GetFileData(file_path.value(), &data_size);
       if (data) {
-        MemoryReadStream stream((const uint8*) data, data_size);
-        tex = Texture::Ref(tex_pack->CreateTextureFromStream(&stream, FilePathToUTF8(file_path), true));
+        MemoryReadStream stream((const uint8_t*) data, data_size);
+        tex = Texture::Ref(tex_pack->CreateTextureFromStream(&stream, file_path.value(), true));
         free(data);
       }
     } else {
@@ -1761,31 +1737,25 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
 
     if (!tex) {
       if (!FindFile(options_.file_paths, file_path, &file_path)) {
-        O3D_ERROR(service_locator_) << "Could not find file: " << FilePathToUTF8(file_path);
-        DLOG(INFO) << "BuildTextureFromImage: could not find file: "
-           << FilePathToUTF8(file_path);
+        O3D_ERROR(service_locator_) << "Could not find file: " << file_path.value();
+        O3D_LOG(INFO) << "BuildTextureFromImage: could not find file: "
+           << file_path.value();
         return NULL;
       }
+      FileResource resource(file_path.value());
       tex = Texture::Ref(
-          tex_pack->CreateTextureFromFile(
-              FilePathToUTF8(uri),
-              file_path,
+          tex_pack->CreateTextureFromExternalResource(
+              uri.value(),
+              resource,
               image::UNKNOWN,
               options_.generate_mipmaps));
     }
 
     if (tex) {
-      tex->set_name(FilePathToUTF8(tex_id));
+      tex->set_name(tex_id.value());
       ParamString* original_uri_param = tex->CreateParam<ParamString>(O3D_STRING_CONSTANT("original_uri"));
-      DCHECK(original_uri_param != NULL);
-      original_uri_param->set_value(FilePathToUTF8(original_uri));
-    }
-
-    if (options_.keep_original_data) {
-      // Cache the original data by URI so we can recover it later.
-      std::string contents;
-      file_util::ReadFileToString(file_path, &contents);
-      original_data_map_.AddData(uri, contents, service_locator_);
+      O3D_ASSERT(original_uri_param != NULL);
+      original_uri_param->set_value(original_uri.value());
     }
 
     if (tempfile.size() > 0) ZipArchive::DeleteFile(tempfile);
@@ -1812,7 +1782,7 @@ Texture* Collada::BuildTexture(FCDEffectParameterSurface* surface) {
 //   fc_param:           The FCollada effect parameter whose value is used.
 // Returns true on success.
 bool Collada::SetParamFromFCEffectParam(ParamObject* param_object,
-                                        const String &param_name,
+                                        const std::string &param_name,
                                         FCDEffectParameter *fc_param) {
   if (!param_object || !fc_param) return false;
   FCDEffectParameter::Type type = fc_param->GetType();
@@ -1970,7 +1940,7 @@ static const char* GetLightingType(FCDEffectStandard* std_profile) {
 }
 
 static FCDEffectProfileFX* FindProfileFX(FCDEffect* effect) {
-  DLOG(INFO) << "FindProfileFX:" << effect;
+  O3D_LOG(INFO) << "FindProfileFX:" << effect;
   FCDEffectProfile* profile = effect->FindProfile(FUDaeProfileType::HLSL);
   if (!profile) {
     profile = effect->FindProfile(FUDaeProfileType::CG);
@@ -1996,8 +1966,7 @@ Material* Collada::BuildMaterial(FCDocument* doc,
       effect = GetEffect(doc, collada_effect);
     }
 
-    String collada_material_name = WideToUTF8(
-        collada_material->GetName().c_str());
+    std::string collada_material_name(collada_material->GetName());
     Material* material = pack_->Create<Material>();
     material->set_name(collada_material_name);
     material->set_effect(effect);
@@ -2063,27 +2032,27 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
   if (profile_fx) {
     if (profile_fx->GetCodeCount() > 0) {
       FCDEffectCode* code = profile_fx->GetCode(0);
-      String effect_string;
+      std::string effect_string;
       FilePath file_path;
       if (code->GetType() == FCDEffectCode::CODE) {
         fstring code_string = code->GetCode();
-        effect_string = WideToUTF8(code_string.c_str());
+        effect_string = code_string;
         unique_filename_counter_++;
-        String file_name = "embedded-shader-" +
+        std::string file_name = "embedded-shader-" +
                            IntToString(unique_filename_counter_) + ".fx";
-        file_path = FilePath(FILE_PATH_LITERAL("shaders"));
-        file_path = file_path.Append(UTF8ToFilePath(file_name));
+        file_path = FilePath("shaders");
+        file_path = file_path.Append(FilePath(file_name));
       } else if (code->GetType() == FCDEffectCode::INCLUDE) {
-        fstring path = code->GetFilename();
-        file_path = WideToFilePath(path.c_str());
+        const std::string path(code->GetFilename());
+        file_path = FilePath(path);
         if (collada_zip_archive_ && !file_path.empty()) {
           // Make absolute path be relative to root of archive.
-          if (file_path.value()[0] == FILE_PATH_LITERAL('/')) {
+          if (file_path.value()[0] == '/') {
             file_path = FilePath(file_path.value().substr(1));
           }
           size_t effect_data_size;
           char *effect_data =
-              collada_zip_archive_->GetFileData(FilePathToUTF8(file_path),
+              collada_zip_archive_->GetFileData(file_path.value(),
                                                 &effect_data_size);
           if (effect_data) {
             effect_string = effect_data;
@@ -2091,38 +2060,37 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
           } else {
             O3D_ERROR(service_locator_)
                 << "Unable to read effect data for effect '"
-                << FilePathToUTF8(file_path) << "'";
+                << file_path.value() << "'";
             return NULL;
           }
         } else {
           FilePath temp_path = file_path;
           if (!FindFile(options_.file_paths, temp_path, &temp_path)) {
-            O3D_ERROR(service_locator_) << "Could not find file: " << FilePathToUTF8(file_path);
+            O3D_ERROR(service_locator_) << "Could not find file: " << file_path.value();
             return NULL;
           }
-          file_util::ReadFileToString(temp_path, &effect_string);
+          FileResource resource(temp_path.value());
+          if (resource.data()) {
+            effect_string.resize(resource.size());
+            memcpy(&effect_string[0], resource.data(), resource.size());
+          }
         }
       }
-      String collada_effect_name = WideToUTF8(
-          collada_effect->GetName().c_str());
+      std::string collada_effect_name(collada_effect->GetName());
       effect = pack_->Create<Effect>();
       effect->set_name(collada_effect_name);
 
       ParamString* param = effect->CreateParam<ParamString>(
           O3D_STRING_CONSTANT("uri"));
-      DCHECK(param != NULL);
-      param->set_value(FilePathToUTF8(file_path));
+      O3D_ASSERT(param != NULL);
+      param->set_value(file_path.value());
 
       if (!effect->LoadFromFXString(effect_string)) {
         pack_->RemoveObject(effect);
         O3D_ERROR(service_locator_) << "Unable to load effect '"
-                                    << FilePathToUTF8(file_path).c_str()
+                                    << file_path.value()
                                     << "'";
         return NULL;
-      }
-      if (options_.keep_original_data) {
-        // Cache the original data by URI so we can recover it later.
-        original_data_map_.AddData(file_path, effect_string, service_locator_);
       }
     }
   } else {
@@ -2138,28 +2106,27 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
             if (url_attrib) {
               fstring url = url_attrib->GetValue();
               const FUFileManager* mgr = doc->GetFileManager();
-              LOG_ASSERT(mgr != NULL);
+              O3D_ASSERT(mgr != NULL);
               FUUri uri = mgr->GetCurrentUri();
               FUUri effect_uri = uri.Resolve(url_attrib->GetValue());
-              fstring path = effect_uri.GetAbsolutePath();
+              const std::string path(effect_uri.GetAbsolutePath());
 
-              String collada_effect_name = WideToUTF8(
-                  collada_effect->GetName().c_str());
+              std::string collada_effect_name(collada_effect->GetName());
 
-              FilePath file_path = WideToFilePath(path.c_str());
+              FilePath file_path(path);
 
-              String effect_string;
+              std::string effect_string;
 
               if (collada_zip_archive_ && !file_path.empty()) {
                 // Make absolute path be relative to root of archive.
-                if (file_path.value()[0] == FILE_PATH_LITERAL('/')) {
+                if (file_path.value()[0] == '/') {
                   file_path = FilePath(file_path.value().substr(1));
                 }
                 // shader file can be extracted in memory from zip archive
                 // so lets get the data and turn it into a string
                 size_t effect_data_size;
                 char *effect_data =
-                    collada_zip_archive_->GetFileData(FilePathToUTF8(file_path),
+                    collada_zip_archive_->GetFileData(file_path.value(),
                                                       &effect_data_size);
                 if (effect_data) {
                   effect_string = effect_data;
@@ -2167,11 +2134,15 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
                 } else {
                   O3D_ERROR(service_locator_)
                       << "Unable to read effect data for effect '"
-                      << FilePathToUTF8(file_path) << "'";
+                      << file_path.value() << "'";
                   return NULL;
                 }
               } else {
-                file_util::ReadFileToString(file_path, &effect_string);
+                FileResource resource(file_path.value());
+                if (resource.data()) {
+                  effect_string.resize(resource.size());
+                  memcpy(&effect_string[0], resource.data(), resource.size());
+                }
               }
 
               effect = pack_->Create<Effect>();
@@ -2179,20 +2150,15 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
 
               ParamString* param = effect->CreateParam<ParamString>(
                   O3D_STRING_CONSTANT("uri"));
-              DCHECK(param != NULL);
-              param->set_value(FilePathToUTF8(file_path));
+              O3D_ASSERT(param != NULL);
+              param->set_value(file_path.value());
 
               if (!effect->LoadFromFXString(effect_string)) {
                 pack_->RemoveObject(effect);
                 O3D_ERROR(service_locator_) << "Unable to load effect '"
-                                            << FilePathToUTF8(file_path).c_str()
+                                            << file_path.value()
                                             << "'";
                 return NULL;
-              }
-              if (options_.keep_original_data) {
-                // Cache the original data by URI so we can recover it later.
-                original_data_map_.AddData(file_path, effect_string,
-                                           service_locator_);
               }
             }
           }
@@ -2209,7 +2175,7 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
 // value is located.
 template <class T>
 static T GetStateValue(FCDEffectPassState* state, size_t offset) {
-  LOG_ASSERT(offset * sizeof(T) < state->GetDataSize());
+  O3D_ASSERT(offset * sizeof(T) < state->GetDataSize());
   return *(reinterpret_cast<T*>(state->GetData()) + offset);
 }
 
@@ -2373,7 +2339,7 @@ void Collada::UpdateCullingState(State* state) {
 // of the correct type, an assert is logged.
 static void SetBoolState(State* state, const char* name, bool value) {
   ParamBoolean* param = state->GetStateParam<ParamBoolean>(name);
-  LOG_ASSERT(param);
+  O3D_ASSERT(param);
   param->set_value(value);
 }
 
@@ -2384,7 +2350,7 @@ static void SetBoolState(State* state, const char* name, bool value) {
 // is logged.
 static void SetFloatState(State* state, const char* name, float value) {
   ParamFloat* param = state->GetStateParam<ParamFloat>(name);
-  LOG_ASSERT(param);
+  O3D_ASSERT(param);
   param->set_value(value);
 }
 
@@ -2396,7 +2362,7 @@ static void SetFloat4State(State* state,
                            const char* name,
                            const Float4& value) {
   ParamFloat4* param = state->GetStateParam<ParamFloat4>(name);
-  LOG_ASSERT(param);
+  O3D_ASSERT(param);
   param->set_value(value);
 }
 
@@ -2406,7 +2372,7 @@ static void SetFloat4State(State* state,
 // is not of the correct type, an assert is logged.
 static void SetIntState(State* state, const char* name, int value) {
   ParamInteger* param = state->GetStateParam<ParamInteger>(name);
-  LOG_ASSERT(param);
+  O3D_ASSERT(param);
   param->set_value(value);
 }
 
@@ -2573,8 +2539,8 @@ void Collada::AddRenderState(FCDEffectPassState* pass_state, State* state) {
       State::Comparison func = ConvertComparisonFunction(
           service_locator_,
           GetStateValue<FUDaePassStateFunction::Function>(pass_state, 0));
-      uint8 ref = GetStateValue<uint8>(pass_state, 4);
-      uint8 mask = GetStateValue<uint8>(pass_state, 5);
+      uint8_t ref = GetStateValue<uint8_t>(pass_state, 4);
+      uint8_t mask = GetStateValue<uint8_t>(pass_state, 5);
       SetIntState(state, State::kStencilComparisonFunctionParamName, func);
       SetIntState(state, State::kStencilReferenceParamName, ref);
       SetIntState(state, State::kStencilMaskParamName, mask);
@@ -2588,8 +2554,8 @@ void Collada::AddRenderState(FCDEffectPassState* pass_state, State* state) {
       State::Comparison back = ConvertComparisonFunction(
           service_locator_,
           GetStateValue<FUDaePassStateFunction::Function>(pass_state, 1));
-      uint8 ref = GetStateValue<uint8>(pass_state, 8);
-      uint8 mask = GetStateValue<uint8>(pass_state, 9);
+      uint8_t ref = GetStateValue<uint8_t>(pass_state, 8);
+      uint8_t mask = GetStateValue<uint8_t>(pass_state, 9);
       SetIntState(state, State::kStencilComparisonFunctionParamName, front);
       SetIntState(state, State::kCCWStencilComparisonFunctionParamName, back);
       SetIntState(state, State::kStencilReferenceParamName, ref);
@@ -2651,7 +2617,7 @@ void Collada::AddRenderState(FCDEffectPassState* pass_state, State* state) {
       break;
     }
     case FUDaePassState::STENCIL_MASK: {
-      uint32 mask = GetStateValue<uint8>(pass_state, 0);
+      uint32_t mask = GetStateValue<uint8_t>(pass_state, 0);
       SetIntState(state, State::kStencilWriteMaskParamName, mask);
       break;
     }
@@ -2908,8 +2874,8 @@ void Collada::SetParamsFromMaterial(FCDMaterial* material,
   if (pcount > 0) {
     for (size_t i = 0; i < pcount; ++i) {
       FCDEffectParameter* p = material->GetEffectParameter(i);
-      LOG_ASSERT(p);
-      String param_name(p->GetReference());
+      O3D_ASSERT(p);
+      std::string param_name(p->GetReference());
       // Check for an effect binding
       FCDEffectProfileFX* profile_fx = FindProfileFX(material->GetEffect());
       if (profile_fx) {

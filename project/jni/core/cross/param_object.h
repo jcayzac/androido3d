@@ -50,7 +50,7 @@ class IClassManager;
 class Transform;
 
 // Dictionary of Param objects indexed by name.
-typedef std::map<String, Param::Ref> NamedParamRefMap;
+typedef std::map<std::string, Param::Ref> NamedParamRefMap;
 
 // Base class of all objects that can contain Param elements.
 // Defines methods to add and remove params, search for params, etc.
@@ -79,7 +79,7 @@ class ParamObject : public NamedObject {
   //  class_type: Class of parameter
   // Returns:
   //  Newly created parameter.
-  Param* CreateParamByClass(const String& param_name,
+  Param* CreateParamByClass(const std::string& param_name,
                             const ObjectBase::Class* class_type);
 
   // Creates a Param with the given name and class name.
@@ -99,8 +99,8 @@ class ParamObject : public NamedObject {
   //                   'o3d.ParamTexture'
   // Returns:
   //  Newly created parameter.
-  Param* CreateParamByClassName(const String& param_name,
-                                const String& class_type_name);
+  Param* CreateParamByClassName(const std::string& param_name,
+                                const std::string& class_type_name);
 
   // Creates a Param based on the type passed in. This is a type safe version of
   // CreateParam for C++. You give it the name and a pointer to a typed param
@@ -111,7 +111,7 @@ class ParamObject : public NamedObject {
   // Returns:
   //  pointer to new param if successful.
   template<typename T>
-  T* CreateParam(const String& param_name) {
+  T* CreateParam(const std::string& param_name) {
     return down_cast<T*>(CreateParamByClass(param_name,
                                             T::GetApparentClass()));
   }
@@ -129,7 +129,7 @@ class ParamObject : public NamedObject {
   // Returns:
   //  True if successful.
   template<typename T>
-  bool CreateParamPointer(const String& param_name,
+  bool CreateParamPointer(const std::string& param_name,
                           T** typed_param_pointer_pointer) {
     *typed_param_pointer_pointer = CreateParam<T>(param_name);
     return *typed_param_pointer_pointer != NULL;
@@ -140,7 +140,7 @@ class ParamObject : public NamedObject {
   // Returns:
   //  Pointer to typed param if successful, NULL if failure.
   template<typename T>
-  T* GetParam(const String& param_name) const {
+  T* GetParam(const std::string& param_name) const {
     Param* param = GetUntypedParam(param_name);
     return (param && param->GetClass() == T::GetApparentClass()) ?
         down_cast<T*>(param) : NULL;
@@ -148,13 +148,13 @@ class ParamObject : public NamedObject {
 
   // Gets a param by name, or creates it if it doesn't exist.
   // Returns the param, or NULL if it doesn't match the requested type
-  Param* GetOrCreateParamByClass(const String& param_name,
+  Param* GetOrCreateParamByClass(const std::string& param_name,
                                  const ObjectBase::Class* param_type);
 
   // Gets a param by name, or creates it if it doesn't exist.
   // Returns the param, or NULL if it doesn't match the requested type
   template <typename T>
-  T* GetOrCreateParam(const String& param_name) {
+  T* GetOrCreateParam(const std::string& param_name) {
     return down_cast<T*>(GetOrCreateParamByClass(param_name,
                                                  T::GetApparentClass()));
   }
@@ -163,7 +163,7 @@ class ParamObject : public NamedObject {
   // possible.
   // Parameter:
   //   param_name: name of param to get.
-  Param* GetUntypedParam(const String& param_name) const;
+  Param* GetUntypedParam(const std::string& param_name) const;
 
   // Adds a newly created param to the local Param map. Fails if a param by the
   // same name already exists.
@@ -172,7 +172,7 @@ class ParamObject : public NamedObject {
   //   param: Param to add.
   // Returns:
   //   true if successful.
-  bool AddParam(const String& param_name, Param* param);
+  bool AddParam(const std::string& param_name, Param* param);
 
   // Removes the given Param from the object.
   // Parameters:
@@ -280,11 +280,11 @@ class ParamObject : public NamedObject {
   //   param_name: name of parameter
   //   typed_param_ref_pointer: address of param ref
   template<typename T>
-  void RegisterParamRef(const String& param_name,
+  void RegisterParamRef(const std::string& param_name,
                         T* typed_param_ref_pointer) {
     typename T::Pointer param =
         GetOrCreateParam<typename T::ClassType>(param_name);
-    LOG_ASSERT(param);
+    O3D_ASSERT(param);
     *typed_param_ref_pointer = T(param);
     param_ref_helper_map_.insert(
         std::make_pair(param_name,
@@ -298,7 +298,7 @@ class ParamObject : public NamedObject {
   //   param_name: name of parameter
   //   typed_param_ref_pointer: address of param ref
   template<typename T>
-  void RegisterReadOnlyParamRef(const String& param_name,
+  void RegisterReadOnlyParamRef(const std::string& param_name,
                                 T* typed_param_ref_pointer) {
     RegisterParamRef<T>(param_name, typed_param_ref_pointer);
     (*typed_param_ref_pointer)->MarkAsReadOnly();
@@ -352,7 +352,7 @@ class ParamObject : public NamedObject {
    public:
     explicit ParamRefHelper(T* typed_param_ref_pointer)
         : typed_param_ref_pointer_(typed_param_ref_pointer) {
-      LOG_ASSERT(typed_param_ref_pointer);
+      O3D_ASSERT(typed_param_ref_pointer);
     }
 
     // Attempt to update the ref to typed param to point to a new param. If the
@@ -376,7 +376,7 @@ class ParamObject : public NamedObject {
     T* typed_param_ref_pointer_;
   };
 
-  typedef std::multimap<String, ParamRefHelperBase*>
+  typedef std::multimap<std::string, ParamRefHelperBase*>
       ParamRefHelperMultiMap;
   typedef ParamRefHelperMultiMap::iterator ParamRefHelperMultiMapIterator;
   typedef std::pair<ParamRefHelperMultiMapIterator,
@@ -395,7 +395,7 @@ class ParamObject : public NamedObject {
   int change_count_;
 
   O3D_DECL_CLASS(ParamObject, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(ParamObject);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamObject);
 };
 
 // This template helps create Params whose values are set by the class that owns
@@ -424,7 +424,7 @@ class SlaveParam : public ParamType {
     }
   }
 
-  static void RegisterParamRef(const String& param_name,
+  static void RegisterParamRef(const std::string& param_name,
                                typename ParamType::Ref* typed_param_ref_pointer,
                                MasterType* master) {
     typename ParamType::Ref param = typename ParamType::Ref(new SlaveParam(

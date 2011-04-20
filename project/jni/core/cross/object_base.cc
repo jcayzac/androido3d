@@ -80,7 +80,7 @@ bool ObjectBase::ClassIsA(const Class *derived, const Class *base) {
   return false;
 }
 
-bool ObjectBase::ClassIsAClassName(const Class *derived, const String& name) {
+bool ObjectBase::ClassIsAClassName(const Class *derived, const std::string& name) {
   // find base in the hierarchy of derived
   for (; derived; derived = derived->parent()) {
     if (name.compare(derived->name()) == 0) {

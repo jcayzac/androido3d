@@ -34,8 +34,8 @@
 
 #include "tests/common/win/testing_common.h"
 #include "utils/cross/file_path_utils.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
+#include "base/cross/file_path.h"
+#include "base/cross/file_util.h"
 #include "core/cross/error.h"
 #include "core/cross/error_status.h"
 #include "import/cross/memory_buffer.h"
@@ -73,11 +73,11 @@ class RawDataTest : public testing::Test {
 
 // Test RawData
 TEST_F(RawDataTest, Basic) {
-  String uri("test_filename");
+  std::string uri("test_filename");
   const int kBufferLength = 1024;
 
   // Create a buffer and initialize it will some values
-  MemoryBuffer<uint8> buffer(kBufferLength);
+  MemoryBuffer<uint8_t> buffer(kBufferLength);
   for (int i = 0; i < kBufferLength; i++) {
     buffer[i] = i % 256;
   }
@@ -103,8 +103,8 @@ TEST_F(RawDataTest, Basic) {
 }
 
 TEST_F(RawDataTest, CreateFromFile) {
-  String uri("test_filename");
-  String filename = *g_program_path + "/bitmap_test/tga-256x256-24bit.tga";
+  std::string uri("test_filename");
+  std::string filename = *g_program_path + "/bitmap_test/tga-256x256-24bit.tga";
   RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
                                              uri,
                                              filename);
@@ -112,11 +112,11 @@ TEST_F(RawDataTest, CreateFromFile) {
   FilePath filepath = UTF8ToFilePath(filename);
   FILE *file = OpenFile(filepath, "rb");
   ASSERT_TRUE(file != NULL);
-  int64 file_size64;
+  int64_t file_size64;
   ASSERT_TRUE(GetFileSize(filepath, &file_size64));
   size_t file_length = static_cast<size_t>(file_size64);
   ASSERT_TRUE(file_length > 0);
-  scoped_array<uint8> data(new uint8[file_length]);
+  ::o3d::base::scoped_array<uint8_t> data(new uint8_t[file_length]);
   ASSERT_EQ(fread(data.get(), file_length, 1, file), 1U);
   CloseFile(file);
 
@@ -125,8 +125,8 @@ TEST_F(RawDataTest, CreateFromFile) {
 }
 
 TEST_F(RawDataTest, CreateFromFileFail) {
-  String uri("test_filename");
-  String filename = *g_program_path + "/bitmap_test/non-existent-file.foo";
+  std::string uri("test_filename");
+  std::string filename = *g_program_path + "/bitmap_test/non-existent-file.foo";
   RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
                                              uri,
                                              filename);
@@ -134,8 +134,8 @@ TEST_F(RawDataTest, CreateFromFileFail) {
 }
 
 TEST_F(RawDataTest, CreateFromFileStringValue) {
-  String uri("test_filename");
-  String filename = *g_program_path + "/unittest_data/fur.fx";
+  std::string uri("test_filename");
+  std::string filename = *g_program_path + "/unittest_data/fur.fx";
   RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
                                              uri,
                                              filename);
@@ -151,7 +151,7 @@ TEST_F(RawDataTest, CreateFromFileStringValue) {
 namespace {
 
 struct TestData {
-  const uint8* data;
+  const uint8_t* data;
   size_t length;
   bool valid;
   size_t offset;
@@ -161,7 +161,7 @@ struct TestData {
 
 TEST_F(RawDataTest, StringValue) {
   // A BOM in the front (valid)
-  static const uint8 data_0[] = {
+  static const uint8_t data_0[] = {
     0xEF,
     0xBB,
     0xBF,
@@ -172,7 +172,7 @@ TEST_F(RawDataTest, StringValue) {
   };
 
   // A null in the string (invalid)
-  static const uint8 data_1[] = {
+  static const uint8_t data_1[] = {
     0x65,
     0x66,
     0x00,
@@ -180,7 +180,7 @@ TEST_F(RawDataTest, StringValue) {
   };
 
   // A valid string
-  static const uint8 data_2[] = {
+  static const uint8_t data_2[] = {
     0x65,
     0x66,
     0x65,
@@ -188,7 +188,7 @@ TEST_F(RawDataTest, StringValue) {
   };
 
   // Null at the end (invalid)
-  static const uint8 data_3[] = {
+  static const uint8_t data_3[] = {
     0x65,
     0x66,
     0x65,
@@ -197,28 +197,28 @@ TEST_F(RawDataTest, StringValue) {
   };
 
   // A badly formed utf-8 like string (invalid)
-  static const uint8 data_4[] = {
+  static const uint8_t data_4[] = {
     0xE9,
     0xBE,
     0xE0,
   };
 
   // A badly formed utf-8 like string (invalid)
-  static const uint8 data_5[] = {
+  static const uint8_t data_5[] = {
     0xC1,
     0x65,
     0x66,
   };
 
   // A badly formed utf-8 like string (invalid)
-  static const uint8 data_6[] = {
+  static const uint8_t data_6[] = {
     0x65,
     0x66,
     0xF4,
   };
 
   // A valid multi-byte utf-8 string (valid)
-  static const uint8 data_7[] = {
+  static const uint8_t data_7[] = {
     0xE9,
     0xBE,
     0x8D,
@@ -229,31 +229,31 @@ TEST_F(RawDataTest, StringValue) {
   };
 
   // A UTF-8 but in D800-DFFF range
-  static const uint8 data_8[] = {
+  static const uint8_t data_8[] = {
     0xED,
     0xA0,
     0xA1,
   };
 
   TestData test_datas[] = {
-    { &data_0[0], arraysize(data_0), true, 3, },
-    { &data_1[0], arraysize(data_1), false, },
-    { &data_2[0], arraysize(data_2), true, },
-    { &data_3[0], arraysize(data_3), false, },
-    { &data_4[0], arraysize(data_4), false, },
-    { &data_5[0], arraysize(data_5), false, },
-    { &data_6[0], arraysize(data_6), false, },
-    { &data_7[0], arraysize(data_7), true, },
-    { &data_8[0], arraysize(data_8), false, },
+    { &data_0[0], o3d_arraysize(data_0), true, 3, },
+    { &data_1[0], o3d_arraysize(data_1), false, },
+    { &data_2[0], o3d_arraysize(data_2), true, },
+    { &data_3[0], o3d_arraysize(data_3), false, },
+    { &data_4[0], o3d_arraysize(data_4), false, },
+    { &data_5[0], o3d_arraysize(data_5), false, },
+    { &data_6[0], o3d_arraysize(data_6), false, },
+    { &data_7[0], o3d_arraysize(data_7), true, },
+    { &data_8[0], o3d_arraysize(data_8), false, },
   };
 
-  for (unsigned ii = 0; ii < arraysize(test_datas); ++ii) {
+  for (unsigned ii = 0; ii < o3d_arraysize(test_datas); ++ii) {
     TestData& test_data = test_datas[ii];
     RawData::Ref raw_data = RawData::Create(g_service_locator,
                                             "test",
                                             test_data.data,
                                             test_data.length);
-    String str(raw_data->StringValue());
+    std::string str(raw_data->StringValue());
     if (test_data.valid) {
       size_t test_length = test_data.length - test_data.offset;
       const char* test_string = reinterpret_cast<const char*>(test_data.data +

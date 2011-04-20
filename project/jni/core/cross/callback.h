@@ -221,7 +221,7 @@ class NonRecursiveCallback1Manager {
  private:
   CallbackType* callback_;
   mutable bool called_;
-  DISALLOW_COPY_AND_ASSIGN(NonRecursiveCallback1Manager);
+  O3D_DISALLOW_COPY_AND_ASSIGN(NonRecursiveCallback1Manager);
 };
 
 // Manages a closure so it can not be called recursively. The manager takes
@@ -280,7 +280,7 @@ class NonRecursiveClosureManager {
  private:
   ClosureType* closure_;
   mutable bool called_;
-  DISALLOW_COPY_AND_ASSIGN(NonRecursiveClosureManager);
+  O3D_DISALLOW_COPY_AND_ASSIGN(NonRecursiveClosureManager);
 };
 
 // Manages a closure so it can not be called recursively. The manager takes
@@ -340,7 +340,7 @@ class RefCountedNonRecursiveClosureManager : public RefCounted {
  private:
   ClosureType* closure_;
   mutable bool called_;
-  DISALLOW_COPY_AND_ASSIGN(RefCountedNonRecursiveClosureManager);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RefCountedNonRecursiveClosureManager);
 };
 
 }  // namespace o3d

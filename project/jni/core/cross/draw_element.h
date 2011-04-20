@@ -83,7 +83,7 @@ class DrawElement : public ParamObject {
   Element* owner_;  // our current owner.
 
   O3D_DECL_CLASS(DrawElement, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(DrawElement);
+  O3D_DISALLOW_COPY_AND_ASSIGN(DrawElement);
 };
 
 typedef std::vector<DrawElement*> DrawElementArray;

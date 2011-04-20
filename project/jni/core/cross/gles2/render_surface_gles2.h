@@ -83,7 +83,7 @@ class RenderSurfaceGLES2 : public RenderSurface {
  private:
   GLenum cube_face_;
   int mip_level_;
-  DISALLOW_COPY_AND_ASSIGN(RenderSurfaceGLES2);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceGLES2);
 };
 
 class RenderDepthStencilSurfaceGLES2 : public RenderDepthStencilSurface {
@@ -109,7 +109,7 @@ class RenderDepthStencilSurfaceGLES2 : public RenderDepthStencilSurface {
  private:
   // Handles to the depth and stencil render-buffers, respectively.
   GLuint render_buffers_[2];
-  DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceGLES2);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceGLES2);
 };
 
 }  // namespace o3d

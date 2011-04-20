@@ -60,7 +60,7 @@ TEST_F(MemoryStreamTest, Read) {
 
   // Put a test string in a memory buffer
   const int kStringLength = strlen(kTestString);
-  MemoryBuffer<uint8> buffer(kStringLength);
+  MemoryBuffer<uint8_t> buffer(kStringLength);
 
   for (i = 0; i < kStringLength; ++i) {
     buffer[i] = kTestString[i];
@@ -75,7 +75,7 @@ TEST_F(MemoryStreamTest, Read) {
             static_cast<int>(read_stream.GetTotalStreamLength()));
 
   // Read one byte at a time and verify
-  uint8 c;
+  uint8_t c;
   for (i = 0; i < kStringLength; ++i) {
     c = read_stream.ReadByte();
     EXPECT_EQ(c, kTestString[i]);
@@ -87,13 +87,13 @@ TEST_F(MemoryStreamTest, Read) {
   // Now, create a 2nd read stream
   MemoryReadStream read_stream2(buffer, buffer.GetLength());
   // Get direct memory access and check the pointer is correct
-  const uint8 *p = read_stream2.GetDirectMemoryPointer();
-  EXPECT_EQ(const_cast<uint8*>(p), static_cast<uint8*>(buffer));
+  const uint8_t *p = read_stream2.GetDirectMemoryPointer();
+  EXPECT_EQ(const_cast<uint8_t*>(p), static_cast<uint8_t*>(buffer));
 
   // Test the Read() method
 
   // First read 5 bytes
-  MemoryBuffer<uint8> read_buffer(kStringLength);
+  MemoryBuffer<uint8_t> read_buffer(kStringLength);
   int bytes_read = read_stream2.Read(read_buffer, 5);
 
   // Verify bytes read, stream position and remaining byte count
@@ -120,9 +120,9 @@ TEST_F(MemoryStreamTest, Read) {
   read_stream3.Skip(6);  // skip over the first 6 bytes
 
   // Read three bytes in a row and verify
-  uint8 c1 = read_stream3.ReadByte();
-  uint8 c2 = read_stream3.ReadByte();
-  uint8 c3 = read_stream3.ReadByte();
+  uint8_t c1 = read_stream3.ReadByte();
+  uint8_t c2 = read_stream3.ReadByte();
+  uint8_t c3 = read_stream3.ReadByte();
   EXPECT_EQ('f', c1);
   EXPECT_EQ('u', c2);
   EXPECT_EQ('n', c3);
@@ -139,7 +139,7 @@ TEST_F(MemoryStreamTest, Write) {
   // Now, assign it to the string (OK, we can't really write to
   // this memory, but we're just checking the API here
   const int kStringLength = strlen(kTestString);
-  empty_stream.Assign(reinterpret_cast<uint8*>(kTestString), kStringLength);
+  empty_stream.Assign(reinterpret_cast<uint8_t*>(kTestString), kStringLength);
 
   // Sanity check on length, position, remaining
   EXPECT_EQ(kStringLength,
@@ -149,12 +149,12 @@ TEST_F(MemoryStreamTest, Write) {
             static_cast<int>(empty_stream.GetRemainingByteCount()));
 
   // Create a write stream on a buffer we can write to
-  MemoryBuffer<uint8> buffer(kStringLength);
+  MemoryBuffer<uint8_t> buffer(kStringLength);
   MemoryWriteStream write_stream(buffer, buffer.GetLength());
   EXPECT_EQ(static_cast<int>(buffer.GetLength()), kStringLength);
 
   // Write 5 bytes
-  uint8 *p = reinterpret_cast<uint8*>(kTestString);
+  uint8_t *p = reinterpret_cast<uint8_t*>(kTestString);
   int bytes_written = write_stream.Write(p, 5);
   EXPECT_EQ(5, bytes_written);
   EXPECT_EQ(5U, write_stream.GetStreamPosition());
@@ -177,19 +177,19 @@ TEST_F(MemoryStreamTest, Write) {
 
 // Basic sanity check for endian writing/reading
 TEST_F(MemoryStreamTest, EndianSanity16) {
-  // Sanity check int16
-  MemoryBuffer<int16> buffer16(2);
-  int16 *p = buffer16;
-  uint8 *p8 = reinterpret_cast<uint8*>(p);
-  MemoryWriteStream write_stream(p8, sizeof(int16) * 2);
+  // Sanity check int16_t
+  MemoryBuffer<int16_t> buffer16(2);
+  int16_t *p = buffer16;
+  uint8_t *p8 = reinterpret_cast<uint8_t*>(p);
+  MemoryWriteStream write_stream(p8, sizeof(int16_t) * 2);
 
-  int16 value = 0x1234;
+  int16_t value = 0x1234;
   write_stream.WriteLittleEndianInt16(value);
   write_stream.WriteBigEndianInt16(value);
 
   // Verify that the bytes are in the correct order
-  uint8 low_byte = value & 0xff;
-  uint8 high_byte = value >> 8;
+  uint8_t low_byte = value & 0xff;
+  uint8_t high_byte = value >> 8;
 
   // validate little-endian
   EXPECT_EQ(low_byte, p8[0]);
@@ -202,21 +202,21 @@ TEST_F(MemoryStreamTest, EndianSanity16) {
 
 // Basic sanity check for endian writing/reading
 TEST_F(MemoryStreamTest, EndianSanity32) {
-  // Sanity check int32
-  MemoryBuffer<int32> buffer32(2);
-  int32 *p = buffer32;
-  uint8 *p8 = reinterpret_cast<uint8*>(p);
-  MemoryWriteStream write_stream(p8, sizeof(int32) * 2);
+  // Sanity check int32_t
+  MemoryBuffer<int32_t> buffer32(2);
+  int32_t *p = buffer32;
+  uint8_t *p8 = reinterpret_cast<uint8_t*>(p);
+  MemoryWriteStream write_stream(p8, sizeof(int32_t) * 2);
 
-  int32 value = 0x12345678;
+  int32_t value = 0x12345678;
   write_stream.WriteLittleEndianInt32(value);
   write_stream.WriteBigEndianInt32(value);
 
   // Verify that the bytes are in the correct order
-  uint8 byte1 = value & 0xff;
-  uint8 byte2 = (value >> 8) & 0xff;
-  uint8 byte3 = (value >> 16) & 0xff;
-  uint8 byte4 = (value >> 24) & 0xff;
+  uint8_t byte1 = value & 0xff;
+  uint8_t byte2 = (value >> 8) & 0xff;
+  uint8_t byte3 = (value >> 16) & 0xff;
+  uint8_t byte4 = (value >> 24) & 0xff;
 
   // validate little-endian
   EXPECT_EQ(byte1, p8[0]);
@@ -233,14 +233,14 @@ TEST_F(MemoryStreamTest, EndianSanity32) {
 
 // Basic sanity check for endian writing/reading
 TEST_F(MemoryStreamTest, EndianSanityFloat32) {
-  // Sanity check int32
+  // Sanity check int32_t
   MemoryBuffer<float> buffer32(2);
   float *p = buffer32;
-  uint8 *p8 = reinterpret_cast<uint8*>(p);
-  MemoryWriteStream write_stream(p8, sizeof(int32) * 2);
+  uint8_t *p8 = reinterpret_cast<uint8_t*>(p);
+  MemoryWriteStream write_stream(p8, sizeof(int32_t) * 2);
 
   union {
-    int32 ivalue;
+    int32_t ivalue;
     float fvalue;
   } value;
   value.fvalue = 3.14159f;
@@ -248,10 +248,10 @@ TEST_F(MemoryStreamTest, EndianSanityFloat32) {
   write_stream.WriteBigEndianFloat32(value.fvalue);
 
   // Verify that the bytes are in the correct order
-  uint8 byte1 = value.ivalue & 0xff;
-  uint8 byte2 = (value.ivalue >> 8) & 0xff;
-  uint8 byte3 = (value.ivalue >> 16) & 0xff;
-  uint8 byte4 = (value.ivalue >> 24) & 0xff;
+  uint8_t byte1 = value.ivalue & 0xff;
+  uint8_t byte2 = (value.ivalue >> 8) & 0xff;
+  uint8_t byte3 = (value.ivalue >> 16) & 0xff;
+  uint8_t byte4 = (value.ivalue >> 24) & 0xff;
 
   // validate little-endian
   EXPECT_EQ(byte1, p8[0]);
@@ -266,15 +266,15 @@ TEST_F(MemoryStreamTest, EndianSanityFloat32) {
   EXPECT_EQ(byte1, p8[7]);
 }
 
-// Write then read int16, int32, and float32 little/big endian values
+// Write then read int16_t, int32_t, and float32 little/big endian values
 TEST_F(MemoryStreamTest, Endian) {
-  const int16 kValue1 = 13243;
-  const int32 kValue2 = 2393043;
+  const int16_t kValue1 = 13243;
+  const int32_t kValue2 = 2393043;
   const float kValue3 = -0.039483f;
-  const int16 kValue4 = -3984;
+  const int16_t kValue4 = -3984;
   const float kValue5 = 1234.5678f;
-  const uint8 kValue6 = 5;  // write a single byte to make things interesting
-  const int32 kValue7 = -3920393;
+  const uint8_t kValue6 = 5;  // write a single byte to make things interesting
+  const int32_t kValue7 = -3920393;
 
   size_t total_size = sizeof(kValue1) +
                       sizeof(kValue2) +
@@ -284,10 +284,10 @@ TEST_F(MemoryStreamTest, Endian) {
                       sizeof(kValue6) +
                       sizeof(kValue7);
 
-  MemoryBuffer<uint8> buffer(total_size);
+  MemoryBuffer<uint8_t> buffer(total_size);
 
   // write the values to the buffer
-  uint8 *p8 = buffer;
+  uint8_t *p8 = buffer;
   MemoryWriteStream write_stream(p8, total_size);
 
   write_stream.WriteLittleEndianInt16(kValue1);
@@ -299,13 +299,13 @@ TEST_F(MemoryStreamTest, Endian) {
   write_stream.WriteLittleEndianInt32(kValue7);
 
   // now read them back in and verify
-  int16 read_value1;
-  int32 read_value2;
+  int16_t read_value1;
+  int32_t read_value2;
   float read_value3;
-  int16 read_value4;
+  int16_t read_value4;
   float read_value5;
-  uint8 read_value6;
-  int32 read_value7;
+  uint8_t read_value6;
+  int32_t read_value7;
   MemoryReadStream read_stream(p8, total_size);
 
   read_value1 = read_stream.ReadLittleEndianInt16();

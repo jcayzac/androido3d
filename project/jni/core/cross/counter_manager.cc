@@ -44,7 +44,7 @@ CounterManager::CounterManager(ServiceLocator* service_locator)
 }
 
 void CounterManager::RegisterSecondCounter(SecondCounter* counter) {
-  DCHECK(std::find(second_counters_.begin(),
+  O3D_ASSERT(std::find(second_counters_.begin(),
                    second_counters_.end(),
                    counter) == second_counters_.end());
   second_counters_.push_back(counter);
@@ -54,12 +54,12 @@ void CounterManager::UnregisterSecondCounter(SecondCounter* counter) {
   SecondCounterArray::iterator last = std::remove(second_counters_.begin(),
                                                   second_counters_.end(),
                                                   counter);
-  DCHECK(last != second_counters_.end());
+  O3D_ASSERT(last != second_counters_.end());
   second_counters_.erase(last, second_counters_.end());
 }
 
 void CounterManager::RegisterTickCounter(TickCounter* counter) {
-  DCHECK(std::find(tick_counters_.begin(),
+  O3D_ASSERT(std::find(tick_counters_.begin(),
                    tick_counters_.end(),
                    counter) == tick_counters_.end());
   tick_counters_.push_back(counter);
@@ -69,12 +69,12 @@ void CounterManager::UnregisterTickCounter(TickCounter* counter) {
   TickCounterArray::iterator last = std::remove(tick_counters_.begin(),
                                                 tick_counters_.end(),
                                                 counter);
-  DCHECK(last != tick_counters_.end());
+  O3D_ASSERT(last != tick_counters_.end());
   tick_counters_.erase(last, tick_counters_.end());
 }
 
 void CounterManager::RegisterRenderFrameCounter(RenderFrameCounter* counter) {
-  DCHECK(std::find(render_frame_counters_.begin(),
+  O3D_ASSERT(std::find(render_frame_counters_.begin(),
                    render_frame_counters_.end(),
                    counter) == render_frame_counters_.end());
   render_frame_counters_.push_back(counter);
@@ -85,7 +85,7 @@ void CounterManager::UnregisterRenderFrameCounter(RenderFrameCounter* counter) {
       std::remove(render_frame_counters_.begin(),
                   render_frame_counters_.end(),
                   counter);
-  DCHECK(last != render_frame_counters_.end());
+  O3D_ASSERT(last != render_frame_counters_.end());
   render_frame_counters_.erase(last, render_frame_counters_.end());
 }
 

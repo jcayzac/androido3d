@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "base/logging.h"
 #include "core/cross/service_locator.h"
 #include "core/cross/evaluation_counter.h"
 #include "core/cross/client.h"
@@ -54,26 +53,26 @@ class NativeView: public o3d::extra::IExternalResourceProvider {
 
  private:
   // From o3d::extra::IExternalResourceProvider
-  o3d::extra::ExternalResource::Ref GetExternalResourceForURI(o3d::Pack& pack, const std::string& uri);
+  o3d::ExternalResource::Ref GetExternalResourceForURI(o3d::Pack& pack, const std::string& uri);
 
  private:
-  o3d::ServiceLocator                mServiceLocator;
-  o3d::Renderer*                     mRenderer;
-  scoped_ptr<o3d::EvaluationCounter> mEvaluationCounter;
-  scoped_ptr<o3d::ClassManager>      mClassManager;
-  scoped_ptr<o3d::ClientInfoManager> mClientInfoManager;
-  scoped_ptr<o3d::ObjectManager>     mObjectManager;
-  scoped_ptr<o3d::Profiler>          mProfiler;
-  scoped_ptr<o3d::Features>          mFeatures;
-  scoped_ptr<o3d::Client>            mClient;
-  o3d::Pack*                         mPack;
-  o3d::Transform*                    mRoot;
-  o3d_utils::Scene*                  mCurrentScene;
-  o3d_utils::ViewInfo*               mView;
-  o3d::ElapsedTimeTimer              mTimer;
-  size_t                             mWidth;
-  size_t                             mHeight;
-  float                              mAngleY;
+  o3d::ServiceLocator                           mServiceLocator;
+  o3d::Renderer*                                mRenderer;
+  o3d::base::scoped_ptr<o3d::EvaluationCounter> mEvaluationCounter;
+  o3d::base::scoped_ptr<o3d::ClassManager>      mClassManager;
+  o3d::base::scoped_ptr<o3d::ClientInfoManager> mClientInfoManager;
+  o3d::base::scoped_ptr<o3d::ObjectManager>     mObjectManager;
+  o3d::base::scoped_ptr<o3d::Profiler>          mProfiler;
+  o3d::base::scoped_ptr<o3d::Features>          mFeatures;
+  o3d::base::scoped_ptr<o3d::Client>            mClient;
+  o3d::Pack*                                    mPack;
+  o3d::Transform*                               mRoot;
+  o3d_utils::Scene*                             mCurrentScene;
+  o3d_utils::ViewInfo*                          mView;
+  o3d::ElapsedTimeTimer                         mTimer;
+  size_t                                        mWidth;
+  size_t                                        mHeight;
+  float                                         mAngleY;
 };
 
 /* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */

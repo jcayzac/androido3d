@@ -91,7 +91,7 @@ class DrawPass : public RenderNode {
   ParamInteger::Ref sort_method_param_;  // The order we will sort the DrawList.
 
   O3D_DECL_CLASS(DrawPass, RenderNode);
-  DISALLOW_COPY_AND_ASSIGN(DrawPass);
+  O3D_DISALLOW_COPY_AND_ASSIGN(DrawPass);
 };
 
 }  // namespace o3d

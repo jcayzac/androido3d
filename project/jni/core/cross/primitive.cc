@@ -98,8 +98,8 @@ void Primitive::Render(Renderer* renderer,
                        Material* material,
                        ParamObject* override,
                        ParamCache* param_cache) {
-  DLOG_ASSERT(draw_element);
-  DLOG_ASSERT(param_cache);
+  O3D_ASSERT(draw_element);
+  O3D_ASSERT(param_cache);
   // If there's no material attached to this Shape.
   if (!material) {
     O3D_ERROR(service_locator()) << "No Material attached to Shape \""
@@ -222,7 +222,7 @@ class FieldReadAccessor {
   unsigned int real_start_index_;
   unsigned int translated_end_index_;
 
-  DISALLOW_COPY_AND_ASSIGN(FieldReadAccessor);
+  O3D_DISALLOW_COPY_AND_ASSIGN(FieldReadAccessor);
 };
 
 // Specialization which pads out the fetched coordinates with zeros,
@@ -410,7 +410,7 @@ bool GetIndicesAccessor(const Primitive* primitive,
     return false;
 
   const IndexBuffer* buffer = primitive->index_buffer();
-  DCHECK(buffer);
+  O3D_ASSERT(buffer);
   if (!buffer->index_field())
     return false;
 
@@ -430,14 +430,14 @@ bool GetIndicesAccessor(const Primitive* primitive,
 bool Primitive::WalkPolygons(
     int position_stream_index,
     PolygonFunctor* polygon_functor) const {
-  DLOG_ASSERT(polygon_functor);
+  O3D_ASSERT(polygon_functor);
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
   FieldReadAccessorUnsignedShort indices;
 #else
   FieldReadAccessorUnsignedInt indices;
 #endif
-  scoped_ptr<FieldReadAccessor<Point3> > vertices_pointer(
+  ::o3d::base::scoped_ptr<FieldReadAccessor<Point3> > vertices_pointer(
       GetVerticesAccessor(this, position_stream_index));
   if (vertices_pointer.get() == NULL)
     return false;
@@ -710,7 +710,7 @@ class BoundingBoxHelper : public Primitive::PolygonFunctor {
     max_extent_ = maxPerElem(max_extent_, p);
   }
   void GetBoundingBox(BoundingBox* result) {
-    DLOG_ASSERT(result);
+    O3D_ASSERT(result);
     *result = BoundingBox(min_extent_, max_extent_);
   }
  private:
@@ -727,7 +727,7 @@ void Primitive::IntersectRay(int position_stream_index,
                              const Point3& end,
                              RayIntersectionInfo* result) const {
   if (!result) {
-    DLOG_ASSERT(false);
+    O3D_ASSERT(false);
     return;
   }
   result->Reset();
@@ -740,7 +740,7 @@ void Primitive::IntersectRay(int position_stream_index,
 void Primitive::GetBoundingBox(int position_stream_index,
                                BoundingBox* result) const {
   if (!result) {
-    DLOG_ASSERT(false);
+    O3D_ASSERT(false);
     return;
   }
 

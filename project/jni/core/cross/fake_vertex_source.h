@@ -101,7 +101,7 @@ class FakeVertexSource : public VertexSource {
 
    private:
     FakeVertexSource* master_;
-    DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
+    O3D_DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
   };
 
   typedef std::vector<SlaveParamVertexBufferStream::Ref> StreamParamVector;
@@ -110,7 +110,7 @@ class FakeVertexSource : public VertexSource {
   StreamParamVector vertex_stream_params_;
 
   O3D_DECL_CLASS(FakeVertexSource, VertexSource);
-  DISALLOW_COPY_AND_ASSIGN(FakeVertexSource);
+  O3D_DISALLOW_COPY_AND_ASSIGN(FakeVertexSource);
 };
 
 }  // namespace o3d

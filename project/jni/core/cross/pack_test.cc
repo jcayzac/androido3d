@@ -133,7 +133,7 @@ TEST_F(PackTest, RemoveObject) {
   Transform* transform2 = pack->Create<Transform>();
   ASSERT_TRUE(transform2 != NULL);
 
-  const String transform_name(transform->name());
+  const std::string transform_name(transform->name());
   const Id id(transform->id());
 
   pack->RemoveObject(transform);

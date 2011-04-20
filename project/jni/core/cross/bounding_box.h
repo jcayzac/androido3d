@@ -143,39 +143,8 @@ class ParamBoundingBox : public TypedParam<BoundingBox> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamBoundingBox, Param);
-  DISALLOW_COPY_AND_ASSIGN(ParamBoundingBox);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamBoundingBox);
 };
-
-#if 0  // TODO: change this to a ParamOperation
-// A bind operation of 2 Float3s into a bounding box.
-class ParamBindFloat3sToBoundingBox : public ParamBind {
- public:
-  typedef SmartPointer<ParamBindFloat3sToBoundingBox> Ref;
-
-  static const char* kInput1Name;
-  static const char* kInput2Name;
-  static const char* kOutputName;
-
-  // Creates a BoundingBox from 2 Float3s.
-  virtual void ComputeDestinationValues();
-
- private:
-  explicit ParamBindFloat3sToBoundingBox(ServiceLocator* service_locator);
-
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
-
-  // The source Params.
-  TypedBindConnection<ParamFloat3>* source_bind_connection_1_;
-  TypedBindConnection<ParamFloat3>* source_bind_connection_2_;
-
-  // The dest Param.
-  TypedBindConnection<ParamBoundingBox>* destination_bind_connection_;
-
-  O3D_DECL_CLASS(ParamBindFloat3sToBoundingBox, ParamBind)
-  DISALLOW_COPY_AND_ASSIGN(ParamBindFloat3sToBoundingBox);
-};
-#endif
 
 }  // namespace o3d
 

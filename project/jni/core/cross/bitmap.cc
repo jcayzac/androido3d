@@ -39,17 +39,14 @@
 #include <cmath>
 #include <sys/stat.h>
 #include "utils/cross/file_path_utils.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
+#include "base/cross/file_path.h"
+#include "base/cross/file_util.h"
 #include "core/cross/features.h"
 #include "core/cross/texture.h"
+#include "core/cross/external_resource.h"
 #include "import/cross/raw_data.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
-
-using file_util::OpenFile;
-using file_util::CloseFile;
-using file_util::GetFileSize;
 
 namespace o3d {
 
@@ -83,8 +80,8 @@ void Bitmap::SetContents(Texture::Format format,
                          unsigned int width,
                          unsigned int height,
                          Bitmap::Semantic semantic,
-                         scoped_array<uint8>* image_data) {
-  DCHECK(image_data);
+                         ::o3d::base::scoped_array<uint8_t>* image_data) {
+  O3D_ASSERT(image_data);
   image_data_.reset();
   format_ = format;
   num_mipmaps_ = num_mipmaps;
@@ -95,7 +92,7 @@ void Bitmap::SetContents(Texture::Format format,
 }
 
 void Bitmap::SetFrom(Bitmap *source) {
-  DCHECK(source);
+  O3D_ASSERT(source);
   SetContents(source->format(),
               source->num_mipmaps(),
               source->width(),
@@ -109,7 +106,7 @@ void Bitmap::Allocate(Texture::Format format,
                       unsigned int height,
                       unsigned int num_mipmaps,
                       Bitmap::Semantic semantic) {
-  DCHECK(image::CheckImageDimensions(width, height));
+  O3D_ASSERT(image::CheckImageDimensions(width, height));
   switch (format) {
     case Texture::XRGB8:
     case Texture::ARGB8:
@@ -123,11 +120,11 @@ void Bitmap::Allocate(Texture::Format format,
     case Texture::DXT5:
       break;
     default:
-      DLOG(FATAL) << "Trying to allocate a bitmap with invalid format";
+      O3D_LOG(FATAL) << "Trying to allocate a bitmap with invalid format";
       break;
   }
-  DCHECK_LE(num_mipmaps, image::ComputeMipMapCount(width, height));
-  DCHECK_GT(num_mipmaps, 0u);
+  O3D_ASSERT(num_mipmaps <= image::ComputeMipMapCount(width, height));
+  O3D_ASSERT(num_mipmaps > 0u);
 
   format_ = format;
   width_ = width;
@@ -137,16 +134,16 @@ void Bitmap::Allocate(Texture::Format format,
   AllocateData();
 }
 
-uint8 *Bitmap::GetMipData(unsigned int level) const {
-  DCHECK(level < num_mipmaps_);
+uint8_t *Bitmap::GetMipData(unsigned int level) const {
+  O3D_ASSERT(level < num_mipmaps_);
   if (!image_data_.get()) return NULL;
-  uint8 *data = image_data_.get();
+  uint8_t *data = image_data_.get();
   return data + GetMipChainSize(level);
 }
 
-uint8 *Bitmap::GetPixelData(
+uint8_t *Bitmap::GetPixelData(
     unsigned int level, unsigned int x, unsigned int y) const {
-  uint8* data = GetMipData(level);
+  uint8_t* data = GetMipData(level);
   if (data) {
     data += GetMipPitch(level) * y + image::ComputePitch(format(), 1) * x;
   }
@@ -161,19 +158,19 @@ void Bitmap::SetRect(
     unsigned src_height,
     const void* src_data,
     int src_pitch) {
-  DCHECK(src_data);
-  DCHECK(level < static_cast<int>(num_mipmaps()) && level >= 0);
+  O3D_ASSERT(src_data);
+  O3D_ASSERT(level < static_cast<int>(num_mipmaps()) && level >= 0);
   unsigned mip_width = image::ComputeMipDimension(level, width());
   unsigned mip_height = image::ComputeMipDimension(level, height());
-  DCHECK(dst_left + src_width <= mip_width &&
+  O3D_ASSERT(dst_left + src_width <= mip_width &&
          dst_top + src_height <= mip_height);
   bool compressed = Texture::IsCompressedFormat(format());
-  DCHECK(!compressed || (dst_left == 0 && dst_top == 0 &&
+  O3D_ASSERT(!compressed || (dst_left == 0 && dst_top == 0 &&
                      src_width == mip_width && src_height == mip_height));
 
-  uint8* dst = GetPixelData(level, dst_left, dst_top);
+  uint8_t* dst = GetPixelData(level, dst_left, dst_top);
 
-  const uint8* src = static_cast<const uint8*>(src_data);
+  const uint8_t* src = static_cast<const uint8_t*>(src_data);
   if (!compressed) {
     unsigned bytes_per_line = image::ComputePitch(format(), src_width);
     int dst_pitch = image::ComputePitch(format(), mip_width);
@@ -190,11 +187,11 @@ void Bitmap::SetRect(
 
 bool Bitmap::LoadFromStream(ServiceLocator* service_locator,
                             MemoryReadStream *stream,
-                            const String &filename,
+                            const std::string &filename,
                             image::ImageFileType file_type,
                             BitmapRefArray* bitmaps) {
-  DCHECK(stream);
-  DCHECK(bitmaps);
+  O3D_ASSERT(stream);
+  O3D_ASSERT(bitmaps);
   BitmapRefArray::size_type first = bitmaps->size();
   bool success = false;
   // If we don't know what type to load, try to detect it based on the file
@@ -224,7 +221,7 @@ bool Bitmap::LoadFromStream(ServiceLocator* service_locator,
   if (!success) {
     // At this point we either could not detect the filetype, or possibly
     // the file extension was incorrect (eg. a JPEG image with a .png suffix)
-    DLOG(INFO) << "Could not detect file type from filename \""
+    O3D_LOG(INFO) << "Could not detect file type from filename \""
                << filename << "\". Trying all the loaders.";
     // We will try all the loaders, one by one, starting by the ones that can
     // have an early detect based on magic strings.  We Seek(0) after each try
@@ -248,7 +245,7 @@ bool Bitmap::LoadFromStream(ServiceLocator* service_locator,
 
   if (success) {
     Features* features = service_locator->GetService<Features>();
-    DCHECK(features);
+    O3D_ASSERT(features);
     if (features->flip_textures()) {
       // Only flip the bitmaps we added.
       for (BitmapRefArray::size_type ii = first; ii < bitmaps->size(); ++ii) {
@@ -259,7 +256,7 @@ bool Bitmap::LoadFromStream(ServiceLocator* service_locator,
       }
     }
   } else {
-    DLOG(ERROR) << "Failed to load image \"" << filename
+    O3D_LOG(ERROR) << "Failed to load image \"" << filename
                 << "\": unknown file type";
   }
   return success;
@@ -267,45 +264,17 @@ bool Bitmap::LoadFromStream(ServiceLocator* service_locator,
 
 // Given an arbitrary bitmap file, load it all into memory and then call our
 // stream loader
-bool Bitmap::LoadFromFile(ServiceLocator* service_locator,
-                          const FilePath &filepath,
+bool Bitmap::LoadFromExternalResource(ServiceLocator* service_locator,
+                          const ExternalResource& resource,
                           image::ImageFileType file_type,
                           BitmapRefArray* bitmaps) {
-  DCHECK(bitmaps);
-  // Open the file.
+  O3D_ASSERT(bitmaps);
   bool result = false;
-  String filename = FilePathToUTF8(filepath);
-  FILE *file = OpenFile(filepath, "rb");
-
-  if (!file) {
-    DLOG(ERROR) << "bitmap file not found \"" << filename << "\"";
-  } else {
-    // Determine the file's length
-    int64 file_size64;
-    if (!GetFileSize(filepath, &file_size64)) {
-      DLOG(ERROR) << "error getting bitmap file size \"" << filename << "\"";
-    } else {
-      if (file_size64 > 0xffffffffLL) {
-        DLOG(ERROR) << "bitmap file is too large \"" << filename << "\"";
-      } else {
-        size_t file_length = static_cast<size_t>(file_size64);
-
-        // Load the compressed image data into memory
-        MemoryBuffer<uint8> file_contents(file_length);
-        uint8 *p = file_contents;
-        if (fread(p, file_length, 1, file) != 1) {
-          DLOG(ERROR) << "error reading bitmap file \"" << filename << "\"";
-        } else {
-          // And create the bitmap from a memory stream
-          MemoryReadStream stream(file_contents, file_length);
-          result = LoadFromStream(service_locator,
-                                  &stream, filename, file_type, bitmaps);
-        }
-      }
-    }
-    CloseFile(file);
+  if (resource) {
+    MemoryReadStream stream(resource.data(), resource.size());
+    result = LoadFromStream(service_locator,
+                            &stream, resource.name(), file_type, bitmaps);
   }
-
   return result;
 }
 
@@ -314,14 +283,14 @@ bool Bitmap::LoadFromFile(ServiceLocator* service_locator,
 bool Bitmap::LoadFromRawData(RawData *raw_data,
                              image::ImageFileType file_type,
                              BitmapRefArray* bitmaps) {
-  DCHECK(raw_data);
-  DCHECK(bitmaps);
-  String filename = raw_data->uri();
+  O3D_ASSERT(raw_data);
+  O3D_ASSERT(bitmaps);
+  std::string filename = raw_data->uri();
 
   // GetData() returns NULL if it, for example, cannot open the temporary data
   // file. In that case, it invokes the error callback. We just have to be
   // careful not to dereference it.
-  const uint8* data = raw_data->GetData();
+  const uint8_t* data = raw_data->GetData();
   if (!data) {
     return false;
   }
@@ -339,8 +308,8 @@ void Bitmap::DrawImage(const Bitmap& src_img,
                        int dst_level,
                        int dst_x, int dst_y,
                        int dst_width, int dst_height) {
-  DCHECK(src_img.image_data());
-  DCHECK(image_data());
+  O3D_ASSERT(src_img.image_data());
+  O3D_ASSERT(image_data());
 
   if (dst_level < 0 || dst_level >= static_cast<int>(num_mipmaps())) {
     O3D_ERROR(service_locator()) << "Destination Mip out of range";
@@ -443,24 +412,24 @@ bool Bitmap::GenerateMipmaps(unsigned int base_width,
                              unsigned int base_height,
                              Texture::Format format,
                              unsigned int num_mipmaps,
-                             uint8 *data) {
-  DCHECK(image::CheckImageDimensions(base_width, base_height));
+                             uint8_t *data) {
+  O3D_ASSERT(image::CheckImageDimensions(base_width, base_height));
   unsigned int components = image::GetNumComponentsForFormat(format);
   if (components == 0) {
-    DLOG(ERROR) << "Mip-map generation not supported for format: " << format;
+    O3D_LOG(ERROR) << "Mip-map generation not supported for format: " << format;
     return false;
   }
-  DCHECK_GE(std::max(base_width, base_height) >> (num_mipmaps - 1), 1u);
-  uint8 *mip_data = data;
+  O3D_ASSERT((std::max(base_width, base_height) >> (num_mipmaps - 1)) >= 1u);
+  uint8_t *mip_data = data;
   unsigned int mip_width = base_width;
   unsigned int mip_height = base_height;
   for (unsigned int level = 1; level < num_mipmaps; ++level) {
     unsigned int prev_width = mip_width;
     unsigned int prev_height = mip_height;
-    uint8 *prev_data = mip_data;
+    uint8_t *prev_data = mip_data;
     mip_data += components * mip_width * mip_height;
-    DCHECK_EQ(mip_data, data + image::ComputeMipChainSize(
-                  base_width, base_height, format, level));
+    O3D_ASSERT(mip_data == (data + image::ComputeMipChainSize(
+                  base_width, base_height, format, level)));
     mip_width = std::max(1U, mip_width >> 1);
     mip_height = std::max(1U, mip_height >> 1);
     image::GenerateMipmap(
@@ -484,8 +453,8 @@ bool Bitmap::CheckAlphaIsOne() const {
     case Texture::ARGB8:
     case Texture::RGBA8: {
       for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-        const uint8* data = GetMipData(level) + 3;
-        const uint8* end = data + image::ComputeBufferSize(
+        const uint8_t* data = GetMipData(level) + 3;
+        const uint8_t* end = data + image::ComputeBufferSize(
             std::max(1U, width() >> level),
             std::max(1U, height() >> level),
             format());
@@ -500,12 +469,12 @@ bool Bitmap::CheckAlphaIsOne() const {
     }
     case Texture::DXT1: {
       for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-        const uint8* data = GetMipData(level);
-        const uint8* end = data + image::ComputeBufferSize(
+        const uint8_t* data = GetMipData(level);
+        const uint8_t* end = data + image::ComputeBufferSize(
             std::max(1U, width() >> level),
             std::max(1U, height() >> level),
             format());
-        DCHECK((end - data) % 8 == 0);
+        O3D_ASSERT((end - data) % 8 == 0);
         while (data < end) {
           int color0 = static_cast<int>(data[0]) |
                        static_cast<int>(data[1]) << 8;
@@ -524,8 +493,8 @@ bool Bitmap::CheckAlphaIsOne() const {
       return false;
     case Texture::ABGR16F: {
       for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-        const uint8* data = GetMipData(level) + 6;
-        const uint8* end = data + image::ComputeBufferSize(
+        const uint8_t* data = GetMipData(level) + 6;
+        const uint8_t* end = data + image::ComputeBufferSize(
             std::max(1U, width() >> level),
             std::max(1U, height() >> level),
             format());
@@ -548,7 +517,7 @@ bool Bitmap::CheckAlphaIsOne() const {
             std::max(1U, height() >> level),
             format())/sizeof(float));
         for(; data < end; data += 4) {
-          if (floats_are_different(*data, 1.0f)) return false;
+          if (std::not_equal_to<float>()(*data, 1.0f)) return false;
         }
       }
       break;

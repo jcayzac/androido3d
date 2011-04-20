@@ -98,7 +98,7 @@ class Matrix4AxisRotation : public ParamObject {
   SlaveParamMatrix4::Ref output_matrix_param_;
 
   O3D_DECL_CLASS(Matrix4AxisRotation, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Matrix4AxisRotation);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4AxisRotation);
 };
 }  // namespace o3d
 

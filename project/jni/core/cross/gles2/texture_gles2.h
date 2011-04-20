@@ -35,15 +35,6 @@
 #ifndef O3D_CORE_CROSS_GLES2_TEXTURE_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_TEXTURE_GLES2_H_
 
-// Precompiled header comes before everything else.
-
-// Disable compiler warning for OpenGLES2 calls that require a void* to be cast
-// to a GLuint
-#if defined(OS_WIN)
-#pragma warning(disable : 4312)
-#pragma warning(disable : 4311)
-#endif
-
 #include "core/cross/bitmap.h"
 #include "core/cross/texture.h"
 #include "core/cross/types.h"
@@ -126,7 +117,7 @@ class Texture2DGLES2 : public Texture2D {
 
   // Returns true if the backing bitmap has the data for the level.
   bool HasLevel(unsigned int level) const {
-    DCHECK_LT(static_cast<int>(level), levels());
+    O3D_ASSERT(static_cast<int>(level) < levels());
     return (has_levels_ & (1 << level)) != 0;
   }
 
@@ -220,7 +211,7 @@ class TextureCUBEGLES2 : public TextureCUBE {
 
   // Returns true if the backing bitmap has the data for the level.
   bool HasLevel(CubeFace face, unsigned int level) const {
-    DCHECK_LT(static_cast<int>(level), levels());
+    O3D_ASSERT(static_cast<int>(level) < levels());
     return (has_levels_[face] & (1 << level)) != 0;
   }
 

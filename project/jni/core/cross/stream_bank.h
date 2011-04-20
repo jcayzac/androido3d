@@ -130,7 +130,7 @@ class StreamBank : public VertexSource {
 
    private:
     StreamBank* master_;
-    DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
+    O3D_DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
   };
 
   // Called after the a stream as been added or removed.
@@ -161,7 +161,7 @@ class StreamBank : public VertexSource {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(StreamBank, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(StreamBank);
+  O3D_DISALLOW_COPY_AND_ASSIGN(StreamBank);
 };
 
 class ParamStreamBank : public TypedRefParam<StreamBank> {

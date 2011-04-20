@@ -37,7 +37,7 @@
 #define O3D_CORE_CROSS_GLES2_RENDERER_GLES2_H_
 
 #include "core/cross/gles2/gles2_headers.h"
-#include "build/build_config.h"
+#include "base/cross/config.h"
 #include "core/cross/renderer.h"
 #include "core/cross/renderer_platform.h"
 #include "core/cross/types.h"
@@ -139,11 +139,6 @@ class RendererGLES2 : public Renderer {
       return true;
     } else if ((mac_cgl_context_ != NULL) &&
                (mac_cgl_context_ == CGLGetCurrentContext())) {
-      return true;
-    }
-#elif defined(OS_WIN)
-    if ((gl_context_ != NULL) &&
-        (gl_context_ == wglGetCurrentContext())) {
       return true;
     }
 #elif defined(OS_LINUX)
@@ -289,13 +284,6 @@ class RendererGLES2 : public Renderer {
 
   // Indicates we're rendering fullscreen rather than in the plugin region.
   bool fullscreen_;
-
-#ifdef OS_WIN
-  // Handle to the GLES2 device.
-  HWND window_;
-  HDC device_context_;
-  HGLRC gl_context_;
-#endif
 
 #if defined(OS_MACOSX) && !(TARGET_OS_IPHONE)
   AGLContext    mac_agl_context_;

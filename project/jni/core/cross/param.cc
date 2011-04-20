@@ -68,18 +68,18 @@ Param::Param(ServiceLocator* service_locator, bool dynamic, bool read_only)
 
 Param::~Param() {
   // There can't be any output connections since they'd have a reference to us.
-  DCHECK(output_connections_.empty());
+  O3D_ASSERT(output_connections_.empty());
   UnbindInput();
-  DCHECK(input_connection_ == NULL);
+  O3D_ASSERT(input_connection_ == NULL);
 }
 
-const String& Param::name() const {
+const std::string& Param::name() const {
   return name_;
 }
 
-void Param::SetName(const String& name) {
-  DCHECK(!name.empty());
-  DCHECK(name_.empty());
+void Param::SetName(const std::string& name) {
+  O3D_ASSERT(!name.empty());
+  O3D_ASSERT(name_.empty());
   name_ = name;
 }
 
@@ -95,7 +95,7 @@ void Param::ComputeValue() {
 }
 
 void Param::MarkAsReadOnly() {
-  DCHECK(input_connection_ == NULL);
+  O3D_ASSERT(input_connection_ == NULL);
   read_only_ = true;
 }
 
@@ -132,7 +132,7 @@ void Param::ResetInputConnection() {
 }
 
 void Param::set_owner(ParamObject* owner) {
-  DCHECK((owner_ == NULL && owner != NULL) ||
+  O3D_ASSERT((owner_ == NULL && owner != NULL) ||
          (owner_ != NULL && owner == NULL));
   owner_ = owner;
 }
@@ -195,13 +195,13 @@ void Param::AddOutputsRecursive(const Param* original,
 }
 
 void Param::GetInputs(ParamVector* params) const {
-  DCHECK(params);
+  O3D_ASSERT(params);
   params->clear();
   AddInputsRecursive(this, params);
 }
 
 void Param::GetOutputs(ParamVector* params) const {
-  DCHECK(params);
+  O3D_ASSERT(params);
   params->clear();
   AddOutputsRecursive(this, params);
 }
@@ -228,7 +228,7 @@ void Param::InvalidateAllParameters() {
 }
 
 void Param::SetNotCachable() {
-  DCHECK(not_cachable_count_ == 0);
+  O3D_ASSERT(not_cachable_count_ == 0);
   not_cachable_count_ = 1;
 }
 
@@ -295,10 +295,10 @@ bool Param::Bind(Param *source_param) {
   if (input_connection_) {
     // UnbindOutput will clear input_connection_.
     bool result = input_connection_->UnbindOutput(this);
-    DCHECK(result);
+    O3D_ASSERT(result);
   }
 
-  DCHECK(input_connection_ == NULL);
+  O3D_ASSERT(input_connection_ == NULL);
 
   // If our input is not cachable we need to increment the not_cachable_count
   // for ourselves and all the outputs further down the chain.
@@ -317,8 +317,8 @@ void Param::UnbindInput() {
   Param *source_param = input_connection();
   if (source_param != NULL) {
     bool success = source_param->UnbindOutput(this);
-    DLOG_ASSERT(success);
-    DCHECK(input_connection_ == NULL);
+    O3D_ASSERT(success);
+    O3D_ASSERT(input_connection_ == NULL);
   }
 }
 

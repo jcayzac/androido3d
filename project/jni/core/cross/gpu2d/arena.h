@@ -59,7 +59,7 @@ class Arena {
     virtual void Free(void* ptr) = 0;
    protected:
     Allocator() {}
-    DISALLOW_COPY_AND_ASSIGN(Allocator);
+    O3D_DISALLOW_COPY_AND_ASSIGN(Allocator);
   };
 
   // The Arena's default allocator, which uses malloc and free to
@@ -133,7 +133,7 @@ class Arena {
   // The following two structures are intended to automatically
   // determine the platform's alignment constraint for structures.
   struct AlignmentInner {
-    int64 x;
+    int64_t x;
   };
   struct AlignmentStruct {
     char f1;
@@ -148,7 +148,7 @@ class Arena {
 
   // Rounds up the given allocation size to the specified alignment.
   size_t RoundUp(size_t size, size_t alignment) {
-    DCHECK(alignment % 2 == 0);
+    O3D_ASSERT(alignment % 2 == 0);
     return (size + alignment - 1) & ~(alignment - 1);
   }
 
@@ -163,7 +163,7 @@ class Arena {
     Chunk(Allocator* allocator, size_t size)
         : allocator_(allocator),
           size_(size) {
-      base_ = static_cast<uint8*>(allocator_->Allocate(size));
+      base_ = static_cast<uint8_t*>(allocator_->Allocate(size));
       current_offset_ = 0;
     }
 
@@ -191,10 +191,10 @@ class Arena {
 
    private:
     Allocator* allocator_;
-    uint8* base_;
+    uint8_t* base_;
     size_t size_;
     size_t current_offset_;
-    DISALLOW_COPY_AND_ASSIGN(Chunk);
+    O3D_DISALLOW_COPY_AND_ASSIGN(Chunk);
   };
 
   // Callback used to delete an individual chunk.
@@ -206,7 +206,7 @@ class Arena {
   std::list<Chunk*> chunks_;
   size_t current_chunk_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(Arena);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Arena);
 };
 
 }  // namespace gpu2d

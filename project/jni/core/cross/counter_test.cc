@@ -226,7 +226,7 @@ class TestCounterCallback : public Counter::CounterCallback {
   int call_count_;  // number of times this callback was called.
   bool* deleted_;  // pointer to bool to get set to true when deleted.
 
-  DISALLOW_COPY_AND_ASSIGN(TestCounterCallback);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TestCounterCallback);
 };
 
 }  // anonymous namespace

@@ -25,17 +25,17 @@ include $(O3D_START_COMBINED_LIBRARY)
 O3D_COMBINED_LIBRARY := o3dcombined-$(_app)
 
 include $(O3D_NATIVE_DIR)/AndroidLib.mk
+include $(O3D_NATIVE_DIR)/base/Android.mk
 include $(O3D_NATIVE_DIR)/core/Android.mk
 include $(O3D_NATIVE_DIR)/import/Android.mk
 include $(O3D_NATIVE_DIR)/extra/Android.mk
 include $(O3D_NATIVE_DIR)/utils/Android.mk
-include $(O3D_NATIVE_DIR)/third_party/fcollada/files/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/fcollada/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/libtxc_dxtn/files/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/libjpeg/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/libpng/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/zlib/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/lzma/Android.mk
-include $(O3D_NATIVE_DIR)/third_party/loggingshim/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/protobuf/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/protobuf-lzma/Android.mk
 

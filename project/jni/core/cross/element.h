@@ -53,7 +53,7 @@ class RayIntersectionInfo;
 class BoundingBox;
 class ParamCache;
 
-typedef std::vector<String> StringArray;
+typedef std::vector<std::string> StringArray;
 typedef std::vector<DrawElement::Ref> DrawElementRefArray;
 
 // The Element is an abstract base class. It's purpose is to manage
@@ -235,11 +235,11 @@ class Element : public ParamObject {
   // Draw elements under this Element.
   DrawElementRefArray draw_elements_;
 
-  // The Shape we are currnetly owned by.
+  // The Shape we are currently owned by.
   Shape* owner_;
 
   O3D_DECL_CLASS(Element, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Element);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Element);
 };
 
 typedef std::vector<Element*> ElementArray;

@@ -54,12 +54,12 @@ class FieldTest : public Field {
                              unsigned destination_start_index,
                              unsigned num_elements) { }
 
-  virtual void SetFromUInt32s(const uint32* source,
+  virtual void SetFromUInt32s(const uint32_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements) { }
 
-  virtual void SetFromUByteNs(const uint8* source,
+  virtual void SetFromUByteNs(const uint8_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements) { }

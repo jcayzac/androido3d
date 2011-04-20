@@ -63,7 +63,7 @@ GLenum GLDataType(const Field& field) {
         return GL_UNSIGNED_BYTE;
     }
   }
-  DLOG(ERROR) << "Unknown Stream DataType";
+  O3D_LOG(ERROR) << "Unknown Stream DataType";
   return GL_INVALID_ENUM;
 }
 
@@ -76,20 +76,20 @@ const int kNumLoggedEvents = 5;
 
 StreamBankGL::StreamBankGL(ServiceLocator* service_locator)
     : StreamBank(service_locator) {
-  DLOG(INFO) << "StreamBankGL Construct";
+  O3D_LOG(INFO) << "StreamBankGL Construct";
 }
 
 StreamBankGL::~StreamBankGL() {
-  DLOG(INFO) << "StreamBankGL Destruct";
+  O3D_LOG(INFO) << "StreamBankGL Destruct";
 }
 
 bool StreamBankGL::CheckForMissingVertexStreams(
     ParamCacheGL::VaryingParameterMap& varying_map,
     Stream::Semantic* missing_semantic,
     int* missing_semantic_index) {
-  DCHECK(missing_semantic);
-  DCHECK(missing_semantic_index);
-  DLOG(INFO) << "StreamBankGL InsertMissingVertexStreams";
+  O3D_ASSERT(missing_semantic);
+  O3D_ASSERT(missing_semantic_index);
+  O3D_LOG(INFO) << "StreamBankGL InsertMissingVertexStreams";
   // Match CG_VARYING parameters to Buffers with the matching semantics.
   ParamCacheGL::VaryingParameterMap::iterator i;
   for (i = varying_map.begin(); i != varying_map.end(); ++i) {
@@ -103,7 +103,7 @@ bool StreamBankGL::CheckForMissingVertexStreams(
       // record the matched stream into the varying parameter map for later
       // use by StreamBankGL::Draw().
       i->second = stream_index;
-      DLOG(INFO)
+      O3D_LOG(INFO)
           << "StreamBankGL Matched CG_PARAMETER \""
           << cgGetParameterName(cg_param) << " : "
           << semantic_string << "\" to stream "
@@ -151,7 +151,7 @@ bool StreamBankGL::BindStreamsForRendering(
     GLint element_count = field.num_components();
     if (element_count > 4) {
       element_count = 0;
-      DLOG_FIRST_N(ERROR, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(ERROR, kNumLoggedEvents)
           << "Unable to find stream for CGparameter: "
           << cgGetParameterName(i->first);
     }

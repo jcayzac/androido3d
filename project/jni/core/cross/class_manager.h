@@ -53,15 +53,15 @@ class ClassManager : public IClassManager {
   virtual void RemoveClass(const ObjectBase::Class* class_type);
 
   virtual const ObjectBase::Class* GetClassByClassName(
-      const String& class_name) const;
+      const std::string& class_name) const;
 
-  virtual bool ClassNameIsAClass(const String& derived_class_name,
+  virtual bool ClassNameIsAClass(const std::string& derived_class_name,
                                  const ObjectBase::Class* base_class) const;
 
   virtual ObjectBase::Ref CreateObjectByClass(
       const ObjectBase::Class* object_class);
 
-  virtual ObjectBase::Ref CreateObject(const String& type_name);
+  virtual ObjectBase::Ref CreateObject(const std::string& type_name);
 
   std::vector<const ObjectBase::Class*> GetAllClasses() const;
 
@@ -93,7 +93,7 @@ class ClassManager : public IClassManager {
   };
 
   // A map by string of ObjectClassInfos.
-  typedef std::map<const String, ObjectClassInfo> ObjectClassInfoNameMap;
+  typedef std::map<const std::string, ObjectClassInfo> ObjectClassInfoNameMap;
   // A map by ObjectBase::Class of Object creations functions.
   typedef std::map<const ObjectBase::Class*,
                    ObjectCreateFunc> ObjectCreatorClassMap;

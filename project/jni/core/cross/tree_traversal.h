@@ -211,7 +211,7 @@ class TreeTraversal : public RenderNode {
                                         // have been set.
 
   O3D_DECL_CLASS(TreeTraversal, RenderNode);
-  DISALLOW_COPY_AND_ASSIGN(TreeTraversal);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TreeTraversal);
 };
 
 }  // namespace o3d

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "build/build_config.h"
+#include "base/cross/config.h"
 
 #ifdef __ANDROID__
 #include <jni.h>
@@ -45,6 +45,9 @@
 #include "core/cross/texture.h"
 #include "core/cross/transform.h"
 
+namespace o3d_utils {
+using namespace o3d;
+
 void DumpMultiLineString(const std::string& str) {
   size_t pos = 0;
   int line_num = 1;
@@ -52,7 +55,7 @@ void DumpMultiLineString(const std::string& str) {
     size_t start = pos;
     pos = str.find_first_of('\n', pos);
     std::string line = str.substr(start, pos - start);
-    DLOG(INFO) << line_num << ": " << line;
+    O3D_LOG(INFO) << line_num << ": " << line;
     if (pos == std::string::npos) {
       break;
     }
@@ -318,5 +321,4 @@ bool EndsWith(const std::string& str, const std::string& end) {
          str.substr(str.size() - end.size()).compare(end) == 0;
 }
 
-
-
+} // namespace o3d_utils

@@ -35,13 +35,10 @@
 #include <csetjmp>
 #include "core/cross/bitmap.h"
 #include "utils/cross/file_path_utils.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
+#include "base/cross/file_path.h"
+#include "base/cross/file_util.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
-
-using file_util::OpenFile;
-using file_util::CloseFile;
 
 #define XMD_H     // Prevent redefinition of UINT32
 #undef FAR        // Prevent redefinition of macro "FAR"
@@ -68,7 +65,7 @@ namespace {
 class JPEGMemoryReader : public jpeg_source_mgr {
  public:
   JPEGMemoryReader(j_decompress_ptr cinfo,
-                   const uint8 *jpeg_data,
+                   const uint8_t *jpeg_data,
                    size_t jpeg_data_length) {
     // Store a pointer to ourselves that we'll get in the callbacks
     if (cinfo->src == NULL) {
@@ -84,7 +81,7 @@ class JPEGMemoryReader : public jpeg_source_mgr {
 
     bytes_in_buffer = jpeg_data_length;
 
-    uint8 *p = const_cast<uint8*>(jpeg_data);
+    uint8_t *p = const_cast<uint8_t*>(jpeg_data);
     next_input_byte = reinterpret_cast<JOCTET*>(p);
   }
 
@@ -131,7 +128,7 @@ METHODDEF(void) my_error_exit(j_common_ptr cinfo) {
 // the result to 24- or 32-bit bitmap data.
 bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
                                 MemoryReadStream *stream,
-                                const String &filename,
+                                const std::string &filename,
                                 BitmapRefArray* bitmaps) {
   // Workspace for libjpeg decompression.
   struct jpeg_decompress_struct cinfo;
@@ -149,7 +146,7 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
 
   // NOTE: The following smart pointer needs to be declared before the
   // setjmp so that it is properly destroyed if we jump back.
-  scoped_array<uint8> image_data;
+  ::o3d::base::scoped_array<uint8_t> image_data;
 
   // Establish the setjmp return context for my_error_exit to use.
   if (setjmp(jerr.setjmp_buffer)) {
@@ -158,7 +155,7 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
     char buffer[JMSG_LENGTH_MAX];
     (*cinfo.err->format_message) (reinterpret_cast<j_common_ptr>(&cinfo),
                                   buffer);
-    DLOG(ERROR) << "JPEG load error: " << buffer;
+    O3D_LOG(ERROR) << "JPEG load error: " << buffer;
     // Clean up.
     jpeg_destroy_decompress(&cinfo);
     return false;
@@ -171,7 +168,7 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
   // in such a way to read JPEG data from memory buffer |jpeg_data| of
   // length |jpeg_data_length|
   size_t jpeg_data_length = stream->GetTotalStreamLength();
-  const uint8 *jpeg_data = stream->GetDirectMemoryPointer();
+  const uint8_t *jpeg_data = stream->GetDirectMemoryPointer();
   JPEGMemoryReader(&cinfo, jpeg_data, jpeg_data_length);
 
   // Step 3: read the JPEG header and allocate storage
@@ -181,7 +178,7 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
   unsigned int width = cinfo.image_width;
   unsigned int height = cinfo.image_height;
   if (!image::CheckImageDimensions(width, height)) {
-    DLOG(ERROR) << "Failed to load " << filename
+    O3D_LOG(ERROR) << "Failed to load " << filename
                 << ": dimensions are too large (" << width
                 << ", " << height << ").";
     // Use the jpeg error system to clean up and exit.
@@ -189,7 +186,7 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
   }
 
   if (cinfo.num_components != 3) {
-    DLOG(ERROR) << "JPEG load error: Bad number of pixel channels ("
+    O3D_LOG(ERROR) << "JPEG load error: Bad number of pixel channels ("
                 << cinfo.num_components
                 << ") in file \"" << filename << "\"";
     // Use the jpeg error system to clean up and exit.
@@ -200,9 +197,9 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
   // Allocate storage for the pixels. Bitmap requires we allocate enough
   // memory for all mips even if we don't use them.
   size_t image_size = Bitmap::ComputeMaxSize(width, height, format);
-  image_data.reset(new uint8[image_size]);
+  image_data.reset(new uint8_t[image_size]);
   if (image_data.get() == NULL) {
-    DLOG(ERROR) << "JPEG memory allocation error \"" << filename << "\"";
+    O3D_LOG(ERROR) << "JPEG memory allocation error \"" << filename << "\"";
     // Invoke the longjmp() error handler.
     ERREXIT(&cinfo, JERR_OUT_OF_MEMORY);
   }
@@ -214,8 +211,8 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
   jpeg_start_decompress(&cinfo);
   // These should be equal because we don't use scaling.
   // TODO: use libjpeg scaling for NPOT->POT ?
-  DCHECK_EQ(width, cinfo.output_width);
-  DCHECK_EQ(height, cinfo.output_height);
+  O3D_ASSERT(width == cinfo.output_width);
+  O3D_ASSERT(height == cinfo.output_height);
 
   // Create an output work buffer of the right size.
   row_stride = cinfo.output_width * cinfo.output_components;
@@ -234,7 +231,7 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
   // loop counter, so that we don't have to keep track ourselves.
   while (cinfo.output_scanline < height) {
     // Initialise the buffer write location.
-    uint8 *image_write_ptr = image_data.get() +
+    uint8_t *image_write_ptr = image_data.get() +
          cinfo.output_scanline * width * image_components;
 
     // jpeg_read_scanlines() expects an array of pointers to scanlines.
@@ -242,7 +239,7 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
     jpeg_read_scanlines(&cinfo, buffer, 1);
 
     // output_scanline is the numbe of scanlines that have been emitted.
-    DCHECK_LE(cinfo.output_scanline, height);
+    O3D_ASSERT(cinfo.output_scanline <= height);
 
     // copy the scanline to its final destination
     for (unsigned int i = 0; i < width; ++i) {
@@ -264,7 +261,7 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
   jpeg_destroy_decompress(&cinfo);
 
   // Check for jpeg decompression warnings.
-  DLOG(WARNING) << "JPEG decompression warnings: " << jerr.pub.num_warnings;
+  O3D_LOG(WARNING) << "JPEG decompression warnings: " << jerr.pub.num_warnings;
 
   // Success.
   Bitmap::Ref bitmap(new Bitmap(service_locator));

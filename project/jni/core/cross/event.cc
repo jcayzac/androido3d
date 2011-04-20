@@ -37,7 +37,7 @@
 namespace o3d {
 
 bool Event::operator==(const Event& e) const {
-  CHECK(valid() && e.valid());
+  O3D_ASSERT(valid() && e.valid());
   if (type_ != e.type_) {
     return false;
   }

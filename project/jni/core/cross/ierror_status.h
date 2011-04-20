@@ -45,7 +45,7 @@ class IErrorStatus {
  public:
   static const InterfaceId kInterfaceId;
 
-  typedef Callback1<const String&> ErrorCallback;
+  typedef Callback1<const std::string&> ErrorCallback;
 
   virtual ~IErrorStatus() {}
 
@@ -64,16 +64,16 @@ class IErrorStatus {
   virtual void ClearErrorCallback() = 0;
 
   // Sets the last error. This is pretty much only called by ErrorStreamManager.
-  virtual void SetLastError(const String& error) = 0;
+  virtual void SetLastError(const std::string& error) = 0;
 
 #ifndef NDEBUG
   // For debug builds, we display where in the code the error came from.
-  virtual void SetLastError(const String& error, const char *file,
+  virtual void SetLastError(const std::string& error, const char *file,
       int line) = 0;
 #endif
 
   // Gets the last reported error.
-  virtual const String& GetLastError() const = 0;
+  virtual const std::string& GetLastError() const = 0;
 
   // Clears the stored last error.
   virtual void ClearLastError() = 0;

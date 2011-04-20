@@ -35,13 +35,6 @@
 #ifndef O3D_CORE_CROSS_GLES2_EFFECT_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_EFFECT_GLES2_H_
 
-// Disable compiler warning for openGLES2 calls that require a void* to
-// be cast to a GLuint
-#if defined(OS_WIN)
-#pragma warning(disable : 4312)
-#pragma warning(disable : 4311)
-#endif
-
 #include <utility>
 #include <vector>
 #include <map>
@@ -78,7 +71,7 @@ private:
 	GLsizei size_;
 };
 
-typedef std::map<String, GLProgramParam::Ref> GLProgramParameterMap;
+typedef std::map<std::string, GLProgramParam::Ref> GLProgramParameterMap;
 	
 
 // A class to set an effect parameter from an O3D parameter.
@@ -108,7 +101,7 @@ class EffectGLES2 : public Effect {
 
   // Reads the vertex and fragment shaders from string in the FX format.
   // It returns true if the shaders were successfully compiled.
-  virtual bool LoadFromFXString(const String& effect);
+  virtual bool LoadFromFXString(const std::string& effect);
 
   // Binds the shaders to the device and sets up all the shader parameters using
   // the values from the matching Param's of the param_object.
@@ -141,7 +134,7 @@ class EffectGLES2 : public Effect {
   // Undoes the effect of the above.  For now, this unbinds textures.
   void ResetShaderUniforms(ParamCacheGLES2* param_cache_gl);
   void GetShaderParamInfo(GLuint program,
-                          std::map<String, EffectParameterInfo>* info_map);
+                          std::map<std::string, EffectParameterInfo>* info_map);
   void GetVaryingVertexShaderParamInfo(
       GLuint program,
       std::vector<EffectStreamInfo>* info_array);
@@ -150,8 +143,8 @@ class EffectGLES2 : public Effect {
 
   // TODO(o3d): remove these (OLD path for textures).
   void SetTexturesFromEffect(ParamCacheGLES2* param_cache_gl);
-  void FillSamplerToTextureMap(const String &effect);
-  String GetTextureNameFromSamplerParamName(const String &sampler_name);
+  void FillSamplerToTextureMap(const std::string &effect);
+  std::string GetTextureNameFromSamplerParamName(const std::string &sampler_name);
 
   SemanticManager* semantic_manager_;
   RendererGLES2* renderer_;
@@ -163,7 +156,7 @@ class EffectGLES2 : public Effect {
   GLProgramParameterMap shader_param_info_map_;
 	
   // TODO(o3d): remove this (OLD path for textures).
-  std::map<String, String> sampler_to_texture_map_;
+  std::map<std::string, std::string> sampler_to_texture_map_;
 };
 }  // namespace o3d
 

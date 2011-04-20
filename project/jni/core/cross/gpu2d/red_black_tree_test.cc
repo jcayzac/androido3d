@@ -147,7 +147,7 @@ TEST(RedBlackTreeTest, FailingInsertionRegressionTest1) {
 }
 
 namespace {
-void InsertionAndDeletionTest(const int32 seed, const int tree_size) {
+void InsertionAndDeletionTest(const int32_t seed, const int tree_size) {
   InitRandom(seed);
   const int max_val = tree_size;
   // Build the tree.

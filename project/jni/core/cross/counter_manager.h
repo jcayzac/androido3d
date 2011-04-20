@@ -35,7 +35,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 #include "core/cross/profiler.h"
 #include "core/cross/service_dependency.h"
 #include "core/cross/service_implementation.h"

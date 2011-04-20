@@ -107,7 +107,7 @@ class Shape : public ParamObject {
   ElementRefArray elements_;
 
   O3D_DECL_CLASS(Shape, ParamObject)
-  DISALLOW_COPY_AND_ASSIGN(Shape);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Shape);
 };  // Shape
 
 typedef std::vector<Shape*> ShapeArray;

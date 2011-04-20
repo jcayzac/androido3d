@@ -7,7 +7,7 @@
 
 #include <string>
 #include <vector>
-#include "core/cross/math_types.h"
+#include "base/cross/types.h"
 
 namespace o3d {
 

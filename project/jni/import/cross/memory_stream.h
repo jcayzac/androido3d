@@ -47,14 +47,14 @@
 #define O3D_IMPORT_CROSS_MEMORY_STREAM_H_
 
 #include <string.h>
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 namespace o3d {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class MemoryReadStream {
  public:
-  MemoryReadStream(const uint8 *memory, size_t n)
+  MemoryReadStream(const uint8_t *memory, size_t n)
       : memory_(memory), read_index_(0), length_(n) {}
 
   // Explicit copy constructor
@@ -88,24 +88,24 @@ class MemoryReadStream {
   // Reads the next byte in the stream (if there are any left)
   // If the stream has run dry (is empty) then returns 0
   // To check number of bytes available, call GetRemainingByteCount()
-  virtual uint8 ReadByte() {
+  virtual uint8_t ReadByte() {
     if (read_index_ >= length_) return 0;
 
-    uint8 byte = memory_[read_index_];
+    uint8_t byte = memory_[read_index_];
     read_index_++;
 
     return byte;
   }
 
   // 16 and 32bit integer reading for both little and big endian
-  int16 ReadLittleEndianInt16();
-  uint16 ReadLittleEndianUInt16();
-  int16 ReadBigEndianInt16();
-  uint16 ReadBigEndianUInt16();
-  int32 ReadLittleEndianInt32();
-  uint32 ReadLittleEndianUInt32();
-  int32 ReadBigEndianInt32();
-  uint32 ReadBigEndianUInt32();
+  int16_t ReadLittleEndianInt16();
+  uint16_t ReadLittleEndianUInt16();
+  int16_t ReadBigEndianInt16();
+  uint16_t ReadBigEndianUInt16();
+  int32_t ReadLittleEndianInt32();
+  uint32_t ReadLittleEndianUInt32();
+  int32_t ReadBigEndianInt32();
+  uint32_t ReadBigEndianUInt32();
 
   // IEEE 32-bit float reading (little and big endian)
   float ReadLittleEndianFloat32();
@@ -124,7 +124,7 @@ class MemoryReadStream {
   // without a memcpy().
   // Calling GetRemainingByteCount() will give the number of remaining bytes
   // starting at this address...
-  const uint8 *GetDirectMemoryPointer() { return memory_ + read_index_; }
+  const uint8_t *GetDirectMemoryPointer() { return memory_ + read_index_; }
 
   // Same as GetDirectMemoryPointer() but returns pointer of desired type
   template <typename T>
@@ -158,13 +158,13 @@ class MemoryReadStream {
   size_t GetStreamPosition() const { return read_index_; }
 
   // utility methods (swaps the value if necessary)
-  static int16 GetLittleEndianInt16(const int16 *value);
-  static uint16 GetLittleEndianUInt16(const uint16 *value);
-  static int32 GetLittleEndianInt32(const int32 *value);
-  static uint32 GetLittleEndianUInt32(const uint32 *value);
+  static int16_t GetLittleEndianInt16(const int16_t *value);
+  static uint16_t GetLittleEndianUInt16(const uint16_t *value);
+  static int32_t GetLittleEndianInt32(const int32_t *value);
+  static uint32_t GetLittleEndianUInt32(const uint32_t *value);
 
  protected:
-  const uint8 *memory_;
+  const uint8_t *memory_;
   size_t read_index_;
   size_t length_;
 
@@ -178,7 +178,7 @@ class MemoryWriteStream {
   // May be completely initialized by calling Assign()
   MemoryWriteStream() : memory_(NULL), write_index_(0), length_(0) {}
 
-  MemoryWriteStream(uint8 *memory, size_t n)
+  MemoryWriteStream(uint8_t *memory, size_t n)
       : memory_(memory), write_index_(0), length_(n) {}
 
   // Explicit copy constructor
@@ -191,7 +191,7 @@ class MemoryWriteStream {
 
   // In the case where the default constructor was used, this is useful
   // to assign a pointer to memory and a length in bytes.
-  void Assign(uint8 *memory, size_t n) {
+  void Assign(uint8_t *memory, size_t n) {
     memory_ = memory;
     length_ = n;
     write_index_ = 0;
@@ -218,19 +218,19 @@ class MemoryWriteStream {
     return bytes_to_write;
   }
 
-  void WriteByte(uint8 byte) {
+  void WriteByte(uint8_t byte) {
     Write(&byte, 1);
   }
 
   // 16 and 32bit integer writing for both little and big endian
-  void WriteLittleEndianInt16(int16 i);
-  void WriteLittleEndianUInt16(uint16 i);
-  void WriteBigEndianInt16(int16 i);
-  void WriteBigEndianUInt16(uint16 i);
-  void WriteLittleEndianInt32(int32 i);
-  void WriteLittleEndianUInt32(uint32 i);
-  void WriteBigEndianInt32(int32 i);
-  void WriteBigEndianUInt32(uint32 i);
+  void WriteLittleEndianInt16(int16_t i);
+  void WriteLittleEndianUInt16(uint16_t i);
+  void WriteBigEndianInt16(int16_t i);
+  void WriteBigEndianUInt16(uint16_t i);
+  void WriteLittleEndianInt32(int32_t i);
+  void WriteLittleEndianUInt32(uint32_t i);
+  void WriteBigEndianInt32(int32_t i);
+  void WriteBigEndianUInt32(uint32_t i);
 
   // IEEE 32-bit float writing (little and big endian)
   void WriteLittleEndianFloat32(float f);
@@ -254,7 +254,7 @@ class MemoryWriteStream {
   size_t GetStreamPosition() const { return write_index_; }
 
  protected:
-  uint8 *memory_;
+  uint8_t *memory_;
   size_t write_index_;
   size_t length_;
 

@@ -41,12 +41,12 @@ Profiler::Profiler(ServiceLocator* service_locator)
     : service_(service_locator, this) {
 }
 
-#ifdef PROFILE_CLIENT
+#ifdef O3D_PROFILE_CLIENT
 
 void Profiler::Write(StructuredWriter* writer) {
   timing_table_.Write(writer);
 }
 
-#endif  // PROFILE_CLIENT
+#endif  // O3D_PROFILE_CLIENT
 
 }  // namespace o3d

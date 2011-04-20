@@ -76,7 +76,7 @@ class ParamArray : public NamedObject {
   // Returns:
   //   index to Param created at index or NULL if failure.
   Param* CreateParamByClassName(unsigned index,
-                                const String& class_name);
+                                const std::string& class_name);
 
   // Resizes the array of params.
   // Parameters:
@@ -88,7 +88,7 @@ class ParamArray : public NamedObject {
   // Parameters:
   //   index: index at which to create new param.
   //   class_name: class name of param to create.
-  void ResizeByClassName(unsigned num_param, const String& class_name);
+  void ResizeByClassName(unsigned num_param, const std::string& class_name);
 
   // Returns the number of params.  Note: In javascript this is called "length".
   unsigned size() const {
@@ -160,7 +160,7 @@ class ParamArray : public NamedObject {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(ParamArray, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(ParamArray);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamArray);
 };
 
 // A Param that holds a weak pointer to a ParamArray.

@@ -49,7 +49,7 @@ class Profiler {
 
   explicit Profiler(ServiceLocator* service_locator);
 
-#ifdef PROFILE_CLIENT
+#ifdef O3D_PROFILE_CLIENT
   // Starts the timer ticking for the code range identified by key.
   inline void ProfileStart(const std::string& key) {
     timing_table_.Start(key);
@@ -68,7 +68,7 @@ class Profiler {
   // Dumps all profiler state to a string.
   void Write(StructuredWriter* writer);
 
-#else  // PROFILE_CLIENT
+#else  // O3D_PROFILE_CLIENT
   inline void ProfileStart(const std::string& key) { }
 
   inline void ProfileStop(const std::string& key) { }
@@ -77,16 +77,16 @@ class Profiler {
 
   inline void Write(StructuredWriter* writer) {
   }
-#endif  // PROFILE_CLIENT
+#endif  // O3D_PROFILE_CLIENT
 
  private:
   ServiceImplementation<Profiler> service_;
 
-#ifdef PROFILE_CLIENT
+#ifdef O3D_PROFILE_CLIENT
   TimingTable timing_table_;
-#endif  // PROFILE_CLIENT
+#endif  // O3D_PROFILE_CLIENT
 
-  DISALLOW_COPY_AND_ASSIGN(Profiler);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Profiler);
 };
 }  // namespace o3d
 

@@ -35,7 +35,7 @@
 #define O3D_UTILS_CROSS_DATAURL_H_
 
 #include "core/cross/types.h"
-#include "base/scoped_ptr.h"
+#include "base/cross/scoped_ptr.h"
 
 namespace o3d {
 namespace dataurl {
@@ -44,7 +44,7 @@ namespace dataurl {
 extern const char* const kEmptyDataURL;
 
 // Creates a data URL for the given data.
-String ToDataURL(const String& mime_type, const void* data, size_t length);
+std::string ToDataURL(const std::string& mime_type, const void* data, size_t length);
 
 // Decodes the data from a data URL and stores a pointer to the data in
 // dst_buffer. If an error occurs in decoding, it returns false and
@@ -52,16 +52,16 @@ String ToDataURL(const String& mime_type, const void* data, size_t length);
 // Parameters:
 //   data_url: The data URL from which to extract the data.
 //   dst_buffer: A pointer to the output data will be stored in this
-//       scoped_array.
+//       ::o3d::base::scoped_array.
 //   output_length: The length of the output data will be stored at this
 //       address.
 //   error_string: This will contain the error message, if an error occurs.
 // Returns:
 //   False if an error occurs in decoding, true otherwise.
-bool FromDataURL(const String& data_url,
-                 scoped_array<uint8>* dst_buffer,
+bool FromDataURL(const std::string& data_url,
+                 ::o3d::base::scoped_array<uint8_t>* dst_buffer,
                  size_t* output_length,
-                 String* error_string);
+                 std::string* error_string);
 
 }  // namespace dataurl
 }  // namespace o3d

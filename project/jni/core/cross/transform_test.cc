@@ -74,7 +74,7 @@ inline int FloatAsInt(float value) {
 bool AlmostEqual32BitFloat(float first, float second, int max_ulps) {
   // Make sure max_ulps is non-negative and small enough to force NaN to not
   // compare as ordered.
-  LOG_ASSERT(max_ulps > 0 && max_ulps < 4*1024*1024);
+  O3D_ASSERT(max_ulps > 0 && max_ulps < 4*1024*1024);
   int first_int = FloatAsInt(first);
   // Make first_int lexicographically ordered in twos-compliment.
   if (first_int < 0) first_int = 0x80000000 - first_int;

@@ -159,7 +159,7 @@ class Sampler : public ParamObject {
   //   default_value: value to set to the Param after it gets created.
   //   typed_param_ref_pointer: pointer to the param reference to be set.
   template<typename T>
-  void RegisterAndSetParam(const String& param_name,
+  void RegisterAndSetParam(const std::string& param_name,
                            unsigned int default_value,
                            T* typed_param_ref_pointer);
 
@@ -183,7 +183,7 @@ class Sampler : public ParamObject {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(Sampler, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Sampler);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Sampler);
 };
 
 class ParamSampler : public TypedRefParam<Sampler> {
@@ -198,7 +198,7 @@ class ParamSampler : public TypedRefParam<Sampler> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamSampler, RefParamBase);
-  DISALLOW_COPY_AND_ASSIGN(ParamSampler);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamSampler);
 };
 
 

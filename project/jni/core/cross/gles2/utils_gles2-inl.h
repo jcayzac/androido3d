@@ -41,7 +41,7 @@ namespace o3d {
 // use with glVertexPointer(), glNormalPointer(), glVertexAttribPointer(),
 // etc. after having used a glBindBuffer().
 inline GLvoid* BufferOffset(unsigned i) {
-  return static_cast<int8 *>(NULL)+(i);
+  return static_cast<int8_t *>(NULL)+(i);
 }
 
 #ifdef GL_ERROR_DEBUGGING

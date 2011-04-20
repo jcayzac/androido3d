@@ -51,7 +51,7 @@
 #include <stdlib.h>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 // Allocates an array of type T
 
@@ -72,7 +72,7 @@ class MemoryBuffer {
  private:
   std::vector<T> vector_;
 
-  DISALLOW_COPY_AND_ASSIGN(MemoryBuffer);
+  O3D_DISALLOW_COPY_AND_ASSIGN(MemoryBuffer);
 };
 
 #endif  // O3D_IMPORT_CROSS_MEMORY_BUFFER_H_

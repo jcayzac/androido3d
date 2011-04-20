@@ -37,7 +37,7 @@
 
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 #include "core/cross/object_base.h"
 
 namespace o3d {
@@ -60,7 +60,7 @@ class IVisitor {
   virtual bool IsHandled(const ObjectBase::Class* clazz) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IVisitor);
+  O3D_DISALLOW_COPY_AND_ASSIGN(IVisitor);
 };
 
 // Immediate base class of all visitor classes. The type of the derived
@@ -147,7 +147,7 @@ class VisitorBase : public IVisitor {
 
  private:
   ForwarderMap forwarders_;
-  DISALLOW_COPY_AND_ASSIGN(VisitorBase<Visitor>);
+  O3D_DISALLOW_COPY_AND_ASSIGN(VisitorBase<Visitor>);
 };
 }  // namespace o3d
 

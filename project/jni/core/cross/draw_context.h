@@ -96,7 +96,7 @@ class DrawContext : public ParamObject {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(DrawContext, ParamObject)
-  DISALLOW_COPY_AND_ASSIGN(DrawContext);
+  O3D_DISALLOW_COPY_AND_ASSIGN(DrawContext);
 };
 
 class ParamDrawContext : public TypedRefParam<DrawContext> {

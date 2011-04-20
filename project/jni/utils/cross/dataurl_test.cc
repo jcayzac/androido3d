@@ -52,10 +52,10 @@ TEST_F(DataURLTest, ToDataURL) {
 }
 
 TEST_F(DataURLTest, FromDataURL) {
-  String data_url("data:a/b;base64,YWJj");
-  scoped_array<uint8> output;
+  std::string data_url("data:a/b;base64,YWJj");
+  ::o3d::base::scoped_array<uint8_t> output;
   size_t output_length;
-  String error_string;
+  std::string error_string;
 
   EXPECT_TRUE(dataurl::FromDataURL(data_url,
                                     &output,
@@ -66,9 +66,9 @@ TEST_F(DataURLTest, FromDataURL) {
 }
 
 TEST_F(DataURLTest, FromDataURLFormatErrors) {
-  scoped_array<uint8> output;
+  ::o3d::base::scoped_array<uint8_t> output;
   size_t output_length;
-  String error_string("");
+  std::string error_string("");
   // Not long enough
   EXPECT_FALSE(dataurl::FromDataURL("",
                                     &output,

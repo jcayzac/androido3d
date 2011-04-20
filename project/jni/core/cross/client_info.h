@@ -68,7 +68,7 @@ class ClientInfo {
 
   // Whether or not shaders are GLSL.
   bool glsl() const {
-#if defined(RENDERER_GLES2)
+#if defined(O3D_RENDERER_GLES2)
     return true;
 #else
     return false;
@@ -87,7 +87,7 @@ class ClientInfo {
   }
 
   // Gets the O3D version.
-  const String& version() const {
+  const std::string& version() const {
     return version_;
   }
 
@@ -99,7 +99,7 @@ class ClientInfo {
   int buffer_memory_used_;
   bool software_renderer_;
   bool non_power_of_two_textures_;
-  String version_;
+  std::string version_;
 };
 
 // A class to manage the client info so other classes can easily look it up.
@@ -114,13 +114,13 @@ class ClientInfoManager {
   // Adds or subtracts from the amount of texture memory used.
   void AdjustTextureMemoryUsed(int amount) {
     client_info_.texture_memory_used_ += amount;
-    DCHECK(client_info_.texture_memory_used_ >= 0);
+    O3D_ASSERT(client_info_.texture_memory_used_ >= 0);
   }
 
   // Adds or subtracts from the amount of texture memory used.
   void AdjustBufferMemoryUsed(int amount) {
     client_info_.buffer_memory_used_ += amount;
-    DCHECK(client_info_.buffer_memory_used_ >= 0);
+    O3D_ASSERT(client_info_.buffer_memory_used_ >= 0);
   }
 
   void SetSoftwareRenderer(bool used) {
@@ -136,7 +136,7 @@ private:
 
   ClientInfo client_info_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientInfoManager);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ClientInfoManager);
 };
 
 }  // namespace o3d

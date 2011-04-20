@@ -74,7 +74,7 @@ void EffectTest::TearDown() {
 
 namespace {
 
-#if defined(RENDERER_GLES2)
+#if defined(O3D_RENDERER_GLES2)
 
 char kLambertEffect[] =
     "attribute vec4 position; // : POSITION;                            \n"
@@ -176,7 +176,7 @@ struct ParamInfo {
   const ObjectBase::Class* sas_type;
 };
 
-#if defined(RENDERER_GLES2)
+#if defined(O3D_RENDERER_GLES2)
 ParamInfo expected_params[] = {
   { "lightWorldPos", ParamFloat3::GetApparentClass(), 0, "", NULL, },
   { "lightColor", ParamFloat4::GetApparentClass(), 0, "", NULL, },
@@ -230,12 +230,12 @@ float kColorBlock[][3] = {
   { 0, 0, 1, },
 };
 
-uint32 kIndexBlock[4] = {
+uint32_t kIndexBlock[4] = {
   0, 1, 2, 3
 };
 
 bool IsExpectedParamInfo(const EffectParameterInfo& info) {
-  for (unsigned ii = 0; ii < arraysize(expected_params); ++ii) {
+  for (unsigned ii = 0; ii < o3d_arraysize(expected_params); ++ii) {
     const ParamInfo& expected_info = expected_params[ii];
     if (info.name().compare(expected_info.name) == 0) {
       return info.class_type() == expected_info.type &&
@@ -247,7 +247,7 @@ bool IsExpectedParamInfo(const EffectParameterInfo& info) {
 }
 
 bool IsExpectedStream(const EffectStreamInfo& info) {
-  for (unsigned ii = 0; ii < arraysize(expected_streams); ++ii) {
+  for (unsigned ii = 0; ii < o3d_arraysize(expected_streams); ++ii) {
     const EffectStreamInfo& expected_info = expected_streams[ii];
     if (info.semantic() == expected_info.semantic() &&
         info.semantic_index() == expected_info.semantic_index()) {
@@ -265,7 +265,7 @@ TEST_F(EffectTest, LogOpenGLCalls) {
   //
   //    ScopedMockLog log;
   //    EXPECT_CALL(log, Log(_, _, _)).Times(AnyNumber());
-  //    EXPECT_CALL(log, LOG(INFO, _, StartsWith("EffectGL created:"));
+  //    EXPECT_CALL(log, O3D_LOG(INFO, _, StartsWith("EffectGL created:"));
   //
   // In the mean time, work directly on the actual log file itself:
 
@@ -281,7 +281,7 @@ TEST_F(EffectTest, LogOpenGLCalls) {
   // Load the vertex and fragment shaders.
   Effect *fx = pack->Create<Effect>();
   ASSERT_TRUE(fx != NULL);
-  EXPECT_TRUE(fx->LoadFromFXString(String(kLambertEffect)));
+  EXPECT_TRUE(fx->LoadFromFXString(std::string(kLambertEffect)));
   EXPECT_TRUE(!fx->source().compare(kLambertEffect));
   Material* material = pack->Create<Material>();
   ASSERT_TRUE(material);
@@ -307,7 +307,7 @@ TEST_F(EffectTest, CreateAndDestroyEffect) {
   // load an effect
   Effect *fx = pack->Create<Effect>();
   ASSERT_TRUE(fx != NULL);
-  EXPECT_TRUE(fx->LoadFromFXString(String(kLambertEffect)));
+  EXPECT_TRUE(fx->LoadFromFXString(std::string(kLambertEffect)));
   Material* material = pack->Create<Material>();
   ASSERT_TRUE(material);
   material->set_effect(fx);
@@ -325,22 +325,22 @@ TEST_F(EffectTest, CreateAndDestroyEffect) {
   ASSERT_TRUE(index != NULL);
 
   Field* vertex_field = verts->CreateField(FloatField::GetApparentClass(),
-                                           arraysize(kVertexBlock[0]));
+                                           o3d_arraysize(kVertexBlock[0]));
   ASSERT_TRUE(vertex_field != NULL);
-  ASSERT_TRUE(verts->AllocateElements(arraysize(kVertexBlock)));
-  vertex_field->SetFromFloats(&kVertexBlock[0][0], arraysize(kVertexBlock[0]),
-                              0, arraysize(kVertexBlock));
+  ASSERT_TRUE(verts->AllocateElements(o3d_arraysize(kVertexBlock)));
+  vertex_field->SetFromFloats(&kVertexBlock[0][0], o3d_arraysize(kVertexBlock[0]),
+                              0, o3d_arraysize(kVertexBlock));
 
   Field* color_field = color->CreateField(FloatField::GetApparentClass(),
-                                          arraysize(kColorBlock[0]));
+                                          o3d_arraysize(kColorBlock[0]));
   ASSERT_TRUE(color_field != NULL);
-  ASSERT_TRUE(color->AllocateElements(arraysize(kColorBlock)));
-  color_field->SetFromFloats(&kColorBlock[0][0], arraysize(kColorBlock[0]), 0,
-                             arraysize(kColorBlock));
+  ASSERT_TRUE(color->AllocateElements(o3d_arraysize(kColorBlock)));
+  color_field->SetFromFloats(&kColorBlock[0][0], o3d_arraysize(kColorBlock[0]), 0,
+                             o3d_arraysize(kColorBlock));
 
-  EXPECT_TRUE(index->AllocateElements(arraysize(kIndexBlock)));
+  EXPECT_TRUE(index->AllocateElements(o3d_arraysize(kIndexBlock)));
   index->index_field()->SetFromUInt32s(&kIndexBlock[0], 1, 0,
-                                       arraysize(kIndexBlock));
+                                       o3d_arraysize(kIndexBlock));
 
   EXPECT_TRUE(stream_bank->SetVertexStream(Stream::POSITION,
                                            0,
@@ -374,7 +374,7 @@ TEST_F(EffectTest, CreateAndDestroyEffect) {
   EXPECT_TRUE(ambient != NULL);
   ambient->set_value(Float4(0.25f, 0.25f, 0.35f, 1.0f));
 
-  String filepath = *g_program_path + "/unittest_data/rock01.tga";
+  std::string filepath = *g_program_path + "/unittest_data/rock01.tga";
   Texture *texture = pack->CreateTextureFromFile(filepath,
                                                  filepath,
                                                  image::TGA,
@@ -397,12 +397,12 @@ TEST_F(EffectTest, GetEffectParameters) {
   // load an effect
   Effect *fx = pack->Create<Effect>();
   ASSERT_TRUE(fx != NULL);
-  EXPECT_TRUE(fx->LoadFromFXString(String(kLambertEffect)));
+  EXPECT_TRUE(fx->LoadFromFXString(std::string(kLambertEffect)));
 
   // Check that we get the correct params
   EffectParameterInfoArray info;
   fx->GetParameterInfo(&info);
-  EXPECT_EQ(arraysize(expected_params), info.size());
+  EXPECT_EQ(o3d_arraysize(expected_params), info.size());
 
   for (EffectParameterInfoArray::size_type ii = 0; ii < info.size(); ++ii) {
     EXPECT_TRUE(IsExpectedParamInfo(info[ii]));
@@ -419,7 +419,7 @@ TEST_F(EffectTest, CreateUniformParameters) {
   // load an effect
   Effect *fx = pack->Create<Effect>();
   ASSERT_TRUE(fx != NULL);
-  EXPECT_TRUE(fx->LoadFromFXString(String(kLambertEffect)));
+  EXPECT_TRUE(fx->LoadFromFXString(std::string(kLambertEffect)));
 
   ParamObject* param_object = pack->Create<ParamObject>();
   ASSERT_TRUE(param_object != NULL);
@@ -427,7 +427,7 @@ TEST_F(EffectTest, CreateUniformParameters) {
   // Check that we get the correct params
   fx->CreateUniformParameters(param_object);
 
-  for (unsigned ii = 0; ii < arraysize(expected_params); ++ii) {
+  for (unsigned ii = 0; ii < o3d_arraysize(expected_params); ++ii) {
     const ParamInfo& expected_info = expected_params[ii];
     Param* param = param_object->GetUntypedParam(expected_info.name);
     if (expected_info.sas_type) {
@@ -453,7 +453,7 @@ TEST_F(EffectTest, CreateSASParameters) {
   // load an effect
   Effect *fx = pack->Create<Effect>();
   ASSERT_TRUE(fx != NULL);
-  EXPECT_TRUE(fx->LoadFromFXString(String(kLambertEffect)));
+  EXPECT_TRUE(fx->LoadFromFXString(std::string(kLambertEffect)));
 
   ParamObject* param_object = pack->Create<ParamObject>();
   ASSERT_TRUE(param_object != NULL);
@@ -461,7 +461,7 @@ TEST_F(EffectTest, CreateSASParameters) {
   // Check that we get the correct params
   fx->CreateSASParameters(param_object);
 
-  for (unsigned ii = 0; ii < arraysize(expected_params); ++ii) {
+  for (unsigned ii = 0; ii < o3d_arraysize(expected_params); ++ii) {
     const ParamInfo& expected_info = expected_params[ii];
     Param* param = param_object->GetUntypedParam(expected_info.name);
     if (expected_info.sas_type) {
@@ -487,12 +487,12 @@ TEST_F(EffectTest, GetEffectStreams) {
   // load an effect
   Effect *fx = pack->Create<Effect>();
   ASSERT_TRUE(fx != NULL);
-  EXPECT_TRUE(fx->LoadFromFXString(String(kLambertEffect)));
+  EXPECT_TRUE(fx->LoadFromFXString(std::string(kLambertEffect)));
 
   // Check that we get the correct params
   EffectStreamInfoArray info;
   fx->GetStreamInfo(&info);
-  EXPECT_EQ(arraysize(expected_streams), info.size());
+  EXPECT_EQ(o3d_arraysize(expected_streams), info.size());
 
   for (EffectStreamInfoArray::size_type ii = 0; ii < info.size(); ++ii) {
     EXPECT_TRUE(IsExpectedStream(info[ii]));

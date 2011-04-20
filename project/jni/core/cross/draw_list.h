@@ -134,7 +134,7 @@ class DrawList : public NamedObject {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(DrawList, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(DrawList);
+  O3D_DISALLOW_COPY_AND_ASSIGN(DrawList);
 };
 
 class ParamDrawList : public TypedRefParam<DrawList> {
@@ -150,7 +150,7 @@ class ParamDrawList : public TypedRefParam<DrawList> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamDrawList, RefParamBase);
-  DISALLOW_COPY_AND_ASSIGN(ParamDrawList);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamDrawList);
 };
 }  // namespace o3d
 

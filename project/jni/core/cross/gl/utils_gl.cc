@@ -43,8 +43,8 @@
 
 namespace o3d {
 
-typedef std::pair<String, int> SemanticMapElement;
-typedef std::map<String, int> SemanticMap;
+typedef std::pair<std::string, int> SemanticMapElement;
+typedef std::map<std::string, int> SemanticMap;
 
 // The map batween the semantics on vertex program varying parameters names
 // and vertex attribute indices under the VP_30 profile.
@@ -197,32 +197,12 @@ Stream::Semantic GLVertexAttributeToStream(const unsigned int attr,
   const unsigned int kMaxAttrIndex = 15u;
   if (attr > kMaxAttrIndex) {
     //TODO: Figure out how to get errors out of here to the client.
-    DLOG(ERROR) << "Invalid vertex attribute index.";
+    O3D_LOG(ERROR) << "Invalid vertex attribute index.";
     *index = 0;
     return Stream::UNKNOWN_SEMANTIC;
   }
   *index = attr_map_vp_40[attr].index;
   return attr_map_vp_40[attr].semantic;
 }
-
-#ifdef OS_WIN
-
-// Given a CGcontext object, check to see if any errors have occurred since
-// the last Cg API call, and report the message and any compiler errors (if
-// necessary).
-inline void CheckForCgError(const String& logmessage, CGcontext cg_context) {
-  CGerror error = CG_NO_ERROR;
-  const char *error_string = cgGetLastErrorString(&error);
-  if (error == CG_NO_ERROR) {
-    return;
-  } else {
-    DLOG(ERROR) << logmessage << ": " << error_string;
-    if (error == CG_COMPILER_ERROR) {
-      DLOG(ERROR) << "Compiler message:\n" << cgGetLastListing(cg_context);
-    }
-  }
-}
-
-#endif
 
 }  // namespace o3d

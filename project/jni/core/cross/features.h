@@ -55,7 +55,7 @@ class Features {
   // Initalizes the Features with the user requested features.
   // Parameters:
   //   requested_features: A comma separate string of features.
-  void Init(const String& requested_features);
+  void Init(const std::string& requested_features);
 
   bool floating_point_textures() const {
     return floating_point_textures_;
@@ -100,7 +100,7 @@ class Features {
   bool flip_textures_;
   Renderer::InitStatus init_status_;
 
-  DISALLOW_COPY_AND_ASSIGN(Features);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Features);
 };
 
 }  // namespace o3d

@@ -64,7 +64,7 @@ SemanticManager::~SemanticManager() {
 
 // Looks up an SAS transform semantic by name, and returns the Semantic enum.
 const ObjectBase::Class* SemanticManager::LookupSemantic(
-    const String& semantic) const {
+    const std::string& semantic) const {
   SasMap::const_iterator iter = sas_map_.find(semantic);
   return (iter != sas_map_.end()) ? iter->second : NULL;
 }

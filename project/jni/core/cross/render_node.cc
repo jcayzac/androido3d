@@ -151,7 +151,7 @@ void RenderNode::SetParent(RenderNode* parent_render_node) {
   if (parent_ != NULL) {
     bool removed = parent_->RemoveChild(this);
 
-    DLOG_ASSERT(removed);
+    O3D_ASSERT(removed);
 
     if (!removed)
       return;
@@ -168,7 +168,7 @@ void RenderNode::SetParent(RenderNode* parent_render_node) {
 
   bool added = parent_render_node->AddChild(this);
 
-  DLOG_ASSERT(added);
+  O3D_ASSERT(added);
 
   // If we failed to add the child to the parent then we leave the child node
   // an orphan in order to avoid any inconsistencies in the rendergraph.
@@ -184,7 +184,7 @@ bool RenderNode::RemoveChild(RenderNode *child_node) {
                                                RenderNode::Ref(child_node));
 
   // Child_node should never be in the child array more than once.
-  DLOG_ASSERT(child_array_.end() - end <= 1);
+  O3D_ASSERT(child_array_.end() - end <= 1);
 
   // The child was never found.
   if (end == child_array_.end())
@@ -232,18 +232,18 @@ RenderNodeArray RenderNode::GetRenderNodesInTree() const {
 namespace {
 class CompareRenderNodeName {
  public:
-  explicit CompareRenderNodeName(const String& n) : test_name_(n) {}
+  explicit CompareRenderNodeName(const std::string& n) : test_name_(n) {}
   bool operator()(RenderNode*& render_node) {
     return render_node->name() == test_name_;
   }
  private:
-  String test_name_;
+  std::string test_name_;
 };
 }
 
 // Search for render nodes by name in the subtree below this rendernode.
 void RenderNode::GetRenderNodesByNameInTreeFast(
-    const String& name,
+    const std::string& name,
     RenderNodeArray* matching_nodes) const {
   matching_nodes->clear();
 
@@ -259,7 +259,7 @@ void RenderNode::GetRenderNodesByNameInTreeFast(
 
 // Slower version of function above for Javascript.
 RenderNodeArray RenderNode::GetRenderNodesByNameInTree(
-    const String& name) const {
+    const std::string& name) const {
   RenderNodeArray matching_nodes;
   GetRenderNodesByNameInTreeFast(name, &matching_nodes);
   return matching_nodes;
@@ -300,20 +300,20 @@ RenderNodeArray RenderNode::GetRenderNodesByClassInTree(
 namespace {
 class CompareRenderNodeClassName {
  public:
-  explicit CompareRenderNodeClassName(const String& class_type_name)
+  explicit CompareRenderNodeClassName(const std::string& class_type_name)
       : class_type_name_(class_type_name) {
   }
   bool operator()(RenderNode*& render_node) {
     return render_node->IsAClassName(class_type_name_);
   }
  private:
-  const String& class_type_name_;
+  const std::string& class_type_name_;
 };
 }
 
 // Search for render nodes by class name in the subtree below this render node
 RenderNodeArray RenderNode::GetRenderNodesByClassNameInTree(
-    const String& class_type_name) const {
+    const std::string& class_type_name) const {
   // Get all the render nodes in the subtree
   RenderNodeArray nodes = GetRenderNodesInTree();
   // Partition the container into two sections depending on whether the render

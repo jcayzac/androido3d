@@ -177,7 +177,7 @@ static void CreateCube(Pack* pack, Primitive** primitive_pointer) {
     { -1.0f,  1.0f, -1.0f, },  // vertex v7
   };
 
-  static uint32 cube_indices[] = {
+  static uint32_t cube_indices[] = {
     0,        // dummy index
     0, 1, 4,  // triangle v0,v1,v4
     1, 5, 4,  // triangle v1,v5,v4
@@ -202,12 +202,12 @@ static void CreateCube(Pack* pack, Primitive** primitive_pointer) {
   VertexBuffer* vertex_buffer = pack->Create<VertexBuffer>();
   ASSERT_TRUE(vertex_buffer != NULL);
   Field* position_field = vertex_buffer->CreateField(
-      FloatField::GetApparentClass(), arraysize(cube_vertices[0]));
+      FloatField::GetApparentClass(), o3d_arraysize(cube_vertices[0]));
   ASSERT_TRUE(position_field != NULL);
-  ASSERT_TRUE(vertex_buffer->AllocateElements(arraysize(cube_vertices)));
+  ASSERT_TRUE(vertex_buffer->AllocateElements(o3d_arraysize(cube_vertices)));
   position_field->SetFromFloats(&cube_vertices[0][0],
-                                arraysize(cube_vertices[0]), 0,
-                                arraysize(cube_vertices));
+                                o3d_arraysize(cube_vertices[0]), 0,
+                                o3d_arraysize(cube_vertices));
   EXPECT_TRUE(stream_bank->SetVertexStream(Stream::POSITION,
                                            0,
                                            position_field,
@@ -215,9 +215,9 @@ static void CreateCube(Pack* pack, Primitive** primitive_pointer) {
   // Check Setting Index Streams.
   IndexBuffer* index_buffer = pack->Create<IndexBuffer>();
   ASSERT_TRUE(index_buffer != NULL);
-  ASSERT_TRUE(index_buffer->AllocateElements(arraysize(cube_indices)));
+  ASSERT_TRUE(index_buffer->AllocateElements(o3d_arraysize(cube_indices)));
   index_buffer->index_field()->SetFromUInt32s(cube_indices, 1, 0,
-                                              arraysize(cube_indices));
+                                              o3d_arraysize(cube_indices));
 
   primitive->set_index_buffer(index_buffer);
 

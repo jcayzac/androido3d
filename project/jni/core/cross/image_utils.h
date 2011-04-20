@@ -34,7 +34,6 @@
 #ifndef O3D_CORE_CROSS_IMAGE_UTILS_H_
 #define O3D_CORE_CROSS_IMAGE_UTILS_H_
 
-#include "base/cross/bits.h"
 #include "core/cross/types.h"
 #include "core/cross/texture_base.h"
 
@@ -69,17 +68,34 @@ inline bool CheckImageDimensions(unsigned int width, unsigned int height) {
 // Returns whether or not we can make mips.
 bool CanMakeMips(Texture::Format format);
 
+// Returns the integer i such as 2^(i-1) <= n < 2^i
+static inline unsigned int ShiftBitsFloor(unsigned int n) {
+  unsigned int log(0);
+  unsigned int value(n);
+  for (int i(4); i >= 0; --i) {
+    const unsigned int shift(1u << i);
+    const unsigned int x(value >> shift);
+    if (x) {
+      value = x;
+      log += shift;
+    }
+  }
+  O3D_ASSERT(value == 1u);
+  return 1u+log;
+}
+
 // Gets the number of mip-maps required for a full chain starting at
 // width x height.
 inline unsigned int ComputeMipMapCount(
     unsigned int width, unsigned int height) {
-  return 1 + base::bits::Log2Floor(std::max(width, height));
+  unsigned int dimension(std::max(width, height));
+  return dimension?ShiftBitsFloor(dimension):0u;
 }
 
 // Gets the smallest power-of-two value that is at least as high as
 // dimension. This is the POT dimension used in ScaleUpToPOT.
 inline unsigned int ComputePOTSize(unsigned int dimension) {
-  return 1 << base::bits::Log2Ceiling(dimension);
+  return (dimension<2u)?dimension:(1u << ShiftBitsFloor(dimension - 1u));
 }
 
 // Computes one dimension of a mip.
@@ -157,10 +173,10 @@ ImageFileType GetFileTypeFromMimeType(const char *mime_type);
 // Adds filler alpha byte (0xff) after every pixel. Assumes buffer was
 // allocated with enough storage)
 // can convert RGB -> RGBA, BGR -> BGRA, etc.
-void XYZToXYZA(uint8 *image_data, int pixel_count);
+void XYZToXYZA(uint8_t *image_data, int pixel_count);
 
 // Swaps Red and Blue components in the image.
-void RGBAToBGRA(uint8 *image_data, int pixel_count);
+void RGBAToBGRA(uint8_t *image_data, int pixel_count);
 
 // Generates a mip-map for 1 level.
 // NOTE: this doesn't work for DXTC images.

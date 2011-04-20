@@ -56,7 +56,7 @@ ParamCacheGL::ParamCacheGL(SemanticManager* semantic_manager,
 }
 
 bool ParamCacheGL::ValidateEffect(Effect* effect) {
-  DLOG_ASSERT(effect);
+  O3D_ASSERT(effect);
 
   EffectGL* effect_gl = down_cast<EffectGL*>(effect);
   return (effect_gl->cg_vertex_program() == last_vertex_program_ ||
@@ -68,7 +68,7 @@ void ParamCacheGL::UpdateCache(Effect* effect,
                                Element* element,
                                Material* material,
                                ParamObject* override) {
-  DLOG_ASSERT(effect);
+  O3D_ASSERT(effect);
   EffectGL* effect_gl = down_cast<EffectGL*>(effect);
 
   ScanCgEffectParameters(effect_gl->cg_vertex_program(),
@@ -125,7 +125,7 @@ template <>
 void TypedEffectParamHandlerGL<ParamFloat>::SetEffectParam(
     RendererGL* renderer,
     CGparameter cg_param) {
-  Float f = param_->value();
+  float f = param_->value();
   cgSetParameter1f(cg_param, f);
 };
 
@@ -544,7 +544,7 @@ static void ScanVaryingParameters(CGprogram program,
           param_cache_gl->varying_map().end()) {
         const char* cg_name = cgGetParameterName(cg_param);
         param_cache_gl->varying_map().insert(std::make_pair(cg_param, -1));
-        DLOG(INFO) << "ElementGL Found CG_VARYING \""
+        O3D_LOG(INFO) << "ElementGL Found CG_VARYING \""
                    << cg_name << " : "
                    << cgGetParameterSemantic(cg_param) << "\"";
       }
@@ -651,14 +651,14 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
           if (!handler.IsNull()) {
             param_cache_gl->uniform_map().insert(
                 std::make_pair(cg_param, handler));
-            DLOG(INFO) << "ElementGL Matched CG_PARAMETER \""
+            O3D_LOG(INFO) << "ElementGL Matched CG_PARAMETER \""
                        << cg_name << "\" to Param \""
                        << param->name() << "\" from \""
                        << param_object->name() << "\"";
             break;
           } else {
             // We found a param, but it didn't match the type. keep looking.
-            DLOG(ERROR) << "ElementGL Param \""
+            O3D_LOG(ERROR) << "ElementGL Param \""
                         << param->name() << "\" type \""
                         << param->GetClassName() << "\" from \""
                         << param_object->name()
@@ -667,7 +667,7 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
           }
         }
         if (handler.IsNull()) {
-          DLOG(ERROR) << "No matching Param for CG_PARAMETER \""
+          O3D_LOG(ERROR) << "No matching Param for CG_PARAMETER \""
                       << cg_name << "\"";
         }
       }
@@ -725,18 +725,18 @@ void ParamCacheGL::ScanCgEffectParameters(CGprogram cg_vertex,
                                           ParamObject* element,
                                           Material* material,
                                           ParamObject* override) {
-  DLOG(INFO) << "DrawElementGL ScanCgEffectParameters";
-  DLOG_ASSERT(material);
-  DLOG_ASSERT(draw_element);
-  DLOG_ASSERT(element);
+  O3D_LOG(INFO) << "DrawElementGL ScanCgEffectParameters";
+  O3D_ASSERT(material);
+  O3D_ASSERT(draw_element);
+  O3D_ASSERT(element);
   EffectGL* effect_gl = static_cast<EffectGL*>(material->effect());
-  DLOG_ASSERT(effect_gl);
+  O3D_ASSERT(effect_gl);
   if (cg_vertex == NULL)  {
-    DLOG(ERROR) << "Can't scan an empty Vertex Program for Cg Parameters.";
+    O3D_LOG(ERROR) << "Can't scan an empty Vertex Program for Cg Parameters.";
     return;
   }
   if (cg_fragment == NULL)  {
-    DLOG(ERROR) << "Can't scan an empty Fragment Program for Cg Parameters.";
+    O3D_LOG(ERROR) << "Can't scan an empty Fragment Program for Cg Parameters.";
     return;
   }
 

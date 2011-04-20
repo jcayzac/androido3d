@@ -4,7 +4,13 @@ LOCAL_PATH      := $(call my-dir)
 
 include $(O3D_START_MODULE)
 
-LOCAL_MODULE    := zlib
+LOCAL_MODULE := zlib
+LOCAL_CFLAGS += $(addprefix -D, \
+  NO_DIVIDE \
+  NOUNCRYPT \
+  NOCRYPT \
+  USE_FILE32API \
+)
 
 LOCAL_SRC_FILES := $(addprefix current/, \
   $(addprefix contrib/minizip/, \

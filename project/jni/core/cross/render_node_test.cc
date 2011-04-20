@@ -75,8 +75,8 @@ class FakeRenderNode : public RenderNode {
       : RenderNode(service_locator) {
   }
 
-  const String& type() {
-    static String kFakeRenderNodeType("FakeRenderNodeType");
+  const std::string& type() {
+    static std::string kFakeRenderNodeType("FakeRenderNodeType");
     return kFakeRenderNodeType;
   }
 
@@ -115,21 +115,21 @@ TEST_F(RenderNodeBasicTest, SetParentCyclic) {
   // Parenting a node to itself must fail.
   error_status_->ClearLastError();
   render_node->SetParent(render_node);
-  EXPECT_NE(String(), error_status_->GetLastError());
+  EXPECT_NE(std::string(), error_status_->GetLastError());
 
   // Parenting a node creating a cycle containing one or more nodes must fail.
   RenderNode *parent1 = pack_->Create<RenderNode>();
   error_status_->ClearLastError();
   render_node->SetParent(parent1);
-  EXPECT_EQ(String(), error_status_->GetLastError());
+  EXPECT_EQ(std::string(), error_status_->GetLastError());
   parent1->SetParent(render_node);
-  EXPECT_NE(String(), error_status_->GetLastError());
+  EXPECT_NE(std::string(), error_status_->GetLastError());
 
   RenderNode *parent2 = pack_->Create<RenderNode>();
   error_status_->ClearLastError();
   parent1->SetParent(parent2);
-  EXPECT_EQ(String(), error_status_->GetLastError());
+  EXPECT_EQ(std::string(), error_status_->GetLastError());
   parent2->SetParent(render_node);
-  EXPECT_NE(String(), error_status_->GetLastError());
+  EXPECT_NE(std::string(), error_status_->GetLastError());
 }
 }

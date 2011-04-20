@@ -33,7 +33,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/cross/log.h"
 #include "core/cross/gpu2d/arena.h"
 #include "core/cross/gpu2d/cubic_classifier.h"
 #include "core/cross/gpu2d/cubic_math_utils.h"
@@ -136,7 +136,7 @@ class BBox {
   float min_y_;
   float max_x_;
   float max_y_;
-  DISALLOW_COPY_AND_ASSIGN(BBox);
+  O3D_DISALLOW_COPY_AND_ASSIGN(BBox);
 };
 
 //----------------------------------------------------------------------
@@ -203,7 +203,7 @@ class Segment {
 
   // Returns the i'th control point, 0 <= i < 4.
   const SkPoint& get_point(int i) {
-    DCHECK(i >= 0 && i < 4);
+    O3D_ASSERT(i >= 0 && i < 4);
     return points_[i];
   }
 
@@ -290,7 +290,7 @@ class Segment {
 
   // Fetches the given control point triangle for this segment.
   LocalTriangulator::Triangle* get_triangle(int index) {
-    DCHECK(triangulator_);
+    O3D_ASSERT(triangulator_);
     return triangulator_->get_triangle(index);
   }
 
@@ -310,7 +310,7 @@ class Segment {
 
   // Returns the given interior vertex, 0 <= index < num_interior_vertices().
   SkPoint get_interior_vertex(int index) const {
-    DCHECK(index >= 0 && index < num_interior_vertices());
+    O3D_ASSERT(index >= 0 && index < num_interior_vertices());
     if (kind_ == kCubic) {
       SkPoint res = { 0 };
       if (triangulator_) {
@@ -371,7 +371,7 @@ class Segment {
         break;
 
       default:
-        NOTREACHED();
+        O3D_NEVER_REACHED();
         break;
     }
   }
@@ -386,7 +386,7 @@ class Segment {
   LocalTriangulator* triangulator_;
   bool marked_for_subdivision_;
 
-  DISALLOW_COPY_AND_ASSIGN(Segment);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Segment);
 };
 
 //----------------------------------------------------------------------
@@ -493,7 +493,7 @@ class Contour {
   // Whether we should fill the right (or left) side of this contour.
   bool fill_right_side_;
 
-  DISALLOW_COPY_AND_ASSIGN(Contour);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Contour);
 };
 
 //----------------------------------------------------------------------
@@ -504,7 +504,7 @@ class Contour {
 // declaration of Contour.
 void Segment::Triangulate(bool compute_inside_edges,
                           CubicTextureCoords::Result* tex_coords) {
-  DCHECK(kind_ == kCubic);
+  O3D_ASSERT(kind_ == kCubic);
   if (triangulator_ == NULL) {
     triangulator_ = arena_->Alloc<LocalTriangulator>();
   }
@@ -807,7 +807,7 @@ void PathProcessor::DetermineSidesToFill() {
     // For debugging
     std::vector<Segment*> slow_overlaps =
         AllSegmentsOverlappingY(seg->get_point(0).fY);
-    DCHECK(overlaps.size() == slow_overlaps.size());
+    O3D_ASSERT(overlaps.size() == slow_overlaps.size());
     for (std::vector<Segment*>::iterator iter = slow_overlaps.begin();
          iter != slow_overlaps.end();
          iter++) {

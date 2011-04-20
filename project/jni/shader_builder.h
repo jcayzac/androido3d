@@ -6,7 +6,7 @@
 #define O3D_UTILS_SHADER_BUILDER_H_
 
 #include <string>
-#include "core/cross/math_types.h"
+#include "base/cross/types.h"
 
 namespace o3d {
 

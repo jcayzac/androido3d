@@ -101,7 +101,7 @@ Param* ParamArray::CreateParamByClass(unsigned index,
 }
 
 Param* ParamArray::CreateParamByClassName(unsigned index,
-                                          const String& class_type_name) {
+                                          const std::string& class_type_name) {
   const ObjectBase::Class* class_type = class_manager_->GetClassByClassName(
       class_type_name);
   if (!class_type) {
@@ -123,7 +123,7 @@ void ParamArray::ResizeByClass(unsigned num_params,
 }
 
 void ParamArray::ResizeByClassName(unsigned num_params,
-                                   const String& class_type_name) {
+                                   const std::string& class_type_name) {
   const ObjectBase::Class* class_type = class_manager_->GetClassByClassName(
       class_type_name);
   if (!class_type) {

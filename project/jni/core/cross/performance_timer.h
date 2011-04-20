@@ -40,14 +40,14 @@
 #ifndef O3D_IMPORT_CROSS_PERFORMANCE_TIMER_H_
 #define O3D_IMPORT_CROSS_PERFORMANCE_TIMER_H_
 
-#include "build/build_config.h"
+#include "base/cross/config.h"
 #ifdef TARGET_OS_IPHONE
 #include <CoreFoundation/CoreFoundation.h>
 #elif OS_MACOSX
 #include <Carbon/Carbon.h>
 #endif
 #include <string>
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 namespace o3d {
 
@@ -56,7 +56,7 @@ typedef CFAbsoluteTime PerformanceTimeStamp;
 #elif OS_MACOSX
 typedef AbsoluteTime PerformanceTimeStamp;
 #else
-typedef uint64 PerformanceTimeStamp;
+typedef uint64_t PerformanceTimeStamp;
 #endif
 
 // PerformanceTimer is designed to accurately track wallclock time
@@ -97,7 +97,7 @@ class PerformanceTimer {
   // Accumulated elapsed time, in internal units.  Computed only on Stop().
   PerformanceTimeStamp accum_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(PerformanceTimer);
+  O3D_DISALLOW_COPY_AND_ASSIGN(PerformanceTimer);
 };
 } // end namespace o3d
 

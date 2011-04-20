@@ -37,15 +37,12 @@
 #include "core/cross/error.h"
 #include "core/cross/types.h"
 #include "utils/cross/file_path_utils.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
+#include "base/cross/file_path.h"
+#include "base/cross/file_util.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
 #include "png.h"
 #include "utils/cross/dataurl.h"
-
-using file_util::OpenFile;
-using file_util::CloseFile;
 
 namespace o3d {
 
@@ -62,11 +59,11 @@ void StreamReadData(png_structp png_ptr, png_bytep data, png_size_t length) {
 // Helper function for ToDataURL that converts a stream into the necessary
 // abstract byte writing function.
 void StreamWriteData(png_structp png_ptr, png_bytep data, png_size_t length) {
-  std::vector<uint8>* stream =
-     static_cast<std::vector<uint8>*>(png_get_io_ptr(png_ptr));
+  std::vector<uint8_t>* stream =
+     static_cast<std::vector<uint8_t>*>(png_get_io_ptr(png_ptr));
   stream->insert(stream->end(),
-                 static_cast<uint8*>(data),
-                 static_cast<uint8*>(data) + length);
+                 static_cast<uint8_t*>(data),
+                 static_cast<uint8_t*>(data) + length);
 }
 
 // Because libpng requires a flush function according to the docs.
@@ -78,20 +75,20 @@ void StreamFlush(png_structp png_ptr) {
 // Loads the raw RGB data from a compressed PNG file.
 bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
                                MemoryReadStream *stream,
-                               const String &filename,
+                               const std::string &filename,
                                BitmapRefArray* bitmaps) {
-  DCHECK(bitmaps);
+  O3D_ASSERT(bitmaps);
   // Read the magic header.
   char magic[4];
   size_t bytes_read = stream->Read(magic, sizeof(magic));
   if (bytes_read != sizeof(magic)) {
-    DLOG(ERROR) << "PNG file magic header not loaded \"" << filename << "\"";
+    O3D_LOG(ERROR) << "PNG file magic header not loaded \"" << filename << "\"";
     return false;
   }
 
   // Match the magic header to check that this is a PNG file.
   if (png_sig_cmp(reinterpret_cast<png_bytep>(magic), 0, sizeof(magic)) != 0) {
-    DLOG(ERROR) << "File is not a PNG file \"" << filename << "\"";
+    O3D_LOG(ERROR) << "File is not a PNG file \"" << filename << "\"";
     return false;
   }
 
@@ -111,13 +108,13 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
   info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
     png_destroy_read_struct(&png_ptr, 0, 0);
-    DLOG(ERROR) << "Cannot allocate working memory for PNG load.";
+    O3D_LOG(ERROR) << "Cannot allocate working memory for PNG load.";
     return false;
   }
 
   // NOTE: The following smart pointer needs to be declared before the
   // setjmp so that it is properly destroyed if we jump back.
-  scoped_array<uint8> image_data;
+  ::o3d::base::scoped_array<uint8_t> image_data;
   png_bytepp row_pointers = NULL;
 
   // Set error handling if you are using the setjmp/longjmp method. If any
@@ -125,7 +122,7 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
   // error.
   if (setjmp(png_jmpbuf(png_ptr))) {
     // If we reach here, a fatal error occurred so free memory and exit.
-    DLOG(ERROR) << "Fatal error reading PNG file \"" << filename << "\"";
+    O3D_LOG(ERROR) << "Fatal error reading PNG file \"" << filename << "\"";
     if (row_pointers)
       png_free(png_ptr, row_pointers);
     png_destroy_read_struct(&png_ptr, &info_ptr, 0);
@@ -156,7 +153,7 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
                NULL);
 
   if (!image::CheckImageDimensions(png_width, png_height)) {
-    DLOG(ERROR) << "Failed to load " << filename
+    O3D_LOG(ERROR) << "Failed to load " << filename
                 << ": dimensions are too large (" << png_width
                 << ", " << png_height << ").";
     // Use the png error system to clean up and exit.
@@ -226,9 +223,9 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
   // Allocate storage for the pixels. Bitmap requires we allocate enough
   // memory for all mips even if we don't use them.
   size_t png_image_size = Bitmap::ComputeMaxSize(png_width, png_height, format);
-  image_data.reset(new uint8[png_image_size]);
+  image_data.reset(new uint8_t[png_image_size]);
   if (image_data.get() == NULL) {
-    DLOG(ERROR) << "PNG image memory allocation error \"" << filename << "\"";
+    O3D_LOG(ERROR) << "PNG image memory allocation error \"" << filename << "\"";
     png_error(png_ptr, "Cannot allocate memory for bitmap");
   }
 
@@ -238,12 +235,12 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
   row_pointers = static_cast<png_bytep *>(
       png_malloc(png_ptr, png_height * sizeof(png_bytep)));  // NOLINT
   if (row_pointers == NULL) {
-    DLOG(ERROR) << "PNG row memory allocation error \"" << filename << "\"";
+    O3D_LOG(ERROR) << "PNG row memory allocation error \"" << filename << "\"";
     png_error(png_ptr, "Cannot allocate memory for row pointers");
   }
 
   // Fill the row pointer array.
-  DCHECK_LE(png_get_rowbytes(png_ptr, info_ptr), png_width * dst_components);
+  O3D_ASSERT(png_get_rowbytes(png_ptr, info_ptr) <= png_width * dst_components);
   png_bytep row_ptr = reinterpret_cast<png_bytep>(image_data.get());
   for (unsigned int i = 0; i < png_height; ++i) {
     row_pointers[i] = row_ptr;
@@ -268,34 +265,34 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
 
 namespace {
 
-bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8>* buffer) {
-  DCHECK(bitmap.format() == Texture::ARGB8);
-  DCHECK(bitmap.num_mipmaps() == 1);
+bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8_t>* buffer) {
+  O3D_ASSERT(bitmap.format() == Texture::ARGB8);
+  O3D_ASSERT(bitmap.num_mipmaps() == 1);
 
   png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
                                                 NULL, NULL);
   if (!png_ptr) {
-    DLOG(ERROR) << "Could not create PNG structure.";
+    O3D_LOG(ERROR) << "Could not create PNG structure.";
     return false;
   }
 
   png_infop info_ptr = png_create_info_struct(png_ptr);
   if (!info_ptr) {
-    DLOG(ERROR) << "Could not create PNG info structure.";
+    O3D_LOG(ERROR) << "Could not create PNG info structure.";
     png_destroy_write_struct(&png_ptr,  0);
     return false;
   }
 
   unsigned width = bitmap.width();
   unsigned height = bitmap.height();
-  scoped_array<png_bytep> row_pointers(new png_bytep[height]);
+  ::o3d::base::scoped_array<png_bytep> row_pointers(new png_bytep[height]);
   for (unsigned int i = 0; i < height; ++i) {
     row_pointers[height - 1 - i] = bitmap.GetMipData(0) + i * width * 4;
   }
 
   if (setjmp(png_jmpbuf(png_ptr))) {
     // If we get here, we had a problem reading the file.
-    DLOG(ERROR) << "Error while getting dataURL.";
+    O3D_LOG(ERROR) << "Error while getting dataURL.";
     png_destroy_write_struct(&png_ptr, &info_ptr);
     return false;
   }
@@ -316,7 +313,7 @@ bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8>* buffer) {
 
 }  // anonymous namespace
 
-bool Bitmap::WriteToPNGStream(std::vector<uint8>* stream) {
+bool Bitmap::WriteToPNGStream(std::vector<uint8_t>* stream) {
   if (format_ != Texture::ARGB8) {
     O3D_ERROR(service_locator()) << "Can only write ARGB8 images to PNGs.";
     return false;
@@ -334,7 +331,7 @@ bool Bitmap::WriteToPNGStream(std::vector<uint8>* stream) {
   return true;
 }
 
-String Bitmap::ToDataURL() {
+std::string Bitmap::ToDataURL() {
   if (format_ != Texture::ARGB8) {
     O3D_ERROR(service_locator()) << "Can only get data URL from ARGB8 images.";
     return dataurl::kEmptyDataURL;
@@ -345,7 +342,7 @@ String Bitmap::ToDataURL() {
     return dataurl::kEmptyDataURL;
   }
 
-  std::vector<uint8> stream;
+  std::vector<uint8_t> stream;
   if (!CreatePNGInUInt8Vector(*this, &stream)) {
     return dataurl::kEmptyDataURL;
   }

@@ -32,25 +32,20 @@
 
 // Pack file.
 
-#include "base/file_path.h"
+#include "base/cross/file_path.h"
 #include "core/cross/pack.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/draw_context.h"
-#if !defined(O3D_NO_ARCHIVE_REQUEST)
-#include "import/cross/archive_request.h"
-#endif
 #include "import/cross/raw_data.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
-#if !defined(O3D_NO_FILE_REQUEST)
-#include "core/cross/file_request.h"
-#endif
 #include "core/cross/image_utils.h"
 #include "core/cross/render_node.h"
 #include "core/cross/iclass_manager.h"
 #include "core/cross/object_manager.h"
 #include "core/cross/renderer.h"
 #include "core/cross/error.h"
+#include "core/cross/external_resource.h"
 #include "utils/cross/file_path_utils.h"
 
 namespace o3d {
@@ -83,7 +78,7 @@ void Pack::set_root(Transform *root) {
   root_ = Transform::Ref(root);
 }
 
-ObjectBase* Pack::CreateObject(const String& type_name) {
+ObjectBase* Pack::CreateObject(const std::string& type_name) {
   ObjectBase::Ref new_object(class_manager_->CreateObject(type_name));
   if (new_object.Get() != NULL) {
     RegisterObject(new_object);
@@ -101,69 +96,27 @@ ObjectBase* Pack::CreateObjectByClass(const ObjectBase::Class* type) {
   return NULL;
 }
 
-// Creates a new FileRequest object.
-#if !defined(O3D_NO_FILE_REQUEST)
-FileRequest *Pack::CreateFileRequest(const String& type) {
-  FileRequest *request = FileRequest::Create(service_locator(),
-                                             this,
-                                             FileRequest::TypeFromString(type));
-  if (request) {
-    RegisterObject(request);
-  }
-  return request;
-}
-#endif  // !defined(O3D_NO_FILE_REQUEST)
-
-// Creates a new ArchiveRequest object.
-#if !defined(O3D_NO_ARCHIVE_REQUEST)
-ArchiveRequest *Pack::CreateArchiveRequest() {
-  ArchiveRequest *request = ArchiveRequest::Create(service_locator(),
-                                                   this);
-  if (request) {
-    RegisterObject(request);
-  }
-  return request;
-}
-#endif  // !defined(O3D_NO_ARCHIVE_REQUEST)
-
-// Creates a Texture object from a file in the current render context format.
-Texture* Pack::CreateTextureFromFile(const String& uri,
-                                     const FilePath& filepath,
+// Creates a Texture object from an external resource in the current render context format.
+Texture* Pack::CreateTextureFromExternalResource(const std::string& uri,
+                                     const ExternalResource& resource,
                                      image::ImageFileType file_type,
                                      bool generate_mipmaps) {
-  String filename = FilePathToUTF8(filepath);
-
-  DLOG(INFO) << "CreateTextureFromFile(uri='" << uri
-             << "', filename='" << filename << "')";
+  O3D_LOG(INFO) << "CreateTextureFromExternalResource(uri='" << uri
+             << "', name='" << resource.name() << "')";
 
   // TODO(gman): Add support for volume texture when we have code to load them.
   BitmapRefArray bitmaps;
-  if (!Bitmap::LoadFromFile(service_locator(), filepath, file_type, &bitmaps)) {
-    O3D_ERROR(service_locator())
-        << "Failed to load bitmap file \"" << uri << "\"";
-    return NULL;
+  if (!Bitmap::LoadFromExternalResource(service_locator(), resource, file_type, &bitmaps)) {
+    O3D_ERROR(service_locator()) << "Failed to load bitmap resource \"" << resource.name() << "\"";
+    return 0;
   }
 
   return CreateTextureFromBitmaps(bitmaps, uri, generate_mipmaps);
 }
 
-// Creates a Texture object from a file in the current render context format.
-// This version takes a String |filename| argument instead of the preferred
-// FilePath argument.  The use of this method should be phased out
-Texture* Pack::CreateTextureFromFile(const String& uri,
-                                     const String& filename,
-                                     image::ImageFileType file_type,
-                                     bool generate_mipmaps) {
-  FilePath filepath = UTF8ToFilePath(filename);
-  return CreateTextureFromFile(uri,
-                               filepath,
-                               file_type,
-                               generate_mipmaps);
-}
-
 // Creates a Texture object from a bitmap in the current render context format.
 Texture* Pack::CreateTextureFromBitmaps(
-    const BitmapRefArray& bitmaps, const String& uri, bool generate_mipmaps) {
+    const BitmapRefArray& bitmaps, const std::string& uri, bool generate_mipmaps) {
   if (bitmaps.empty()) {
     return NULL;
   }
@@ -245,7 +198,7 @@ Texture* Pack::CreateTextureFromBitmaps(
     //    Texture param.
     ParamString* param = texture->CreateParam<ParamString>(
         O3D_STRING_CONSTANT("uri"));
-    DCHECK(param != NULL);
+    O3D_ASSERT(param != NULL);
     param->set_value(uri);
 
     RegisterObject(texture);
@@ -268,9 +221,9 @@ Texture* Pack::CreateTextureFromRawData(RawData *raw_data,
     return NULL;
   }
 
-  const String uri = raw_data->uri();
+  const std::string uri = raw_data->uri();
 
-  DLOG(INFO) << "CreateTextureFromRawData(uri='" << uri << "')";
+  O3D_LOG(INFO) << "CreateTextureFromRawData(uri='" << uri << "')";
 
   BitmapRefArray bitmap_refs;
   if (!Bitmap::LoadFromRawData(raw_data, image::UNKNOWN, &bitmap_refs)) {
@@ -283,14 +236,14 @@ Texture* Pack::CreateTextureFromRawData(RawData *raw_data,
 }
 
 Texture* Pack::CreateTextureFromStream(MemoryReadStream* stream,
-                                       const String& uri,
+                                       const std::string& uri,
                                        bool generate_mips) {
   if (!renderer_) {
     O3D_ERROR(service_locator()) << "No Render Device Available";
     return NULL;
   }
 
-  DLOG(INFO) << "CreateTextureFromStream(uri='" << uri << "')";
+  O3D_LOG(INFO) << "CreateTextureFromStream(uri='" << uri << "')";
 
   BitmapRefArray bitmap_refs;
   if (!Bitmap::LoadFromStream(service_locator(), stream, uri, image::UNKNOWN, &bitmap_refs)) {
@@ -304,7 +257,7 @@ Texture* Pack::CreateTextureFromStream(MemoryReadStream* stream,
 
 // Create a bitmap object.
 Bitmap* Pack::CreateBitmap(int width, int height, Texture::Format format) {
-  DCHECK(image::CheckImageDimensions(width, height));
+  O3D_ASSERT(image::CheckImageDimensions(width, height));
 
   Bitmap::Ref bitmap(new Bitmap(service_locator()));
   if (bitmap.IsNull()) {
@@ -338,7 +291,7 @@ std::vector<Bitmap*> Pack::CreateBitmapsFromRawData(RawData* raw_data) {
 }
 
 // Creates a new RawData from a data URL.
-RawData* Pack::CreateRawDataFromDataURL(const String& data_url) {
+RawData* Pack::CreateRawDataFromDataURL(const std::string& data_url) {
   RawData::Ref raw_data = RawData::CreateFromDataURL(service_locator(),
                                                      data_url);
 
@@ -471,8 +424,8 @@ ObjectBase* Pack::GetObjectBaseById(Id id,
   return object.Get();
 }
 
-ObjectBaseArray Pack::GetObjects(const String& name,
-                                 const String& class_type_name) const {
+ObjectBaseArray Pack::GetObjects(const std::string& name,
+                                 const std::string& class_type_name) const {
   ObjectBaseArray objects;
   ObjectSet::const_iterator end(owned_objects_.end());
   for (ObjectSet::const_iterator iter(owned_objects_.begin());
@@ -491,7 +444,7 @@ ObjectBaseArray Pack::GetObjects(const String& name,
 }
 
 ObjectBaseArray Pack::GetObjectsByClassName(
-    const String& class_type_name) const {
+    const std::string& class_type_name) const {
   ObjectBaseArray objects;
   ObjectSet::const_iterator end(owned_objects_.end());
   for (ObjectSet::const_iterator iter(owned_objects_.begin());
@@ -506,7 +459,7 @@ ObjectBaseArray Pack::GetObjectsByClassName(
 
 void Pack::RegisterObject(ObjectBase *object) {
   ObjectBase::Ref temp(object);
-  DLOG_ASSERT(owned_objects_.find(temp) == owned_objects_.end())
+  O3D_ASSERT(owned_objects_.find(temp) == owned_objects_.end())
       << "attempt to register duplicate object in pack.";
   owned_objects_.insert(temp);
 }

@@ -16,7 +16,7 @@
  limitations under the License.
  -->
 
-<project name="pre-o3d" default=".">
+<project name="o3d-setup" default=".">
 
   <!-- import the environment under env.* prefix -->
   <property environment="env" />
@@ -33,8 +33,9 @@
     <pathelement path="${sdk.dir}/tools/lib/sdklib.jar" />
     <pathelement path="${sdk.dir}/tools/lib/androidprefs.jar" />
   </path>
-  <taskdef name="setup" classname="com.android.ant.SetupTask" classpathref="android.antlibs" />
-  <taskdef name="if" classname="com.android.ant.IfElseTask" classpathref="android.antlibs" />
+  <taskdef name="setup" classname="com.android.ant.SetupTask"  classpathref="android.antlibs" />
+  <taskdef name="if"    classname="com.android.ant.IfElseTask" classpathref="android.antlibs" />
+  <taskdef name="xpath" classname="com.android.ant.XPathTask"  classpathref="android.antlibs" />
 
   <!-- set default values -->
   <property name="ndk.jobs" value="8" />

@@ -41,7 +41,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "base/logging.h"
+#include "base/cross/log.h"
 
 namespace o3d {
 
@@ -70,7 +70,7 @@ double PerformanceTimer::GetElapsedTime() {
 }
 
 void PerformanceTimer::Print() {
-  LOG(INFO) << name_.c_str() << " " << GetElapsedTime() << " seconds";
+  O3D_LOG(INFO) << name_.c_str() << " " << GetElapsedTime() << " seconds";
 }
 
 void PerformanceTimer::StopAndPrint() {

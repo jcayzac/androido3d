@@ -31,7 +31,7 @@
 
 #include "core/cross/gpu2d/cubic_classifier.h"
 
-#include "core/cross/math_types.h"
+#include "base/cross/types.h"
 #include "core/cross/gpu2d/cubic_math_utils.h"
 
 namespace o3d {

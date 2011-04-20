@@ -37,7 +37,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 class SkPath;
 
@@ -116,7 +116,7 @@ class PathProcessor {
   // Whether or not to perform verbose logging in debug mode.
   bool verbose_logging_;
 
-  DISALLOW_COPY_AND_ASSIGN(PathProcessor);
+  O3D_DISALLOW_COPY_AND_ASSIGN(PathProcessor);
 };
 
 }  // namespace gpu2d

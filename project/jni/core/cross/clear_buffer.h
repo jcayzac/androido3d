@@ -133,7 +133,7 @@ class ClearBuffer : public RenderNode {
   ParamBoolean::Ref stencil_flag_param_ref_;  // True = clear stencil buffer.
 
   O3D_DECL_CLASS(ClearBuffer, RenderNode);
-  DISALLOW_COPY_AND_ASSIGN(ClearBuffer);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ClearBuffer);
 };
 
 }  // namespace o3d

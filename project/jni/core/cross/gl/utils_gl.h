@@ -33,7 +33,7 @@
 #ifndef O3D_CORE_CROSS_GL_UTILS_GL_H_
 #define O3D_CORE_CROSS_GL_UTILS_GL_H_
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 #include "core/cross/stream.h"
 
 namespace o3d {

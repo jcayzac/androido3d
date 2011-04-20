@@ -104,7 +104,7 @@ class ObjectManager {
   // Returns:
   //   std::vector of pointers to type of the objects that matched by name.
   template<typename T>
-  std::vector<T*> Get(const String& name) const {
+  std::vector<T*> Get(const std::string& name) const {
     std::vector<T*> objects;
     if (ObjectBase::ClassIsA(T::GetApparentClass(),
                              NamedObject::GetApparentClass())) {
@@ -129,8 +129,8 @@ class ObjectManager {
   //   type_name: name of class to look for.
   // Returns:
   //   Array of raw pointers to the found objects.
-  std::vector<ObjectBase*> GetObjects(const String& name,
-                                      const String& type_name) const;
+  std::vector<ObjectBase*> GetObjects(const std::string& name,
+                                      const std::string& type_name) const;
 
   // Search the client for all objects of a certain class
   // Parameters:
@@ -140,7 +140,7 @@ class ObjectManager {
   // Returns:
   //   Array of Object Pointers.
   std::vector<ObjectBase*> GetObjectsByClassName(
-      const String& class_type_name) const;
+      const std::string& class_type_name) const;
 
   // Search the client for all objects of a certain class
   // Returns:
@@ -202,7 +202,7 @@ class ObjectManager {
   // Array required to maintain references to the currently live pack objects.
   PackRefArray pack_array_;
 
-  DISALLOW_COPY_AND_ASSIGN(ObjectManager);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ObjectManager);
 };
 }  // namespace o3d
 

@@ -34,68 +34,45 @@
 // by the progressive streaming archive system
 
 #include "import/cross/raw_data.h"
-#include "base/file_util.h"
+#include "core/cross/file_resource.h"
+#include "base/cross/file_util.h"
 #include "utils/cross/file_path_utils.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
+#include "base/cross/file_path.h"
 #include "utils/cross/dataurl.h"
+
+#ifdef OS_POSIX
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
 
 #ifdef OS_MACOSX
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#ifdef OS_WIN
-#include <rpc.h>
-#endif
-
-using file_util::OpenFile;
-using file_util::CloseFile;
-using file_util::GetFileSize;
-
 namespace o3d {
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// RawData class
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 O3D_DEFN_CLASS(RawData, ParamObject);
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RawData::RawData(ServiceLocator* service_locator,
-                 const String &uri,
+                 const std::string &uri,
                  const void *data,
                  size_t length)
     : ParamObject(service_locator), uri_(uri), allow_string_value_(true) {
   // make private copy of data
-  data_.reset(new uint8[length]);
+  data_.reset(new uint8_t[length]);
   length_ = length;
   memcpy(data_.get(), data, length);
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RawData::Ref RawData::Create(ServiceLocator* service_locator,
-                             const String &uri,
+                             const std::string &uri,
                              const void *data,
                              size_t length) {
   return RawData::Ref(new RawData(service_locator, uri, data, length));
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-RawData::Ref RawData::CreateFromFile(ServiceLocator* service_locator,
-                                     const String &uri,
-                                     const String& filename) {
-  RawData::Ref data(Create(service_locator, uri, NULL, 0));
-  if (!data->SetFromFile(filename)) {
-    data.Reset();
-  }
-
-  return data;
-}
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RawData::Ref RawData::CreateFromDataURL(ServiceLocator* service_locator,
-                                        const String& data_url) {
+                                        const std::string& data_url) {
   RawData::Ref raw_data(Create(service_locator, "", NULL, 0));
   if (!raw_data->SetFromDataURL(data_url)) {
     raw_data.Reset();
@@ -103,53 +80,13 @@ RawData::Ref RawData::CreateFromDataURL(ServiceLocator* service_locator,
 
   return raw_data;
 }
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 RawData::~RawData() {
   Discard();
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool RawData::SetFromFile(const String& filename) {
-  // We can't allow general string files to be downloaded from anywhere
-  // as that would override the security measures that have been added to
-  // XMLHttpRequest over the years. Images and other binary datas are okay.
-  // because RawData can only be passed to stuff that understands specific
-  // formats.
-  allow_string_value_ = false;
-  FilePath filepath = UTF8ToFilePath(filename);
-  FILE *file = OpenFile(filepath, "rb");
-  bool result = false;
-  if (!file) {
-    DLOG(ERROR) << "file not found \"" << filename << "\"";
-  } else {
-    // Determine the file's length
-    int64 file_size64;
-    if (!GetFileSize(filepath, &file_size64)) {
-      DLOG(ERROR) << "error getting file size \"" << filename << "\"";
-    } else {
-      if (file_size64 > 0xffffffffLL) {
-        DLOG(ERROR) << "file is too large \"" << filename << "\"";
-      } else {
-        size_t file_length = static_cast<size_t>(file_size64);
-
-        // Load the file data into memory
-        data_.reset(new uint8[file_length]);
-        length_ = file_length;
-        if (fread(data_.get(), file_length, 1, file) != 1) {
-          DLOG(ERROR) << "error reading file \"" << filename << "\"";
-        } else {
-          result = true;
-        }
-      }
-    }
-    CloseFile(file);
-  }
-
-  return result;
-}
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool RawData::SetFromDataURL(const String& data_url) {
-  String error_string;
+bool RawData::SetFromDataURL(const std::string& data_url) {
+  std::string error_string;
   size_t data_length = 0;
   bool no_errors = dataurl::FromDataURL(data_url,
                                         &data_,
@@ -162,36 +99,13 @@ bool RawData::SetFromDataURL(const String& data_url) {
   }
   return true;
 }
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const uint8 *RawData::GetData() const {
-  // Return data immediately if we have it
+
+const uint8_t *RawData::GetData() const {
   if (data_.get()) {
     return data_.get();
   }
-
-  // We need to load the data from the cache file
-  if (temp_filepath_.empty()) {
-    DLOG(ERROR) << "cannot retrieve data object - it has been released";
-    return NULL;
-  }
-
-  FILE *tempfile = file_util::OpenFile(temp_filepath_, "rb");
-  if (!tempfile) {
-    DLOG(ERROR) << "cached data file cannot be opened";
-    return NULL;
-  }
-
-  data_.reset(new uint8[length_]);
-  size_t bytes_read = fread(data_.get(), 1, length_, tempfile);
-
-  if (bytes_read != length_) {
-    DLOG(ERROR) << "error reading cached data file";
-    data_.reset();
-  }
-
-  file_util::CloseFile(tempfile);
-
-  return data_.get();
+  O3D_LOG(ERROR) << "cannot retrieve data object - it has been released";
+  return NULL;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -205,8 +119,8 @@ namespace {
 // Returns:
 //   the start of the UTF-8 string or NULL if not valid UTF-8.
 const char* GetValidUTF8(const RawData& data, size_t* utf8_length) {
-  DCHECK(utf8_length);
-  const uint8* s = data.GetDataAs<const uint8>(0);
+  O3D_ASSERT(utf8_length);
+  const uint8_t* s = data.GetDataAs<const uint8_t>(0);
   if (!s) {
     return NULL;
   }
@@ -218,15 +132,15 @@ const char* GetValidUTF8(const RawData& data, size_t* utf8_length) {
     s += 3;
   }
 
-  const uint8* start = s;
+  const uint8_t* start = s;
   *utf8_length = length;
 
   while (length) {
-    uint8 c = *s++;
+    uint8_t c = *s++;
     if (c >= 0x80) {
       // It's a multi-byte character
       if (c >= 0xC2 && c <= 0xF4) {
-        uint32 codepoint;
+        uint32_t codepoint;
         size_t remaining_code_length = 0;
         if ((c & 0xE0) == 0xC0) {
           codepoint = c & 0x1F;
@@ -270,7 +184,7 @@ const char* GetValidUTF8(const RawData& data, size_t* utf8_length) {
 
 }  // anonymous namespace
 
-String RawData::StringValue() const {
+std::string RawData::StringValue() const {
   // NOTE: Originally it was thought to only allow certain extensions.
   // Unfortunately it's not clear what list of extensions are valid. The list of
   // extensions that might be useful to an application is nearly infinite (.txt,
@@ -292,48 +206,16 @@ String RawData::StringValue() const {
     if (!utf8) {
       O3D_ERROR(service_locator()) << "RawData is not valid UTF-8 string";
     } else {
-      return String (utf8, length);
+      return std::string (utf8, length);
     }
   }
-  return String();
+  return std::string();
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void RawData::Flush() {
-  #if !defined(O3D_NO_TEMP_FILES)
-  // Only create the temp file if it doesn't already exist
-  if (data_.get() && temp_filepath_.empty()) {
-    if (GetTempFilePathFromURI(uri_, &temp_filepath_)) {
-      FILE *tempfile = file_util::OpenFile(temp_filepath_, "wb");
-
-      if (tempfile) {
-        fwrite(data_.get(), 1, GetLength(), tempfile);
-        file_util::CloseFile(tempfile);
-
-        // Now that the data is cached, free it
-        data_.reset();
-      } else {
-        DLOG(ERROR) << "error creating cached data file";
-        temp_filepath_ = FilePath();
-      }
-    }
-  }
-  #endif
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const FilePath& RawData::GetTempFilePath() {
-  Flush();  // writes temp file if it's not already written
-  return temp_filepath_;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void RawData::Discard() {
   data_.reset();
-  DeleteTempFile();
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool RawData::IsOffsetLengthValid(size_t offset, size_t length) const {
   if (offset + length < offset) {
     O3D_ERROR(service_locator()) << "overflow";
@@ -343,98 +225,6 @@ bool RawData::IsOffsetLengthValid(size_t offset, size_t length) const {
     O3D_ERROR(service_locator()) << "illegal data offset or size";
     return false;
   }
-  return true;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void RawData::DeleteTempFile() {
-  if (!temp_filepath_.empty()) {
-    file_util::Delete(temp_filepath_, false);
-    temp_filepath_ = FilePath();
-  }
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-static String GetUUIDString() {
-#ifdef OS_WIN
-  // now generate a GUID
-  UUID guid = {0};
-  UuidCreate(&guid);
-
-  // and format into a wide-string
-  char guid_string[37];
-#if defined(OS_WIN)
-#define snprintf _snprintf
-#endif
-  snprintf(
-      guid_string, sizeof(guid_string) / sizeof(guid_string[0]),
-      "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-      guid.Data1, guid.Data2, guid.Data3,
-      guid.Data4[0], guid.Data4[1], guid.Data4[2],
-      guid.Data4[3], guid.Data4[4], guid.Data4[5],
-      guid.Data4[6], guid.Data4[7]);
-
-  return guid_string;
-#endif
-
-#ifdef OS_MACOSX
-  CFUUIDRef uuid = CFUUIDCreate(NULL);
-  CFStringRef uuid_string_ref = CFUUIDCreateString(NULL, uuid);
-  CFRelease(uuid);
-
-  char uuid_string[64];
-  uuid_string[0] = 0;  // null-terminate, in case CFStringGetCString() fails
-  CFStringGetCString(uuid_string_ref,
-                     uuid_string,
-                     sizeof(uuid_string),
-                     kCFStringEncodingUTF8);
-  CFRelease(uuid_string_ref);
-
-
-  return uuid_string;
-#endif
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  static unsigned int index = 0;
-  char uuid[18] = {0};
-  unsigned int pid = getpid();
-  snprintf(uuid, 18, "%08x-%08x", pid, index++);
-  return String(uuid);
-#endif
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool RawData::GetTempFilePathFromURI(const String &uri,
-                                     FilePath *temp_fullpath) {
-  if (!temp_fullpath) return false;
-
-  // We use a UUID here to avoid any possible collisions with other tempfiles
-  // which have been or will be written sharing the same basic name
-
-  FilePath temp_path;
-  if (!file_util::GetTempDir(&temp_path)) {
-    return false;
-  }
-
-  String uuid_string = GetUUIDString();
-
-  // format the temp file basename
-  String filename;
-
-  // try to retain the original file suffix (.jpg, etc.)
-  std::string::size_type dot_position = uri.rfind('.');
-  if (dot_position != std::string::npos) {
-    filename = uuid_string + uri.substr(dot_position);
-  } else {
-    filename = uuid_string;
-  }
-
-  // Construct the full pathname
-  FilePath fullpath = temp_path;
-  fullpath = fullpath.AppendASCII(filename);
-
-  if (temp_fullpath) *temp_fullpath = fullpath;
-
   return true;
 }
 

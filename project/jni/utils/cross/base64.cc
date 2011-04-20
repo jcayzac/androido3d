@@ -50,11 +50,11 @@ void Encode(const void* src_ptr, size_t length, void* dst_ptr) {
       "abcdefghijklmnopqrstuvwxyz"
       "0123456789+/=";
 
-  const uint8* src = reinterpret_cast<const uint8*>(src_ptr);
-  uint8* dst = reinterpret_cast<uint8*>(dst_ptr);
+  const uint8_t* src = reinterpret_cast<const uint8_t*>(src_ptr);
+  uint8_t* dst = reinterpret_cast<uint8_t*>(dst_ptr);
   if (dst) {
     size_t remainder = length % 3;
-    const uint8* end = &src[length - remainder];
+    const uint8_t* end = &src[length - remainder];
     while (src < end) {
       unsigned a = *src++;
       unsigned b = *src++;
@@ -105,7 +105,7 @@ DecodeStatus PerformDecode(const void* src_ptr,
                     bool write_destination) {
   const int kDecodePad = -2;
 
-  static const int8 kDecodeData[] = {
+  static const int8_t kDecodeData[] = {
     62, -1, -1, -1, 63,
     52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, kDecodePad, -1, -1,
     -1,  0,  1,  2,  3,  4,  5,  6, 7,  8,  9, 10, 11, 12, 13, 14,
@@ -114,25 +114,25 @@ DecodeStatus PerformDecode(const void* src_ptr,
     41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
   };
 
-  uint8* dst = reinterpret_cast<uint8*>(dst_ptr);
-  const uint8* dst_start = reinterpret_cast<const uint8*>(dst_ptr);
-  const uint8* dst_end = dst_start + dst_buffer_length;
-  const uint8* src = reinterpret_cast<const uint8*>(src_ptr);
+  uint8_t* dst = reinterpret_cast<uint8_t*>(dst_ptr);
+  const uint8_t* dst_start = reinterpret_cast<const uint8_t*>(dst_ptr);
+  const uint8_t* dst_end = dst_start + dst_buffer_length;
+  const uint8_t* src = reinterpret_cast<const uint8_t*>(src_ptr);
   bool pad_two = false;
   bool pad_three = false;
-  const uint8* end = src + input_length;
+  const uint8_t* end = src + input_length;
   while (src < end) {
-    uint8 bytes[4];
+    uint8_t bytes[4];
     int byte = 0;
     do {
-      uint8 src_byte = *src++;
+      uint8_t src_byte = *src++;
       if (src_byte == 0)
         goto goHome;
       if (src_byte <= ' ')
         continue;  // treat as white space
       if (src_byte < '+' || src_byte > 'z')
         return kBadCharError;
-      int8 decoded = kDecodeData[src_byte - '+'];
+      int8_t decoded = kDecodeData[src_byte - '+'];
       bytes[byte] = decoded;
       if (decoded < 0) {
         if (decoded == kDecodePad)

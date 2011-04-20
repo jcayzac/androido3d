@@ -92,7 +92,7 @@ void Counter::SetCount(float value) {
 }
 
 void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
-  DCHECK(queue != NULL);
+  O3D_ASSERT(queue != NULL);
 
   float old_count = count_param_->value();
 
@@ -123,7 +123,7 @@ void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
           case Counter::CYCLE: {
             while (new_count >= end_count) {
               CallCallbacks(old_count, end_count, queue);
-              if (!floats_are_different(period, 0.0f)) {
+              if (std::equal_to<float>()(period, 0.0f)) {
                 break;
               }
               old_count = start_count;
@@ -143,7 +143,7 @@ void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
               delta -= amount;
               old_count = end_count;
               new_count = end_count;
-              if (delta <= 0.0f || !floats_are_different(period, 0.0f)) {
+              if (delta <= 0.0f || std::equal_to<float>()(period, 0.0f)) {
                 break;
               }
               new_count -= delta;
@@ -178,7 +178,7 @@ void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
           case Counter::CYCLE: {
             while (new_count <= start_count) {
               CallCallbacks(old_count, start_count, queue);
-              if (!floats_are_different(period, 0.0f)) {
+              if (std::equal_to<float>()(period, 0.0f)) {
                 break;
               }
               old_count = end_count;
@@ -198,7 +198,7 @@ void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
               delta += amount;
               old_count = start_count;
               new_count = start_count;
-              if (delta >= 0.0f || !floats_are_different(period, 0.0f)) {
+              if (delta >= 0.0f || std::equal_to<float>()(period, 0.0f)) {
                 break;
               }
               new_count -= delta;
@@ -338,13 +338,13 @@ void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
 void Counter::CallCallbacks(float start_count,
                             float end_count,
                             CounterCallbackQueue* queue) {
-  DCHECK(queue != NULL);
+  O3D_ASSERT(queue != NULL);
 
   if (end_count > start_count) {
     // Going forward.
     // If next_callback is not valid, find the first possible callback.
     if (!next_callback_valid_ ||
-        floats_are_different(start_count, last_call_callbacks_end_count_)) {
+        std::not_equal_to<float>()(start_count, last_call_callbacks_end_count_)) {
       next_callback_ = callbacks_.begin();
       while (next_callback_ != callbacks_.end() &&
              next_callback_->count() < start_count) {
@@ -367,7 +367,7 @@ void Counter::CallCallbacks(float start_count,
     // Going backward.
     // If prev_callback is not valid, find the first possible callback.
     if (!prev_callback_valid_ ||
-        floats_are_different(start_count, last_call_callbacks_end_count_)) {
+        std::not_equal_to<float>()(start_count, last_call_callbacks_end_count_)) {
       prev_callback_ = callbacks_.rbegin();
       while (prev_callback_ != callbacks_.rend() &&
              prev_callback_->count() > start_count) {
@@ -408,7 +408,7 @@ void Counter::AddCallback(float count, CounterCallback* callback) {
     CounterCallbackInfoArray::iterator end(callbacks_.end());
     CounterCallbackInfoArray::iterator iter(callbacks_.begin());
     while (iter != end) {
-      if (!floats_are_different(iter->count(), count)) {
+      if (std::equal_to<float>()(iter->count(), count)) {
         iter->set_callback_manager(manager);
         return;
       } else if (iter->count() > count) {
@@ -425,7 +425,7 @@ bool Counter::RemoveCallback(float count) {
   for (CounterCallbackInfoArray::iterator iter(callbacks_.begin());
        iter != end;
        ++iter) {
-    if (!floats_are_different(iter->count(), count)) {
+    if (std::equal_to<float>()(iter->count(), count)) {
       next_callback_valid_ = false;
       prev_callback_valid_ = false;
       callbacks_.erase(iter);
@@ -443,7 +443,7 @@ void Counter::RemoveAllCallbacks() {
 
 void Counter::RegisterCallbackManager(
     Counter::CounterCallbackManager* manager) {
-  DCHECK(callback_managers_.find(manager->callback()) ==
+  O3D_ASSERT(callback_managers_.find(manager->callback()) ==
          callback_managers_.end());
   callback_managers_.insert(std::make_pair(manager->callback(), manager));
 }
@@ -452,7 +452,7 @@ void Counter::UnregisterCallbackManager(
     Counter::CounterCallbackManager* manager) {
   CallbackManagerMap::iterator iter = callback_managers_.find(
       manager->callback());
-  DCHECK(iter != callback_managers_.end());
+  O3D_ASSERT(iter != callback_managers_.end());
   callback_managers_.erase(iter);
 }
 
@@ -478,8 +478,8 @@ Counter::CounterCallbackManager::CounterCallbackManager(Counter* counter,
     : counter_(counter),
       closure_(closure),
       called_(false) {
-  DCHECK(counter != NULL);
-  DCHECK(closure != NULL);
+  O3D_ASSERT(counter != NULL);
+  O3D_ASSERT(closure != NULL);
   counter_->RegisterCallbackManager(this);
 }
 
@@ -504,14 +504,14 @@ SecondCounter::SecondCounter(ServiceLocator* service_locator)
     : Counter(service_locator) {
   CounterManager* counter_manager =
       service_locator->GetService<CounterManager>();
-  DCHECK(counter_manager);
+  O3D_ASSERT(counter_manager);
   counter_manager->RegisterSecondCounter(this);
 }
 
 SecondCounter::~SecondCounter() {
   CounterManager* counter_manager =
       service_locator()->GetService<CounterManager>();
-  DCHECK(counter_manager);
+  O3D_ASSERT(counter_manager);
   counter_manager->UnregisterSecondCounter(this);
 }
 
@@ -525,14 +525,14 @@ RenderFrameCounter::RenderFrameCounter(ServiceLocator* service_locator)
     : Counter(service_locator) {
   CounterManager* counter_manager =
       service_locator->GetService<CounterManager>();
-  DCHECK(counter_manager);
+  O3D_ASSERT(counter_manager);
   counter_manager->RegisterRenderFrameCounter(this);
 }
 
 RenderFrameCounter::~RenderFrameCounter() {
   CounterManager* counter_manager =
       service_locator()->GetService<CounterManager>();
-  DCHECK(counter_manager);
+  O3D_ASSERT(counter_manager);
   counter_manager->UnregisterRenderFrameCounter(this);
 }
 
@@ -546,14 +546,14 @@ TickCounter::TickCounter(ServiceLocator* service_locator)
     : Counter(service_locator) {
   CounterManager* counter_manager =
       service_locator->GetService<CounterManager>();
-  DCHECK(counter_manager);
+  O3D_ASSERT(counter_manager);
   counter_manager->RegisterTickCounter(this);
 }
 
 TickCounter::~TickCounter() {
   CounterManager* counter_manager =
       service_locator()->GetService<CounterManager>();
-  DCHECK(counter_manager);
+  O3D_ASSERT(counter_manager);
   counter_manager->UnregisterTickCounter(this);
 }
 

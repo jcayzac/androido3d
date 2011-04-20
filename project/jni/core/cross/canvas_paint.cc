@@ -256,7 +256,7 @@ CanvasFontMetrics CanvasPaint::GetFontMetrics() {
   return ret;
 }
 
-Float4 CanvasPaint::MeasureText(const String& text) {
+Float4 CanvasPaint::MeasureText(const std::string& text) {
   SkRect bounds;
   GetNativePaint().measureText(text.c_str(), text.size(), &bounds);
 

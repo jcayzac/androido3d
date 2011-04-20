@@ -33,7 +33,7 @@
 // This file contains the implementation for the CanvasShader class.
 
 #include "core/cross/canvas_shader.h"
-#include "base/scoped_ptr.h"
+#include "base/cross/scoped_ptr.h"
 #include "core/cross/canvas_utils.h"
 #include "core/cross/error.h"
 
@@ -103,11 +103,11 @@ SkShader* CanvasLinearGradient::MakeNativeShader() {
                                  << " CanvasLinearGradient!";
     return NULL;
   }
-  scoped_array<SkColor> colors(new SkColor[colors_.size()]);
+  ::o3d::base::scoped_array<SkColor> colors(new SkColor[colors_.size()]);
   for (std::vector<Float4>::size_type ii = 0; ii < colors_.size(); ii++) {
     (colors.get())[ii] = Float4ToSkColor(colors_[ii]);
   }
-  scoped_ptr<SkScalar> positions;
+  ::o3d::base::scoped_ptr<SkScalar> positions;
   if (positions_.size()) {
     if (positions_.size() != colors_.size()) {
       O3D_ERROR(service_locator()) << "The number of positions must match "
@@ -131,7 +131,7 @@ SkShader* CanvasLinearGradient::MakeNativeShader() {
       ToSKTileMode(tile_mode_));
 
   if (shader == NULL) {
-    DLOG(ERROR) << "Failed to create SkGradientShader (linear)";
+    O3D_LOG(ERROR) << "Failed to create SkGradientShader (linear)";
   }
 
   return shader;

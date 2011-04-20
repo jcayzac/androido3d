@@ -49,12 +49,12 @@ ObjectManager::~ObjectManager() {
   // Free all the packs.
   pack_array_.clear();
 
-  DLOG_ASSERT(object_map_.empty()) << "Client node leak.";
+  O3D_ASSERT(object_map_.empty()) << "Client node leak.";
 }
 
 std::vector<ObjectBase*> ObjectManager::GetObjects(
-    const String& name,
-    const String& class_type_name) const {
+    const std::string& name,
+    const std::string& class_type_name) const {
   ObjectBaseArray objects;
   ObjectMap::const_iterator end(object_map_.end());
   for (ObjectMap::const_iterator iter(object_map_.begin());
@@ -70,7 +70,7 @@ std::vector<ObjectBase*> ObjectManager::GetObjects(
 }
 
 std::vector<ObjectBase*> ObjectManager::GetObjectsByClassName(
-    const String& class_type_name) const {
+    const std::string& class_type_name) const {
   ObjectBaseArray objects;
   ObjectMap::const_iterator end(object_map_.end());
   for (ObjectMap::const_iterator iter(object_map_.begin());
@@ -100,14 +100,14 @@ ObjectBase *ObjectManager::GetObjectBaseById(
 }
 
 void ObjectManager::RegisterObject(ObjectBase *object) {
-  DLOG_ASSERT(object_map_.find(object->id()) == object_map_.end())
+  O3D_ASSERT(object_map_.find(object->id()) == object_map_.end())
       << "attempt to register duplicate id in client";
   object_map_.insert(std::make_pair(object->id(), object));
 }
 
 void ObjectManager::UnregisterObject(ObjectBase *object) {
   ObjectMap::iterator object_find(object_map_.find(object->id()));
-  DLOG_ASSERT(object_find != object_map_.end())
+  O3D_ASSERT(object_find != object_map_.end())
       << "Unregistering an unknown object.";
 
   if (object_find != object_map_.end()) {
@@ -119,7 +119,7 @@ bool ObjectManager::DestroyPack(Pack* pack) {
   PackRefArray::iterator iter = std::find(pack_array_.begin(),
                                           pack_array_.end(),
                                           pack);
-  DLOG_ASSERT(iter != pack_array_.end()) << "Destruction of unknown pack.";
+  O3D_ASSERT(iter != pack_array_.end()) << "Destruction of unknown pack.";
   if (iter != pack_array_.end()) {
     pack_array_.erase(iter);
     return true;

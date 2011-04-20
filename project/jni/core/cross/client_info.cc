@@ -34,7 +34,7 @@
 
 #include "core/cross/client_info.h"
 #include <vector>
-#include "base/string_util.h"
+#include "base/cross/string_util.h"
 #include "core/cross/types.h"
 #include "core/cross/service_dependency.h"
 #include "core/cross/object_manager.h"
@@ -47,7 +47,7 @@ ClientInfo::ClientInfo()
       buffer_memory_used_(0),
       software_renderer_(false),
       non_power_of_two_textures_(false),
-      version_(O3D_PLUGIN_VERSION) {
+      version_(O3D_LIBRARY_VERSION) {
 }
 
 const InterfaceId ClientInfoManager::kInterfaceId =

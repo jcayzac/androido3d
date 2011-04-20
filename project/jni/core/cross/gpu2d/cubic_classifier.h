@@ -35,7 +35,7 @@
 #ifndef O3D_CORE_CROSS_GPU2D_CUBIC_CLASSIFIER_H_
 #define O3D_CORE_CROSS_GPU2D_CUBIC_CLASSIFIER_H_
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 namespace o3d {
 namespace gpu2d {
@@ -98,7 +98,7 @@ class CubicClassifier {
  private:
   // This class does not need to be instantiated.
   CubicClassifier() {}
-  DISALLOW_COPY_AND_ASSIGN(CubicClassifier);
+  O3D_DISALLOW_COPY_AND_ASSIGN(CubicClassifier);
 };
 
 }  // namespace gpu2d

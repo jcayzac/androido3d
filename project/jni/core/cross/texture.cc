@@ -108,7 +108,7 @@ void Texture2D::DrawImage(const Bitmap& src_img,
                           int dst_mip,
                           int dst_x, int dst_y,
                           int dst_width, int dst_height) {
-  DCHECK(src_img.image_data());
+  O3D_ASSERT(src_img.image_data());
 
   if (dst_mip < 0 || dst_mip >= levels()) {
     O3D_ERROR(service_locator()) << "Mip out of range";
@@ -176,7 +176,7 @@ void Texture2D::DrawImage(const Bitmap& src_img,
   }
 
   LockHelper helper(this, dst_mip, kReadWrite);
-  uint8* mip_data = helper.GetDataAs<uint8>();
+  uint8_t* mip_data = helper.GetDataAs<uint8_t>();
   if (!mip_data) {
     return;
   }
@@ -226,13 +226,13 @@ void Texture2D::DrawImage(const Canvas& src_img,
   }
 
   unsigned int mip_width = image::ComputeMipDimension(dst_mip, width());
-  DCHECK(mip_width > 0);
+  O3D_ASSERT(mip_width > 0);
 
   unsigned int mip_height = image::ComputeMipDimension(dst_mip, height());
-  DCHECK(mip_height > 0);
+  O3D_ASSERT(mip_height > 0);
 
   unsigned int components = image::GetNumComponentsForFormat(format());
-  DCHECK(components > 0);
+  O3D_ASSERT(components > 0);
 
   int src_pitch = src_img.GetPitch();
   if (image::AdjustForSetRect(&src_y, src_width, src_height, &src_pitch,
@@ -244,7 +244,7 @@ void Texture2D::DrawImage(const Canvas& src_img,
   }
 
   LockHelper helper(this, dst_mip, kReadWrite);
-  uint8* mip_data = helper.GetDataAs<uint8>();
+  uint8_t* mip_data = helper.GetDataAs<uint8_t>();
   if (!mip_data) {
     return;
   }
@@ -262,7 +262,7 @@ void Texture2D::DrawImage(const Canvas& src_img,
 #endif  // !defined(O3D_NO_CANVAS)
 
 void Texture2D::SetFromBitmap(const Bitmap& bitmap) {
-  DCHECK(bitmap.image_data());
+  O3D_ASSERT(bitmap.image_data());
   if (bitmap.width() != static_cast<unsigned>(width()) ||
       bitmap.height() != static_cast<unsigned>(height()) ||
       bitmap.format() != format()) {
@@ -295,13 +295,13 @@ void Texture2D::GenerateMips(int source_level, int num_levels) {
     int level = source_level + ii;
     Texture2D::LockHelper src_helper(this, level, kReadOnly);
     Texture2D::LockHelper dst_helper(this, level + 1, kWriteOnly);
-    const uint8* src_data = src_helper.GetDataAs<const uint8>();
+    const uint8_t* src_data = src_helper.GetDataAs<const uint8_t>();
     if (!src_data) {
       O3D_ERROR(service_locator())
           << "could not lock source texture.";
       return;
     }
-    uint8* dst_data = dst_helper.GetDataAs<uint8>();
+    uint8_t* dst_data = dst_helper.GetDataAs<uint8_t>();
     if (!dst_data) {
       O3D_ERROR(service_locator())
           << "could not lock destination texture.";
@@ -318,8 +318,8 @@ void Texture2D::GenerateMips(int source_level, int num_levels) {
 
 bool Texture2D::Lock(
     int level, void** texture_data, int* pitch, AccessMode mode) {
-  DCHECK(texture_data);
-  DCHECK(pitch);
+  O3D_ASSERT(texture_data);
+  O3D_ASSERT(pitch);
   if (level >= levels() || level < 0) {
     O3D_ERROR(service_locator())
         << "Trying to lock inexistent level " << level << " on Texture \""
@@ -484,7 +484,7 @@ void TextureCUBE::DrawImage(const Bitmap& src_img, int src_mip,
                             CubeFace dest_face, int dest_mip,
                             int dst_x, int dst_y,
                             int dst_width, int dst_height) {
-  DCHECK(src_img.image_data());
+  O3D_ASSERT(src_img.image_data());
 
   if (dest_face >= NUMBER_OF_FACES) {
     O3D_ERROR(service_locator()) << "Invalid face specification";
@@ -556,7 +556,7 @@ void TextureCUBE::DrawImage(const Bitmap& src_img, int src_mip,
   }
 
   LockHelper helper(this, dest_face, dest_mip, kReadWrite);
-  uint8* mip_data = helper.GetDataAs<uint8>();
+  uint8_t* mip_data = helper.GetDataAs<uint8_t>();
   if (!mip_data) {
     return;
   }
@@ -610,10 +610,10 @@ void TextureCUBE::DrawImage(const Canvas& src_img,
   }
 
   unsigned int mip_length = image::ComputeMipDimension(dest_mip, edge_length());
-  DCHECK(mip_length > 0u);
+  O3D_ASSERT(mip_length > 0u);
 
   unsigned int components = image::GetNumComponentsForFormat(format());
-  DCHECK(components > 0);
+  O3D_ASSERT(components > 0);
 
   int src_pitch = src_img.GetPitch();
   if (image::AdjustForSetRect(&src_y, src_width, src_height, &src_pitch,
@@ -625,7 +625,7 @@ void TextureCUBE::DrawImage(const Canvas& src_img,
   }
 
   LockHelper helper(this, dest_face, dest_mip, kReadWrite);
-  uint8* mip_data = helper.GetDataAs<uint8>();
+  uint8_t* mip_data = helper.GetDataAs<uint8_t>();
   if (!mip_data) {
     return;
   }
@@ -643,7 +643,7 @@ void TextureCUBE::DrawImage(const Canvas& src_img,
 #endif  // !defined(O3D_NO_CANVAS)
 
 void TextureCUBE::SetFromBitmap(CubeFace face, const Bitmap& bitmap) {
-  DCHECK(bitmap.image_data());
+  O3D_ASSERT(bitmap.image_data());
   if (bitmap.width() != static_cast<unsigned>(edge_length()) ||
       bitmap.height() != static_cast<unsigned>(edge_length()) ||
       bitmap.format() != format()) {
@@ -680,13 +680,13 @@ void TextureCUBE::GenerateMips(int source_level, int num_levels) {
       TextureCUBE::LockHelper dst_helper(
           this, static_cast<TextureCUBE::CubeFace>(face), level + 1,
           kWriteOnly);
-      const uint8* src_data = src_helper.GetDataAs<const uint8>();
+      const uint8_t* src_data = src_helper.GetDataAs<const uint8_t>();
       if (!src_data) {
         O3D_ERROR(service_locator())
             << "could not lock source texture.";
         return;
       }
-      uint8* dst_data = dst_helper.GetDataAs<uint8>();
+      uint8_t* dst_data = dst_helper.GetDataAs<uint8_t>();
       if (!dst_data) {
         O3D_ERROR(service_locator())
             << "could not lock destination texture.";
@@ -709,8 +709,8 @@ void TextureCUBE::GenerateMips(int source_level, int num_levels) {
 bool TextureCUBE::Lock(
     CubeFace face, int level, void** texture_data, int* pitch,
     AccessMode mode) {
-  DCHECK(texture_data);
-  DCHECK(pitch);
+  O3D_ASSERT(texture_data);
+  O3D_ASSERT(pitch);
   if (level >= levels() || level < 0) {
     O3D_ERROR(service_locator())
         << "Trying to lock inexistent level " << level << " on Texture \""

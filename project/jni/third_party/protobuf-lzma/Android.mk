@@ -20,6 +20,8 @@ include $(O3D_START_MODULE)
 
 LOCAL_MODULE := protobuf-lzma
 LOCAL_CPP_EXTENSION := .cc
+LOCAL_CFLAGS += \
+  -DGOOGLE_PROTOBUF_NO_RTTI \
 
 LOCAL_C_INCLUDES += \
   $(LOCAL_PATH)/include \

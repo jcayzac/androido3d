@@ -49,10 +49,10 @@ struct EffectToUpper {
 }
 
 EffectParameterInfo::EffectParameterInfo(
-    const String& name,
+    const std::string& name,
     const ObjectBase::Class* class_type,
     int num_elements,
-    const String& semantic,
+    const std::string& semantic,
     const ObjectBase::Class* sas_class_type)
       : name_(name),
         class_type_(class_type),
@@ -94,7 +94,7 @@ void Effect::CreateSASParameters(ParamObject* param_object) {
 // Creates parameters on a ParamObject corresponding to the internal effect
 // parameters.
 void Effect::CreateSpecifiedParameters(ParamObject* param_object, bool sas) {
-  String errors;
+  std::string errors;
   EffectParameterInfoArray param_infos;
   GetParameterInfo(&param_infos);
   for (unsigned ii = 0; ii < param_infos.size(); ++ii) {
@@ -131,10 +131,10 @@ void Effect::CreateSpecifiedParameters(ParamObject* param_object, bool sas) {
               param_object->CreateParam<ParamParamArray>(param_info.name());
         }
         if (!param) {
-          errors += String(errors.empty() ? "" : "\n") +
-                    String("Could not create Param '") + param_info.name() +
-                    String("' type '") + String(type->name()) +
-                    String(" for Effect '") + name() + "'";
+          errors += std::string(errors.empty() ? "" : "\n") +
+                    std::string("Could not create Param '") + param_info.name() +
+                    std::string("' type '") + std::string(type->name()) +
+                    std::string(" for Effect '") + name() + "'";
         }
       }
     }
@@ -146,13 +146,13 @@ void Effect::CreateSpecifiedParameters(ParamObject* param_object, bool sas) {
 
 namespace {
 
-String::size_type GetEndOfIdentifier(const String& original,
-                                     String::size_type start) {
+std::string::size_type GetEndOfIdentifier(const std::string& original,
+                                     std::string::size_type start) {
   if (start < original.size()) {
     // check that first character is alpha or '_'
     if (isalpha(original[start]) || original[start] == '_') {
-      String::size_type end = original.size();
-      String::size_type position = start;
+      std::string::size_type end = original.size();
+      std::string::size_type position = start;
       while (position < end) {
         char c = original[position];
         if (!isalnum(c) && c != '_') {
@@ -163,22 +163,22 @@ String::size_type GetEndOfIdentifier(const String& original,
       return position;
     }
   }
-  return String::npos;
+  return std::string::npos;
 }
 
-bool GetIdentifierAfterString(const String& original,
-                              const String& phrase,
-                              String* word) {
-  String::size_type position = original.find(phrase);
-  if (position == String::npos) {
+bool GetIdentifierAfterString(const std::string& original,
+                              const std::string& phrase,
+                              std::string* word) {
+  std::string::size_type position = original.find(phrase);
+  if (position == std::string::npos) {
     return false;
   }
 
   // Find end of identifier
-  String::size_type start = position + phrase.size();
-  String::size_type end = GetEndOfIdentifier(original, start);
-  if (end != start && end != String::npos) {
-    *word = String(original, start, end - start);
+  std::string::size_type start = position + phrase.size();
+  std::string::size_type end = GetEndOfIdentifier(original, start);
+  if (end != start && end != std::string::npos) {
+    *word = std::string(original, start, end - start);
     return true;
   }
   return false;
@@ -195,9 +195,9 @@ bool GetIdentifierAfterString(const String& original,
 //
 //    with that exact syntax. No extra whitespace.
 //    If it doesn't find both it's a fails.
-bool Effect::ValidateFX(const String& effect,
-                        String* vertex_shader_entry_point,
-                        String* fragment_shader_entry_point,
+bool Effect::ValidateFX(const std::string& effect,
+                        std::string* vertex_shader_entry_point,
+                        std::string* fragment_shader_entry_point,
                         MatrixLoadOrder* matrix_load_order) {
   if (!GetIdentifierAfterString(effect,
                                 kVertexShaderEntryPointPrefix,
@@ -215,7 +215,7 @@ bool Effect::ValidateFX(const String& effect,
                                  << "\" in Effect";
     return false;
   }
-  String matrix_load_order_str;
+  std::string matrix_load_order_str;
   if (!GetIdentifierAfterString(effect,
                                 kMatrixLoadOrderPrefix,
                                 &matrix_load_order_str)) {

@@ -105,7 +105,7 @@ class Material : public ParamObject {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(Material, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Material);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Material);
 };
 
 class ParamMaterial : public TypedRefParam<Material> {

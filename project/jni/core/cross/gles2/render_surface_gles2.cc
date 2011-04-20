@@ -48,22 +48,22 @@ RenderSurfaceGLES2::RenderSurfaceGLES2(ServiceLocator *service_locator,
     : RenderSurface(service_locator, width, height, texture),
       cube_face_(cube_face),
       mip_level_(mip_level) {
-  DCHECK(texture);
+  O3D_ASSERT(texture);
 }
 
 RenderSurfaceGLES2::~RenderSurfaceGLES2() {
 }
 
 bool RenderSurfaceGLES2::OnContextRestored() {
-  DLOG(INFO) << "RenderSurfaceGLES2::OnContextRestored not implemented";
+  O3D_LOG(INFO) << "RenderSurfaceGLES2::OnContextRestored not implemented";
   return true;
 }
 
 bool RenderSurfaceGLES2::PlatformSpecificGetIntoBitmap(
     Bitmap::Ref bitmap) const {
   Renderer* renderer = service_locator()->GetService<Renderer>();
-  DCHECK(renderer);
-  DCHECK(bitmap->width() == static_cast<unsigned int>(clip_width()) &&
+  O3D_ASSERT(renderer);
+  O3D_ASSERT(bitmap->width() == static_cast<unsigned int>(clip_width()) &&
          bitmap->height() == static_cast<unsigned int>(clip_height()) &&
          bitmap->num_mipmaps() == 1 &&
          bitmap->format() == Texture::ARGB8);
@@ -91,7 +91,7 @@ RenderDepthStencilSurfaceGLES2::RenderDepthStencilSurfaceGLES2(
     int height)
     : RenderDepthStencilSurface(service_locator, width, height) {
 
-#ifndef DISABLE_FBO
+#ifndef O3D_DISABLE_FBO
 #if defined(GLES2_BACKEND_DESKTOP_GL)
   // If packed depth stencil is supported, create only one buffer for both
   // depth and stencil.
@@ -133,7 +133,7 @@ RenderDepthStencilSurfaceGLES2::RenderDepthStencilSurfaceGLES2(
 }
 
 RenderDepthStencilSurfaceGLES2::~RenderDepthStencilSurfaceGLES2() {
-#ifndef DISABLE_FBO
+#ifndef O3D_DISABLE_FBO
 #if defined(GLES2_BACKEND_DESKTOP_GL)
   // TODO(piman): on GLES, test GL_OES_packed_depth_stencil
   if (GLEW_EXT_packed_depth_stencil) {
@@ -146,7 +146,7 @@ RenderDepthStencilSurfaceGLES2::~RenderDepthStencilSurfaceGLES2() {
 }
 
 bool RenderDepthStencilSurfaceGLES2::OnContextRestored() {
-  DLOG(INFO)
+  O3D_LOG(INFO)
       << "RenderDepthStencilSurfaceGLES2::OnContextRestored not implemented";
   return true;
 }

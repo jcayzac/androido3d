@@ -106,7 +106,7 @@ class RenderSurfaceSet : public RenderNode {
   ParamRenderDepthStencilSurface::Ref render_depth_stencil_surface_param_;
 
   O3D_DECL_CLASS(RenderSurfaceSet, RenderNode)
-  DISALLOW_COPY_AND_ASSIGN(RenderSurfaceSet);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceSet);
 };
 
 }  // namespace o3d

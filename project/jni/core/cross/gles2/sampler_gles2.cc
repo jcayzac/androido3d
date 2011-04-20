@@ -69,12 +69,12 @@ unsigned int GLAddressMode(Sampler::AddressMode o3d_mode,
 #if defined(GLES2_BACKEND_DESKTOP_GL)
       gl_mode = GL_CLAMP_TO_BORDER;
 #else
-      NOTIMPLEMENTED() << "Sampler::BORDER";
+      O3D_NOTIMPLEMENTED() << "Sampler::BORDER";
       gl_mode = GL_CLAMP_TO_EDGE;
 #endif
       break;
     default:
-      DLOG(ERROR) << "Unknown Address mode " << static_cast<int>(o3d_mode);
+      O3D_LOG(ERROR) << "Unknown Address mode " << static_cast<int>(o3d_mode);
       break;
   }
   return gl_mode;
@@ -106,8 +106,8 @@ unsigned int GLMinFilter(Sampler::FilterType o3d_filter,
         return GL_LINEAR_MIPMAP_LINEAR;
   }
   // fall through
-  DLOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
-  DCHECK(false);
+  O3D_LOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
+  O3D_ASSERT(false);
   return GL_NONE;
 }
 
@@ -120,7 +120,7 @@ unsigned int GLMagFilter(Sampler::FilterType o3d_filter) {
     case Sampler::ANISOTROPIC:
       return GL_LINEAR;
     default:
-      DLOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
+      O3D_LOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
       return GL_LINEAR;
   }
 }
@@ -131,7 +131,7 @@ GLenum GLTextureTarget(Texture* texture) {
   } else if (texture->IsA(TextureCUBE::GetApparentClass())) {
     return GL_TEXTURE_CUBE_MAP;
   } else {
-    DLOG(ERROR) << "Unknown texture target";
+    O3D_LOG(ERROR) << "Unknown texture target";
     return 0;
   }
 }

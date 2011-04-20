@@ -36,13 +36,10 @@
 #include <stdio.h>
 #include "core/cross/bitmap.h"
 #include "utils/cross/file_path_utils.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
+#include "base/cross/file_path.h"
+#include "base/cross/file_util.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
-
-using file_util::OpenFile;
-using file_util::CloseFile;
 
 namespace o3d {
 
@@ -50,17 +47,17 @@ namespace o3d {
 // 24-bit or 32-bit TGA stream into the Bitmap object.
 bool Bitmap::LoadFromTGAStream(ServiceLocator* service_locator,
                                MemoryReadStream *stream,
-                               const String &filename,
+                               const std::string &filename,
                                BitmapRefArray* bitmaps) {
   // Read the magic header.
-  uint8 file_magic[12];
+  uint8_t file_magic[12];
   if (stream->Read(file_magic, sizeof(file_magic)) != sizeof(file_magic)) {
-    DLOG(ERROR) << "Targa file magic not loaded \"" << filename << "\"";
+    O3D_LOG(ERROR) << "Targa file magic not loaded \"" << filename << "\"";
     return false;
   }
   // Match the first few bytes of the TGA header to confirm we can read this
   // format. Multibyte values are stored little endian.
-  static const uint8 kTargaMagic[12] = {
+  static const uint8_t kTargaMagic[12] = {
     0,     // ID Length (0 = no ID string present)
     0,     // Color Map Type ( 0 = no color map)
     2,     // Image Type (2 = Uncompressed True Color)
@@ -79,20 +76,20 @@ bool Bitmap::LoadFromTGAStream(ServiceLocator* service_locator,
   // that format or remove targa support completely. If we are keeping targa
   // format we should also support grayscale, 8bit indexed and 16bit formats.
   if (memcmp(kTargaMagic, file_magic, sizeof(kTargaMagic)) != 0) {
-    DLOG(ERROR) << "Targa file subtype not recognized \"" << filename << "\"";
+    O3D_LOG(ERROR) << "Targa file subtype not recognized \"" << filename << "\"";
     return false;
   }
   // Read the image header.
-  uint8 header[6];
+  uint8_t header[6];
   if (stream->Read(header, sizeof(header)) != sizeof(header)) {
-    DLOG(ERROR) << "Targa file header not read \"" << filename << "\"";
+    O3D_LOG(ERROR) << "Targa file header not read \"" << filename << "\"";
     return false;
   }
   // Calculate image width and height, stored as little endian.
   unsigned int tga_width  = header[1] * 256 + header[0];
   unsigned int tga_height = header[3] * 256 + header[2];
   if (!image::CheckImageDimensions(tga_width, tga_height)) {
-    DLOG(ERROR) << "Failed to load " << filename
+    O3D_LOG(ERROR) << "Failed to load " << filename
                 << ": dimensions are too large (" << tga_width
                 << ", " << tga_height << ").";
     return false;
@@ -100,7 +97,7 @@ bool Bitmap::LoadFromTGAStream(ServiceLocator* service_locator,
   unsigned int components = header[4] >> 3;
   // NOTE: Image Descriptor byte is skipped.
   if (components != 3 && components != 4) {
-    DLOG(ERROR) << "Targa file  \"" << filename
+    O3D_LOG(ERROR) << "Targa file  \"" << filename
                 << "\"has an unsupported number of components";
     return false;
   }
@@ -111,15 +108,15 @@ bool Bitmap::LoadFromTGAStream(ServiceLocator* service_locator,
   // Allocate storage for the pixels. Bitmap requires we allocate enough
   // memory for all mips even if we don't use them.
   size_t image_size = Bitmap::ComputeMaxSize(tga_width, tga_height, format);
-  scoped_array<uint8> image_data(new uint8[image_size]);
+  ::o3d::base::scoped_array<uint8_t> image_data(new uint8_t[image_size]);
   if (image_data.get() == NULL) {
-    DLOG(ERROR) << "Targa file memory allocation error \"" << filename << "\"";
+    O3D_LOG(ERROR) << "Targa file memory allocation error \"" << filename << "\"";
     return false;
   }
   // Read in the bitmap data.
   size_t bytes_to_read = pixel_count * components;
   if (stream->Read(image_data.get(), bytes_to_read) != bytes_to_read) {
-    DLOG(ERROR) << "Targa file read failed \"" << filename << "\"";
+    O3D_LOG(ERROR) << "Targa file read failed \"" << filename << "\"";
     return false;
   }
 

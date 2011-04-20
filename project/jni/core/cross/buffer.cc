@@ -215,7 +215,7 @@ bool Buffer::ReshuffleBuffer(unsigned int new_stride, Field* field_to_remove) {
           << "fields on buffer.";
       return false;
     }
-    std::vector<uint8> temp(size_in_bytes);
+    std::vector<uint8_t> temp(size_in_bytes);
 
     // Copy old fields into new buffer.
     {
@@ -267,9 +267,9 @@ bool Buffer::ReshuffleBuffer(unsigned int new_stride, Field* field_to_remove) {
   return true;
 }
 
-Field* Buffer::CreateFieldByClassName(const String& field_type,
+Field* Buffer::CreateFieldByClassName(const std::string& field_type,
                                       unsigned num_components) {
-  for (unsigned ii = 0; ii < arraysize(g_creators); ++ii) {
+  for (unsigned ii = 0; ii < o3d_arraysize(g_creators); ++ii) {
     if (!field_type.compare(g_creators[ii].field_type->name()) ||
         !field_type.compare(g_creators[ii].field_type->unqualified_name())) {
       return CreateField(g_creators[ii].field_type, num_components);
@@ -284,7 +284,7 @@ Field* Buffer::CreateFieldByClassName(const String& field_type,
 Field* Buffer::CreateField(const ObjectBase::Class* field_type,
                            unsigned num_components) {
   FieldCreator* creator = NULL;
-  for (unsigned ii = 0; ii < arraysize(g_creators); ++ii) {
+  for (unsigned ii = 0; ii < o3d_arraysize(g_creators); ++ii) {
     if (g_creators[ii].field_type == field_type) {
       creator = &g_creators[ii];
       break;
@@ -383,14 +383,14 @@ bool Buffer::Unlock() {
 }
 
 bool Buffer::Set(o3d::RawData *raw_data) {
-  DCHECK(raw_data);
+  O3D_ASSERT(raw_data);
   return Set(raw_data, 0, raw_data->GetLength());
 }
 
 bool Buffer::Set(o3d::RawData *raw_data,
                  size_t offset,
                  size_t length) {
-  DCHECK(raw_data);
+  O3D_ASSERT(raw_data);
 
   if (!raw_data->IsOffsetLengthValid(offset, length)) {
     O3D_ERROR(service_locator()) << "illegal buffer data offset or size";
@@ -400,7 +400,7 @@ bool Buffer::Set(o3d::RawData *raw_data,
   // GetData() returns NULL if it, for example, cannot open the temporary data
   // file. In that case, it invokes the error callback. We just have to be
   // careful not to dereference it.
-  const uint8 *data = raw_data->GetDataAs<uint8>(offset);
+  const uint8_t *data = raw_data->GetDataAs<uint8_t>(offset);
   if (!data) {
     return false;
   }
@@ -409,7 +409,7 @@ bool Buffer::Set(o3d::RawData *raw_data,
 
   // Verify we at least have enough data for four-char kSerializationID plus
   // version and num_fields
-  if (length < 4 + 2*sizeof(int32)) {
+  if (length < 4 + 2*sizeof(int32_t)) {
     O3D_ERROR(service_locator())
         << "data object does not contain buffer data";
     return false;
@@ -426,7 +426,7 @@ bool Buffer::Set(o3d::RawData *raw_data,
     return false;
   }
 
-  int32 version = stream.ReadLittleEndianInt32();
+  int32_t version = stream.ReadLittleEndianInt32();
   if (version != 1) {
     O3D_ERROR(service_locator()) << "unknown buffer data version";
     return false;
@@ -441,15 +441,15 @@ bool Buffer::Set(o3d::RawData *raw_data,
   }
 
   // Create fields.
-  int32 num_fields = stream.ReadLittleEndianInt32();
-  for (int32 ff = 0; ff < num_fields; ++ff) {
-    if (stream.GetRemainingByteCount() < 2*sizeof(uint8)) {
+  int32_t num_fields = stream.ReadLittleEndianInt32();
+  for (int32_t ff = 0; ff < num_fields; ++ff) {
+    if (stream.GetRemainingByteCount() < 2*sizeof(uint8_t)) {
       O3D_ERROR(service_locator()) << "unexpected end of buffer data";
       return false;
     }
 
-    uint8 field_id = stream.ReadByte();
-    uint8 num_components = stream.ReadByte();
+    uint8_t field_id = stream.ReadByte();
+    uint8_t num_components = stream.ReadByte();
 
     const ObjectBase::Class *field_type;
 
@@ -481,11 +481,11 @@ bool Buffer::Set(o3d::RawData *raw_data,
   }
 
   // Read the number of elements and allocate space
-  if (stream.GetRemainingByteCount() < sizeof(int32)) {
+  if (stream.GetRemainingByteCount() < sizeof(int32_t)) {
     O3D_ERROR(service_locator()) << "unexpected end of buffer data";
     return false;
   }
-  int32 num_elements = stream.ReadLittleEndianInt32();
+  int32_t num_elements = stream.ReadLittleEndianInt32();
   if (!AllocateElements(num_elements)) {
     O3D_ERROR(service_locator()) << "could not allocate buffer elements";
     return false;
@@ -498,7 +498,7 @@ bool Buffer::Set(o3d::RawData *raw_data,
     helper.GetData(o3d::Buffer::WRITE_ONLY);
 
     // Read each field
-    for (int32 ff = 0; ff < num_fields; ++ff) {
+    for (int32_t ff = 0; ff < num_fields; ++ff) {
       Field *field = fields()[ff];
       if (!field->SetFromMemoryStream(&stream)) {
         O3D_ERROR(service_locator()) <<
@@ -581,9 +581,9 @@ Field* IndexBuffer::index_field() const {
   // on the IndexBuffer. It also checks for the case where there are no fields
   // to prevent a crash. This function can be called from JavaScript. It
   // should never crash. It is okay for an IndexBuffer to temporarily contain
-  // no fields. This is is used by Buffer::Set(). I added a DCHECK for debug
+  // no fields. This is is used by Buffer::Set(). I added a O3D_ASSERT for debug
   // builds.
-  DCHECK(fields().size() == 1);
+  O3D_ASSERT(fields().size() == 1);
   return fields().size() == 1 ? fields()[0].Get() : NULL;
 }
 

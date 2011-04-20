@@ -48,7 +48,7 @@ RenderSurfaceGL::RenderSurfaceGL(ServiceLocator *service_locator,
     : RenderSurface(service_locator, width, height, texture),
       cube_face_(cube_face),
       mip_level_(mip_level) {
-  DCHECK(texture);
+  O3D_ASSERT(texture);
 }
 
 RenderSurfaceGL::~RenderSurfaceGL() {
@@ -56,8 +56,8 @@ RenderSurfaceGL::~RenderSurfaceGL() {
 
 bool RenderSurfaceGL::PlatformSpecificGetIntoBitmap(Bitmap::Ref bitmap) const {
   Renderer* renderer = service_locator()->GetService<Renderer>();
-  DCHECK(renderer);
-  DCHECK(bitmap->width() == static_cast<unsigned int>(clip_width()) &&
+  O3D_ASSERT(renderer);
+  O3D_ASSERT(bitmap->width() == static_cast<unsigned int>(clip_width()) &&
          bitmap->height() == static_cast<unsigned int>(clip_height()) &&
          bitmap->num_mipmaps() == 1 &&
          bitmap->format() == Texture::ARGB8);

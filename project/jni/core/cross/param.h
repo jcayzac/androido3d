@@ -36,7 +36,7 @@
 #define O3D_CORE_CROSS_PARAM_H_
 
 #include <vector>
-#include "base/scoped_ptr.h"
+#include "base/cross/scoped_ptr.h"
 #include "core/cross/named_object.h"
 #include "core/cross/types.h"
 #include "core/cross/weak_ptr.h"
@@ -75,7 +75,7 @@ class Param : public NamedObjectBase {
   virtual void CopyDataFromParam(Param* source_param) = 0;
 
   // Gets the name of the Param.
-  virtual const String& name() const;
+  virtual const std::string& name() const;
 
   // Gets the parameter handle (opaque).
   const void* handle() const {
@@ -230,7 +230,7 @@ class Param : public NamedObjectBase {
 
   // Sets the name of the param. This is called by ParamObject::AddParam.
   // The name can only be set once.
-  void SetName(const String& name);
+  void SetName(const std::string& name);
 
  protected:
   Param(ServiceLocator* service_locator, bool dynamic, bool read_only);
@@ -328,7 +328,7 @@ class Param : public NamedObjectBase {
   typedef std::vector<Param::Ref> ParamRefArray;
 
   // Name of the Param.
-  String name_;
+  std::string name_;
 
   EvaluationCounter* evaluation_counter_;
 
@@ -366,7 +366,7 @@ class Param : public NamedObjectBase {
   bool update_input_;
 
   O3D_DECL_CLASS(Param, NamedObjectBase);
-  DISALLOW_COPY_AND_ASSIGN(Param);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Param);
 };
 
 // A template for value based param types except it does not implement
@@ -431,7 +431,7 @@ class TypedParamBase : public Param {
   DataType value_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TypedParamBase);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TypedParamBase);
 };
 
 template<class T>
@@ -448,7 +448,7 @@ class TypedParam : public TypedParamBase<T> {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TypedParam);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TypedParam);
 };
 
 // Abstract base class of all reference params.
@@ -462,7 +462,7 @@ class RefParamBase : public Param {
 
  private:
   O3D_DECL_CLASS(RefParamBase, Param);
-  DISALLOW_COPY_AND_ASSIGN(RefParamBase);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RefParamBase);
 };
 
 // Abstract base class for Specialized TypedParam for SmartPtr objects that have
@@ -534,7 +534,7 @@ class TypedRefParamBase : public RefParamBase {
   WeakPointerType value_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TypedRefParamBase);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TypedRefParamBase);
 };
 
 // Fully specialize TypedParam for SmartPtr objects that have a GetWeakPointer
@@ -556,18 +556,18 @@ class TypedRefParam : public TypedRefParamBase<T> {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TypedRefParam);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TypedRefParam);
 };
 
 // The following are type defines for Param types used by the Param system.
 // We use an inheritance model so that these names may be forward declared.
-class ParamFloat : public TypedParam<Float> {
+class ParamFloat : public TypedParam<float> {
  public:
   typedef SmartPointer<ParamFloat> Ref;
 
  protected:
   ParamFloat(ServiceLocator* service_locator, bool dynamic, bool read_only)
-      : TypedParam<Float>(service_locator, dynamic, read_only) {
+      : TypedParam<float>(service_locator, dynamic, read_only) {
     set_read_only_value(0.0f);
   }
 
@@ -576,7 +576,7 @@ class ParamFloat : public TypedParam<Float> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamFloat, Param);
-  DISALLOW_COPY_AND_ASSIGN(ParamFloat);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamFloat);
 };
 
 class ParamFloat2 : public TypedParam<Float2> {
@@ -594,7 +594,7 @@ class ParamFloat2 : public TypedParam<Float2> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamFloat2, Param);
-  DISALLOW_COPY_AND_ASSIGN(ParamFloat2);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamFloat2);
 };
 
 class ParamFloat3 : public TypedParam<Float3> {
@@ -612,7 +612,7 @@ class ParamFloat3 : public TypedParam<Float3> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamFloat3, Param);
-  DISALLOW_COPY_AND_ASSIGN(ParamFloat3);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamFloat3);
 };
 
 class ParamFloat4 : public TypedParam<Float4> {
@@ -630,7 +630,7 @@ class ParamFloat4 : public TypedParam<Float4> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamFloat4, Param);
-  DISALLOW_COPY_AND_ASSIGN(ParamFloat4);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamFloat4);
 };
 
 class ParamInteger : public TypedParam<int> {
@@ -648,7 +648,7 @@ class ParamInteger : public TypedParam<int> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamInteger, Param);
-  DISALLOW_COPY_AND_ASSIGN(ParamInteger);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamInteger);
 };
 
 class ParamBoolean : public TypedParam<bool> {
@@ -666,16 +666,16 @@ class ParamBoolean : public TypedParam<bool> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamBoolean, Param);
-  DISALLOW_COPY_AND_ASSIGN(ParamBoolean);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamBoolean);
 };
 
-class ParamString : public TypedParam<String> {
+class ParamString : public TypedParam<std::string> {
  public:
   typedef SmartPointer<ParamString> Ref;
 
  protected:
   ParamString(ServiceLocator* service_locator, bool dynamic, bool read_only)
-      : TypedParam<String>(service_locator, dynamic, read_only) {}
+      : TypedParam<std::string>(service_locator, dynamic, read_only) {}
 
  private:
   friend class IClassManager;
@@ -699,7 +699,7 @@ class ParamMatrix4 : public TypedParam<Matrix4> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamMatrix4, Param);
-  DISALLOW_COPY_AND_ASSIGN(ParamMatrix4);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamMatrix4);
 };
 }  // namespace o3d
 

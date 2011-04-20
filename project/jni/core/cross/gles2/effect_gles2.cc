@@ -33,17 +33,9 @@
 // This file contains the definition of EffectGLES2, the OpenGLES2
 // implementation of the abstract O3D class Effect.
 
-// Disable pointer casting warning for OpenGLES2 calls that require a void* to
-// be cast to a GLuint
-#if defined(OS_WIN)
-#pragma warning(disable : 4312)
-#pragma warning(disable : 4311)
-#endif
-
-
 #include <cctype>
 #include <sstream>
-#include "base/cross/std_functional.h"
+//#include "base/cross/std_functional.h"
 #include "core/cross/semantic_manager.h"
 #include "core/cross/error.h"
 #include "core/cross/standard_param.h"
@@ -54,10 +46,6 @@
 #include "core/cross/gles2/texture_gles2.h"
 #include "core/cross/gles2/utils_gles2.h"
 #include "core/cross/gles2/utils_gles2-inl.h"
-
-#if defined(OS_WIN)
-#include "core/cross/core_metrics.h"
-#endif
 
 namespace o3d {
 
@@ -103,7 +91,7 @@ static const ObjectBase::Class* GLTypeToParamType(GLenum gl_type) {
     case GL_SAMPLER_CUBE:
       return ParamSampler::GetApparentClass();
     default : {
-      DLOG(ERROR) << "Cannot convert GLtype "
+      O3D_LOG(ERROR) << "Cannot convert GLtype "
                   << gl_type
                   << " to a Param type.";
       return NULL;
@@ -120,13 +108,13 @@ EffectGLES2::EffectGLES2(ServiceLocator* service_locator)
           service_locator->GetService<Renderer>())),
       gl_program_(0),
       compile_count_(-1) {
-  DLOG(INFO) << "EffectGLES2 Construct";
+  O3D_LOG(INFO) << "EffectGLES2 Construct";
 }
 
 // Destructor releases vertex and fragment shaders and their correspoding
 // constants tables.
 EffectGLES2::~EffectGLES2() {
-  DLOG(INFO) << "EffectGLES2 Destruct \"" << name() << "\"";
+  O3D_LOG(INFO) << "EffectGLES2 Destruct \"" << name() << "\"";
   ClearProgram();
 }
 
@@ -154,12 +142,12 @@ GLuint EffectGLES2::LoadShader(GLenum type, const char* shader_src) {
   if (value == 0) {
     GLint error_length;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &error_length);
-    scoped_array<char> buffer(new char[error_length + 1]);
+    ::o3d::base::scoped_array<char> buffer(new char[error_length + 1]);
     GLsizei length;
     glGetShaderInfoLog(shader, error_length + 1, &length, buffer.get());
     O3D_ERROR(service_locator()) << "Effect Compile Error: " << buffer.get();
-    DLOG(ERROR) << "Error compiling shader:" << buffer.get();
-    DLOG(ERROR) << "shader: \n" << shader_src << "\n";
+    O3D_LOG(ERROR) << "Error compiling shader:" << buffer.get();
+    O3D_LOG(ERROR) << "shader: \n" << shader_src << "\n";
     glDeleteShader(shader);
     return 0;
   }
@@ -168,13 +156,13 @@ GLuint EffectGLES2::LoadShader(GLenum type, const char* shader_src) {
 
 namespace {
 
-String::size_type GetEndOfIdentifier(const String& original,
-                                     String::size_type start) {
+std::string::size_type GetEndOfIdentifier(const std::string& original,
+                                     std::string::size_type start) {
   if (start < original.size()) {
     // check that first character is alpha or '_'
     if (isalpha(original[start]) || original[start] == '_') {
-      String::size_type end = original.size();
-      String::size_type position = start;
+      std::string::size_type end = original.size();
+      std::string::size_type position = start;
       while (position < end) {
         char c = original[position];
         if (!isalnum(c) && c != '_') {
@@ -185,22 +173,22 @@ String::size_type GetEndOfIdentifier(const String& original,
       return position;
     }
   }
-  return String::npos;
+  return std::string::npos;
 }
 
-bool GetIdentifierAfterString(const String& original,
-                              const String& phrase,
-                              String* word) {
-  String::size_type position = original.find(phrase);
-  if (position == String::npos) {
+bool GetIdentifierAfterString(const std::string& original,
+                              const std::string& phrase,
+                              std::string* word) {
+  std::string::size_type position = original.find(phrase);
+  if (position == std::string::npos) {
     return false;
   }
 
   // Find end of identifier
-  String::size_type start = position + phrase.size();
-  String::size_type end = GetEndOfIdentifier(original, start);
-  if (end != start && end != String::npos) {
-    *word = String(original, start, end - start);
+  std::string::size_type start = position + phrase.size();
+  std::string::size_type end = GetEndOfIdentifier(original, start);
+  if (end != start && end != std::string::npos) {
+    *word = std::string(original, start, end - start);
     return true;
   }
   return false;
@@ -279,14 +267,14 @@ const char kFragmentHeader[] =
 
 // Initializes the Effect object using the shaders found in an FX formatted
 // string.
-bool EffectGLES2::LoadFromFXString(const String& effect) {
-  DLOG(INFO) << "EffectGLES2 LoadFromFXString";
+bool EffectGLES2::LoadFromFXString(const std::string& effect) {
+  O3D_LOG(INFO) << "EffectGLES2 LoadFromFXString";
   renderer_->MakeCurrentLazy();
 
   ++compile_count_;
   ClearProgram();
 
-  String matrix_load_order_str;
+  std::string matrix_load_order_str;
   if (!GetIdentifierAfterString(effect,
                                 kMatrixLoadOrderPrefix,
                                 &matrix_load_order_str)) {
@@ -300,15 +288,15 @@ bool EffectGLES2::LoadFromFXString(const String& effect) {
 
   // Split the effect
   const char* kSplitMarker = "// #o3d SplitMarker";
-  String::size_type split_pos = effect.find(kSplitMarker);
-  if (split_pos == String::npos) {
+  std::string::size_type split_pos = effect.find(kSplitMarker);
+  if (split_pos == std::string::npos) {
     O3D_ERROR(service_locator()) << "Missing '" << kSplitMarker
                                  << "' in shader: " << effect;
     return false;
   }
 
-  String vertex_shader(kVertexHeader + effect.substr(0, split_pos));
-  String fragment_shader(kFragmentHeader + effect.substr(split_pos));
+  std::string vertex_shader(kVertexHeader + effect.substr(0, split_pos));
+  std::string fragment_shader(kFragmentHeader + effect.substr(split_pos));
 
   // TODO(jcayzac): it would be better to maintain two shader programs
   // and select the right one depending on renderer.picking(), but I
@@ -349,11 +337,11 @@ bool EffectGLES2::LoadFromFXString(const String& effect) {
   if (value == 0) {
     GLint error_length = 0;
     glGetProgramiv(gl_program_, GL_INFO_LOG_LENGTH, &error_length);
-    scoped_array<char> buffer(new char[error_length + 1]);
+    ::o3d::base::scoped_array<char> buffer(new char[error_length + 1]);
     GLsizei length;
     glGetProgramInfoLog(gl_program_, error_length + 1, &length, buffer.get());
     O3D_ERROR(service_locator()) << "Effect Link Error: " << buffer.get();
-    DLOG(ERROR) << "Error linking programr:" << buffer.get();
+    O3D_LOG(ERROR) << "Error linking programr:" << buffer.get();
     glDeleteProgram(gl_program_);
     return false;
   }
@@ -374,7 +362,7 @@ bool EffectGLES2::OnContextRestored() {
     // will clear the internal string.
     std::string shader(source());
     if (!LoadFromFXString(shader)) {
-      DLOG(ERROR) << "couldn't restore" << name() << ":\n" << source();
+      O3D_LOG(ERROR) << "couldn't restore" << name() << ":\n" << source();
       return false;
     }
   }
@@ -387,7 +375,7 @@ void EffectGLES2::CacheGLParamMapping()
 	GLint max_len = 0;
 	glGetProgramiv(gl_program_, GL_ACTIVE_UNIFORMS, &num_uniforms);
 	glGetProgramiv(gl_program_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
-	scoped_array<char> name_buffer(new char[max_len + 1]);
+	::o3d::base::scoped_array<char> name_buffer(new char[max_len + 1]);
 	for (GLint ii = 0; ii < num_uniforms; ++ii) {
 		GLsizei length;
 		GLsizei size;
@@ -397,7 +385,7 @@ void EffectGLES2::CacheGLParamMapping()
 						   max_len + 1, &length, &size, &gl_type, name_buffer.get());
 		// TODO(gman): Should we check for error?
 		GLint location = glGetUniformLocation(gl_program_, name_buffer.get());
-		String name(name_buffer.get(), length);
+		std::string name(name_buffer.get(), length);
 		GLProgramParam::Ref param(new GLProgramParam(location, gl_type, size));
 		shader_param_info_map_[name] = param;
 	}
@@ -405,8 +393,8 @@ void EffectGLES2::CacheGLParamMapping()
 
 void EffectGLES2::GetShaderParamInfo(
     GLuint program,
-    std::map<String, EffectParameterInfo>* info_map) {
-  DCHECK(info_map);
+    std::map<std::string, EffectParameterInfo>* info_map) {
+  O3D_ASSERT(info_map);
   if (!program) {
     return;
   }
@@ -416,7 +404,7 @@ void EffectGLES2::GetShaderParamInfo(
   glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &num_uniforms);
   glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
-  scoped_array<char> name_buffer(new char[max_len + 1]);
+  ::o3d::base::scoped_array<char> name_buffer(new char[max_len + 1]);
   // Loop over all parameters.
   for (GLint ii = 0; ii < num_uniforms; ++ii) {
     GLsizei length;
@@ -424,7 +412,7 @@ void EffectGLES2::GetShaderParamInfo(
     GLenum type;
     glGetActiveUniform(
         program, ii, max_len + 1, &length, &size, &type, name_buffer.get());
-    String name(name_buffer.get());
+    std::string name(name_buffer.get());
     // TODO(gman): Should we check for error?
     // TODO(gman): Should we skip uniforms that start with "gl_"?
     int num_elements = 0;
@@ -447,9 +435,16 @@ void EffectGLES2::GetShaderParamInfo(
   }
 }
 
+namespace {
+  struct selectParamInfo {
+    EffectParameterInfo& operator()(std::pair<std::string, EffectParameterInfo>& x) const { return x.second; }
+    const EffectParameterInfo& operator()(const std::pair<std::string, EffectParameterInfo>& x) const { return x.second; }
+  };
+}
+
 void EffectGLES2::GetParameterInfo(EffectParameterInfoArray* info_array) {
-  DCHECK(info_array);
-  std::map<String, EffectParameterInfo> info_map;
+  O3D_ASSERT(info_array);
+  std::map<std::string, EffectParameterInfo> info_map;
   renderer_->MakeCurrentLazy();
   if (gl_program_) {
     GetShaderParamInfo(gl_program_, &info_map);
@@ -460,7 +455,7 @@ void EffectGLES2::GetParameterInfo(EffectParameterInfoArray* info_array) {
       info_map.begin(),
       info_map.end(),
       std::back_inserter(*info_array),
-      base::select2nd<std::map<String, EffectParameterInfo>::value_type>());
+      selectParamInfo());
 }
 
 void EffectGLES2::GetVaryingVertexShaderParamInfo(
@@ -471,7 +466,7 @@ void EffectGLES2::GetVaryingVertexShaderParamInfo(
   glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &num_attribs);
   glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
-  scoped_array<char> name_buffer(new char[max_len + 1]);
+  ::o3d::base::scoped_array<char> name_buffer(new char[max_len + 1]);
   for (GLint ii = 0; ii < num_attribs; ++ii) {
     GLsizei length;
     GLsizei size;
@@ -479,7 +474,7 @@ void EffectGLES2::GetVaryingVertexShaderParamInfo(
     glGetActiveAttrib(
         program, ii, max_len + 1, &length, &size, &type, name_buffer.get());
     // TODO(gman): Should we check for error?
-    String name(name_buffer.get());
+    std::string name(name_buffer.get());
     // Since GLSL has no semantics just go by name.
     Stream::Semantic semantic;
     int semantic_index;
@@ -493,7 +488,7 @@ void EffectGLES2::GetVaryingVertexShaderParamInfo(
 
 void EffectGLES2::GetStreamInfo(
     EffectStreamInfoArray* info_array) {
-  DCHECK(info_array);
+  O3D_ASSERT(info_array);
   renderer_->MakeCurrentLazy();
   info_array->clear();
   GetVaryingVertexShaderParamInfo(gl_program_, info_array);
@@ -506,7 +501,7 @@ void EffectGLES2::GetStreamInfo(
 // ParamCacheGLES2).
 void EffectGLES2::UpdateShaderUniformsFromEffect(
     ParamCacheGLES2* param_cache_gl) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents)
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
       << "EffectGLES2 UpdateShaderUniformsFromEffect";
   renderer_->ResetTextureGroupSetCount();
   ParamCacheGLES2::UniformParameterMap& map = param_cache_gl->uniform_map();
@@ -527,7 +522,7 @@ void EffectGLES2::UpdateShaderUniformsFromEffect(
 // Loop through all the uniform parameters on the effect and reset their values.
 // For now, this unbinds textures contained in sampler parameters.
 void EffectGLES2::ResetShaderUniforms(ParamCacheGLES2* param_cache_gles2) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGLES2 ResetShaderUniforms";
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGLES2 ResetShaderUniforms";
   ParamCacheGLES2::UniformParameterMap& map = param_cache_gles2->uniform_map();
   ParamCacheGLES2::UniformParameterMap::iterator i;
   for (i = map.begin(); i != map.end(); ++i) {
@@ -540,16 +535,16 @@ void EffectGLES2::ResetShaderUniforms(ParamCacheGLES2* param_cache_gles2) {
 // Updates the values of the vertex and fragment shader parameters using the
 // current values in the param/glparam caches.
 void EffectGLES2::PrepareForDraw(ParamCacheGLES2* param_cache_gles2) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGLES2 PrepareForDraw \""
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGLES2 PrepareForDraw \""
                                        << name()
                                        << "\"";
-  DCHECK(renderer_->IsCurrent());
+  O3D_ASSERT(renderer_->IsCurrent());
   if (gl_program_) {
     // Initialise the render states for this pass, this includes the shaders.
     glUseProgram(gl_program_);
     UpdateShaderUniformsFromEffect(param_cache_gles2);
   } else {
-    DLOG_FIRST_N(ERROR, kNumLoggedEvents)
+    O3D_LOG_FIRST_N(ERROR, kNumLoggedEvents)
         << "No valid GLES2effect found "
         << "in Effect \"" << name() << "\"";
   }
@@ -558,9 +553,9 @@ void EffectGLES2::PrepareForDraw(ParamCacheGLES2* param_cache_gles2) {
 
 // Resets the render states back to their default value.
 void EffectGLES2::PostDraw(ParamCacheGLES2* param_cache_gles2) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents)
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
       << "EffectGLES2 PostDraw \"" << name() << "\"";
-  DCHECK(renderer_->IsCurrent());
+  O3D_ASSERT(renderer_->IsCurrent());
   ResetShaderUniforms(param_cache_gles2);
   CHECK_GL_ERROR();
 }

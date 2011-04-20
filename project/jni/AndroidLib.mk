@@ -31,14 +31,3 @@ LOCAL_SRC_FILES := \
   billboard.cpp \
 
 include $(O3D_BUILD_MODULE)
-
-#### Wchar functions
-#
-include $(O3D_START_MODULE)
-
-LOCAL_MODULE    := o3dwchar
-LOCAL_SRC_FILES := wchar.cpp
-
-include $(O3D_BUILD_MODULE)
-
-

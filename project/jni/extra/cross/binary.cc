@@ -47,25 +47,14 @@
 #include <cmath>
 #include <float.h>
 
-// Define this for debugging binary I/O.
-// Code will throw a SIGABRT if anything doesn't please it, and will flood the log with messages.
-// #define MANIAC_DEBUG
-
-#ifdef MANIAC_DEBUG
-  #define FAILURE(x) do { O3D_ERROR(mServiceLocator) << x; abort(); } while(false)
-#else
-  #define FAILURE(x) do { O3D_ERROR(mServiceLocator) << x; return false; } while(false)
-#endif
-
 namespace o3d {
 namespace extra {
 namespace {
 
 // FourCC for our binary format ("O3DB"),
 // here as a little endian integer:
-static const uint32 FOURCC = 0x4244334FU;
+static const uint32_t FOURCC = 0x4244334FU;
 
-#if !defined(O3D_NO_BINARY_EXPORT)
 // Convert O3D enums to our protocol buffers enums
 static inline bool set_primitive_type(binary::Primitive& message, Primitive::PrimitiveType value) {
   binary::Primitive::Type x;
@@ -114,7 +103,6 @@ static inline bool set_infinity(binary::Curve& curve, Curve::Infinity pre, Curve
   curve.set_post_infinity(x[1]);
   return true;
 }
-#endif // O3D_NO_BINARY_EXPORT
 
 // Convert protocol buffer enums back to O3D enums
 static inline bool set_primitive_type(Primitive& primitive, binary::Primitive::Type value) {
@@ -163,7 +151,6 @@ static inline bool set_infinity(Curve& curve, binary::Curve::Infinity pre, binar
   return true;
 }
 
-#if !defined(O3D_NO_BINARY_EXPORT)
 // Private class responsible for serializing a scenegraph
 class Publisher {
  public:
@@ -189,7 +176,8 @@ class Publisher {
       if (pbx::write(message, mStream))
         return true;
     }
-    FAILURE("Failed to send end_of_archive");
+    O3D_ERROR(mServiceLocator) << "Failed to send end_of_archive";
+    return false;
   }
  private:
   // Get an indexed string's index, optionally sending the string
@@ -215,7 +203,8 @@ class Publisher {
         return true;
       }
     }
-    FAILURE("Failed to send string");
+    O3D_ERROR(mServiceLocator) << "Failed to send string";
+    return false;
   }
 
   // Sends ObjectHeader
@@ -247,7 +236,7 @@ class Publisher {
     }
 
     #ifdef MANIAC_DEBUG
-    DLOG(INFO) << "XXX Sending object #" << object_header.id()
+    O3D_LOG(INFO) << "XXX Sending object #" << object_header.id()
       << " [name='" << n << "', class='" << object_class_name << "']";
     #endif
 
@@ -256,7 +245,8 @@ class Publisher {
       if (pbx::write(object_header, mStream))
         return true;
     }
-    FAILURE("Failed to send object header");
+    O3D_ERROR(mServiceLocator) << "Failed to send object header";
+    return false;
   }
   bool SendObjectParamsIfAny(ObjectBase* o) {
     ParamObject* param_obj;
@@ -447,17 +437,24 @@ class Publisher {
         break;
       }
 
-      FAILURE("Unsupported Param type: " << o->GetClass()->name());
+      O3D_ERROR(mServiceLocator) << "Unsupported Param type: " << o->GetClass()->name();
+      return false;
     } while (false);
 
     if (!SendObjectHeader(o)) return false;
-    if (!pbx::write(message, mStream)) FAILURE("Failed to send object");
+    if (!pbx::write(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object";
+      return false;
+    }
     return true;
   }
   bool SendParamArray(ParamArray* o, bool* ignored = 0) {
     CHECK_IGNORE(o);
 
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
 
     const ParamArray::ParamRefVector& params(o->params());
     for (size_t i(0); i<params.size(); ++i) {
@@ -465,8 +462,14 @@ class Publisher {
       // Any ignored param would mess up the array indices,
       // so we fail if it happens
       bool ignored;
-      if (!SendParam(param, &ignored, o, i)) FAILURE("Failed to send param");
-      if (ignored) FAILURE("Required param was ignored");
+      if (!SendParam(param, &ignored, o, i)) {
+        O3D_ERROR(mServiceLocator) << "Failed to send param";
+        return false;
+      }
+      if (ignored) {
+        O3D_ERROR(mServiceLocator) << "Required param was ignored";
+        return false;
+      }
     }
     return true;
   }
@@ -476,13 +479,25 @@ class Publisher {
     binary::Effect message;
     if (!o->source().empty()) {
       size_t index;
-      if (!GetStringIndex(o->source(), index)) FAILURE("Failed to index effect's source string");
+      if (!GetStringIndex(o->source(), index)) {
+        O3D_ERROR(mServiceLocator) << "Failed to index effect's source string";
+        return false;
+      }
       message.set_source_indexed_string(index);
     }
 
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!pbx::write(message, mStream)) FAILURE("Failed to send object");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!pbx::write(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
     return true;
   }
   bool SendSkin(Skin* o, bool* ignored = 0) {
@@ -507,17 +522,28 @@ class Publisher {
     std::copy(source, source+sizeof(Matrix4)*inverse_bind_pose_matrices.size(),
       pb::RepeatedFieldBackInserter(message.mutable_inverse_bind_pose_matrice()));
 
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!pbx::write(message, mStream)) FAILURE("Failed to send object");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!pbx::write(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
     return true;
   }
   bool SendCurve(Curve* o, bool* ignored = 0) {
     CHECK_IGNORE(o);
 
     binary::Curve message;
-    if (!set_infinity(message, o->pre_infinity(), o->post_infinity()))
-      FAILURE("Unsupported infinity");
+    if (!set_infinity(message, o->pre_infinity(), o->post_infinity())) {
+      O3D_ERROR(mServiceLocator) << "Unsupported infinity";
+      return false;;
+    }
     message.set_use_cache(o->use_cache());
     message.set_sample_rate(o->sample_rate());
 
@@ -535,15 +561,27 @@ class Publisher {
         key.add_bezier_tangent(bezier->out_tangent()[0]);
         key.add_bezier_tangent(bezier->out_tangent()[1]);
       }
-      else FAILURE("Unsupported CurveKey type: " << keys[i]->GetClass()->name());
+      else {
+        O3D_ERROR(mServiceLocator) << "Unsupported CurveKey type: " << keys[i]->GetClass()->name();
+        return false;
+      }
 
       key.set_input(keys[i]->input());
       key.set_output(keys[i]->output());
     }
 
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!pbx::write(message, mStream)) FAILURE("Failed to send object");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!pbx::write(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
     return true;
   }
   bool SendBuffer(Buffer* o, bool* ignored = 0) {
@@ -565,8 +603,10 @@ class Publisher {
       // Buffer.field.name
       if (!fields[i]->name().empty()) {
         size_t index;
-        if (!GetStringIndex(fields[i]->name(), index))
-          FAILURE("Failed to index field's name");
+        if (!GetStringIndex(fields[i]->name(), index)) {
+          O3D_ERROR(mServiceLocator) << "Failed to index field's name";
+          return false;
+        }
         field.set_name(index);
       }
       // Buffer.field.num_components
@@ -598,10 +638,10 @@ class Publisher {
           if (export_data) {
             const size_t count(o->num_elements() * uint32_field->num_components());
 
-            std::vector<uint32> tmp(count);
+            std::vector<uint32_t> tmp(count);
             uint32_field->GetAsUInt32s(0, &tmp[0], uint32_field->num_components(), o->num_elements());
 
-            pb::RepeatedField<uint32>& data(*field.mutable_value_uint());
+            pb::RepeatedField<uint32_t>& data(*field.mutable_value_uint());
             data.Reserve(count);
             for (size_t n(0); n<count; ++n) data.AddAlreadyReserved(tmp[n]);
           }
@@ -616,10 +656,10 @@ class Publisher {
           if (export_data) {
             const size_t count(o->num_elements() * uint16_field->num_components());
 
-            std::vector<uint16> tmp(count);
+            std::vector<uint16_t> tmp(count);
             uint16_field->GetAsUInt16s(0, &tmp[0], uint16_field->num_components(), o->num_elements());
 
-            pb::RepeatedField<uint32>& data(*field.mutable_value_uint());
+            pb::RepeatedField<uint32_t>& data(*field.mutable_value_uint());
             data.Reserve(count);
             for (size_t n(0); n<count; ++n) data.AddAlreadyReserved(tmp[n]);
           }
@@ -635,17 +675,27 @@ class Publisher {
             const size_t count(o->num_elements() * ubyten_field->num_components());
             std::string& data(*field.mutable_value_byte());
             data.resize(count);
-            ubyten_field->GetAsUByteNs(0, (uint8*) &data[0], ubyten_field->num_components(), o->num_elements());
+            ubyten_field->GetAsUByteNs(0, (uint8_t*) &data[0], ubyten_field->num_components(), o->num_elements());
           }
           break;
         }
-        FAILURE("Unsupported field type: " << fields[i]->GetClass()->name());
+        O3D_ERROR(mServiceLocator) << "Unsupported field type: " << fields[i]->GetClass()->name();
+        return false;
       } while(false);
     }
 
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!pbx::write(message, mStream)) FAILURE("Failed to send object");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!pbx::write(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
     return true;
   }
   bool SendVertexSource(VertexSource* o, bool* ignored = 0) {
@@ -665,25 +715,41 @@ class Publisher {
 
     for (size_t i(0); i<stream_param_vector.size(); ++i) {
       const Stream& s(stream_param_vector[i]->stream());
-      if (!SendBuffer(s.field().buffer())) FAILURE("Failed to send buffer");
+      if (!SendBuffer(s.field().buffer())) {
+        O3D_ERROR(mServiceLocator) << "Failed to send buffer";
+        return false;
+      }
 
       binary::VertexSource::Stream& stream(*message.add_stream());
       stream.set_field_ref(s.field().id());
       stream.set_start_index(s.start_index());
-      if (!set_semantic(stream, s.semantic()))
-        FAILURE("Unsupported stream semantic");
+      if (!set_semantic(stream, s.semantic())) {
+        O3D_ERROR(mServiceLocator) << "Unsupported stream semantic";
+        return false;
+      }
       stream.set_semantic_index(s.semantic_index());
       if (stream_param_vector[i]->input_connection()) {
         ObjectBase* dependency(stream_param_vector[i]->input_connection()->owner());
-        if (!Send(dependency))
-          FAILURE("Failed to send dependency");
+        if (!Send(dependency)) {
+          O3D_ERROR(mServiceLocator) << "Failed to send dependency";
+          return false;
+        }
         stream.set_bind(dependency->id());
       }
     }
 
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!pbx::write(message ,mStream)) FAILURE("Failed to send object");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!pbx::write(message ,mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
     return true;
   }
   bool SendPrimitive(Primitive* o, bool* ignored = 0) {
@@ -693,38 +759,64 @@ class Publisher {
 
     // Save the index buffer
     if (o->indexed()) {
-      if (!SendBuffer(o->index_buffer())) FAILURE("Failed to send index buffer");
+      if (!SendBuffer(o->index_buffer())) {
+        O3D_ERROR(mServiceLocator) << "Failed to send index buffer";
+        return false;
+      }
       message.set_index_buffer_ref(o->index_buffer()->id());
     }
 
     // Save the stream bank
     if (o->stream_bank()) {
-      if (!SendVertexSource(o->stream_bank())) FAILURE("Failed to send streambank");
+      if (!SendVertexSource(o->stream_bank())) {
+        O3D_ERROR(mServiceLocator) << "Failed to send streambank";
+        return false;
+      }
       message.set_stream_bank_ref(o->stream_bank()->id());
     }
 
     // Save the primitive
-    if (!set_primitive_type(message, o->primitive_type()))
-      FAILURE("Unsupported primitive type");
+    if (!set_primitive_type(message, o->primitive_type())) {
+      O3D_ERROR(mServiceLocator) << "Unsupported primitive type";
+      return false;
+    }
     message.set_number_vertices(o->number_vertices());
     message.set_number_primitives(o->number_primitives());
     message.set_start_index(o->start_index());
     if (o->owner()) {
-      if (!SendShape(o->owner())) FAILURE("Failed to send shape");
+      if (!SendShape(o->owner())) {
+        O3D_ERROR(mServiceLocator) << "Failed to send shape";
+        return false;
+      }
       message.set_owner_ref(o->owner()->id());
     }
 
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!pbx::write(message, mStream)) FAILURE("Failed to send object");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!pbx::write(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
     return true;
   }
   bool SendShape(Shape* o, bool* ignored = 0) {
     CHECK_IGNORE(o);
 
     // Save the Shape
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
 
     // Save the shape's elements, which reference the shape
     ElementRefArray::const_iterator it(o->GetElementRefs().begin());
@@ -732,9 +824,15 @@ class Publisher {
       Element* element((it++)->Get());
       Primitive* primitive;
       if (primitive <<* element) {
-        if (!SendPrimitive(primitive)) FAILURE("Failed to send primitive");
+        if (!SendPrimitive(primitive)) {
+          O3D_ERROR(mServiceLocator) << "Failed to send primitive";
+          return false;
+        }
       }
-      else FAILURE("Unsupported Element type: " << element->GetClass()->name());
+      else {
+        O3D_ERROR(mServiceLocator) << "Unsupported Element type: " << element->GetClass()->name();
+        return false;
+      }
     }
     return true;
   }
@@ -745,14 +843,26 @@ class Publisher {
 
     // No parent means the transform is the root transform
     if (o->parent()) {
-      if (!SendTransform(o->parent())) FAILURE("Failed to save transform's parent");
+      if (!SendTransform(o->parent())) {
+        O3D_ERROR(mServiceLocator) << "Failed to save transform's parent";
+        return false;
+      }
       message.set_parent_ref(o->parent()->id());
     }
 
     // Save the transform
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!pbx::write(message, mStream)) FAILURE("Failed to send object");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!pbx::write(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
 
     // Save all the shapes needed by this transform
     binary::Attachment attachments;
@@ -761,20 +871,32 @@ class Publisher {
     while (shape_it != o->GetShapeRefs().end()) {
       Shape* shape((shape_it++)->Get());
       if (shape) {
-        if (!SendShape(shape)) FAILURE("Failed to send shape");
+        if (!SendShape(shape)) {
+          O3D_ERROR(mServiceLocator) << "Failed to send shape";
+          return false;
+        }
         attachments.add_attachment_ref(shape->id());
       }
     }
     binary::AtomHeader attachments_header;
     attachments_header.set_atom_type(binary::AtomHeader::ATTACHMENT_ATOM);
-    if (!pbx::write(attachments_header, mStream)) FAILURE("Failed to send attachments header");
-    if (!pbx::write(attachments, mStream)) FAILURE("Failed to send attachments header");
+    if (!pbx::write(attachments_header, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send attachments header";
+      return false;
+    }
+    if (!pbx::write(attachments, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send attachments header";
+      return false;
+    }
 
     // Save all the children, who reference this transform
     TransformRefArray::const_iterator transform_it(o->GetChildrenRefs().begin());
     while (transform_it != o->GetChildrenRefs().end()) {
       Transform* transform((transform_it++)->Get());
-      if (!SendTransform(transform)) FAILURE("Failed to send transform");
+      if (!SendTransform(transform)) {
+        O3D_ERROR(mServiceLocator) << "Failed to send transform";
+        return false;
+      }
     }
     return true;
   }
@@ -787,19 +909,42 @@ class Publisher {
     // since we need it at texture's creation time we send it now
     // as well.
     ParamString* original_uri(o->GetParam<ParamString>(O3D_STRING_CONSTANT("original_uri")));
-    if (!original_uri) FAILURE("No 'o3d.original_uri' parameter found in texture");
+    if (!original_uri) {
+      O3D_ERROR(mServiceLocator) << "No 'o3d.original_uri' parameter found in texture";
+      return false;
+    }
     size_t index;
-    if (!GetStringIndex(original_uri->value(), index)) FAILURE("Failed to index texture's uri");
+    if (!GetStringIndex(original_uri->value(), index)) {
+      O3D_ERROR(mServiceLocator) << "Failed to index texture's uri";
+      return false;
+    }
     message.set_uri(index);
 
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!pbx::write(message, mStream)) FAILURE("Failed to send object");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!pbx::write(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
     return true;
   }
   bool Send(ObjectBase* o, bool* ignored = 0) {
     // Objects that carry extra information in a PB message
-    #define DISPATCH(CLASS) { CLASS* x; if (x <<* o) { if (Send##CLASS(x)) return true; else FAILURE("Failed to send " << #CLASS); }; }
+    #define DISPATCH(CLASS) {\
+    CLASS* x;\
+    if (x <<* o) {\
+      if (Send##CLASS(x)) return true;\
+      else {\
+        O3D_ERROR(mServiceLocator) << "Failed to send " << #CLASS;\
+        return false;\
+      }\
+    }}
     DISPATCH(Param);
     DISPATCH(ParamArray);
     DISPATCH(Effect);
@@ -813,8 +958,14 @@ class Publisher {
     #undef DISPATCH
 
     CHECK_IGNORE(o);
-    if (!SendObjectHeader(o)) FAILURE("Failed to send object header");
-    if (!SendObjectParamsIfAny(o)) FAILURE("Failed to send object's params");
+    if (!SendObjectHeader(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object header";
+      return false;
+    }
+    if (!SendObjectParamsIfAny(o)) {
+      O3D_ERROR(mServiceLocator) << "Failed to send object's params";
+      return false;
+    }
 
     return true;
   }
@@ -824,7 +975,6 @@ class Publisher {
   pb::io::CodedOutputStream& mStream;
   ServiceLocator* mServiceLocator;
 };
-#endif // O3D_NO_BINARY_EXPORT
 
 class Load {
  public:
@@ -843,27 +993,48 @@ class Load {
     Transform* root(0);
     while (true) {
       binary::AtomHeader atom_header;
-      if (!pbx::read(atom_header, mStream)) FAILURE("Failed to parse atom header");
+      if (!pbx::read(atom_header, mStream)) {
+        O3D_ERROR(mServiceLocator) << "Failed to parse atom header";
+        return false;
+      }
 
       switch (atom_header.atom_type()) {
         case binary::AtomHeader::END_OF_ARCHIVE_ATOM:
           {
             binary::EndOfArchive eoa;
-            if (!pbx::read(eoa, mStream)) FAILURE("Failed to parse end of archive");
+            if (!pbx::read(eoa, mStream)) {
+              O3D_ERROR(mServiceLocator) << "Failed to parse end of archive";
+              return false;
+            }
             ObjectBase::Ref ref(GetObjectRef(eoa.root()));
-            if (!ref) FAILURE("Couldn't find root transform. Missing dependency?");
+            if (!ref) {
+              O3D_ERROR(mServiceLocator) << "Couldn't find root transform. Missing dependency?";
+              return false;
+            }
             if (root <<* ref) return root;
-            else FAILURE("Root ref doesn't reference a Transform object");
+            else {
+              O3D_ERROR(mServiceLocator) << "Root ref doesn't reference a Transform object";
+              return false;
+            }
           }
           return 0;
         case binary::AtomHeader::STRING_ATOM:
-          if (!ReceiveString()) FAILURE("Failed to deserialize a string");
+          if (!ReceiveString()) {
+            O3D_ERROR(mServiceLocator) << "Failed to deserialize a string";
+            return false;
+          }
           break;
         case binary::AtomHeader::OBJECT_ATOM:
-          if (!ReceiveObject()) FAILURE("Failed to deserialize an object");
+          if (!ReceiveObject()) {
+            O3D_ERROR(mServiceLocator) << "Failed to deserialize an object";
+            return false;
+          }
           break;
         case binary::AtomHeader::ATTACHMENT_ATOM:
-          if (!ReceiveAttachments()) FAILURE("Failed to deserialize attachments");
+          if (!ReceiveAttachments()) {
+            O3D_ERROR(mServiceLocator) << "Failed to deserialize attachments";
+            return false;
+          }
           break;
       }
     }
@@ -898,8 +1069,8 @@ class Load {
     return false;
   }
 
-  ObjectBase::Ref GetObjectRef(pb::uint32 id) const {
-    std::tr1::unordered_map<pb::uint32, ObjectBase::Ref>::const_iterator it(mOldIdToNewObject.find(id));
+  ObjectBase::Ref GetObjectRef(uint32_t id) const {
+    std::tr1::unordered_map<uint32_t, ObjectBase::Ref>::const_iterator it(mOldIdToNewObject.find(id));
     if (it == mOldIdToNewObject.end()) {
       // Shoud we assert() here?
       return ObjectBase::Ref(0);
@@ -909,7 +1080,10 @@ class Load {
 
   bool ReceiveString() {
     binary::String indexed_string;
-    if (!pbx::read(indexed_string, mStream)) FAILURE("Failed to parse indexed string message");
+    if (!pbx::read(indexed_string, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse indexed string message";
+      return false;
+    }
     mStringDB.db.push_back(indexed_string.value());
     mStringDB.reverse_db[indexed_string.value()] = mStringDB.db.size()-1;
     return true;
@@ -917,18 +1091,25 @@ class Load {
 
   bool ReceiveAttachments() {
     binary::Attachment attachments;
-    if (!pbx::read(attachments, mStream)) FAILURE("Failed to parse attachments");
+    if (!pbx::read(attachments, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse attachments";
+      return false;
+    }
     ObjectBase::Ref object(GetObjectRef(attachments.object_ref()));
-    if (!object)
-      FAILURE("Can't find object referenced by Attachment. Missing dependency? Ref was " << attachments.object_ref());
+    if (!object) {
+      O3D_ERROR(mServiceLocator) << "Can't find object referenced by Attachment. Missing dependency? Ref was " << attachments.object_ref();
+      return false;
+    }
 
     {
       Transform* transform;
       if (transform <<* object) {
         for(size_t i(0); i<size_t(attachments.attachment_ref_size()); ++i) {
           ObjectBase::Ref attch(GetObjectRef(attachments.attachment_ref(i)));
-          if (!attch)
-            FAILURE("Can't find attachment. Missing dependency? Ref was " << attachments.attachment_ref(i));
+          if (!attch) {
+            O3D_ERROR(mServiceLocator) << "Can't find attachment. Missing dependency? Ref was " << attachments.attachment_ref(i);
+            return false;
+          }
 
           Shape* shape;
           if (shape <<* attch) {
@@ -936,38 +1117,52 @@ class Load {
             continue;
           }
 
-          FAILURE("Unsupported attachment targeting a Transform");
+          O3D_ERROR(mServiceLocator) << "Unsupported attachment targeting a Transform";
+          return false;
         }
         return true;
       }
     }
 
-    FAILURE("Unsupported recipient class for attachment");
+    O3D_ERROR(mServiceLocator) << "Unsupported recipient class for attachment";
+    return false;
   }
 
   bool ReceiveObject() {
     // Parse object header
     binary::ObjectHeader object_header;
-    if (!pbx::read(object_header, mStream)) FAILURE("Failed to parse object header");
+    if (!pbx::read(object_header, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse object header";
+      return false;
+    }
 
     // Get type information
-    if (object_header.type() >= mStringDB.db.size()) FAILURE("Object type out of range");
+    if (object_header.type() >= mStringDB.db.size()) {
+      O3D_ERROR(mServiceLocator) << "Object type out of range";
+      return false;
+    }
     const std::string& classname(mStringDB.db[object_header.type()]);
 
     std::tr1::unordered_map<std::string, const ObjectBase::Class*>::iterator it(mClassMap.find(classname));
-    if (it == mClassMap.end()) FAILURE("Cannot find any class");
+    if (it == mClassMap.end()) {
+      O3D_ERROR(mServiceLocator) << "Cannot find any class";
+      return false;
+    }
 
     const ObjectBase::Class* cls(it->second);
 
     // Get name, if any
     std::string name;
     if (object_header.has_name()) {
-      if (object_header.name() >= mStringDB.db.size()) FAILURE("Object name out of range");
+      if (object_header.name() >= mStringDB.db.size()) {
+        O3D_ERROR(mServiceLocator) << "Object name out of range";
+        return false;
+      }
       name = mStringDB.db[object_header.name()];
     }
 
     #ifdef MANIAC_DEBUG
-    DLOG(INFO) << "XXX Receiving object #" << object_header.id()
+    O3D_LOG(INFO) << "XXX Receiving object #" << object_header.id()
       << " [name='" << name << "', class='" << cls->name() << "']";
     #endif
 
@@ -975,10 +1170,16 @@ class Load {
     if (ObjectBase::ClassIsA(cls, Param::GetApparentClass())) {
       Param* param(0);
       binary::Param message;
-      if (!pbx::read(message, mStream)) FAILURE("Can't parse Param");
+      if (!pbx::read(message, mStream)) {
+        O3D_ERROR(mServiceLocator) << "Can't parse Param";
+        return false;
+      }
       if (message.has_owner_ref()) {
         ObjectBase::Ref owner(GetObjectRef(message.owner_ref()));
-        if (!owner) FAILURE("Can't find param's owner. Missing dependency? Ref was " << message.owner_ref());
+        if (!owner) {
+          O3D_ERROR(mServiceLocator) << "Can't find param's owner. Missing dependency? Ref was " << message.owner_ref();
+          return false;
+        }
         ParamArray*  param_array;
         ParamObject* param_object;
         if (param_object <<* owner) {
@@ -999,26 +1200,40 @@ class Load {
           param = param_array->CreateParamByClass(message.index(), cls);
           if (!name.empty()) param->SetName(name);
         }
-        else
-          FAILURE("Param has an owner, but it's not a ParamObject nor a ParamArray, but a " << owner->GetClass()->name());
+        else {
+          O3D_ERROR(mServiceLocator) << "Param has an owner, but it's not a ParamObject nor a ParamArray, but a " << owner->GetClass()->name();
+          return false;
+        }
       }
       else if (param << *mPack.CreateObjectByClass(cls)) {
         // Free Param. Do we really have these??
         if (!name.empty()) param->SetName(name);
       }
 
-      if (!param) FAILURE("Could not create requested Param");
+      if (!param) {
+        O3D_ERROR(mServiceLocator) << "Could not create requested Param";
+        return false;
+      }
 
       mOldIdToNewObject[object_header.id()] = ObjectBase::Ref(param);
-      if (!ParseParam(*param, message)) FAILURE("Failed to parse param");
+      if (!ParseParam(*param, message)) {
+        O3D_ERROR(mServiceLocator) << "Failed to parse param";
+        return false;
+      }
     }
     // If it's a texture, we need to create it using CreateTexture
     else if (ObjectBase::ClassIsA(cls, Texture::GetApparentClass())) {
       Texture* texture(0);
       binary::Texture message;
-      if (!pbx::read(message, mStream)) FAILURE("Failed to parse a texture");
+      if (!pbx::read(message, mStream)) {
+        O3D_ERROR(mServiceLocator) << "Failed to parse a texture";
+        return false;
+      }
 
-      if (message.uri() >= mStringDB.db.size()) FAILURE("Texture uri out of range");
+      if (message.uri() >= mStringDB.db.size()) {
+        O3D_ERROR(mServiceLocator) << "Texture uri out of range";
+        return false;
+      }
       const std::string& uri(mStringDB.db[message.uri()]);
 
       if (uri.compare("#error")==0) {
@@ -1027,18 +1242,24 @@ class Load {
       }
       else {
         ExternalResource::Ref res(mERP.GetExternalResourceForURI(mPack, uri));
-        if (!res)
-          FAILURE("Failed to fetch data for texture at \"" << uri << "\"");
+        if (!res) {
+          O3D_ERROR(mServiceLocator) << "Failed to fetch data for texture at \"" << uri << "\"";
+          return false;
+        }
 
         BitmapRefArray bitmap_refs;
         MemoryReadStream mrs(res->data(), res->size());
         const bool loaded(Bitmap::LoadFromStream(mPack.service_locator(), &mrs, uri, image::UNKNOWN, &bitmap_refs));
-        if (!loaded)
-          FAILURE("Failed to load bitmaps for texture at \"" << uri << "\"");
+        if (!loaded) {
+          O3D_ERROR(mServiceLocator) << "Failed to load bitmaps for texture at \"" << uri << "\"";
+          return false;
+        }
 
         texture = mPack.CreateTextureFromBitmaps(bitmap_refs, uri, true);
-        if (classname.compare(texture->GetClass()->name()))
-          FAILURE("Texture type mismatch when rebuilding texture");
+        if (classname.compare(texture->GetClass()->name())) {
+          O3D_ERROR(mServiceLocator) << "Texture type mismatch when rebuilding texture";
+          return false;
+        }
       }
 
       if (!name.empty()) texture->set_name(name);
@@ -1062,7 +1283,10 @@ class Load {
         if (ReceiveAs<Transform   >(*object, success)) break;
       } while (false);
 
-      if (!success) FAILURE("Failed to deserialize a " << classname);
+      if (!success) {
+        O3D_ERROR(mServiceLocator) << "Failed to deserialize a " << classname;
+        return false;
+      }
     }
     return true;
   }
@@ -1071,11 +1295,20 @@ class Load {
     // set input connection
     if (message.has_input_connection_ref()) {
       ObjectBase::Ref input(GetObjectRef(message.input_connection_ref()));
-      if (!input) FAILURE("Can't find param's input connection. Missing dependency?");
+      if (!input) {
+        O3D_ERROR(mServiceLocator) << "Can't find param's input connection. Missing dependency?";
+        return false;
+      }
 
       Param* param;
-      if (param <<* input) { o.Bind(param); return true; }
-      else FAILURE("Param has an input connection, but it's not a Param");
+      if (param <<* input) {
+        o.Bind(param);
+        return true;
+      }
+      else {
+        O3D_ERROR(mServiceLocator) << "Param has an input connection, but it's not a Param";
+        return false;
+      }
     }
     else {
       // assign value
@@ -1097,7 +1330,10 @@ class Load {
           ParamString* as_string;
           if (as_string << o) {
             if (message.has_indexed_string_value()) {
-              if (message.indexed_string_value() >= mStringDB.db.size()) FAILURE("String index out of bounds");
+              if (message.indexed_string_value() >= mStringDB.db.size()) {
+                O3D_ERROR(mServiceLocator) << "std::string index out of bounds";
+                return false;
+              }
               set_param_value(*as_string, mStringDB.db[message.indexed_string_value()]);
             }
             return true;
@@ -1132,14 +1368,15 @@ class Load {
                 if (try_to_set_typed_param_ref<ParamStreamBank               >(o, ref.Get())) return true;
                 if (try_to_set_typed_param_ref<ParamTexture                  >(o, ref.Get())) return true;
                 if (try_to_set_typed_param_ref<ParamTransform                >(o, ref.Get())) return true;
-                FAILURE("Failed to set the value of a " << o.GetClass()->name() << " to point to a " << ref->GetClass()->name());
+                O3D_ERROR(mServiceLocator) << "Failed to set the value of a " << o.GetClass()->name() << " to point to a " << ref->GetClass()->name();
+                return false;
               }
             }
             // This is a NULL ref, which is fine too..
             return true;
           }
-          FAILURE("Unsupported object reference for " << o.GetClass()->name() << "(" << o.name() << ")");
-          break;
+          O3D_ERROR(mServiceLocator) << "Unsupported object reference for " << o.GetClass()->name() << "(" << o.name() << ")";
+          return false;
         }
         case 1:
         {
@@ -1225,17 +1462,27 @@ class Load {
           break;
         }
       }
-      FAILURE("Unsupported param of type " << o.GetClass()->name());
+      O3D_ERROR(mServiceLocator) << "Unsupported param of type " << o.GetClass()->name();
+      return false;
     }
   }
 
   bool Receive(Effect& o) {
     binary::Effect message;
-    if (!pbx::read(message, mStream)) FAILURE("Failed to parse an effect");
+    if (!pbx::read(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse an effect";
+      return false;
+    }
 
     if (message.has_source_indexed_string()) {
-      if (message.source_indexed_string() >= mStringDB.db.size()) FAILURE("Effect source string out of range");
-      if (!o.LoadFromFXString(mStringDB.db[message.source_indexed_string()])) FAILURE("Failed to load effect");
+      if (message.source_indexed_string() >= mStringDB.db.size()) {
+        O3D_ERROR(mServiceLocator) << "Effect source string out of range";
+        return false;
+      }
+      if (!o.LoadFromFXString(mStringDB.db[message.source_indexed_string()])) {
+        O3D_ERROR(mServiceLocator) << "Failed to load effect";
+        return false;
+      }
     }
     return true;
   }
@@ -1243,11 +1490,15 @@ class Load {
   bool Receive(Skin& o) {
 
     binary::Skin message;
-    if (!pbx::read(message, mStream))
-      FAILURE("Failed to parse a skin");
+    if (!pbx::read(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse a skin";
+      return false;
+    }
 
-    if (message.inverse_bind_pose_matrice_size()%sizeof(Matrix4))
-      FAILURE("Corrupt data");
+    if (message.inverse_bind_pose_matrice_size()%sizeof(Matrix4)) {
+      O3D_ERROR(mServiceLocator) << "Corrupt data";
+      return false;
+    }
     const size_t num_matrices(message.inverse_bind_pose_matrice_size()/sizeof(Matrix4));
 
     const Matrix4* inverse_bind_pose_matrice((const Matrix4*) message.inverse_bind_pose_matrice().data());
@@ -1270,8 +1521,10 @@ class Load {
 
   bool Receive(Curve& o) {
     binary::Curve message;
-    if (!pbx::read(message, mStream))
-      FAILURE("Failed to parse a curve");
+    if (!pbx::read(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse a curve";
+      return false;
+    }
 
     for (size_t i(0); i<(size_t)message.key_size(); ++i) {
       const binary::Curve::Key& k(message.key(i));
@@ -1287,24 +1540,32 @@ class Load {
           key_class = BezierCurveKey::GetApparentClass();
           break;
         default:
-          FAILURE("Unsupported curve key type");
+          O3D_ERROR(mServiceLocator) << "Unsupported curve key type";
+          return false;
       }
       CurveKey* key(o.CreateKeyByClass(key_class));
-      if (!key) FAILURE("Failed to create a curve key");
+      if (!key) {
+        O3D_ERROR(mServiceLocator) << "Failed to create a curve key";
+        return false;
+      }
       key->SetInput(k.input());
       key->SetOutput(k.output());
       BezierCurveKey* bezier;
       if (bezier <<* key) {
-        if (k.bezier_tangent_size() != 4)
-          FAILURE("Wrong number of tangents found for Bezier curve key");
+        if (k.bezier_tangent_size() != 4) {
+          O3D_ERROR(mServiceLocator) << "Wrong number of tangents found for Bezier curve key";
+          return false;
+        }
         Float2 in(k.bezier_tangent(0), k.bezier_tangent(1));
         Float2 out(k.bezier_tangent(2), k.bezier_tangent(3));
         bezier->SetInTangent(in);
         bezier->SetOutTangent(out);
       }
     }
-    if (!set_infinity(o, message.pre_infinity(), message.post_infinity()))
-      FAILURE("Unsupported infinity");
+    if (!set_infinity(o, message.pre_infinity(), message.post_infinity())) {
+      O3D_ERROR(mServiceLocator) << "Unsupported infinity";
+      return false;
+    }
     o.set_use_cache(message.use_cache());
     o.SetSampleRate(message.sample_rate());
 
@@ -1320,8 +1581,10 @@ class Load {
       o.RemoveField(fields[fields.size()-1]);
 
     binary::Buffer message;
-    if (!pbx::read(message, mStream))
-      FAILURE("Failed to parse a buffer");
+    if (!pbx::read(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse a buffer";
+      return false;
+    }
 
     // First pass recreates the fields, but can't set their data yet
     // since we haven't allocated any memory for it yet‚Ä¶
@@ -1363,19 +1626,25 @@ class Load {
           break;
       }
 
-      if (!field)
-        FAILURE("Failed to deserialize a field");
+      if (!field) {
+        O3D_ERROR(mServiceLocator) << "Failed to deserialize a field";
+        return false;
+      }
       if (field_desc.has_name()) {
-        if (field_desc.name() >= mStringDB.db.size())
-          FAILURE("Field name out of range");
+        if (field_desc.name() >= mStringDB.db.size()) {
+          O3D_ERROR(mServiceLocator) << "Field name out of range";
+          return false;
+        }
         field->set_name(mStringDB.db[field_desc.name()]);
       }
       mOldIdToNewObject[field_desc.id()] = ObjectBase::Ref(field);
     }
 
     // Allocate the memory
-    if (!o.AllocateElements(message.num_elements()))
-      FAILURE("Couldn't allocate " << message.num_elements() << " elements for buffer");
+    if (!o.AllocateElements(message.num_elements())) {
+      O3D_ERROR(mServiceLocator) << "Couldn't allocate " << message.num_elements() << " elements for buffer";
+      return false;
+    }
 
     // 2nd pass recreates the data (it any)
     if (has_data) {
@@ -1387,36 +1656,45 @@ class Load {
         do {
           FloatField* float_field;
           if (float_field << field) {
-            if ((size_t)field_desc.value_float_size() != (size_t)field.num_components() * o.num_elements())
-              FAILURE("Field's data size mismatchs");
+            if ((size_t)field_desc.value_float_size() != (size_t)field.num_components() * o.num_elements()) {
+              O3D_ERROR(mServiceLocator) << "Field's data size mismatchs";
+              return false;
+            }
             float_field->SetFromFloats(field_desc.value_float().data(), field.num_components(), 0, o.num_elements());
             break;
           }
           UInt32Field* uint32_field;
           if (uint32_field << field) {
-            if ((size_t)field_desc.value_uint_size() != (size_t)field.num_components() * o.num_elements())
-              FAILURE("Field's data size mismatchs");
+            if ((size_t)field_desc.value_uint_size() != (size_t)field.num_components() * o.num_elements()) {
+              O3D_ERROR(mServiceLocator) << "Field's data size mismatchs";
+              return false;
+            }
             uint32_field->SetFromUInt32s(field_desc.value_uint().data(), field.num_components(), 0, o.num_elements());
             break;
           }
           UByteNField* ubyten_field;
           if (ubyten_field << field) {
             const std::string& value_byte(field_desc.value_byte());
-            if (value_byte.size() != field.num_components() * o.num_elements())
-              FAILURE("Field's data size mismatchs");
+            if (value_byte.size() != field.num_components() * o.num_elements()) {
+              O3D_ERROR(mServiceLocator) << "Field's data size mismatchs";
+              return false;
+            }
             ubyten_field->SetFromUByteNs((const uint8_t*) &value_byte[0], field.num_components(), 0, o.num_elements());
             break;
           }
           #ifdef GLES2_BACKEND_NATIVE_GLES2
           UInt16Field* uint16_field;
           if (uint16_field << field) {
-            if ((size_t)field_desc.value_uint_size() != (size_t)field.num_components() * o.num_elements())
-              FAILURE("Field's data size mismatchs");
+            if ((size_t)field_desc.value_uint_size() != (size_t)field.num_components() * o.num_elements()) {
+              O3D_ERROR(mServiceLocator) << "Field's data size mismatchs";
+              return false;
+            }
             uint16_field->SetFromUInt32s(field_desc.value_uint().data(), field.num_components(), 0, o.num_elements());
             break;
           }
           #endif
-          FAILURE("Unknown Field type");
+          O3D_ERROR(mServiceLocator) << "Unknown Field type";
+          return false;
         } while(false);
       }
     }
@@ -1426,34 +1704,47 @@ class Load {
   template<typename T>
   bool ReceiveVertexSource(T& o) {
     binary::VertexSource message;
-    if (!pbx::read(message, mStream)) FAILURE("Failed to parse a vertex source");
+    if (!pbx::read(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse a vertex source";
+      return false;
+    }
 
     for (size_t i(0); i<(size_t)message.stream_size(); ++i) {
       const binary::VertexSource::Stream& stream(message.stream(i));
       Stream::Semantic semantic;
-      if (!set_semantic(semantic, stream.semantic()))
-        FAILURE("Unsupported stream semantic");
+      if (!set_semantic(semantic, stream.semantic())) {
+        O3D_ERROR(mServiceLocator) << "Unsupported stream semantic";
+        return false;
+      }
 
       ObjectBase::Ref ref(GetObjectRef(stream.field_ref()));
-      if (!ref)
-        FAILURE("Couldn't find field reference. Missing dependency?");
+      if (!ref) {
+        O3D_ERROR(mServiceLocator) << "Couldn't find field reference. Missing dependency?";
+        return false;
+      }
 
       Field* field;
       if (field <<* ref)
         o.SetVertexStream(semantic, stream.semantic_index(), field, stream.start_index());
-      else
-        FAILURE("Field ref doesn't reference a Field object");
+      else {
+        O3D_ERROR(mServiceLocator) << "Field ref doesn't reference a Field object";
+        return false;
+      }
 
       if (stream.has_bind()) {
         ObjectBase::Ref ref2(GetObjectRef(stream.bind()));
-        if (!ref2)
-          FAILURE("Missing dependency for stream");
+        if (!ref2) {
+          O3D_ERROR(mServiceLocator) << "Missing dependency for stream";
+          return false;
+        }
         VertexSource* source;
         if (source <<* ref2) {
           ParamVertexBufferStream* dst_param(o.GetVertexStreamParam(semantic, stream.semantic_index()));
           ParamVertexBufferStream* src_param(source->GetVertexStreamParam(semantic, stream.semantic_index()));
-          if (!dst_param || !src_param)
-            FAILURE("Stream param not found");
+          if (!dst_param || !src_param) {
+            O3D_ERROR(mServiceLocator) << "Stream param not found";
+            return false;
+          }
           dst_param->Bind(src_param);
         }
       }
@@ -1466,55 +1757,89 @@ class Load {
     StreamBank* as_stream_bank;
     if (as_skin_eval << o) return ReceiveVertexSource(*as_skin_eval);
     else if (as_stream_bank << o) return ReceiveVertexSource(*as_stream_bank);
-    else FAILURE("Unsupported vertex source type");
+    else {
+      O3D_ERROR(mServiceLocator) << "Unsupported vertex source type";
+      return false;
+    }
   }
 
   bool Receive(Primitive& o) {
     binary::Primitive message;
-    if (!pbx::read(message, mStream))
-      FAILURE("Failed to parse a primitive");
-    if (!set_primitive_type(o, message.primitive_type()))
-      FAILURE("Unsupported primitive type");
+    if (!pbx::read(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse a primitive";
+      return false;
+    }
+    if (!set_primitive_type(o, message.primitive_type())) {
+      O3D_ERROR(mServiceLocator) << "Unsupported primitive type";
+      return false;
+    }
     o.set_number_vertices(message.number_vertices());
     o.set_number_primitives(message.number_primitives());
     o.set_start_index(message.start_index());
 
     if (message.has_index_buffer_ref()) {
       ObjectBase::Ref ref(GetObjectRef(message.index_buffer_ref()));
-      if (!ref) FAILURE("Couldn't find primitive's index buffer");
+      if (!ref) {
+        O3D_ERROR(mServiceLocator) << "Couldn't find primitive's index buffer";
+        return false;
+      }
       IndexBuffer* index_buffer;
       if (index_buffer <<* ref) o.set_index_buffer(index_buffer);
-      else FAILURE("Impostor posed as an IndexBuffer, but we didn't fall for it");
+      else {
+        O3D_ERROR(mServiceLocator) << "Impostor posed as an IndexBuffer, but we didn't fall for it";
+        return false;
+      }
     }
 
     if (message.has_stream_bank_ref()) {
       ObjectBase::Ref ref(GetObjectRef(message.stream_bank_ref()));
-      if (!ref) FAILURE("Couldn't find primitive's stream bank");
+      if (!ref) {
+        O3D_ERROR(mServiceLocator) << "Couldn't find primitive's stream bank";
+        return false;
+      }
       StreamBank* stream_bank;
       if (stream_bank <<* ref) o.set_stream_bank(stream_bank);
-      else FAILURE("Impostor posed as a StreamBank, but we didn't fall for it");
+      else {
+        O3D_ERROR(mServiceLocator) << "Impostor posed as a StreamBank, but we didn't fall for it";
+        return false;
+      }
     }
 
     ObjectBase::Ref ref(GetObjectRef(message.owner_ref()));
-    if (!ref) FAILURE("Couldn't find primitive's owner");
+    if (!ref) {
+      O3D_ERROR(mServiceLocator) << "Couldn't find primitive's owner";
+      return false;
+    }
 
     Shape* shape;
     if (shape <<* ref) o.SetOwner(shape);
-    else FAILURE("The object owning the primitive is not a Shape");
+    else {
+      O3D_ERROR(mServiceLocator) << "The object owning the primitive is not a Shape";
+      return false;
+    }
 
     return true;
   }
 
   bool Receive(Transform& o) {
     binary::Transform message;
-    if (!pbx::read(message, mStream)) FAILURE("Failed to parse a transform");
+    if (!pbx::read(message, mStream)) {
+      O3D_ERROR(mServiceLocator) << "Failed to parse a transform";
+      return false;
+    }
 
     if (message.has_parent_ref()) {
       ObjectBase::Ref ref(GetObjectRef(message.parent_ref()));
-      if (!ref) FAILURE("Cannot resolve Transform's parent ref. Missing dependency? [Ref was " << message.parent_ref() << "]");
+      if (!ref) {
+        O3D_ERROR(mServiceLocator) << "Cannot resolve Transform's parent ref. Missing dependency? [Ref was " << message.parent_ref() << "]";
+        return false;
+      }
       Transform* parent;
       if (parent <<* ref) o.SetParent(parent);
-      else FAILURE("Transform has a parent, but it's not a Transform!");
+      else {
+        O3D_ERROR(mServiceLocator) << "Transform has a parent, but it's not a Transform!";
+        return false;
+      }
     }
     return true;
   }
@@ -1523,7 +1848,7 @@ class Load {
   IExternalResourceProvider& mERP;
   string_db_t mStringDB;
   std::tr1::unordered_map<std::string, const ObjectBase::Class*> mClassMap;
-  std::tr1::unordered_map<pb::uint32, ObjectBase::Ref> mOldIdToNewObject;
+  std::tr1::unordered_map<uint32_t, ObjectBase::Ref> mOldIdToNewObject;
   Pack& mPack;
   pb::io::ZeroCopyInputStream& mStream;
   ServiceLocator* mServiceLocator;
@@ -1542,7 +1867,7 @@ Transform* LoadFromBinaryStream(std::istream& stream, Pack& pack, IExternalResou
     bool magic_ok(false);
     do {
       pb::io::CodedInputStream tmp(&low_level_stream);
-      uint32 magic;
+      uint32_t magic;
       if (!tmp.ReadLittleEndian32(&magic)) break;
       if (magic != FOURCC) break;
       magic_ok = true;
@@ -1580,7 +1905,6 @@ Transform* LoadFromBinaryStream(std::istream& stream, Pack& pack, IExternalResou
   return root;
 }
 
-#if !defined(O3D_NO_BINARY_EXPORT)
 bool SaveToBinaryStream(std::ostream& stream, Transform& root, TCompressionAlgorithm compression) {
   pbx::log_handler lh;
   if (stream.good()) {
@@ -1638,7 +1962,6 @@ bool SaveToBinaryStream(std::ostream& stream, Transform& root, TCompressionAlgor
   stream.setstate(std::ios_base::failbit);
   return false;
 }
-#endif
 
 } // namespace extra
 } // namespace o3d

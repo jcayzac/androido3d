@@ -214,7 +214,7 @@ TEST_F(FeaturesTest, InitStatus) {
     Renderer::GPU_NOT_UP_TO_SPEC,
     Renderer::INITIALIZATION_ERROR,
   };
-  for (unsigned ii = 0; ii < arraysize(statuses); ++ii) {
+  for (unsigned ii = 0; ii < o3d_arraysize(statuses); ++ii) {
     Features* features = new Features(service_locator());
     std::string s(StringPrintf("InitStatus=%d", statuses[ii]));
     features->Init(s);

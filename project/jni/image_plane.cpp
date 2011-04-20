@@ -23,10 +23,12 @@
 #include "core/cross/sampler.h"
 #include "core/cross/texture.h"
 #include "core/cross/transform.h"
+#include "core/cross/file_resource.h"
 #include "primitives.h"
 #include "render_graph.h"
 
 namespace o3d_utils {
+using namespace o3d;
 
 static const char* const kImagePlaneShader =
   "uniform mat4 worldViewProjection;\n"
@@ -58,12 +60,12 @@ static const char* const kImagePlaneEffectName = "__ImagePlaneEffect";
 static const char* const kImagePlaneMaterialName = "__ImagePlaneMaterial";
 
 ImagePlane* ImagePlane::Create(
-    o3d::Pack* plane_pack,
-    o3d::Pack* texture_pack,
-    o3d_utils::ViewInfo* view_info,
+    Pack* plane_pack,
+    Pack* texture_pack,
+    ViewInfo* view_info,
     const std::string& filename,
     bool origin_at_center) {
-  o3d::Texture2D* texture = GetTexture(texture_pack, filename);
+  Texture2D* texture = GetTexture(texture_pack, filename);
   if (!texture) {
     return NULL;
   }
@@ -78,46 +80,48 @@ ImagePlane::ImagePlane()
       scale_transform_(NULL) {
 }
 
-o3d::Texture2D* ImagePlane::GetTexture(
-    o3d::Pack* pack, const std::string& filename) {
+Texture2D* ImagePlane::GetTexture(
+    Pack* pack, const std::string& filename) {
   // Get Texture from texture pack.
-  std::vector<o3d::Texture2D*> textures = pack->Get<o3d::Texture2D>(filename);
+  std::vector<Texture2D*> textures = pack->Get<Texture2D>(filename);
   if (!textures.empty()) {
     return textures[0];
   }
+  
+  FileResource resource(filename);
 
-  o3d::Texture* texture = pack->CreateTextureFromFile(
-      filename, filename, o3d::image::UNKNOWN, true);
+  Texture* texture = pack->CreateTextureFromExternalResource(
+      filename, resource, image::UNKNOWN, true);
   if (!texture) {
     // If we couldn't load the texture return the ERROR texture.
-    DLOG(ERROR) << "Could not load texture: " << filename;
-    o3d::Renderer* renderer =
-        pack->service_locator()->GetService<o3d::Renderer>();
-    return down_cast<o3d::Texture2D*>(renderer->error_texture());
+    O3D_LOG(ERROR) << "Could not load texture: " << filename;
+    Renderer* renderer =
+        pack->service_locator()->GetService<Renderer>();
+    return down_cast<Texture2D*>(renderer->error_texture());
   }
 
-  DCHECK(texture->IsA(o3d::Texture2D::GetApparentClass()));
+  O3D_ASSERT(texture->IsA(Texture2D::GetApparentClass()));
   texture->set_name(filename);
-  return down_cast<o3d::Texture2D*>(texture);
+  return down_cast<Texture2D*>(texture);
 }
 
-o3d::Shape* ImagePlane::GetImagePlaneShape(
-    o3d::Pack* pack, ViewInfo* view_info) {
+Shape* ImagePlane::GetImagePlaneShape(
+    Pack* pack, ViewInfo* view_info) {
   // Let's assume if we find the shape then everything else is already created
   // and conversely if it's not found then nothing is created.
-  std::vector<o3d::Shape*> shapes = pack->Get<o3d::Shape>(kImagePlaneShapeName);
+  std::vector<Shape*> shapes = pack->Get<Shape>(kImagePlaneShapeName);
   if (!shapes.empty()) {
     return shapes[0];
   }
 
   // create the effect.
-  o3d::Effect* effect = pack->Create<o3d::Effect>();
+  Effect* effect = pack->Create<Effect>();
   effect->set_name(kImagePlaneEffectName);
   bool success = effect->LoadFromFXString(kImagePlaneShader);
-  DCHECK(success);
+  O3D_ASSERT(success);
 
   // Create the material.
-  o3d::Material* material = pack->Create<o3d::Material>();
+  Material* material = pack->Create<Material>();
   material->set_name(kImagePlaneMaterialName);
   material->set_draw_list(
       view_info->z_ordered_draw_pass_info()->draw_list());
@@ -125,76 +129,76 @@ o3d::Shape* ImagePlane::GetImagePlaneShape(
   effect->CreateUniformParameters(effect);
 
   // Create the plane.
-  o3d::Matrix4 mat(
-    o3d::Vector4(1.0f, 0.0f, 0.0f, 0.0f),
-    o3d::Vector4(0.0f, 0.0f, 1.0f, 0.0f),
-    o3d::Vector4(0.0f,-1.0f, 0.0f, 0.0f),
-    o3d::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-  o3d::Primitive* prim = Primitives::CreatePlane(
+  Matrix4 mat(
+    Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+    Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+    Vector4(0.0f,-1.0f, 0.0f, 0.0f),
+    Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+  Primitive* prim = Primitives::CreatePlane(
       pack, 1, 1, 1, 1, &mat);
   prim->set_name(kImagePlanePrimitiveName);
   prim->set_material(material);
 
   // Create the shape.
-  o3d::Shape* shape = pack->Create<o3d::Shape>();
+  Shape* shape = pack->Create<Shape>();
   prim->SetOwner(shape);
   return shape;
 }
 
 bool ImagePlane::Init(
-    o3d::Texture2D* texture,
-    o3d::Pack* pack,
+    Texture2D* texture,
+    Pack* pack,
     ViewInfo* view_info,
     const std::string& filename,
     bool origin_at_center) {
-  DCHECK(texture);
-  DCHECK(pack);
-  DCHECK(view_info);
+  O3D_ASSERT(texture);
+  O3D_ASSERT(pack);
+  O3D_ASSERT(view_info);
 
-  o3d::Shape* shape = GetImagePlaneShape(pack, view_info);
+  Shape* shape = GetImagePlaneShape(pack, view_info);
   shape->set_name(kImagePlaneShapeName);
 
   // create a transform for positioning
-  transform_ = pack->Create<o3d::Transform>();
+  transform_ = pack->Create<Transform>();
   transform_->set_name(filename);
 
   // create a transform for scaling to the size of the image just so
   // we don't have to manage that manually in the transform above.
-  scale_transform_ = pack->Create<o3d::Transform>();
+  scale_transform_ = pack->Create<Transform>();
   scale_transform_->set_name(filename + "_scale");
   scale_transform_->SetParent(transform_);
 
   // setup the sampler for the texture
-  sampler_ = pack->Create<o3d::Sampler>();
-  sampler_->set_address_mode_u(o3d::Sampler::CLAMP);
-  sampler_->set_address_mode_v(o3d::Sampler::CLAMP);
+  sampler_ = pack->Create<Sampler>();
+  sampler_->set_address_mode_u(Sampler::CLAMP);
+  sampler_->set_address_mode_v(Sampler::CLAMP);
   sampler_->set_texture(texture);
 
-  if (!o3d::image::IsPOT(texture->width(), texture->height())) {
-    sampler_->set_min_filter(o3d::Sampler::POINT);
+  if (!image::IsPOT(texture->width(), texture->height())) {
+    sampler_->set_min_filter(Sampler::POINT);
   }
 
   // NOTE: We may need to set the min filter to NEAREST on some hardware
   // or better yet, we should just make O3D do that if it needs to.
   sampler_param_ =
-      scale_transform_->CreateParam<o3d::ParamSampler>("texSampler0");
+      scale_transform_->CreateParam<ParamSampler>("texSampler0");
   sampler_param_->set_value(sampler_);
 
   // Setup the color param
   color_mult_param_ =
-      scale_transform_->CreateParam<o3d::ParamFloat4>("colorMult");
-  color_mult_param_->set_value(o3d::Float4(1.0f, 1.0f, 1.0f, 1.0f));
+      scale_transform_->CreateParam<ParamFloat4>("colorMult");
+  color_mult_param_->set_value(Float4(1.0f, 1.0f, 1.0f, 1.0f));
 
   // Setup the scale.
   scale_transform_->AddShape(shape);
-  o3d::Matrix4 mat(o3d::Matrix4::identity());
+  Matrix4 mat(Matrix4::identity());
   if (!origin_at_center) {
-    mat = mat * o3d::Matrix4::translation(
-        o3d::Vector3(texture->width() / 2.0f,
+    mat = mat * Matrix4::translation(
+        Vector3(texture->width() / 2.0f,
                      texture->height() / 2.0f, 0));
   }
-  mat = mat * o3d::Matrix4::scale(
-        o3d::Vector3(texture->width(), -texture->height(), 1));
+  mat = mat * Matrix4::scale(
+        Vector3(texture->width(), -texture->height(), 1));
   scale_transform_->set_local_matrix(mat);
 
   return true;

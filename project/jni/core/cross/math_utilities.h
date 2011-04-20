@@ -36,7 +36,7 @@
 #ifndef O3D_CORE_CROSS_MATH_UTILITIES_H_
 #define O3D_CORE_CROSS_MATH_UTILITIES_H_
 
-#include "core/cross/types.h"
+#include "base/cross/types.h"
 
 namespace Vectormath {
 namespace Aos {
@@ -64,22 +64,10 @@ Matrix4 CreateOrthographicMatrix(float left,
                                  float z_far);
 
 // Converts a 32 bit float to a 16 bit float.
-uint16 FloatToHalf(float value);
+uint16_t FloatToHalf(float value);
 // Converts a 16 bit float to a 32 bit float.
-float HalfToFloat(uint16 value);
+float HalfToFloat(uint16_t value);
 }  // namespace Vectormath
 }  // namespace Aos
-
-namespace o3d {
-// Calculates the Frobenius norm of a 3x3 matrix.
-// See http://en.wikipedia.org/wiki/Matrix_norm
-float FrobeniusNorm(const Matrix3& matrix);
-
-// Calculates the Frobenius norm of a 4x4 matrix.
-// See http://en.wikipedia.org/wiki/Matrix_norm
-float FrobeniusNorm(const Matrix4& matrix);
-
-extern const float kPi;
-}  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_MATH_UTILITIES_H_

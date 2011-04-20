@@ -78,13 +78,13 @@ TEST_F(DestinationBufferTest, TestDestinationBuffer) {
   Field* field = buffer->CreateField(UInt32Field::GetApparentClass(), 1);
   ASSERT_TRUE(field != NULL);
   ASSERT_TRUE(buffer->AllocateElements(kSize));
-  EXPECT_EQ(kSize * sizeof(uint32), buffer->GetSizeInBytes());  // NOLINT
+  EXPECT_EQ(kSize * sizeof(uint32_t), buffer->GetSizeInBytes());  // NOLINT
 
   // Put some data into the buffer.
-  uint32 *data = NULL;
+  uint32_t *data = NULL;
   ASSERT_TRUE(buffer->LockAs(Buffer::WRITE_ONLY, &data));
   ASSERT_TRUE(data != NULL);
-  for (uint32 i = 0; i < kSize; ++i) {
+  for (uint32_t i = 0; i < kSize; ++i) {
     data[i] = i;
   }
   ASSERT_TRUE(buffer->Unlock());
@@ -93,7 +93,7 @@ TEST_F(DestinationBufferTest, TestDestinationBuffer) {
   // Read the data from the buffer, checks that it's the expected values.
   ASSERT_TRUE(buffer->LockAs(Buffer::READ_ONLY, &data));
   ASSERT_TRUE(data != NULL);
-  for (uint32 i = 0; i < kSize; ++i) {
+  for (uint32_t i = 0; i < kSize; ++i) {
     EXPECT_EQ(i, data[i]);
   }
   ASSERT_TRUE(buffer->Unlock());

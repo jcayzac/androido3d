@@ -37,7 +37,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 namespace o3d {
 
@@ -96,7 +96,7 @@ class StructuredWriter {
   virtual void Close() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StructuredWriter);
+  O3D_DISALLOW_COPY_AND_ASSIGN(StructuredWriter);
 };
 }  // namespace o3d
 

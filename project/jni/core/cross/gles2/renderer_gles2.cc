@@ -149,7 +149,7 @@ GLenum ConvertBlendEquation(State::BlendingEquation blend_equation) {
 #else
     case State::BLEND_MIN:
     case State::BLEND_MAX:
-      NOTIMPLEMENTED() << "MIN/MAX blend equation";
+      O3D_NOTIMPLEMENTED() << "MIN/MAX blend equation";
       break;
 #endif
     default:
@@ -182,7 +182,7 @@ GLenum ConvertStencilOp(State::StencilOperation stencil_func) {
   return GL_KEEP;
 }
 
-#ifndef DISABLE_FBO
+#ifndef O3D_DISABLE_FBO
 // Helper routine that will bind the surfaces stored in the RenderSurface and
 // RenderDepthStencilSurface arguments to the current OpenGLES2 context.
 // Returns true upon success.
@@ -190,10 +190,10 @@ GLenum ConvertStencilOp(State::StencilOperation stencil_func) {
 // to the context.
 bool InstallFramebufferObjects(const RenderSurface* surface,
                                const RenderDepthStencilSurface* surface_depth) {
-#ifdef _DEBUG
+#ifndef NDEBUG
   GLint bound_framebuffer;
   ::glGetIntegerv(GL_FRAMEBUFFER_BINDING, &bound_framebuffer);
-  DCHECK(bound_framebuffer != 0);
+  O3D_ASSERT(bound_framebuffer != 0);
 #endif
 
   // Reset the bound attachments to the current framebuffer object.
@@ -295,7 +295,7 @@ class TypedStateHandler : public RendererGLES2::StateHandler {
   virtual void SetState(Renderer* renderer, Param* param) const {
     RendererGLES2 *renderer_gl = down_cast<RendererGLES2 *>(renderer);
     // This is safe because State guarntees Params match by type.
-    DCHECK(param->IsA(T::GetApparentClass()));
+    O3D_ASSERT(param->IsA(T::GetApparentClass()));
     SetStateFromTypedParam(renderer_gl, down_cast<T*>(param));
   }
 };
@@ -427,7 +427,7 @@ class FillModeHandler : public TypedStateHandler<ParamInteger> {
     ::glPolygonMode(GL_FRONT_AND_BACK,
                     ConvertFillMode(static_cast<State::Fill>(param->value())));
 #else
-    NOTIMPLEMENTED() << "Fill mode";
+    O3D_NOTIMPLEMENTED() << "Fill mode";
 #endif
   }
 };
@@ -558,7 +558,7 @@ class PointSpriteEnableHandler : public TypedStateHandler<ParamBoolean> {
       ::glDisable(GL_POINT_SPRITE);
     }
 #else
-    NOTIMPLEMENTED() << "Point Sprites";
+    O3D_NOTIMPLEMENTED() << "Point Sprites";
 #endif
   }
 };
@@ -570,7 +570,7 @@ class PointSizeHandler : public TypedStateHandler<ParamFloat> {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
     ::glPointSize(param->value());
 #else
-    NOTIMPLEMENTED() << "Point Size";
+    O3D_NOTIMPLEMENTED() << "Point Size";
 #endif
   }
 };
@@ -583,9 +583,6 @@ RendererGLES2::RendererGLES2(ServiceLocator* service_locator)
     : Renderer(service_locator),
       object_manager_(service_locator),
       semantic_manager_(service_locator),
-#ifdef OS_WIN
-      gl_context_(NULL),
-#endif
       fullscreen_(0),
 #ifdef OS_LINUX
       display_(NULL),
@@ -614,7 +611,7 @@ RendererGLES2::RendererGLES2(ServiceLocator* service_locator)
       polygon_offset_changed_(true),
       polygon_offset_factor_(0.f),
       polygon_offset_bias_(0.f) {
-  DLOG(INFO) << "RendererGLES2 Construct";
+  O3D_LOG(INFO) << "RendererGLES2 Construct";
 
   // Setup default state values.
   for (int ii = 0; ii < 2; ++ii) {
@@ -732,7 +729,7 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
   GLenum glew_error = glewInit();
   if (glew_error != GLEW_OK) {
-    DLOG(ERROR) << "Unable to initialise GLEW : "
+    O3D_LOG(ERROR) << "Unable to initialise GLEW : "
                 << ::glewGetErrorString(glew_error);
     return INITIALIZATION_ERROR;
   }
@@ -744,7 +741,7 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   // this check to ensure that all of the extension strings we require are
   // present.
   if (!GLEW_VERSION_2_0) {
-    DLOG(ERROR) << "GLES2 drivers do not have OpenGLES2 2.0 functionality.";
+    O3D_LOG(ERROR) << "GLES2 drivers do not have OpenGLES2 2.0 functionality.";
   }
 
   if (!GLEW_ARB_vertex_buffer_object) {
@@ -754,13 +751,13 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
     // indirect rendering, leading to crashes. Fortunately, in that case, the
     // driver claims to not support ARB_vertex_buffer_object, so fail in that
     // case.
-    DLOG(ERROR) << "GLES2 drivers do not support vertex buffer objects.";
+    O3D_LOG(ERROR) << "GLES2 drivers do not support vertex buffer objects.";
     return GPU_NOT_UP_TO_SPEC;
   }
 
-#ifndef DISABLE_FBO
+#ifndef O3D_DISABLE_FBO
   if (!GLEW_EXT_framebuffer_object) {
-    DLOG(ERROR) << "GLES2 drivers do not support framebuffer objects.";
+    O3D_LOG(ERROR) << "GLES2 drivers do not support framebuffer objects.";
     return GPU_NOT_UP_TO_SPEC;
   }
 #endif
@@ -777,28 +774,28 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
 
   // Check for necessary extensions
   if (!GLEW_VERSION_2_0 && !GLEW_EXT_stencil_two_side) {
-    DLOG(ERROR) << "Two sided stencil extension missing.";
+    O3D_LOG(ERROR) << "Two sided stencil extension missing.";
   }
   if (!GLEW_VERSION_1_4 && !GLEW_EXT_blend_func_separate) {
-    DLOG(ERROR) << "Separate blend func extension missing.";
+    O3D_LOG(ERROR) << "Separate blend func extension missing.";
   }
   if (!GLEW_VERSION_2_0 && !GLEW_EXT_blend_equation_separate) {
-    DLOG(ERROR) << "Separate blend function extension missing.";
+    O3D_LOG(ERROR) << "Separate blend function extension missing.";
   }
 #elif defined(GLES2_BACKEND_NATIVE_GLES2)
   // GLES specific initialization ?
 #endif  // GLES2_BACKEND
-  DLOG(INFO) << "OpenGLES2 Vendor: " << ::glGetString(GL_VENDOR);
-  DLOG(INFO) << "OpenGLES2 Renderer: " << ::glGetString(GL_RENDERER);
-  DLOG(INFO) << "OpenGLES2 Version: " << ::glGetString(GL_VERSION);
-  DLOG(INFO) << "OpenGLES2 Extensions: " << ::glGetString(GL_EXTENSIONS);
+  O3D_LOG(INFO) << "OpenGLES2 Vendor: " << ::glGetString(GL_VENDOR);
+  O3D_LOG(INFO) << "OpenGLES2 Renderer: " << ::glGetString(GL_RENDERER);
+  O3D_LOG(INFO) << "OpenGLES2 Version: " << ::glGetString(GL_VERSION);
+  O3D_LOG(INFO) << "OpenGLES2 Extensions: " << ::glGetString(GL_EXTENSIONS);
   // get some limits for this profile.
   GLint max_vertex_attribs = 0;
   ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
-  DLOG(INFO) << "Max Vertex Attribs = " << max_vertex_attribs;
+  O3D_LOG(INFO) << "Max Vertex Attribs = " << max_vertex_attribs;
   GLint value = 0;
   ::glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
-  DLOG(INFO) << "Max Texture Size = " << value;
+  O3D_LOG(INFO) << "Max Texture Size = " << value;
   // Initialize global GLES2 settings.
   // Tell GLES2 that texture buffers can be single-byte aligned.
   ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -824,7 +821,7 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   SetClientSize(viewport[2], viewport[3]);
   CHECK_GL_ERROR();
 
-#ifndef DISABLE_FBO
+#ifndef O3D_DISABLE_FBO
   ::glGenFramebuffersEXT(1, &render_surface_framebuffer_);
   CHECK_GL_ERROR();
 #endif
@@ -835,257 +832,12 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
 // platform neutral destruction code
 void RendererGLES2::DestroyCommonGLES2() {
   MakeCurrentLazy();
-#ifndef DISABLE_FBO
+#ifndef O3D_DISABLE_FBO
   if (render_surface_framebuffer_) {
     ::glDeleteFramebuffersEXT(1, &render_surface_framebuffer_);
   }
 #endif
 }
-
-#ifdef OS_WIN
-
-namespace {
-
-PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
-  sizeof(kPixelFormatDescriptor),    // Size of structure.
-  1,                       // Default version.
-  PFD_DRAW_TO_WINDOW |     // Window drawing support.
-  PFD_SUPPORT_OPENGL |     // OpenGL support.
-  PFD_DOUBLEBUFFER,        // Double buffering support (not stereo).
-  PFD_TYPE_RGBA,           // RGBA color mode (not indexed).
-  24,                      // 24 bit color mode.
-  0, 0, 0, 0, 0, 0,        // Don't set RGB bits & shifts.
-  8, 0,                    // 8 bit alpha
-  0,                       // No accumulation buffer.
-  0, 0, 0, 0,              // Ignore accumulation bits.
-  24,                      // 24 bit z-buffer size.
-  8,                       // 8-bit stencil buffer.
-  0,                       // No aux buffer.
-  PFD_MAIN_PLANE,          // Main drawing plane (not overlay).
-  0,                       // Reserved.
-  0, 0, 0,                 // Layer masks ignored.
-};
-
-LRESULT CALLBACK IntermediateWindowProc(HWND window,
-                                        UINT message,
-                                        WPARAM w_param,
-                                        LPARAM l_param) {
-  return ::DefWindowProc(window, message, w_param, l_param);
-}
-
-// Helper routine that returns the highest quality pixel format supported on
-// the current platform.  Returns true upon success.
-Renderer::InitStatus GetWindowsPixelFormat(HWND window,
-                                           Features* features,
-                                           int* pixel_format) {
-  // We must initialize a GLES2 context before we can determine the multi-sampling
-  // supported on the current hardware, so we create an intermediate window
-  // and context here.
-  HINSTANCE module_handle;
-  if (!::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
-                           GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                           reinterpret_cast<wchar_t*>(IntermediateWindowProc),
-                           &module_handle)) {
-    return Renderer::INITIALIZATION_ERROR;
-  }
-
-  WNDCLASS intermediate_class;
-  intermediate_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-  intermediate_class.lpfnWndProc = IntermediateWindowProc;
-  intermediate_class.cbClsExtra = 0;
-  intermediate_class.cbWndExtra = 0;
-  intermediate_class.hInstance = module_handle;
-  intermediate_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-  intermediate_class.hCursor = LoadCursor(NULL, IDC_ARROW);
-  intermediate_class.hbrBackground = NULL;
-  intermediate_class.lpszMenuName = NULL;
-  intermediate_class.lpszClassName = L"Intermediate GLES2 Window";
-
-  ATOM class_registration = ::RegisterClass(&intermediate_class);
-  if (!class_registration) {
-    return Renderer::INITIALIZATION_ERROR;
-  }
-
-  HWND intermediate_window = ::CreateWindow(
-      reinterpret_cast<wchar_t*>(class_registration),
-      L"",
-      WS_OVERLAPPEDWINDOW,
-      0, 0,
-      CW_USEDEFAULT, CW_USEDEFAULT,
-      NULL,
-      NULL,
-      NULL,
-      NULL);
-
-  if (!intermediate_window) {
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return Renderer::INITIALIZATION_ERROR;
-  }
-
-  HDC intermediate_dc = ::GetDC(intermediate_window);
-  int format_index = ::ChoosePixelFormat(intermediate_dc,
-                                         &kPixelFormatDescriptor);
-  if (format_index == 0) {
-    DLOG(ERROR) << "Unable to get the pixel format for GLES2 context.";
-    ::ReleaseDC(intermediate_window, intermediate_dc);
-    ::DestroyWindow(intermediate_window);
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return Renderer::INITIALIZATION_ERROR;
-  }
-  if (!::SetPixelFormat(intermediate_dc, format_index,
-                        &kPixelFormatDescriptor)) {
-    DLOG(ERROR) << "Unable to set the pixel format for GLES2 context.";
-    ::ReleaseDC(intermediate_window, intermediate_dc);
-    ::DestroyWindow(intermediate_window);
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return Renderer::INITIALIZATION_ERROR;
-  }
-
-  // Store the pixel format without multisampling.
-  *pixel_format = format_index;
-  HGLRC gl_context = ::wglCreateContext(intermediate_dc);
-  if (::wglMakeCurrent(intermediate_dc, gl_context)) {
-    // GLES2 context was successfully created and applied to the window's DC.
-    // Startup GLEW, the GLES2 extensions wrangler.
-    GLenum glew_error = ::glewInit();
-    if (glew_error == GLEW_OK) {
-      DLOG(INFO) << "Initialized GLEW " << ::glewGetString(GLEW_VERSION);
-    } else {
-      DLOG(ERROR) << "Unable to initialise GLEW : "
-                  << ::glewGetErrorString(glew_error);
-      ::wglMakeCurrent(intermediate_dc, NULL);
-      ::wglDeleteContext(gl_context);
-      ::ReleaseDC(intermediate_window, intermediate_dc);
-      ::DestroyWindow(intermediate_window);
-      ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                        module_handle);
-      return Renderer::INITIALIZATION_ERROR;
-    }
-
-    // If the multi-sample extensions are present, query the api to determine
-    // the pixel format.
-    if (!features->not_anti_aliased() &&
-        WGLEW_ARB_pixel_format && WGLEW_ARB_multisample) {
-      int pixel_attributes[] = {
-        WGL_SAMPLES_ARB, 4,
-        WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-        WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-        WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
-        WGL_COLOR_BITS_ARB, 24,
-        WGL_ALPHA_BITS_ARB, 8,
-        WGL_DEPTH_BITS_ARB, 24,
-        WGL_STENCIL_BITS_ARB, 8,
-        WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-        WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
-        0, 0};
-
-      float pixel_attributes_f[] = {0, 0};
-      int msaa_pixel_format;
-      unsigned int num_formats;
-
-      // Query for the highest sampling rate supported, starting at 4x.
-      static const int kSampleCount[] = {4, 2};
-      static const int kNumSamples = 2;
-      for (int sample = 0; sample < kNumSamples; ++sample) {
-        pixel_attributes[1] = kSampleCount[sample];
-        if (GL_TRUE == ::wglChoosePixelFormatARB(intermediate_dc,
-                                                 pixel_attributes,
-                                                 pixel_attributes_f,
-                                                 1,
-                                                 &msaa_pixel_format,
-                                                 &num_formats)) {
-          *pixel_format = msaa_pixel_format;
-          break;
-        }
-      }
-    }
-  }
-
-  ::wglMakeCurrent(intermediate_dc, NULL);
-  ::wglDeleteContext(gl_context);
-  ::ReleaseDC(intermediate_window, intermediate_dc);
-  ::DestroyWindow(intermediate_window);
-  ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                    module_handle);
-  return Renderer::SUCCESS;
-}
-
-}  // unnamed namespace
-
-Renderer::InitStatus RendererGLES2::InitPlatformSpecific(
-    const DisplayWindow& display,
-    bool off_screen) {
-  const DisplayWindowWindows &display_platform =
-      static_cast<const DisplayWindowWindows&>(display);
-
-  DLOG(INFO) << "RendererGLES2 Init";
-
-  // TODO(o3d): Add support for off-screen rendering using OpenGLES2.
-  if (off_screen) {
-    return INITIALIZATION_ERROR;
-  }
-
-  int pixel_format;
-  InitStatus init_status;
-
-  init_status = GetWindowsPixelFormat(display_platform.hwnd(),
-                                      features(),
-                                      &pixel_format);
-  if (init_status != SUCCESS) {
-      return init_status;
-  }
-
-  window_ = display_platform.hwnd();
-  device_context_ = ::GetDC(window_);
-  if (!::SetPixelFormat(device_context_, pixel_format,
-                        &kPixelFormatDescriptor)) {
-    DLOG(ERROR) << "Unable to set the pixel format for GLES2 context.";
-    return INITIALIZATION_ERROR;
-  }
-
-  gl_context_ = ::wglCreateContext(device_context_);
-  if (MakeCurrent()) {
-    // Ensure that glew has been initialized for the created rendering context.
-    init_status = InitCommonGLES2();
-    if (init_status != SUCCESS) {
-      DLOG(ERROR) << "Failed to initialize GLES2 rendering context.";
-      return init_status;
-    }
-    if (WGLEW_ARB_multisample) {
-      ::glEnable(GL_MULTISAMPLE_ARB);
-    }
-  } else {
-    DLOG(ERROR) << "Failed to create the GLES2 Context.";
-    return INITIALIZATION_ERROR;
-  }
-  CHECK_GL_ERROR();
-  return SUCCESS;
-}
-
-// Deletes the GLES2 device.
-void RendererGLES2::Destroy() {
-  DLOG(INFO) << "Destroy RendererGLES2";
-  DestroyCommonGLES2();
-  if (device_context_) {
-    CHECK_GL_ERROR();
-    // Release the OpenGLES2 rendering context.
-    ::wglMakeCurrent(device_context_, NULL);
-    if (gl_context_) {
-      ::wglDeleteContext(gl_context_);
-      gl_context_ = NULL;
-    }
-    // release the hDC obtained through GetDC().
-    ::ReleaseDC(window_, device_context_);
-    device_context_ = NULL;
-    window_ = NULL;
-  }
-  DLOG(INFO) << "Renderer destroyed.";
-}
-
-#endif  // OS_WIN
 
 #if defined(OS_MACOSX) && !defined(TARGET_OS_IPHONE)
 
@@ -1130,8 +882,8 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
   XVisualInfo *visual_info_list = ::XGetVisualInfo(display, VisualIDMask,
                                                    &visual_info_template,
                                                    &visual_info_count);
-  DCHECK(visual_info_list);
-  DCHECK_GT(visual_info_count, 0);
+  O3D_ASSERT(visual_info_list);
+  O3D_ASSERT(visual_info_count > 0);
   context_ = 0;
   for (int i = 0; i < visual_info_count; ++i) {
     context_ = ::glXCreateContext(display, visual_info_list + i, 0,
@@ -1140,7 +892,7 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
   }
   ::XFree(visual_info_list);
   if (!context_) {
-    DLOG(ERROR) << "Couldn't create GLES2 context.";
+    O3D_LOG(ERROR) << "Couldn't create GLES2 context.";
     return INITIALIZATION_ERROR;
   }
   display_ = display;
@@ -1150,7 +902,7 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
     context_ = 0;
     display_ = NULL;
     window_ = 0;
-    DLOG(ERROR) << "Couldn't create GLES2 context.";
+    O3D_LOG(ERROR) << "Couldn't create GLES2 context.";
     return INITIALIZATION_ERROR;
   }
 
@@ -1165,7 +917,7 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
 #elif defined(GLES2_BACKEND_NATIVE_GLES2)
   EGLDisplay egl_display = eglGetDisplay(display);
   if (eglGetError() != EGL_SUCCESS) {
-    DLOG(ERROR) << "eglGetDisplay failed.";
+    O3D_LOG(ERROR) << "eglGetDisplay failed.";
     return INITIALIZATION_ERROR;
   }
 
@@ -1173,14 +925,14 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
   EGLint minor;
   // TODO(piman): is it ok to do this several times ?
   if (!eglInitialize(egl_display, &major, &minor)) {
-    DLOG(ERROR) << "eglInitialize failed.";
+    O3D_LOG(ERROR) << "eglInitialize failed.";
     return INITIALIZATION_ERROR;
   }
-  DLOG(INFO) << "EGL vendor:" << eglQueryString(egl_display, EGL_VENDOR);
-  DLOG(INFO) << "EGL version:" << eglQueryString(egl_display, EGL_VERSION);
-  DLOG(INFO) << "EGL extensions:"
+  O3D_LOG(INFO) << "EGL vendor:" << eglQueryString(egl_display, EGL_VENDOR);
+  O3D_LOG(INFO) << "EGL version:" << eglQueryString(egl_display, EGL_VERSION);
+  O3D_LOG(INFO) << "EGL extensions:"
              << eglQueryString(egl_display, EGL_EXTENSIONS);
-  DLOG(INFO) << "EGL client apis:"
+  O3D_LOG(INFO) << "EGL client apis:"
              << eglQueryString(egl_display, EGL_CLIENT_APIS);
 
   EGLint attribs[] = {
@@ -1207,13 +959,13 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
 
   EGLint num_configs = -1;
   if (!eglGetConfigs(egl_display, NULL, 0, &num_configs)) {
-    DLOG(ERROR) << "eglGetConfigs failed.";
+    O3D_LOG(ERROR) << "eglGetConfigs failed.";
     return INITIALIZATION_ERROR;
   }
 
   EGLConfig config;
   if (!eglChooseConfig(egl_display, attribs, &config, 1, &num_configs)) {
-    DLOG(ERROR) << "eglChooseConfig failed.";
+    O3D_LOG(ERROR) << "eglChooseConfig failed.";
     return INITIALIZATION_ERROR;
   }
 
@@ -1224,21 +976,21 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
   eglGetConfigAttrib(egl_display, config, EGL_ALPHA_SIZE, &alpha_size);
   eglGetConfigAttrib(egl_display, config, EGL_DEPTH_SIZE, &depth_size);
   eglGetConfigAttrib(egl_display, config, EGL_STENCIL_SIZE, &stencil_size);
-  DLOG(INFO) << "R,G,B,A: " << red_size << "," << green_size
+  O3D_LOG(INFO) << "R,G,B,A: " << red_size << "," << green_size
              << "," << blue_size << "," << alpha_size << " bits";
-  DLOG(INFO) << "Depth: " << depth_size << " bits, Stencil:" << stencil_size
+  O3D_LOG(INFO) << "Depth: " << depth_size << " bits, Stencil:" << stencil_size
              << "bits";
 
   EGLSurface egl_surface = eglCreateWindowSurface(egl_display, config,
                                                   window, NULL);
   if (!egl_surface) {
-    DLOG(ERROR) << "eglCreateWindowSurface failed.";
+    O3D_LOG(ERROR) << "eglCreateWindowSurface failed.";
     return INITIALIZATION_ERROR;
   }
 
   EGLContext egl_context = eglCreateContext(egl_display, config, NULL, NULL);
   if (!egl_context) {
-    DLOG(ERROR) << "eglCreateContext failed.";
+    O3D_LOG(ERROR) << "eglCreateContext failed.";
     eglDestroySurface(egl_display, egl_surface);
     return INITIALIZATION_ERROR;
   }
@@ -1329,10 +1081,7 @@ void RendererGLES2::Destroy() {
 #endif
 
 bool RendererGLES2::MakeCurrent() {
-#ifdef OS_WIN
-  if (!device_context_ || !gl_context_) return false;
-  return (bool) ::wglMakeCurrent(device_context_, gl_context_);
-#elif defined(TARGET_OS_IPHONE)
+#if defined(TARGET_OS_IPHONE)
   // the return value is never ever checked on iOS
   return true;
 #elif defined(OS_ANDROID)
@@ -1525,7 +1274,7 @@ void RendererGLES2::SetCurrentPickable(const ParamObject* pickable) {
 void RendererGLES2::GetDisplayModes(std::vector<DisplayMode> *modes) {
 #ifdef OS_MACOSX
   // Mac is supposed to call a different function in plugin_mac.mm instead.
-  DLOG(FATAL) << "Not supposed to be called";
+  O3D_LOG(FATAL) << "Not supposed to be called";
 #endif
   // On all other platforms this is unimplemented. Linux only supports
   // DISPLAY_MODE_DEFAULT for now.
@@ -1535,7 +1284,7 @@ void RendererGLES2::GetDisplayModes(std::vector<DisplayMode> *modes) {
 bool RendererGLES2::GetDisplayMode(int id, DisplayMode *mode) {
 #ifdef OS_MACOSX
   // Mac is supposed to call a different function in plugin_mac.mm instead.
-  DLOG(FATAL) << "Not supposed to be called";
+  O3D_LOG(FATAL) << "Not supposed to be called";
   return false;
 #elif defined(OS_LINUX)
   if (id == DISPLAY_MODE_DEFAULT) {
@@ -1553,7 +1302,7 @@ bool RendererGLES2::GetDisplayMode(int id, DisplayMode *mode) {
 }
 
 bool RendererGLES2::PlatformSpecificStartRendering() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 StartRendering";
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGLES2 StartRendering";
   MakeCurrentLazy();
 
   // Currently always returns true.
@@ -1566,7 +1315,7 @@ bool RendererGLES2::PlatformSpecificStartRendering() {
 // the frame.
 // Returns true on success.
 bool RendererGLES2::PlatformSpecificBeginDraw() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 BeginDraw";
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGLES2 BeginDraw";
 
   MakeCurrentLazy();
 
@@ -1587,7 +1336,7 @@ void RendererGLES2::SetRenderSurfacesPlatformSpecific(
   // of framebuffer objects with different attachment characterists and
   // switch between them here.
   MakeCurrentLazy();
-#ifndef DISABLE_FBO
+#ifndef O3D_DISABLE_FBO
   ::glBindFramebufferEXT(GL_FRAMEBUFFER, render_surface_framebuffer_);
   if (!InstallFramebufferObjects(surface, surface_depth)) {
     O3D_ERROR(service_locator())
@@ -1603,7 +1352,7 @@ void RendererGLES2::SetRenderSurfacesPlatformSpecific(
 
 void RendererGLES2::SetBackBufferPlatformSpecific() {
   MakeCurrentLazy();
-#ifndef DISABLE_FBO
+#ifndef O3D_DISABLE_FBO
   // Bind the default context, and restore the default front-face winding.
   ::glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
 #endif
@@ -1612,14 +1361,14 @@ void RendererGLES2::SetBackBufferPlatformSpecific() {
 
 // Executes a post rendering step
 void RendererGLES2::PlatformSpecificEndDraw() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 EndDraw";
-  DCHECK(IsCurrent());
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGLES2 EndDraw";
+  O3D_ASSERT(IsCurrent());
 }
 
 // Swaps the buffers.
 void RendererGLES2::PlatformSpecificFinishRendering() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 FinishRendering";
-  DCHECK(IsCurrent());
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGLES2 FinishRendering";
+  O3D_ASSERT(IsCurrent());
 #ifndef TARGET_OS_IPHONE
   ::glFlush();
 #endif
@@ -1627,8 +1376,8 @@ void RendererGLES2::PlatformSpecificFinishRendering() {
 }
 
 void RendererGLES2::PlatformSpecificStartPicking() {
-	DCHECK(IsCurrent());
-	DCHECK(picking());
+	O3D_ASSERT(IsCurrent());
+	O3D_ASSERT(picking());
 	saved_blend_state_ = ::glIsEnabled(GL_BLEND);
 	::glDisable(GL_BLEND);
 	::glClearColor(0,0,0,0);
@@ -1638,8 +1387,8 @@ void RendererGLES2::PlatformSpecificStartPicking() {
 }
 
 void RendererGLES2::PlatformSpecificFinishPicking() {
-	DCHECK(IsCurrent());
-	DCHECK(picking());
+	O3D_ASSERT(IsCurrent());
+	O3D_ASSERT(picking());
 
 	int x, y;
 	get_picking_coordinates(x, y);
@@ -1661,13 +1410,10 @@ void RendererGLES2::PlatformSpecificFinishPicking() {
 }
 
 void RendererGLES2::PlatformSpecificPresent() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGLES2 Present";
-  DCHECK(IsCurrent());
-#ifdef OS_WIN
-  ::SwapBuffers(device_context_);
-#endif
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGLES2 Present";
+  O3D_ASSERT(IsCurrent());
 #ifdef OS_MACOSX
-#ifdef USE_AGL_DOUBLE_BUFFER
+#ifdef O3D_USE_AGL_DOUBLE_BUFFER
   if (mac_agl_context_) {
     ::aglSwapBuffers(mac_agl_context_);
   }
@@ -1698,7 +1444,7 @@ DrawElement::Ref RendererGLES2::CreateDrawElement() {
 
 void RendererGLES2::SetStencilStates(GLenum face,
                                      const StencilStates& stencil_state) {
-  DCHECK(IsCurrent());
+  O3D_ASSERT(IsCurrent());
   if (face == GL_FRONT_AND_BACK) {
     ::glStencilFunc(stencil_state.func_,
                     stencil_ref_,
@@ -1738,7 +1484,7 @@ void RendererGLES2::SetStencilStates(GLenum face,
 
 void RendererGLES2::ApplyDirtyStates() {
   MakeCurrentLazy();
-  DCHECK(IsCurrent());
+  O3D_ASSERT(IsCurrent());
   // Set blend settings.
   if (alpha_blend_settings_changed_) {
     if (separate_alpha_blend_enable_) {
@@ -1797,8 +1543,8 @@ void RendererGLES2::ApplyDirtyStates() {
   }
 
   if (polygon_offset_changed_) {
-    bool enable = floats_are_different(polygon_offset_factor_, 0.f) ||
-                  floats_are_different(polygon_offset_bias_, 0.f);
+    bool enable = std::not_equal_to<float>()(polygon_offset_factor_, 0.f) ||
+                  std::not_equal_to<float>()(polygon_offset_bias_, 0.f);
     if (enable) {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
       ::glEnable(GL_POLYGON_OFFSET_POINT);
@@ -1819,19 +1565,19 @@ void RendererGLES2::ApplyDirtyStates() {
 }
 
 VertexBuffer::Ref RendererGLES2::CreateVertexBuffer() {
-  DLOG(INFO) << "RendererGLES2 CreateVertexBuffer";
+  O3D_LOG(INFO) << "RendererGLES2 CreateVertexBuffer";
   MakeCurrentLazy();
   return VertexBuffer::Ref(new VertexBufferGLES2(service_locator()));
 }
 
 IndexBuffer::Ref RendererGLES2::CreateIndexBuffer() {
-  DLOG(INFO) << "RendererGLES2 CreateIndexBuffer";
+  O3D_LOG(INFO) << "RendererGLES2 CreateIndexBuffer";
   MakeCurrentLazy();
   return IndexBuffer::Ref(new IndexBufferGLES2(service_locator()));
 }
 
 Effect::Ref RendererGLES2::CreateEffect() {
-  DLOG(INFO) << "RendererGLES2 CreateEffect";
+  O3D_LOG(INFO) << "RendererGLES2 CreateEffect";
   MakeCurrentLazy();
   return Effect::Ref(new EffectGLES2(service_locator()));
 }
@@ -1851,7 +1597,7 @@ Texture2D::Ref RendererGLES2::CreatePlatformSpecificTexture2D(
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  DLOG(INFO) << "RendererGLES2 CreateTexture2D " << width << "x" << height;
+  O3D_LOG(INFO) << "RendererGLES2 CreateTexture2D " << width << "x" << height;
   MakeCurrentLazy();
   return Texture2D::Ref(Texture2DGLES2::Create(service_locator(),
                                                format,
@@ -1866,7 +1612,7 @@ TextureCUBE::Ref RendererGLES2::CreatePlatformSpecificTextureCUBE(
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  DLOG(INFO) << "RendererGLES2 CreateTextureCUBE";
+  O3D_LOG(INFO) << "RendererGLES2 CreateTextureCUBE";
   MakeCurrentLazy();
   return TextureCUBE::Ref(TextureCUBEGLES2::Create(service_locator(),
                                                    format,
@@ -1909,9 +1655,9 @@ bool RendererGLES2::OnContextRestored() {
     EffectArray::const_iterator p, end(effect_array.end());
     for (p = effect_array.begin(); p != end; ++p) {
       EffectGLES2* effect =  down_cast<EffectGLES2*>(*p);
-      DLOG(INFO) << "Restoring Effect: " << effect->name();
+      O3D_LOG(INFO) << "Restoring Effect: " << effect->name();
       if (!effect->OnContextRestored()) {
-        DLOG(ERROR) << "Failed To Restore Effect: " << effect->name();
+        O3D_LOG(ERROR) << "Failed To Restore Effect: " << effect->name();
         return false;
       }
     }
@@ -1925,10 +1671,10 @@ bool RendererGLES2::OnContextRestored() {
         end(buffers.end());
     for (;iter != end; ++iter) {
       VertexBuffer* buffer = *iter;
-      DLOG(INFO) << "Restoring VertexBuffer: " << buffer->name();
+      O3D_LOG(INFO) << "Restoring VertexBuffer: " << buffer->name();
       VertexBufferGLES2* buffer_gles2 = down_cast<VertexBufferGLES2*>(buffer);
       if (!buffer_gles2->OnContextRestored()) {
-        DLOG(ERROR) << "Failed To Restore VertexBuffer: " << buffer->name();
+        O3D_LOG(ERROR) << "Failed To Restore VertexBuffer: " << buffer->name();
         return false;
       }
     }
@@ -1942,10 +1688,10 @@ bool RendererGLES2::OnContextRestored() {
         end(buffers.end());
     for (;iter != end; ++iter) {
       IndexBuffer* buffer = *iter;
-      DLOG(INFO) << "Restoring IndexBuffer: " << buffer->name();
+      O3D_LOG(INFO) << "Restoring IndexBuffer: " << buffer->name();
       IndexBufferGLES2* buffer_gles2 = down_cast<IndexBufferGLES2*>(buffer);
       if (!buffer_gles2->OnContextRestored()) {
-        DLOG(ERROR) << "Failed To Restore IndexBuffer: " << buffer->name();
+        O3D_LOG(ERROR) << "Failed To Restore IndexBuffer: " << buffer->name();
         return false;
       }
     }
@@ -1959,18 +1705,18 @@ bool RendererGLES2::OnContextRestored() {
         texture_end(texture_array.end());
     for (;texture_iter != texture_end; ++texture_iter) {
       Texture* texture = *texture_iter;
-      DLOG(INFO) << "Restoring Texture: " << texture->name();
+      O3D_LOG(INFO) << "Restoring Texture: " << texture->name();
       if (texture->IsA(Texture2D::GetApparentClass())) {
         Texture2DGLES2* texture2d_gles2 = down_cast<Texture2DGLES2*>(texture);
         if (!texture2d_gles2->OnContextRestored()) {
-          DLOG(ERROR) << "Failed To Restore Texture: " << texture->name();
+          O3D_LOG(ERROR) << "Failed To Restore Texture: " << texture->name();
           return false;
         }
       } else if (texture->IsA(TextureCUBE::GetApparentClass())) {
         TextureCUBEGLES2* texture_cube_gles2 =
             down_cast<TextureCUBEGLES2*>(texture);
         if (!texture_cube_gles2->OnContextRestored()) {
-          DLOG(ERROR) << "Failed To Restore Texture: " << texture->name();
+          O3D_LOG(ERROR) << "Failed To Restore Texture: " << texture->name();
           return false;
         }
       }
@@ -1986,19 +1732,19 @@ bool RendererGLES2::OnContextRestored() {
         surface_array.begin()), surface_end(surface_array.end());
     for (; surface_iter != surface_end; ++surface_iter) {
       RenderSurfaceBase* surface = *surface_iter;
-      DLOG(INFO) << "Restoring Surface: " << surface->name();
+      O3D_LOG(INFO) << "Restoring Surface: " << surface->name();
       if (surface->IsA(RenderSurface::GetApparentClass())) {
         RenderSurfaceGLES2* render_surface_gles2 =
             down_cast<RenderSurfaceGLES2*>(surface);
         if (!render_surface_gles2->OnContextRestored()) {
-          DLOG(ERROR) << "Failed To Restore Surface: " << surface->name();
+          O3D_LOG(ERROR) << "Failed To Restore Surface: " << surface->name();
           return false;
         }
       } else if (surface->IsA(RenderDepthStencilSurface::GetApparentClass())) {
         RenderDepthStencilSurfaceGLES2* render_depth_stencil_surface_gles2 =
             down_cast<RenderDepthStencilSurfaceGLES2*>(surface);
         if (!render_depth_stencil_surface_gles2->OnContextRestored()) {
-          DLOG(ERROR) << "Failed To Restore Surface: " << surface->name();
+          O3D_LOG(ERROR) << "Failed To Restore Surface: " << surface->name();
           return false;
         }
       }

@@ -113,17 +113,17 @@ const unsigned kHalfFloatMaxBiasedExponent = (0x1Fu << 10);
 
 }  // anonymous namespace
 
-uint16 FloatToHalf(float value) {
+uint16_t FloatToHalf(float value) {
   union FloatAndUInt {
     float f;
     unsigned u;
   } temp;
   temp.f = value;
   unsigned v = temp.u;
-  unsigned sign = static_cast<uint16>(v >> 31);
+  unsigned sign = static_cast<uint16_t>(v >> 31);
   unsigned mantissa;
   unsigned exponent;
-  uint16 half;
+  uint16_t half;
 
   // get mantissa
   mantissa = v & ((1 << 23) - 1);
@@ -138,9 +138,9 @@ uint16 FloatToHalf(float value) {
       // 16-bit half-float representation stores number as Inf
       mantissa = 0;
     }
-    half = (static_cast<uint16>(sign) << 15) |
-           static_cast<uint16>(kHalfFloatMaxBiasedExponent) |
-           static_cast<uint16>(mantissa >> 13);
+    half = (static_cast<uint16_t>(sign) << 15) |
+           static_cast<uint16_t>(kHalfFloatMaxBiasedExponent) |
+           static_cast<uint16_t>(mantissa >> 13);
   // check if exponent is <= -15
   } else if (exponent <= kHalfFloatMinBiasedExpAsSingleFpExponent) {
     // store a denorm half-float value or zero
@@ -148,19 +148,19 @@ uint16 FloatToHalf(float value) {
                 exponent) >> 23;
     mantissa >>= (14 + exponent);
 
-    half = (static_cast<uint16>(sign) << 15) |
-           static_cast<uint16>(mantissa);
+    half = (static_cast<uint16_t>(sign) << 15) |
+           static_cast<uint16_t>(mantissa);
   } else {
     half =
-        (static_cast<uint16>(sign) << 15) |
-        static_cast<uint16>(
+        (static_cast<uint16_t>(sign) << 15) |
+        static_cast<uint16_t>(
             (exponent - kHalfFloatMinBiasedExpAsSingleFpExponent) >> 13) |
-        static_cast<uint16>(mantissa >> 13);
+        static_cast<uint16_t>(mantissa >> 13);
   }
   return half;
 }
 
-float HalfToFloat(uint16 half) {
+float HalfToFloat(uint16_t half) {
   unsigned int sign = static_cast<unsigned int>(half >> 15);
   unsigned int mantissa = static_cast<unsigned int>(half & ((1 << 10) - 1));
   unsigned int exponent = static_cast<unsigned int>(
@@ -209,25 +209,5 @@ float HalfToFloat(uint16 half) {
 }  // namespace Aos
 
 namespace o3d {
-float FrobeniusNorm(const Matrix3& matrix) {
-  Matrix3 elementsSquared = mulPerElem(matrix, matrix);
-  Vector3 ones(1, 1, 1);
-  float sumOfElementsSquared = 0.0f;
-  for (int i = 0; i < 3; ++i) {
-    sumOfElementsSquared += dot(ones, elementsSquared.getCol(i));
-  }
-  return sqrtf(sumOfElementsSquared);
-}
-
-float FrobeniusNorm(const Matrix4& matrix) {
-  Matrix4 elementsSquared = mulPerElem(matrix, matrix);
-  Vector4 ones(1, 1, 1, 1);
-  float sumOfElementsSquared = 0.0f;
-  for (int i = 0; i < 4; ++i) {
-    sumOfElementsSquared += dot(ones, elementsSquared.getCol(i));
-  }
-  return sqrtf(sumOfElementsSquared);
-}
-
 const float kPi = ::acosf(-1.0f);
 }  // namespace o3d

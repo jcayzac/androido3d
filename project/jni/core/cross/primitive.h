@@ -209,7 +209,7 @@ class Primitive : public Element {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(Primitive, Element);
-  DISALLOW_COPY_AND_ASSIGN(Primitive);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Primitive);
 };
 
 typedef std::vector<Primitive*> PrimitiveArray;

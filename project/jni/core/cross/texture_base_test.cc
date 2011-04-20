@@ -68,7 +68,7 @@ class MockTexture : public Texture {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockTexture);
+  O3D_DISALLOW_COPY_AND_ASSIGN(MockTexture);
 };
 
 }  // anonymous namespace

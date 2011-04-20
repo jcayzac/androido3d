@@ -88,7 +88,7 @@ class IClassManager {
   // Returns:
   //   ObjectBase::Class* for the given class name or NULL if there is no match.
   virtual const ObjectBase::Class* GetClassByClassName(
-      const String& class_name) const = 0;
+      const std::string& class_name) const = 0;
 
   // Returns true if class_name is or is derived from base_class_type. It only
   // works for classes that have been registered through AddClass.
@@ -98,7 +98,7 @@ class IClassManager {
   // Returns:
   //   true if derived_class_name is or is derived from base_class.
   virtual bool ClassNameIsAClass(
-      const String& derived_class_name,
+      const std::string& derived_class_name,
       const ObjectBase::Class* base_class) const = 0;
 
   // Creates an Object by Class. This is an internal function. Do not use
@@ -126,7 +126,7 @@ class IClassManager {
   //   type_name: Name of the Class to create.
   // Returns:
   //   ObjectBase::Ref to created object.
-  virtual ObjectBase::Ref CreateObject(const String& type_name) = 0;
+  virtual ObjectBase::Ref CreateObject(const std::string& type_name) = 0;
 
   // Get all the classes registered in the class manager.
   virtual std::vector<const ObjectBase::Class*>
@@ -147,11 +147,11 @@ class IClassManager {
 
    private:
     IClassManager* class_manager_;
-    DISALLOW_COPY_AND_ASSIGN(Register);
+    O3D_DISALLOW_COPY_AND_ASSIGN(Register);
   };
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IClassManager);
+  O3D_DISALLOW_COPY_AND_ASSIGN(IClassManager);
 };
 
 }  // namespace o3d

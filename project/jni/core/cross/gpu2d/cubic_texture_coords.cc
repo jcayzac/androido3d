@@ -31,7 +31,7 @@
 
 #include <math.h>
 
-#include "base/logging.h"
+#include "base/cross/log.h"
 #include "core/cross/gpu2d/cubic_math_utils.h"
 #include "core/cross/gpu2d/cubic_texture_coords.h"
 
@@ -172,7 +172,7 @@ void CubicTextureCoords::Compute(const CubicClassifier::Result& c,
       break;
 
     default:
-      NOTREACHED();
+      O3D_NEVER_REACHED();
       break;
   }
 

@@ -113,21 +113,21 @@ class Field : public NamedObject {
                              unsigned num_elements) = 0;
 
   // This function is the same as SetFromFloats except takes UInt32s as input.
-  virtual void SetFromUInt32s(const uint32* source,
+  virtual void SetFromUInt32s(const uint32_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements) = 0;
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
   // This function is the same as SetFromFloats except takes UInt16s as input.
-  virtual void SetFromUInt16s(const uint16* source,
+  virtual void SetFromUInt16s(const uint16_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements) = 0;
 #endif
 
   // This function is the same as SetFromFloats except takes UByteNs as input.
-  virtual void SetFromUByteNs(const uint8* source,
+  virtual void SetFromUByteNs(const uint8_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements) = 0;
@@ -186,7 +186,7 @@ class Field : public NamedObject {
   unsigned offset_;
 
   O3D_DECL_CLASS(Field, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(Field);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Field);
 };
 
 typedef std::vector<Field*> FieldArray;
@@ -214,21 +214,21 @@ class FloatField : public Field {
                              unsigned num_elements);
 
   // Overridden from Field.
-  virtual void SetFromUInt32s(const uint32* source,
+  virtual void SetFromUInt32s(const uint32_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
   // Overridden from Field.
-  virtual void SetFromUInt16s(const uint16* source,
+  virtual void SetFromUInt16s(const uint16_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
 #endif
 
   // Overridden from Field.
-  virtual void SetFromUByteNs(const uint8* source,
+  virtual void SetFromUByteNs(const uint8_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
@@ -253,7 +253,7 @@ class FloatField : public Field {
              unsigned offset);
 
   O3D_DECL_CLASS(FloatField, Field);
-  DISALLOW_COPY_AND_ASSIGN(FloatField);
+  O3D_DISALLOW_COPY_AND_ASSIGN(FloatField);
 };
 
 // A field the hold uint32s.
@@ -278,21 +278,21 @@ class UInt32Field : public Field {
                              unsigned num_elements);
 
   // Overridden from Field.
-  virtual void SetFromUInt32s(const uint32* source,
+  virtual void SetFromUInt32s(const uint32_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
   // Overridden from Field.
-  virtual void SetFromUInt16s(const uint16* source,
+  virtual void SetFromUInt16s(const uint16_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
 #endif
 
   // Overridden from Field.
-  virtual void SetFromUByteNs(const uint8* source,
+  virtual void SetFromUByteNs(const uint8_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
@@ -321,7 +321,7 @@ class UInt32Field : public Field {
   //       destination units.
   //   num_elements: The number of elements to copy.
   void GetAsUInt32s(unsigned source_start_index,
-                    uint32* destination,
+                    uint32_t* destination,
                     unsigned destination_stride,
                     unsigned num_elements) const;
 
@@ -336,7 +336,7 @@ class UInt32Field : public Field {
               unsigned offset);
 
   O3D_DECL_CLASS(UInt32Field, Field);
-  DISALLOW_COPY_AND_ASSIGN(UInt32Field);
+  O3D_DISALLOW_COPY_AND_ASSIGN(UInt32Field);
 };
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
@@ -362,21 +362,21 @@ class UInt32Field : public Field {
 								   unsigned num_elements);
 		
 		// Overridden from Field.
-		virtual void SetFromUInt32s(const uint32* source,
+		virtual void SetFromUInt32s(const uint32_t* source,
 									unsigned source_stride,
 									unsigned destination_start_index,
 									unsigned num_elements);
 		
 #ifdef GLES2_BACKEND_NATIVE_GLES2
 		// Overridden from Field.
-		virtual void SetFromUInt16s(const uint16* source,
+		virtual void SetFromUInt16s(const uint16_t* source,
 									unsigned source_stride,
 									unsigned destination_start_index,
 									unsigned num_elements);
 #endif
 		
 		// Overridden from Field.
-		virtual void SetFromUByteNs(const uint8* source,
+		virtual void SetFromUByteNs(const uint8_t* source,
 									unsigned source_stride,
 									unsigned destination_start_index,
 									unsigned num_elements);
@@ -405,7 +405,7 @@ class UInt32Field : public Field {
 		//       destination units.
 		//   num_elements: The number of elements to copy.
 		void GetAsUInt16s(unsigned source_start_index,
-						  uint16* destination,
+						  uint16_t* destination,
 						  unsigned destination_stride,
 						  unsigned num_elements) const;
 		
@@ -420,11 +420,11 @@ class UInt32Field : public Field {
 					unsigned offset);
 		
 		O3D_DECL_CLASS(UInt16Field, Field);
-		DISALLOW_COPY_AND_ASSIGN(UInt16Field);
+		O3D_DISALLOW_COPY_AND_ASSIGN(UInt16Field);
 	};
 #endif
 
-// A field the hold UByteNs where a UByteN is an uint8 that represents a value
+// A field the hold UByteNs where a UByteN is an uint8_t that represents a value
 // from 0.0 to 1.0.
 class UByteNField : public Field {
  public:
@@ -447,21 +447,21 @@ class UByteNField : public Field {
                              unsigned num_elements);
 
   // Overridden from Field.
-  virtual void SetFromUInt32s(const uint32* source,
+  virtual void SetFromUInt32s(const uint32_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
   // Overridden from Field.
-  virtual void SetFromUInt16s(const uint16* source,
+  virtual void SetFromUInt16s(const uint16_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
 #endif
 
   // Overridden from Field.
-  virtual void SetFromUByteNs(const uint8* source,
+  virtual void SetFromUByteNs(const uint8_t* source,
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
@@ -490,7 +490,7 @@ class UByteNField : public Field {
   //       destination units.
   //   num_elements: The number of elements to copy.
   void GetAsUByteNs(unsigned source_start_index,
-                    uint8* destination,
+                    uint8_t* destination,
                     unsigned destination_stride,
                     unsigned num_elements) const;
 
@@ -507,7 +507,7 @@ class UByteNField : public Field {
   const int* swizzle_table_;
 
   O3D_DECL_CLASS(UByteNField, Field);
-  DISALLOW_COPY_AND_ASSIGN(UByteNField);
+  O3D_DISALLOW_COPY_AND_ASSIGN(UByteNField);
 };
 
 }  // namespace o3d

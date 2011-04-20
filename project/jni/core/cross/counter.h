@@ -123,7 +123,7 @@ class Counter : public ParamObject {
         CounterCallbackManagerArray;
     CounterCallbackManagerArray counter_callbacks_;
 
-    DISALLOW_COPY_AND_ASSIGN(CounterCallbackQueue);
+    O3D_DISALLOW_COPY_AND_ASSIGN(CounterCallbackQueue);
   };
 
   static const char* kRunningParamName;
@@ -356,7 +356,7 @@ class Counter : public ParamObject {
   CallbackManagerMap callback_managers_;
 
   O3D_DECL_CLASS(Counter, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Counter);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Counter);
 };
 
 // A Second counter counts by elasped time.
@@ -369,7 +369,7 @@ class SecondCounter : public Counter {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(SecondCounter, Counter);
-  DISALLOW_COPY_AND_ASSIGN(SecondCounter);
+  O3D_DISALLOW_COPY_AND_ASSIGN(SecondCounter);
 };
 
 // A Render Frame counter counts by render frames.
@@ -382,7 +382,7 @@ class RenderFrameCounter : public Counter {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(RenderFrameCounter, Counter);
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameCounter);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RenderFrameCounter);
 };
 
 // A tick counter counts by ticks.
@@ -395,7 +395,7 @@ class TickCounter : public Counter {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(TickCounter, Counter);
-  DISALLOW_COPY_AND_ASSIGN(TickCounter);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TickCounter);
 };
 }  // namespace o3d
 

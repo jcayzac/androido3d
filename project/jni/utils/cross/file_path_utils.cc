@@ -34,55 +34,12 @@
 // used to make FilePaths more useful.
 
 #include "utils/cross/file_path_utils.h"
-#include "base/file_util.h"
-#include "base/string_util.h"
-#include "base/file_path.h"
+#include "base/cross/file_util.h"
+#include "base/cross/string_util.h"
+#include "base/cross/file_path.h"
 
 namespace o3d {
-std::wstring FilePathToWide(const FilePath& input) {
-#if defined(OS_WIN)
-  return input.value();
-#else
-  return UTF8ToWide(input.value());
-#endif
-}
-
-FilePath WideToFilePath(const std::wstring& input) {
-#if defined(OS_WIN)
-  return FilePath(input);
-#else
-  return FilePath(WideToUTF8(input));
-#endif
-}
-
-String FilePathToUTF8(const FilePath& input) {
-#if defined(OS_WIN)
-  return WideToUTF8(input.value());
-#else
-  return input.value();
-#endif
-}
-
-FilePath UTF8ToFilePath(const String& input) {
-#if defined(OS_WIN)
-  return FilePath(UTF8ToWide(input));
-#else
-  return FilePath(input);
-#endif
-}
-
-FilePath::StringType UTF8ToFilePathStringType(const String& input) {
-#if defined(OS_WIN)
-  return UTF8ToWide(input);
-#else
-  return input;
-#endif
-}
-
 bool AbsolutePath(FilePath* absolute_path) {
-#if defined(OS_WIN)
-  return file_util::AbsolutePath(absolute_path);
-#else
   // On the Posix implementation of file_util::AbsolutePath,
   // realpath() is used, which only works if the path actually exists.
   // So, we try using AbsolutePath, and if it doesn't work, we fake it
@@ -107,7 +64,6 @@ bool AbsolutePath(FilePath* absolute_path) {
       return true;
     }
   }
-#endif
 }
 
 bool GetRelativePathIfPossible(const FilePath& base_dir,
@@ -131,8 +87,8 @@ bool GetRelativePathIfPossible(const FilePath& base_dir,
     return false;
   }
 
-  FilePath::StringType child_str = child.value();
-  FilePath::StringType parent_str = parent.value();
+  std::string child_str = child.value();
+  std::string parent_str = parent.value();
 
   // If the child is too short, it can't be a child of parent, and if
   // it doesn't have a separator in the right place, then it also
@@ -146,13 +102,7 @@ bool GetRelativePathIfPossible(const FilePath& base_dir,
   }
 
   if (
-#if defined(OS_WIN)
-      // file_util::AbsolutePath() does not flatten case on Windows,
-      // so we must do a case-insensitive compare.
-      StartsWith(child_str, parent_str, false)
-#else
       StartsWithASCII(child_str, parent_str, true)
-#endif
       ) {
     // Add one to skip over the dir separator.
     child_str = child_str.substr(parent_str.size() + 1);
@@ -180,7 +130,7 @@ namespace {  // anonymous namespace.
 bool FindFileHelper(const FilePath& path_to_search,
                     const FilePath& path_to_find,
                     FilePath* found_path) {
-  std::vector<FilePath::StringType> parts;
+  std::vector<std::string> parts;
   path_to_find.GetComponents(&parts);
 
   for (size_t ii = 0; ii < parts.size(); ++ii) {

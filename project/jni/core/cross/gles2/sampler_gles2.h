@@ -66,7 +66,7 @@ class SamplerGLES2 : public Sampler {
 
   GLenum texture_unit_;
 
-  DISALLOW_COPY_AND_ASSIGN(SamplerGLES2);
+  O3D_DISALLOW_COPY_AND_ASSIGN(SamplerGLES2);
 };
 }  // namespace o3d
 

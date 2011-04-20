@@ -134,14 +134,14 @@ void CurveKey::Destroy() {
 }
 
 void CurveKey::SetInput(float new_input) {
-  if (floats_are_different(new_input, input_)) {
+  if (std::not_equal_to<float>()(new_input, input_)) {
     input_ = new_input;
     owner_->MarkAsUnsorted();
   }
 }
 
 void CurveKey::SetOutput(float new_output) {
-  if (floats_are_different(new_output, output_)) {
+  if (std::not_equal_to<float>()(new_output, output_)) {
     output_ = new_output;
     owner_->InvalidateCache();
   }
@@ -176,7 +176,7 @@ CurveKey::Ref LinearCurveKey::Create(ServiceLocator* service_locator,
 float LinearCurveKey::GetOutputAtOffset(float offset,
                                         unsigned key_index) const {
   const CurveKey* next_key(owner()->GetKey(key_index + 1));
-  DCHECK(next_key);
+  O3D_ASSERT(next_key);
 
   float input_span = next_key->input() - input();
   float output_span = next_key->output() - output();
@@ -209,7 +209,7 @@ void BezierCurveKey::SetOutTangent(const Float2& value) {
 float BezierCurveKey::GetOutputAtOffset(float offset,
                                         unsigned key_index) const {
   const CurveKey* next_key(owner()->GetKey(key_index + 1));
-  DCHECK(next_key);
+  O3D_ASSERT(next_key);
 
   float input_span = next_key->input() - input();
   float output_span = next_key->output() - output();
@@ -224,7 +224,7 @@ float BezierCurveKey::GetOutputAtOffset(float offset,
     in_tangent.setX(next_key->input() - input_span / 3.0f);
     in_tangent.setY(next_key->output() - output_span / 3.0f);
   } else {
-    DCHECK(false);  // Bad Key.
+    O3D_ASSERT(false);  // Bad Key.
     return output();
   }
 
@@ -291,7 +291,7 @@ void Curve::AddKey(CurveKey::Ref key) {
 }
 
 CurveKey* Curve::CreateKeyByClass(const ObjectBase::Class* key_type) {
-  for (unsigned ii = 0; ii < arraysize(g_creators); ++ii) {
+  for (unsigned ii = 0; ii < o3d_arraysize(g_creators); ++ii) {
     if (g_creators[ii].key_type == key_type) {
       CurveKey::Ref key(g_creators[ii].create_function(
           service_locator(),
@@ -307,8 +307,8 @@ CurveKey* Curve::CreateKeyByClass(const ObjectBase::Class* key_type) {
   return NULL;
 }
 
-CurveKey* Curve::CreateKeyByClassName(const String& key_type) {
-  for (unsigned ii = 0; ii < arraysize(g_creators); ++ii) {
+CurveKey* Curve::CreateKeyByClassName(const std::string& key_type) {
+  for (unsigned ii = 0; ii < o3d_arraysize(g_creators); ++ii) {
     if (!key_type.compare(g_creators[ii].key_type->name()) ||
         !key_type.compare(g_creators[ii].key_type->unqualified_name())) {
       CurveKey::Ref key(g_creators[ii].create_function(
@@ -332,10 +332,10 @@ void Curve::RemoveKey(CurveKey* key) {
                                                CurveKey::Ref(key));
 
   // key should never be in the key array more than once.
-  DLOG_ASSERT(std::distance(end, keys_.end()) <= 1);
+  O3D_ASSERT(std::distance(end, keys_.end()) <= 1);
 
   // The key was never found.
-  DCHECK(end != keys_.end());
+  O3D_ASSERT(end != keys_.end());
 
   if (key->IsA(StepCurveKey::GetApparentClass())) {
     --num_step_keys_;
@@ -357,7 +357,7 @@ void Curve::SetSampleRate(float rate) {
         << "attempt to set sample rate to " << rate
         << " which is lower than the minimum of "
         << kMinimumSampleRate;
-  } else if (floats_are_different(rate, sample_rate_)) {
+  } else if (std::not_equal_to<float>()(rate, sample_rate_)) {
     sample_rate_ = rate;
     InvalidateCache();
   }
@@ -395,8 +395,8 @@ void Curve::CheckDiscontinuity() const {
   discontinuous_ = num_step_keys_ > 0 && num_step_keys_ != keys_.size();
   if (!discontinuous_ && keys_.size() > 1) {
     for (unsigned ii = 0; ii < keys_.size() - 1; ++ii) {
-      if (!floats_are_different(keys_[ii]->input(), keys_[ii + 1]->input()) &&
-          floats_are_different(keys_[ii]->output(), keys_[ii + 1]->output())) {
+      if (std::equal_to<float>()(keys_[ii]->input(), keys_[ii + 1]->input()) &&
+          std::not_equal_to<float>()(keys_[ii]->output(), keys_[ii + 1]->output())) {
         discontinuous_ = true;
         break;
       }
@@ -426,7 +426,7 @@ void Curve::CreateCache() const {
 }
 
 float Curve::GetOutputInSpan(float input, CurveFunctionContext* context) const {
-  DCHECK(input >= keys_.front()->input());
+  O3D_ASSERT(input >= keys_.front()->input());
 
   if (input >= keys_.back()->input()) {
     return keys_.back()->output();
@@ -504,8 +504,8 @@ float Curve::GetOutputInSpan(float input, CurveFunctionContext* context) const {
       ++start;
     }
 
-    DCHECK(start > 0);
-    DCHECK(start < end);
+    O3D_ASSERT(start > 0);
+    O3D_ASSERT(start < end);
 
     key_index = start - 1;
   }
@@ -652,7 +652,7 @@ float Curve::Evaluate(float input, FunctionContext* context) const {
     float span_input = input - start_input;
     unsigned sample = static_cast<unsigned>(span_input / sample_rate_);
 
-    DCHECK(sample < cache_samples_.size() - 1);
+    O3D_ASSERT(sample < cache_samples_.size() - 1);
 
     float current_sample = cache_samples_[sample];
     if (num_step_keys_ == keys_.size()) {
@@ -695,13 +695,13 @@ const size_t kBezierDataSize = 2 * sizeof(float) + 2 * kFloat2Size;
 
 bool Curve::LoadFromBinaryData(MemoryReadStream *stream) {
   // Make sure we have enough data for serialization ID and version
-  if (stream->GetRemainingByteCount() < 4 + sizeof(int32)) {
+  if (stream->GetRemainingByteCount() < 4 + sizeof(int32_t)) {
     O3D_ERROR(service_locator()) << "invalid empty curve data";
     return false;
   }
 
   // To insure data integrity we expect four characters kSerializationID
-  uint8 id[4];
+  uint8_t id[4];
   stream->Read(id, 4);
 
   if (memcmp(id, kSerializationID, 4)) {
@@ -710,7 +710,7 @@ bool Curve::LoadFromBinaryData(MemoryReadStream *stream) {
     return false;
   }
 
-  int32 version = stream->ReadLittleEndianInt32();
+  int32_t version = stream->ReadLittleEndianInt32();
   if (version != 1) {
     O3D_ERROR(service_locator()) << "unknown version for curve data";
     return false;
@@ -803,7 +803,7 @@ bool Curve::Set(o3d::RawData *raw_data,
     return false;
   }
 
-  const uint8 *data = raw_data->GetDataAs<uint8>(offset);
+  const uint8_t *data = raw_data->GetDataAs<uint8_t>(offset);
   if (!data) {
     return false;
   }

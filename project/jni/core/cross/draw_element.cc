@@ -69,7 +69,7 @@ void DrawElement::SetOwner(Element* new_owner) {
 
   if (owner_ != NULL) {
     bool removed = owner_->RemoveDrawElement(this);
-    DLOG_ASSERT(removed);
+    O3D_ASSERT(removed);
   }
 
   owner_ = new_owner;

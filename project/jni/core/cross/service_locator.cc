@@ -30,14 +30,14 @@
  */
 
 
-#include "base/logging.h"
+#include "base/cross/log.h"
 #include "core/cross/service_locator.h"
 
 namespace o3d {
 
 void ServiceLocator::AddService(InterfaceId interfaceId, void* service) {
   // Check service with this interface is not already installed first.
-  DCHECK(services_.end() == services_.find(interfaceId));
+  O3D_ASSERT(services_.end() == services_.find(interfaceId));
   services_.insert(ServiceMap::value_type(interfaceId, service));
 
   DependencyList& existingDependencies = dependencies_[interfaceId];
@@ -51,7 +51,7 @@ void ServiceLocator::RemoveService(InterfaceId interfaceId, void* service) {
   // Remove the existing service, verifying that the caller identified
   // one that is currently active.
   ServiceMap::iterator serviceIt = services_.find(interfaceId);
-  DCHECK_EQ(service, serviceIt->second);
+  O3D_ASSERT(service == serviceIt->second);
   services_.erase(serviceIt);
 
   DependencyList& existingDependencies = dependencies_[interfaceId];

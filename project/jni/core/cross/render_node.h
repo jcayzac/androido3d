@@ -144,7 +144,7 @@ class RenderNode : public ParamObject {
   //  name: Rendernode name to look for.
   //  render_nodes: RenderNodeArray to receive list of nodes. If anything is in
   //                the array it will be cleared.
-  void GetRenderNodesByNameInTreeFast(const String& name,
+  void GetRenderNodesByNameInTreeFast(const std::string& name,
                                       RenderNodeArray* render_nodes) const;
 
   // Searches for rendernodes that match the given name in the hierarchy under
@@ -160,7 +160,7 @@ class RenderNode : public ParamObject {
   //  name: Rendernode name to look for.
   // Returns:
   //  An array of pointers to render nodes matching the given name.
-  RenderNodeArray GetRenderNodesByNameInTree(const String& name) const;
+  RenderNodeArray GetRenderNodesByNameInTree(const std::string& name) const;
 
   // Searches for render nodes that match the given class in the hierarchy under
   // and including this render node.
@@ -178,7 +178,7 @@ class RenderNode : public ParamObject {
   // Returns:
   //  An array of pointers to render nodes matching the given class name
   RenderNodeArray GetRenderNodesByClassNameInTree(
-      const String& class_type_name) const;
+      const std::string& class_type_name) const;
 
  protected:
   explicit RenderNode(ServiceLocator* service_locator);
@@ -210,7 +210,7 @@ class RenderNode : public ParamObject {
   RenderNode*         parent_;
 
   O3D_DECL_CLASS(RenderNode, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(RenderNode);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RenderNode);
 };
 
 inline RenderNode* RenderNode::parent() const {

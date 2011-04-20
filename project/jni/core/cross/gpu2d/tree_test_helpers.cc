@@ -38,7 +38,7 @@
 namespace o3d {
 namespace gpu2d {
 
-int32 GenerateSeed() {
+int32_t GenerateSeed() {
   // A seed of 1 has the special behavior of resetting the random
   // number generator. Assume that if we call this routine that we
   // don't want this behavior.
@@ -49,11 +49,11 @@ int32 GenerateSeed() {
   return seed;
 }
 
-void InitRandom(const int32 seed) {
+void InitRandom(const int32_t seed) {
   srand(seed);
 }
 
-int32 NextRandom(const int32 max_val) {
+int32_t NextRandom(const int32_t max_val) {
   // rand_r is not available on Windows
   return rand() % max_val;  // NOLINT
 }

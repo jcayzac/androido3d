@@ -48,7 +48,7 @@ O3D_DEFN_CLASS(ParamBoundingBox, Param);
 
 // Adds a box to this box producing a bounding box that contains both.
 void BoundingBox::Add(const BoundingBox& box, BoundingBox* result) const {
-  DLOG_ASSERT(result != NULL);
+  O3D_ASSERT(result != NULL);
 
   if (valid() && box.valid()) {
     *result = BoundingBox(
@@ -66,7 +66,7 @@ void BoundingBox::Add(const BoundingBox& box, BoundingBox* result) const {
 // Computing the bounding box of this box re-oriented by multiplying by a
 // Matrix4.
 void BoundingBox::Mul(const Matrix4& matrix, BoundingBox* result) const {
-  DLOG_ASSERT(result != NULL);
+  O3D_ASSERT(result != NULL);
 
   Point3 min_extent((matrix * min_extent_).getXYZ());
   Point3 max_extent(min_extent);
@@ -114,7 +114,7 @@ void BoundingBox::Mul(const Matrix4& matrix, BoundingBox* result) const {
 void BoundingBox::IntersectRay(const Point3& start,
                                const Point3& end,
                                RayIntersectionInfo* result) const {
-  DLOG_ASSERT(result != NULL);
+  O3D_ASSERT(result != NULL);
 
   result->Reset();
   if (valid()) {
@@ -158,7 +158,7 @@ void BoundingBox::IntersectRay(const Point3& start,
     } else {
       // Calculate T distances to candidate planes.
       for (int i = 0; i < kNumberOfDimensions; ++i) {
-        if (floats_are_different(quadrant[i], kMiddle) && floats_are_different(dir[i], 0.0f)) {
+        if (std::not_equal_to<float>()(quadrant[i], kMiddle) && std::not_equal_to<float>()(dir[i], 0.0f)) {
           max_t[i] = (candidate_plane[i] - start[i]) / dir[i];
         } else {
           max_t[i] = -1.0f;
@@ -266,39 +266,5 @@ bool BoundingBox::InFrustum(const Matrix4& matrix) const {
 ObjectBase::Ref ParamBoundingBox::Create(ServiceLocator* service_locator) {
   return ObjectBase::Ref(new ParamBoundingBox(service_locator, false, false));
 }
-
-#if 0  // TODO: change this to a ParamOperation
-const char* ParamBindFloat3sToBoundingBox::kInput1Name = "Input1";
-const char* ParamBindFloat3sToBoundingBox::kInput2Name = "Input2";
-const char* ParamBindFloat3sToBoundingBox::kOutputName = "Output";
-
-ParamBindFloat3sToBoundingBox::ParamBindFloat3sToBoundingBox(const String& name)
-    : ParamBind(service_locator) {
-  RegisterInputPointer(kInput1Name, &source_bind_connection_1_);
-  RegisterInputPointer(kInput2Name, &source_bind_connection_2_);
-  RegisterOutputPointer(kOutputName, &destination_bind_connection_);
-}
-
-// Computes the product of the two source Params and stores the result in the
-// destination Param.
-void ParamBindFloat3sToBoundingBox::ComputeDestinationValues() {
-  // Update the stored values of the two input Params
-  UpdateSourceValues();
-
-  Float3 value_1(source_bind_connection_1_->GetParam()->value());
-  Float3 value_2(source_bind_connection_2_->GetParam()->value());
-  ParamBoundingBox *dest_bounding_box =
-      destination_bind_connection_->GetParam();
-
-  dest_bounding_box->set_dynamic_value(
-      BoundingBox(Point3(value_1[0], value_1[1], value_1[2]),
-                  Point3(value_2[0], value_2[1], value_2[2])));
-}
-
-ObjectBase::Ref ParamBindFloat3sToBoundingBox::Create(
-    ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new ParamBindFloat3sToBoundingBox(service_locator));
-}
-#endif
 
 }  // namespace o3d

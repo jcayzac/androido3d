@@ -34,7 +34,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/cross/scoped_ptr.h"
 #include "core/cross/gpu2d/arena.h"
 #include "gtest/gtest.h"
 
@@ -75,7 +75,7 @@ class TrackedMallocAllocator : public Arena::Allocator {
 
  private:
   std::vector<void*> allocated_regions_;
-  DISALLOW_COPY_AND_ASSIGN(TrackedMallocAllocator);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TrackedMallocAllocator);
 };
 
 // A couple of simple structs to allocate.
@@ -113,10 +113,10 @@ TEST_F(ArenaTest, CanAllocateFromMoreThanOneRegion) {
 
 // Make sure the arena frees all allocated regions during destruction.
 TEST_F(ArenaTest, FreesAllAllocatedRegions) {
-  scoped_ptr<TrackedMallocAllocator> base_allocator(
+  ::o3d::base::scoped_ptr<TrackedMallocAllocator> base_allocator(
       new TrackedMallocAllocator());
   {
-    scoped_ptr<Arena> arena(new Arena(base_allocator.get()));
+    ::o3d::base::scoped_ptr<Arena> arena(new Arena(base_allocator.get()));
     for (int i = 0; i < 3; i++) {
       arena->Alloc<TestClass1>();
     }

@@ -68,62 +68,22 @@
 
 */
 
-
-/* Examples Usages:
-
-   int result;
-   ZipArchive archive("test.zip", &result);
-
-   if (result == UNZ_OK) {
-   archive.Print();
-
-   vector<ZipFileInfo> infolist;
-   archive.GetInformationList(&infolist);
-
-   // get all file information and print all file names
-   for (int i = 0; i < infolist.size(); ++i) {
-   printf("[%d] %s\n", i + 1, infolist[i].name.c_str() );
-   }
-
-   // can get information based on file name in the archive
-   // print information about the first file
-   if (infolist.size() > 0) {
-   ZipFileInfo info;
-   result = archive.GetFileInfo(infolist[0].name, &info);
-
-   if (result == UNZ_OK) {
-   info.Print(true);
-   }
-   }
-
-
-   size_t data_size;
-   char *data = archive.GetFileData(infolist[0].name, &data_size);
-   printf("data = %p : data_size = %d\n", data, data_size);
-*/
-
 #ifndef O3D_IMPORT_CROSS_ZIP_ARCHIVE_H_
 #define O3D_IMPORT_CROSS_ZIP_ARCHIVE_H_
 
+#include "base/cross/config.h"
 #include <string>
 #include <vector>
 
-#ifdef TARGET_OS_IPHONE
-#include "minizip/unzip.h"
-#else
-#include "contrib/minizip/unzip.h"
-#endif
-
-#if defined(OS_WIN)
-// Windows #defines this.
-#undef DeleteFile
-#endif
-
 // structure containing the unz_file_info information plus the file name
-struct ZipFileInfo : public unz_file_info {
+struct ZipFileInfo {
+  ZipFileInfo();
+  ZipFileInfo(const ZipFileInfo& o);
+  ~ZipFileInfo();
+  ZipFileInfo& operator=(const ZipFileInfo& o);
+  struct LowLevelInfo;
+  LowLevelInfo* low_level_info;
   std::string name;
-
-  void  Print(bool print_header);  // prints info to stdout
 };
 
 class ZipArchive {
@@ -183,17 +143,11 @@ class ZipArchive {
   // So we can delete the temp file we made
   static void DeleteFile(const std::string &filename);
 
-  // Lists content of archive to stdout
-  // returns UNZ_OK on success
-  int   Print();
-
   // Tests the given file to see if it is a zip file.
   // (Added by Google)
   static bool IsZipFile(const std::string& filename);
 
  protected:
-  void  ChangeFileDate(const char *filename, uLong dosdate, tm_unz tmu_date);
-
   int   MyMkDir(const char *dirname);
 
   int   MakeDir(const char *newdir);
@@ -214,8 +168,11 @@ class ZipArchive {
   void GetActualFilename(const std::string &filename,
                          std::string *actual_filename);
 
-  std::string     zip_filename_;
-  unzFile         zip_file_ref_;
+  struct PrivateStruct;
+  PrivateStruct* private_;
+
+private:
+ O3D_DISALLOW_COPY_AND_ASSIGN(ZipArchive);
 };
 
 #endif  // O3D_IMPORT_CROSS_ZIP_ARCHIVE_H_

@@ -59,7 +59,7 @@ class DisplayWindowLinux : public DisplayWindow {
   Display* display_;
   Window window_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayWindowLinux);
+  O3D_DISALLOW_COPY_AND_ASSIGN(DisplayWindowLinux);
 };
 }  // end namespace o3d
 

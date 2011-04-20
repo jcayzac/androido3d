@@ -176,10 +176,10 @@ GLenum ConvertStencilOp(State::StencilOperation stencil_func) {
 // to the context.
 bool InstallFramebufferObjects(const RenderSurface* surface,
                                const RenderDepthStencilSurface* surface_depth) {
-#ifdef _DEBUG
+#ifndef NDEBUG
   GLint bound_framebuffer;
   ::glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &bound_framebuffer);
-  DCHECK(bound_framebuffer != 0);
+  O3D_ASSERT(bound_framebuffer != 0);
 #endif
 
   // Reset the bound attachments to the current framebuffer object.
@@ -279,7 +279,7 @@ class TypedStateHandler : public RendererGL::StateHandler {
   virtual void SetState(Renderer* renderer, Param* param) const {
     RendererGL *renderer_gl = down_cast<RendererGL *>(renderer);
     // This is safe because State guarntees Params match by type.
-    DCHECK(param->IsA(T::GetApparentClass()));
+    O3D_ASSERT(param->IsA(T::GetApparentClass()));
     SetStateFromTypedParam(renderer_gl, down_cast<T*>(param));
   }
 };
@@ -531,9 +531,6 @@ RendererGL* RendererGL::CreateDefault(ServiceLocator* service_locator) {
 RendererGL::RendererGL(ServiceLocator* service_locator)
     : Renderer(service_locator),
       semantic_manager_(service_locator),
-#ifdef OS_WIN
-      gl_context_(NULL),
-#endif
       fullscreen_(0),
 #ifdef OS_LINUX
       display_(NULL),
@@ -557,7 +554,7 @@ RendererGL::RendererGL(ServiceLocator* service_locator)
       polygon_offset_changed_(true),
       polygon_offset_factor_(0.f),
       polygon_offset_bias_(0.f) {
-  DLOG(INFO) << "RendererGL Construct";
+  O3D_LOG(INFO) << "RendererGL Construct";
 
   // Setup default state values.
   for (int ii = 0; ii < 2; ++ii) {
@@ -662,7 +659,7 @@ RendererGL::~RendererGL() {
 Renderer::InitStatus RendererGL::InitCommonGL() {
   GLenum glew_error = glewInit();
   if (glew_error != GLEW_OK) {
-    DLOG(ERROR) << "Unable to initialise GLEW : "
+    O3D_LOG(ERROR) << "Unable to initialise GLEW : "
                 << ::glewGetErrorString(glew_error);
     return INITIALIZATION_ERROR;
   }
@@ -674,7 +671,7 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
   // this check to ensure that all of the extension strings we require are
   // present.
   if (!GLEW_VERSION_2_0) {
-    DLOG(ERROR) << "GL drivers do not have OpenGL 2.0 functionality.";
+    O3D_LOG(ERROR) << "GL drivers do not have OpenGL 2.0 functionality.";
   }
 
   if (!GLEW_ARB_vertex_buffer_object) {
@@ -684,12 +681,12 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
     // indirect rendering, leading to crashes. Fortunately, in that case, the
     // driver claims to not support ARB_vertex_buffer_object, so fail in that
     // case.
-    DLOG(ERROR) << "GL drivers do not support vertex buffer objects.";
+    O3D_LOG(ERROR) << "GL drivers do not support vertex buffer objects.";
     return GPU_NOT_UP_TO_SPEC;
   }
 
   if (!GLEW_EXT_framebuffer_object) {
-    DLOG(ERROR) << "GL drivers do not support framebuffer objects.";
+    O3D_LOG(ERROR) << "GL drivers do not support framebuffer objects.";
     return GPU_NOT_UP_TO_SPEC;
   }
 
@@ -705,13 +702,13 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
 
   // Check for necessary extensions
   if (!GLEW_VERSION_2_0 && !GLEW_EXT_stencil_two_side) {
-    DLOG(ERROR) << "Two sided stencil extension missing.";
+    O3D_LOG(ERROR) << "Two sided stencil extension missing.";
   }
   if (!GLEW_VERSION_1_4 && !GLEW_EXT_blend_func_separate) {
-    DLOG(ERROR) << "Separate blend func extension missing.";
+    O3D_LOG(ERROR) << "Separate blend func extension missing.";
   }
   if (!GLEW_VERSION_2_0 && !GLEW_EXT_blend_equation_separate) {
-    DLOG(ERROR) << "Separate blend function extension missing.";
+    O3D_LOG(ERROR) << "Separate blend function extension missing.";
   }
   // create a Cg Runtime.
   cg_context_ = cgCreateContext();
@@ -721,17 +718,17 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
   // ignore any "CG ERROR: Invalid context handle." message on this
   // function - Invalid context handle isn't one of therror states of
   // cgCreateContext().
-  DLOG(INFO) << "OpenGL Vendor: " << ::glGetString(GL_VENDOR);
-  DLOG(INFO) << "OpenGL Renderer: " << ::glGetString(GL_RENDERER);
-  DLOG(INFO) << "OpenGL Version: " << ::glGetString(GL_VERSION);
-  DLOG(INFO) << "Cg Version: " << cgGetString(CG_VERSION);
+  O3D_LOG(INFO) << "OpenGL Vendor: " << ::glGetString(GL_VENDOR);
+  O3D_LOG(INFO) << "OpenGL Renderer: " << ::glGetString(GL_RENDERER);
+  O3D_LOG(INFO) << "OpenGL Version: " << ::glGetString(GL_VERSION);
+  O3D_LOG(INFO) << "Cg Version: " << cgGetString(CG_VERSION);
   cg_vertex_profile_ = cgGLGetLatestProfile(CG_GL_VERTEX);
   cgGLSetOptimalOptions(cg_vertex_profile_);
-  DLOG(INFO) << "Best Cg vertex profile = "
+  O3D_LOG(INFO) << "Best Cg vertex profile = "
              << cgGetProfileString(cg_vertex_profile_);
   cg_fragment_profile_ = cgGLGetLatestProfile(CG_GL_FRAGMENT);
   cgGLSetOptimalOptions(cg_fragment_profile_);
-  DLOG(INFO) << "Best Cg fragment profile = "
+  O3D_LOG(INFO) << "Best Cg fragment profile = "
              << cgGetProfileString(cg_fragment_profile_);
   // Set up all Cg State Assignments for OpenGL.
   cgGLRegisterStates(cg_context_);
@@ -743,7 +740,7 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
   // get some limits for this profile.
   GLint max_vertex_attribs = 0;
   ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
-  DLOG(INFO) << "Max Vertex Attribs = " << max_vertex_attribs;
+  O3D_LOG(INFO) << "Max Vertex Attribs = " << max_vertex_attribs;
   // Initialize global GL settings.
   // Tell GL that texture buffers can be single-byte aligned.
   ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -775,251 +772,6 @@ void RendererGL::DestroyCommonGL() {
     cg_context_ = NULL;
   }
 }
-
-#ifdef OS_WIN
-
-namespace {
-
-PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
-  sizeof(kPixelFormatDescriptor),    // Size of structure.
-  1,                       // Default version.
-  PFD_DRAW_TO_WINDOW |     // Window drawing support.
-  PFD_SUPPORT_OPENGL |     // OpenGL support.
-  PFD_DOUBLEBUFFER,        // Double buffering support (not stereo).
-  PFD_TYPE_RGBA,           // RGBA color mode (not indexed).
-  24,                      // 24 bit color mode.
-  0, 0, 0, 0, 0, 0,        // Don't set RGB bits & shifts.
-  8, 0,                    // 8 bit alpha
-  0,                       // No accumulation buffer.
-  0, 0, 0, 0,              // Ignore accumulation bits.
-  24,                      // 24 bit z-buffer size.
-  8,                       // 8-bit stencil buffer.
-  0,                       // No aux buffer.
-  PFD_MAIN_PLANE,          // Main drawing plane (not overlay).
-  0,                       // Reserved.
-  0, 0, 0,                 // Layer masks ignored.
-};
-
-LRESULT CALLBACK IntermediateWindowProc(HWND window,
-                                        UINT message,
-                                        WPARAM w_param,
-                                        LPARAM l_param) {
-  return ::DefWindowProc(window, message, w_param, l_param);
-}
-
-// Helper routine that returns the highest quality pixel format supported on
-// the current platform.  Returns true upon success.
-Renderer::InitStatus GetWindowsPixelFormat(HWND window,
-                                           Features* features,
-                                           int* pixel_format) {
-  // We must initialize a GL context before we can determine the multi-sampling
-  // supported on the current hardware, so we create an intermediate window
-  // and context here.
-  HINSTANCE module_handle;
-  if (!::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
-                           GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                           reinterpret_cast<wchar_t*>(IntermediateWindowProc),
-                           &module_handle)) {
-    return Renderer::INITIALIZATION_ERROR;
-  }
-
-  WNDCLASS intermediate_class;
-  intermediate_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-  intermediate_class.lpfnWndProc = IntermediateWindowProc;
-  intermediate_class.cbClsExtra = 0;
-  intermediate_class.cbWndExtra = 0;
-  intermediate_class.hInstance = module_handle;
-  intermediate_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-  intermediate_class.hCursor = LoadCursor(NULL, IDC_ARROW);
-  intermediate_class.hbrBackground = NULL;
-  intermediate_class.lpszMenuName = NULL;
-  intermediate_class.lpszClassName = L"Intermediate GL Window";
-
-  ATOM class_registration = ::RegisterClass(&intermediate_class);
-  if (!class_registration) {
-    return Renderer::INITIALIZATION_ERROR;
-  }
-
-  HWND intermediate_window = ::CreateWindow(
-      reinterpret_cast<wchar_t*>(class_registration),
-      L"",
-      WS_OVERLAPPEDWINDOW,
-      0, 0,
-      CW_USEDEFAULT, CW_USEDEFAULT,
-      NULL,
-      NULL,
-      NULL,
-      NULL);
-
-  if (!intermediate_window) {
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return Renderer::INITIALIZATION_ERROR;
-  }
-
-  HDC intermediate_dc = ::GetDC(intermediate_window);
-  int format_index = ::ChoosePixelFormat(intermediate_dc,
-                                         &kPixelFormatDescriptor);
-  if (format_index == 0) {
-    DLOG(ERROR) << "Unable to get the pixel format for GL context.";
-    ::ReleaseDC(intermediate_window, intermediate_dc);
-    ::DestroyWindow(intermediate_window);
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return Renderer::INITIALIZATION_ERROR;
-  }
-  if (!::SetPixelFormat(intermediate_dc, format_index,
-                        &kPixelFormatDescriptor)) {
-    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
-    ::ReleaseDC(intermediate_window, intermediate_dc);
-    ::DestroyWindow(intermediate_window);
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return Renderer::INITIALIZATION_ERROR;
-  }
-
-  // Store the pixel format without multisampling.
-  *pixel_format = format_index;
-  HGLRC gl_context = ::wglCreateContext(intermediate_dc);
-  if (::wglMakeCurrent(intermediate_dc, gl_context)) {
-    // GL context was successfully created and applied to the window's DC.
-    // Startup GLEW, the GL extensions wrangler.
-    GLenum glew_error = ::glewInit();
-    if (glew_error == GLEW_OK) {
-      DLOG(INFO) << "Initialized GLEW " << ::glewGetString(GLEW_VERSION);
-    } else {
-      DLOG(ERROR) << "Unable to initialise GLEW : "
-                  << ::glewGetErrorString(glew_error);
-      ::wglMakeCurrent(intermediate_dc, NULL);
-      ::wglDeleteContext(gl_context);
-      ::ReleaseDC(intermediate_window, intermediate_dc);
-      ::DestroyWindow(intermediate_window);
-      ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                        module_handle);
-      return Renderer::INITIALIZATION_ERROR;
-    }
-
-    // If the multi-sample extensions are present, query the api to determine
-    // the pixel format.
-    if (!features->not_anti_aliased() &&
-        WGLEW_ARB_pixel_format && WGLEW_ARB_multisample) {
-      int pixel_attributes[] = {
-        WGL_SAMPLES_ARB, 4,
-        WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-        WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-        WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
-        WGL_COLOR_BITS_ARB, 24,
-        WGL_ALPHA_BITS_ARB, 8,
-        WGL_DEPTH_BITS_ARB, 24,
-        WGL_STENCIL_BITS_ARB, 8,
-        WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-        WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
-        0, 0};
-
-      float pixel_attributes_f[] = {0, 0};
-      int msaa_pixel_format;
-      unsigned int num_formats;
-
-      // Query for the highest sampling rate supported, starting at 4x.
-      static const int kSampleCount[] = {4, 2};
-      static const int kNumSamples = 2;
-      for (int sample = 0; sample < kNumSamples; ++sample) {
-        pixel_attributes[1] = kSampleCount[sample];
-        if (GL_TRUE == ::wglChoosePixelFormatARB(intermediate_dc,
-                                                 pixel_attributes,
-                                                 pixel_attributes_f,
-                                                 1,
-                                                 &msaa_pixel_format,
-                                                 &num_formats)) {
-          *pixel_format = msaa_pixel_format;
-          break;
-        }
-      }
-    }
-  }
-
-  ::wglMakeCurrent(intermediate_dc, NULL);
-  ::wglDeleteContext(gl_context);
-  ::ReleaseDC(intermediate_window, intermediate_dc);
-  ::DestroyWindow(intermediate_window);
-  ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                    module_handle);
-  return Renderer::SUCCESS;
-}
-
-}  // unnamed namespace
-
-Renderer::InitStatus RendererGL::InitPlatformSpecific(
-    const DisplayWindow& display,
-    bool off_screen) {
-  const DisplayWindowWindows &display_platform =
-      static_cast<const DisplayWindowWindows&>(display);
-
-  DLOG(INFO) << "RendererGL Init";
-
-  // TODO: Add support for off-screen rendering using OpenGL.
-  if (off_screen) {
-    return INITIALIZATION_ERROR;
-  }
-
-  int pixel_format;
-  InitStatus init_status;
-
-  init_status = GetWindowsPixelFormat(display_platform.hwnd(),
-                                      features(),
-                                      &pixel_format);
-  if (init_status != SUCCESS) {
-      return init_status;
-  }
-
-  window_ = display_platform.hwnd();
-  device_context_ = ::GetDC(window_);
-  if (!::SetPixelFormat(device_context_, pixel_format,
-                        &kPixelFormatDescriptor)) {
-    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
-    return INITIALIZATION_ERROR;
-  }
-
-  gl_context_ = ::wglCreateContext(device_context_);
-  if (MakeCurrent()) {
-    // Ensure that glew has been initialized for the created rendering context.
-    init_status = InitCommonGL();
-    if (init_status != SUCCESS) {
-      DLOG(ERROR) << "Failed to initialize GL rendering context.";
-      return init_status;
-    }
-    if (WGLEW_ARB_multisample) {
-      ::glEnable(GL_MULTISAMPLE_ARB);
-    }
-  } else {
-    DLOG(ERROR) << "Failed to create the GL Context.";
-    return INITIALIZATION_ERROR;
-  }
-  CHECK_GL_ERROR();
-  return SUCCESS;
-}
-
-// Releases the Cg Context and deletes the GL device.
-void RendererGL::Destroy() {
-  DLOG(INFO) << "Destroy RendererGL";
-  DestroyCommonGL();
-  if (device_context_) {
-    CHECK_GL_ERROR();
-    // Release the OpenGL rendering context.
-    ::wglMakeCurrent(device_context_, NULL);
-    if (gl_context_) {
-      ::wglDeleteContext(gl_context_);
-      gl_context_ = NULL;
-    }
-    // release the hDC obtained through GetDC().
-    ::ReleaseDC(window_, device_context_);
-    device_context_ = NULL;
-    window_ = NULL;
-  }
-  DLOG(INFO) << "Renderer destroyed.";
-}
-
-#endif  // OS_WIN
 
 #ifdef OS_MACOSX
 
@@ -1063,8 +815,8 @@ Renderer::InitStatus  RendererGL::InitPlatformSpecific(
   XVisualInfo *visual_info_list = ::XGetVisualInfo(display, VisualIDMask,
                                                    &visual_info_template,
                                                    &visual_info_count);
-  DCHECK(visual_info_list);
-  DCHECK_GT(visual_info_count, 0);
+  O3D_ASSERT(visual_info_list);
+  O3D_ASSERT(visual_info_count > 0);
   context_ = 0;
   for (int i = 0; i < visual_info_count; ++i) {
     context_ = ::glXCreateContext(display, visual_info_list + i, 0,
@@ -1073,7 +825,7 @@ Renderer::InitStatus  RendererGL::InitPlatformSpecific(
   }
   ::XFree(visual_info_list);
   if (!context_) {
-    DLOG(ERROR) << "Couldn't create GL context.";
+    O3D_LOG(ERROR) << "Couldn't create GL context.";
     return INITIALIZATION_ERROR;
   }
   display_ = display;
@@ -1083,7 +835,7 @@ Renderer::InitStatus  RendererGL::InitPlatformSpecific(
     context_ = 0;
     display_ = NULL;
     window_ = 0;
-    DLOG(ERROR) << "Couldn't create GL context.";
+    O3D_LOG(ERROR) << "Couldn't create GL context.";
     return INITIALIZATION_ERROR;
   }
 
@@ -1113,11 +865,6 @@ void RendererGL::Destroy() {
 #endif
 
 bool RendererGL::MakeCurrent() {
-#ifdef OS_WIN
-  if (!device_context_ || !gl_context_) return false;
-  bool result = ::wglMakeCurrent(device_context_, gl_context_) != 0;
-  return result;
-#endif
 #ifdef OS_MACOSX
   if (mac_cgl_context_ != NULL) {
     ::CGLSetCurrentContext(mac_cgl_context_);
@@ -1251,7 +998,7 @@ bool RendererGL::CancelFullscreen(const DisplayWindow& display,
 void RendererGL::GetDisplayModes(std::vector<DisplayMode> *modes) {
 #ifdef OS_MACOSX
   // Mac is supposed to call a different function in plugin_mac.mm instead.
-  DLOG(FATAL) << "Not supposed to be called";
+  O3D_LOG(FATAL) << "Not supposed to be called";
 #endif
   // On all other platforms this is unimplemented. Linux only supports
   // DISPLAY_MODE_DEFAULT for now.
@@ -1261,7 +1008,7 @@ void RendererGL::GetDisplayModes(std::vector<DisplayMode> *modes) {
 bool RendererGL::GetDisplayMode(int id, DisplayMode *mode) {
 #ifdef OS_MACOSX
   // Mac is supposed to call a different function in plugin_mac.mm instead.
-  DLOG(FATAL) << "Not supposed to be called";
+  O3D_LOG(FATAL) << "Not supposed to be called";
   return false;
 #elif defined(OS_LINUX)
   if (id == DISPLAY_MODE_DEFAULT) {
@@ -1279,7 +1026,7 @@ bool RendererGL::GetDisplayMode(int id, DisplayMode *mode) {
 }
 
 bool RendererGL::PlatformSpecificStartRendering() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL StartRendering";
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGL StartRendering";
   MakeCurrentLazy();
 
   // Currently always returns true.
@@ -1292,7 +1039,7 @@ bool RendererGL::PlatformSpecificStartRendering() {
 // the frame.
 // Returns true on success.
 bool RendererGL::PlatformSpecificBeginDraw() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL BeginDraw";
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGL BeginDraw";
 
   MakeCurrentLazy();
 
@@ -1335,26 +1082,23 @@ void RendererGL::SetBackBufferPlatformSpecific() {
 
 // Executes a post rendering step
 void RendererGL::PlatformSpecificEndDraw() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL EndDraw";
-  DCHECK(IsCurrent());
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGL EndDraw";
+  O3D_ASSERT(IsCurrent());
 }
 
 // Swaps the buffers.
 void RendererGL::PlatformSpecificFinishRendering() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL FinishRendering";
-  DCHECK(IsCurrent());
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGL FinishRendering";
+  O3D_ASSERT(IsCurrent());
   ::glFlush();
   CHECK_GL_ERROR();
 }
 
 void RendererGL::PlatformSpecificPresent() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL Present";
-  DCHECK(IsCurrent());
-#ifdef OS_WIN
-  ::SwapBuffers(device_context_);
-#endif
+  O3D_LOG_FIRST_N(INFO, 10) << "RendererGL Present";
+  O3D_ASSERT(IsCurrent());
 #ifdef OS_MACOSX
-#ifdef USE_AGL_DOUBLE_BUFFER
+#ifdef O3D_USE_AGL_DOUBLE_BUFFER
   if (mac_agl_context_) {
     ::aglSwapBuffers(mac_agl_context_);
   }
@@ -1379,7 +1123,7 @@ DrawElement::Ref RendererGL::CreateDrawElement() {
 
 void RendererGL::SetStencilStates(GLenum face,
                                   const StencilStates& stencil_state) {
-  DCHECK(IsCurrent());
+  O3D_ASSERT(IsCurrent());
   if (face == GL_FRONT_AND_BACK) {
     ::glStencilFunc(stencil_state.func_,
                     stencil_ref_,
@@ -1416,7 +1160,7 @@ void RendererGL::SetStencilStates(GLenum face,
 
 void RendererGL::ApplyDirtyStates() {
   MakeCurrentLazy();
-  DCHECK(IsCurrent());
+  O3D_ASSERT(IsCurrent());
   // Set blend settings.
   if (alpha_blend_settings_changed_) {
     if (separate_alpha_blend_enable_) {
@@ -1483,19 +1227,19 @@ void RendererGL::ApplyDirtyStates() {
 }
 
 VertexBuffer::Ref RendererGL::CreateVertexBuffer() {
-  DLOG(INFO) << "RendererGL CreateVertexBuffer";
+  O3D_LOG(INFO) << "RendererGL CreateVertexBuffer";
   MakeCurrentLazy();
   return VertexBuffer::Ref(new VertexBufferGL(service_locator()));
 }
 
 IndexBuffer::Ref RendererGL::CreateIndexBuffer() {
-  DLOG(INFO) << "RendererGL CreateIndexBuffer";
+  O3D_LOG(INFO) << "RendererGL CreateIndexBuffer";
   MakeCurrentLazy();
   return IndexBuffer::Ref(new IndexBufferGL(service_locator()));
 }
 
 Effect::Ref RendererGL::CreateEffect() {
-  DLOG(INFO) << "RendererGL CreateEffect";
+  O3D_LOG(INFO) << "RendererGL CreateEffect";
   MakeCurrentLazy();
   return Effect::Ref(new EffectGL(service_locator(), cg_context_));
 }
@@ -1515,7 +1259,7 @@ Texture2D::Ref RendererGL::CreatePlatformSpecificTexture2D(
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  DLOG(INFO) << "RendererGL CreateTexture2D";
+  O3D_LOG(INFO) << "RendererGL CreateTexture2D";
   MakeCurrentLazy();
   return Texture2D::Ref(Texture2DGL::Create(service_locator(),
                                             format,
@@ -1530,7 +1274,7 @@ TextureCUBE::Ref RendererGL::CreatePlatformSpecificTextureCUBE(
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  DLOG(INFO) << "RendererGL CreateTextureCUBE";
+  O3D_LOG(INFO) << "RendererGL CreateTextureCUBE";
   MakeCurrentLazy();
   return TextureCUBE::Ref(TextureCUBEGL::Create(service_locator(),
                                                 format,

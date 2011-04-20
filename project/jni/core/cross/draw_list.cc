@@ -144,7 +144,7 @@ DrawList::DrawList(ServiceLocator* service_locator)
       weak_pointer_manager_(this) {
   DrawListManager* draw_list_manager =
       service_locator->GetService<DrawListManager>();
-  DCHECK(draw_list_manager);
+  O3D_ASSERT(draw_list_manager);
   global_index_ = draw_list_manager->RegisterDrawList(this);
 }
 
@@ -160,7 +160,7 @@ DrawList::~DrawList() {
   // Free our global index.
   DrawListManager* draw_list_manager =
       service_locator()->GetService<DrawListManager>();
-  DCHECK(draw_list_manager);
+  O3D_ASSERT(draw_list_manager);
   draw_list_manager->UnregisterDrawList(this);
 }
 

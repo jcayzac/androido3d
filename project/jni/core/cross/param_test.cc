@@ -59,10 +59,10 @@ class TestTexture : public Texture {
   void* GetTextureHandle() const { return NULL; }
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
   virtual void SetFromBitmap(const Bitmap& bitmap) {
-    DCHECK(false);
+    O3D_ASSERT(false);
   }
   virtual void GenerateMips(int source_level, int last_target_level) {
-    DCHECK(false);
+    O3D_ASSERT(false);
   }
 };
 
@@ -154,13 +154,13 @@ class ParamCounter : public ParamFloat {
 
 }  // anonymous namespace
 
-// Set/Get Float Params
+// Set/Get float Params
 TEST_F(ParamBasic, TestFloat) {
   ParamFloat *param = transform()->CreateParam<ParamFloat>("floatParam");
   EXPECT_EQ(ParamFloat::GetApparentClass(), param->GetClass());
-  Float in_val = 10.0f;
+  float in_val = 10.0f;
   param->set_value(in_val);
-  Float out_val = param->value();
+  float out_val = param->value();
   EXPECT_FLOAT_EQ(in_val, out_val);
 }
 
@@ -224,14 +224,14 @@ TEST_F(ParamBasic, TestBoolean) {
   EXPECT_TRUE(out_val);
 }
 
-// Set/Get String param
+// Set/Get std::string param
 TEST_F(ParamBasic, TestString) {
   ParamString *param = transform()->CreateParam<ParamString>(
       "StringParam");
   EXPECT_EQ(ParamString::GetApparentClass(), param->GetClass());
-  String kInputString = "Test my\tstring\n";
+  std::string kInputString = "Test my\tstring\n";
   param->set_value(kInputString);
-  String kOutputString = param->value();
+  std::string kOutputString = param->value();
   EXPECT_EQ(kInputString, kOutputString);
 }
 
@@ -376,7 +376,7 @@ TEST_F(ParamBasic, CopyDataFromParamFloat) {
 
   param1->set_value(10.0f);
   param2->CopyDataFromParam(param1);
-  Float val = param2->value();
+  float val = param2->value();
   EXPECT_FLOAT_EQ(10.0f, val);
 }
 
@@ -446,10 +446,10 @@ TEST_F(ParamBasic, CopyDataFromParamString) {
   ParamString *param1 = transform()->CreateParam<ParamString>("Param1");
   ParamString *param2 = transform()->CreateParam<ParamString>("Param2");
 
-  String kInputString = "Test my cr\\azy\ts\ntring";
+  std::string kInputString = "Test my cr\\azy\ts\ntring";
   param1->set_value(kInputString);
   param2->CopyDataFromParam(param1);
-  String kOutputString = param2->value();
+  std::string kOutputString = param2->value();
   EXPECT_EQ(kInputString, kOutputString);
 }
 
@@ -512,7 +512,7 @@ TEST_F(ParamBasic, TestReadOnly) {
   IErrorStatus* error_status = g_service_locator->GetService<IErrorStatus>();
   error_status->ClearLastError();
   param->set_value(Matrix4::identity());
-  String error(error_status->GetLastError());
+  std::string error(error_status->GetLastError());
   EXPECT_TRUE(!error.empty());
 }
 

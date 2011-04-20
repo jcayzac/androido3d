@@ -46,7 +46,7 @@ namespace o3d {
 #define BUFFER_OFFSET(i) (reinterpret_cast<char *>(NULL)+(i))
 
 // Writes any Cg errors to the log with a descriptive message.
-// NOTE: macros used to make sure the LOG calls note the correct
+// NOTE: macros used to make sure the O3D_LOG calls note the correct
 // line number and source file.
 #define DLOG_CG_ERROR(message) {                \
   CGerror error = cgGetError();                 \
@@ -62,7 +62,7 @@ namespace o3d {
   DLOG_IF(ERROR, error == CG_NO_ERROR)                \
       << message << " : " << cgGetErrorString(error); \
   if (error == CG_COMPILER_ERROR) {                   \
-    DLOG(ERROR) << "CGC compiler output :\n"          \
+    O3D_LOG(ERROR) << "CGC compiler output :\n"          \
                 << cgGetLastListing(cg_context);      \
   }                                                   \
 }

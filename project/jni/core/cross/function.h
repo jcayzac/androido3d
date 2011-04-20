@@ -52,7 +52,7 @@ class FunctionContext : public ObjectBase {
 
  private:
   O3D_DECL_CLASS(FunctionContext, ObjectBase);
-  DISALLOW_COPY_AND_ASSIGN(FunctionContext);
+  O3D_DISALLOW_COPY_AND_ASSIGN(FunctionContext);
 };
 
 // A Function is a class that has an Evaluate method. Evaluate takes 1 input and
@@ -93,7 +93,7 @@ class Function : public NamedObject {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(Function, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(Function);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Function);
 };
 
 // A param that holds a weak pointer to a Function.
@@ -110,7 +110,7 @@ class ParamFunction : public TypedRefParam<Function> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamFunction, RefParamBase);
-  DISALLOW_COPY_AND_ASSIGN(ParamFunction);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamFunction);
 };
 
 // A class that evaluates a Function through parameters.
@@ -160,7 +160,7 @@ class FunctionEval : public ParamObject {
   FunctionContext::Ref function_context_;
 
   O3D_DECL_CLASS(FunctionEval, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(FunctionEval);
+  O3D_DISALLOW_COPY_AND_ASSIGN(FunctionEval);
 };
 
 }  // namespace o3d

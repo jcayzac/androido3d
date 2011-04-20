@@ -33,7 +33,7 @@
 #ifndef O3D_CORE_CROSS_SEMANTIC_MANAGER_H_
 #define O3D_CORE_CROSS_SEMANTIC_MANAGER_H_
 
-#include "build/build_config.h"
+#include "base/cross/config.h"
 
 #include <map>
 
@@ -58,20 +58,16 @@ class SemanticManager {
   }
 
   // Looks up an SAS transform semantic by name, and returns the class type.
-  const ObjectBase::Class* LookupSemantic(const String& semantic_name) const;
+  const ObjectBase::Class* LookupSemantic(const std::string& semantic_name) const;
 
  private:
   ServiceImplementation<SemanticManager> service_;
 
   // A case-insensitive string comparator.
   struct lesscasecmp {
-    bool operator() (const String& a, const String& b) const {
+    bool operator() (const std::string& a, const std::string& b) const {
       // TODO : This is doing ASCII compare - not UTF8!
-#ifdef OS_WIN
-      return(_stricmp(a.c_str(), b.c_str()) < 0);
-#else
       return(strcasecmp(a.c_str(), b.c_str()) < 0);
-#endif
     }
   };
 
@@ -80,7 +76,7 @@ class SemanticManager {
   ParamObject::Ref sas_param_object_;
 
   // This is a a case-insensitive map between strings and Param semantics.
-  typedef std::map<String, const ObjectBase::Class*, lesscasecmp> SasMap;
+  typedef std::map<std::string, const ObjectBase::Class*, lesscasecmp> SasMap;
   SasMap sas_map_;
 };
 }  // namespace o3d

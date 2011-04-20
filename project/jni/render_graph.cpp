@@ -5,21 +5,7 @@
 #include "render_graph.h"
 
 namespace o3d_utils {
-
-using o3d::ClearBuffer;
-using o3d::DrawContext;
-using o3d::DrawList;
-using o3d::DrawPass;
-using o3d::Pack;
-using o3d::ParamBoolean;
-using o3d::ParamInteger;
-using o3d::RenderNode;
-using o3d::State;
-using o3d::StateSet;
-using o3d::TreeTraversal;
-using o3d::Transform;
-using o3d::Viewport;
-using o3d::Float4;
+using namespace o3d;
 
 DrawPassInfo::DrawPassInfo()
     : own_draw_list_(false) {
@@ -40,7 +26,7 @@ bool DrawPassInfo::Initialize(
     DrawList::SortMethod sort_method,
     RenderNode* parent,
     DrawList* draw_list) {
-  DCHECK(pack);
+  O3D_ASSERT(pack);
   own_draw_list_ = draw_list == NULL;
   draw_list_ = draw_list ? draw_list : pack->Create<DrawList>();
 
@@ -86,8 +72,8 @@ bool ViewInfo::Initialize(
     DrawList* performance_draw_list,
     DrawList* z_ordered_draw_list,
     DrawContext* draw_context) {
-  DCHECK(pack);
-  DCHECK(tree_root);
+  O3D_ASSERT(pack);
+  O3D_ASSERT(tree_root);
 
   Float4 clear_color =
       _clear_color ? *_clear_color : Float4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -122,14 +108,14 @@ bool ViewInfo::Initialize(
       DrawList::BY_PERFORMANCE,
       NULL, priority_++, NULL, performance_draw_list);
 
-  DCHECK(performance_draw_pass_info_);
+  O3D_ASSERT(performance_draw_pass_info_);
   
   // Setup a z Ordered DrawPass
   z_ordered_draw_pass_info_ = CreateDrawPass(
       DrawList::BY_Z_ORDER,
       NULL, priority_++, NULL, z_ordered_draw_list);
 
-  DCHECK(z_ordered_draw_pass_info_);
+  O3D_ASSERT(z_ordered_draw_pass_info_);
   
   draw_pass_infos_.push_back(performance_draw_pass_info_);
   draw_pass_infos_.push_back(z_ordered_draw_pass_info_);
@@ -181,9 +167,9 @@ DrawPassInfo* ViewInfo::CreateDrawPass(
 }
 
 ViewInfo* ViewInfo::CreateBasicView(
-      o3d::Pack* pack,
-      o3d::Transform* tree_root,
-      o3d::RenderNode* parent) {
+      Pack* pack,
+      Transform* tree_root,
+      RenderNode* parent) {
   ViewInfo* view_info = new ViewInfo();
   if (!view_info->Initialize(
       pack, tree_root, parent, NULL, 0.0f, NULL, NULL, NULL, NULL)) {

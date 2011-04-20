@@ -25,40 +25,10 @@
 #include "core/cross/types.h"
 
 namespace o3d {
-
 class RenderNode;
-
 }  // namespace o3d
 
-template <typename T>
-class SortHelper {
- public:
-  SortHelper(const std::vector<T*>& things) {
-    for (size_t ii = 0; ii < things.size(); ++ii) {
-      T* thing = things[ii];
-      things_[thing->name()] = thing;
-    }
-  }
-
-  size_t size() const {
-    return things_.size();
-  }
-
-  T* operator[] (size_t ii) const {
-    typename ThingMap::const_iterator it = things_.begin();
-    while (ii) {
-      --ii;
-      ++it;
-    }
-    return it->second;
-  }
-
- private:
-  typedef std::map<std::string, T*> ThingMap;
-
-  ThingMap things_;
-};
-
+namespace o3d_utils {
 void DumpMultiLineString(const std::string& str);
 void DumpPoint3(const o3d::Point3& v, const char* label);
 void DumpVector3(const o3d::Vector3& v, const char* label);
@@ -75,6 +45,7 @@ void DumpShape(const o3d::Shape* shape, const std::string& indent);
 void DumpTransform(const o3d::Transform* transform, const std::string& indent);
 void DumpMatrix(const o3d::Matrix4& mat);
 bool EndsWith(const std::string& str, const std::string& end);
+}  // namespace o3d_utils
 
 #endif  // O3D_UTILS_DEBUG_H_
 

@@ -15,7 +15,7 @@
  */
 
 #pragma once
-#include "extra/cross/external_resource.h"
+#include "core/cross/external_resource.h"
 #include <string>
 
 namespace o3d {

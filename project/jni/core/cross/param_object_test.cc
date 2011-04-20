@@ -151,7 +151,7 @@ class FakeDivModParamOperation : public ParamObject {
   unsigned update_outputs_call_count_;
 
   O3D_DECL_CLASS(FakeDivModParamOperation, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(FakeDivModParamOperation);
+  O3D_DISALLOW_COPY_AND_ASSIGN(FakeDivModParamOperation);
 };
 
 O3D_DEFN_CLASS(FakeDivModParamOperation, ParamObject);

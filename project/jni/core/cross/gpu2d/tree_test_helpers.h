@@ -37,21 +37,21 @@
 #ifndef O3D_CORE_CROSS_GPU2D_TREE_TEST_HELPERS_H_
 #define O3D_CORE_CROSS_GPU2D_TREE_TEST_HELPERS_H_
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 namespace o3d {
 namespace gpu2d {
 
 // Generates a seed value to be passed to InitRandom().
-int32 GenerateSeed();
+int32_t GenerateSeed();
 
 // Initializes the pseudo-random number generator with a specific seed.
-void InitRandom(const int32 seed);
+void InitRandom(const int32_t seed);
 
 // Produces the next pseudo-random number in the sequence, in the
 // range from [0..max_val). Negative numbers are not allowed and will
 // produce undefined results.
-int32 NextRandom(const int32 max_val);
+int32_t NextRandom(const int32_t max_val);
 
 }  // namespace gpu2d
 }  // namespace o3d

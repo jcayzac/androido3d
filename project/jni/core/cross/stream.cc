@@ -51,7 +51,7 @@ Stream::Stream(ServiceLocator* service_locator,
       start_index_(start_index),
       semantic_(semantic),
       semantic_index_(semantic_index) {
-  DCHECK(field);
+  O3D_ASSERT(field);
 }
 
 unsigned Stream::GetMaxVertices() const {
@@ -96,7 +96,7 @@ const char* Stream::GetSemanticDescription(Stream::Semantic semantic) {
 }
 
 void ParamVertexBufferStream::CopyDataFromParam(Param *source_param) {
-  DCHECK(false);  // this should never get called.
+  O3D_ASSERT(false);  // this should never get called.
 }
 
 }  // namespace o3d

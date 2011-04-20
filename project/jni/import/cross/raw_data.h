@@ -39,8 +39,7 @@
 #ifndef O3D_IMPORT_CROSS_RAW_DATA_H_
 #define O3D_IMPORT_CROSS_RAW_DATA_H_
 
-#include "base/file_path.h"
-#include "base/scoped_ptr.h"
+#include "base/cross/scoped_ptr.h"
 #include "core/cross/error.h"
 #include "core/cross/param_object.h"
 #include "core/cross/param.h"
@@ -54,22 +53,18 @@ class RawData : public ParamObject {
   typedef SmartPointer<RawData> Ref;
 
   static RawData::Ref Create(ServiceLocator* service_locator,
-                             const String &uri,
+                             const std::string &uri,
                              const void *data,
                              size_t length);
-
-  static RawData::Ref CreateFromFile(ServiceLocator* service_locator,
-                                     const String &uri,
-                                     const String& filename);
 
   // Creates a RawData object, taking as input a string containing a
   // data URL.
   static RawData::Ref CreateFromDataURL(ServiceLocator* service_locator,
-                                        const String& data_url);
+                                        const std::string& data_url);
 
   virtual ~RawData();
 
-  const uint8 *GetData() const;
+  const uint8_t *GetData() const;
 
   template <typename T>
   const T* GetDataAs(size_t offset) const {
@@ -78,56 +73,37 @@ class RawData : public ParamObject {
 
   size_t GetLength() const { return length_; }
 
-  String StringValue() const;
+  std::string StringValue() const;
 
-  const String& uri() const { return uri_; }
-  void set_uri(const String& uri) { uri_ = uri; }
-
-  // If the data is still around
-  // (ie, Discard has not been called), then, if it has not been written
-  // to a temp file write it to a temp file
-  void Flush();
-
-  // calls Flush() if necessary and returns the path to the temp file
-  // if Discard() has already been called then returns an "empty" FilePath
-  const FilePath& GetTempFilePath();
+  const std::string& uri() const { return uri_; }
+  void set_uri(const std::string& uri) { uri_ = uri; }
 
   // deletes the data which means IF the data is in memory it is
-  // freed. If there is a temp file it is deleted.
+  // freed.
   void Discard();
 
   bool IsOffsetLengthValid(size_t offset, size_t length) const;
 
  private:
-  String uri_;
-  mutable scoped_array<uint8> data_;
+  std::string uri_;
+  mutable ::o3d::base::scoped_array<uint8_t> data_;
   size_t length_;
-  FilePath temp_filepath_;
   bool allow_string_value_;
 
-  // Deletes temp file if it exists
-  void DeleteTempFile();
-
   RawData(ServiceLocator* service_locator,
-          const String &uri,
+          const std::string &uri,
           const void *data,
           size_t length);
 
-  bool SetFromFile(const String& filename);
-
   // Decodes data from a data URL and stores that data in this
   // RawData object. Returns false on error, true otherwise
-  bool SetFromDataURL(const String& data_url);
+  bool SetFromDataURL(const std::string& data_url);
 
   friend class IClassManager;
   friend class Pack;
 
-  // Returns |true| on success
-  bool GetTempFilePathFromURI(const String &uri,
-                              FilePath *temp_fullpath);
-
   O3D_DECL_CLASS(RawData, ParamObject)
-  DISALLOW_COPY_AND_ASSIGN(RawData);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RawData);
 };
 
 }  // namespace o3d

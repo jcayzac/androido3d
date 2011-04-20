@@ -73,7 +73,7 @@ class StateSet : public RenderNode {
   ParamState::Ref state_param_;  // state
 
   O3D_DECL_CLASS(StateSet, RenderNode);
-  DISALLOW_COPY_AND_ASSIGN(StateSet);
+  O3D_DISALLOW_COPY_AND_ASSIGN(StateSet);
 };
 
 }  // namespace o3d

@@ -81,7 +81,7 @@ class Texture2D : public Texture {
     void* data_;
     bool locked_;
 
-    DISALLOW_COPY_AND_ASSIGN(LockHelper);
+    O3D_DISALLOW_COPY_AND_ASSIGN(LockHelper);
   };
 
 
@@ -213,7 +213,7 @@ class Texture2D : public Texture {
 
   // Returns the current locked mode.
   AccessMode LockedMode(unsigned int level) {
-    DCHECK_LT(static_cast<int>(level), levels());
+    O3D_ASSERT(static_cast<int>(level) < levels());
     return locked_levels_[level];
   }
 
@@ -240,7 +240,7 @@ class Texture2D : public Texture {
   AccessMode locked_levels_[kMaxLevels];
 
   O3D_DECL_CLASS(Texture2D, Texture);
-  DISALLOW_COPY_AND_ASSIGN(Texture2D);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Texture2D);
 };
 
 class TextureCUBE : public Texture {
@@ -290,7 +290,7 @@ class TextureCUBE : public Texture {
     void* data_;
     bool locked_;
 
-    DISALLOW_COPY_AND_ASSIGN(LockHelper);
+    O3D_DISALLOW_COPY_AND_ASSIGN(LockHelper);
   };
 
   static const char* kEdgeLengthParamName;
@@ -431,7 +431,7 @@ class TextureCUBE : public Texture {
 
   // Returns the locked mode for a level
   AccessMode LockedMode(CubeFace face, unsigned int level) {
-    DCHECK_LT(static_cast<int>(level), levels());
+    O3D_ASSERT(static_cast<int>(level) < levels());
     return locked_levels_[face][level];
   }
 
@@ -455,7 +455,7 @@ class TextureCUBE : public Texture {
   AccessMode locked_levels_[NUMBER_OF_FACES][kMaxLevels];
 
   O3D_DECL_CLASS(TextureCUBE, Texture);
-  DISALLOW_COPY_AND_ASSIGN(TextureCUBE);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TextureCUBE);
 };
 
 }  // namespace o3d

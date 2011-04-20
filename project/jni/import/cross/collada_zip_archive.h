@@ -67,6 +67,9 @@ class ColladaZipArchive : public ZipArchive {
  protected:
   std::string dae_pathname_;
   std::string dae_directory_;
+
+ private:
+  O3D_DISALLOW_COPY_AND_ASSIGN(ColladaZipArchive);
 };
 }  // end namespace o3d
 

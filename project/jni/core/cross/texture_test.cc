@@ -41,9 +41,9 @@ namespace o3d {
 
 namespace {
 
-bool CompareTexture(Texture2D* texture, int level, const uint8* expected) {
+bool CompareTexture(Texture2D* texture, int level, const uint8_t* expected) {
   Texture2D::LockHelper helper(texture, level, Texture::kReadOnly);
-  const uint8* data = helper.GetDataAs<const uint8>();
+  const uint8_t* data = helper.GetDataAs<const uint8_t>();
   unsigned mip_width = image::ComputeMipDimension(level, texture->width());
   unsigned mip_height = image::ComputeMipDimension(level, texture->height());
 
@@ -104,7 +104,7 @@ TEST_F(Texture2DTest, SetRect) {
   Texture2D* texture = pack()->CreateTexture2D(
       kWidth, kHeight, Texture::ARGB8, kLevels, false);
   ASSERT_TRUE(texture != NULL);
-  static const uint8 kExpected1[] = {
+  static const uint8_t kExpected1[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
@@ -120,7 +120,7 @@ TEST_F(Texture2DTest, SetRect) {
   EXPECT_TRUE(CompareTexture(texture, 1, kExpected1));
   const int kSrcWidth = 2;
   const int kSrcHeight = 2;
-  static const uint8 kSourcePixels[] = {
+  static const uint8_t kSourcePixels[] = {
     0x01, 0x01, 0x01, 0x02, 0x03, 0x03, 0x03, 0x04,
     0x05, 0x05, 0x05, 0x06, 0x07, 0x07, 0x07, 0x08,
   };
@@ -128,7 +128,7 @@ TEST_F(Texture2DTest, SetRect) {
   // normal copy
   texture->SetRect(kDestMip, kDestX, kDestY,
                    kSrcWidth, kSrcHeight, kSourcePixels, kSourcePitch);
-  static const uint8 kExpected2[] = {
+  static const uint8_t kExpected2[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
@@ -148,7 +148,7 @@ TEST_F(Texture2DTest, SetRect) {
       kSrcWidth, kSrcHeight,
       kSourcePixels + kSourcePitch,
       -kSourcePitch);
-  static const uint8 kExpected3[] = {
+  static const uint8_t kExpected3[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 

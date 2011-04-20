@@ -40,22 +40,22 @@ namespace dataurl {
 
 const char* const kEmptyDataURL = "data:,";
 
-String ToDataURL(const String& mime_type, const void* data, size_t length) {
-  String header(String("data:") + mime_type + ";base64,");
-  String result(header.size() + base64::GetEncodeLength(length), ' ');
+std::string ToDataURL(const std::string& mime_type, const void* data, size_t length) {
+  std::string header(std::string("data:") + mime_type + ";base64,");
+  std::string result(header.size() + base64::GetEncodeLength(length), ' ');
   result.replace(0, header.size(), header);
   base64::Encode(data, length, &result[header.size()]);
   return result;
 }
 
 // Decodes the data URL and stores a pointer to the data in dst_buffer
-bool FromDataURL(const String& data_url,
-                 scoped_array<uint8>* dst_buffer,
+bool FromDataURL(const std::string& data_url,
+                 ::o3d::base::scoped_array<uint8_t>* dst_buffer,
                  size_t* output_length,
-                 String* error_string) {
+                 std::string* error_string) {
     // First parse the data_url
-  const String kDataHeader("data:");
-  const String kBase64Header(";base64,");
+  const std::string kDataHeader("data:");
+  const std::string kBase64Header(";base64,");
   // The string has to be long enough.
   if (data_url.size() <= kDataHeader.size() + kBase64Header.size()) {
     *error_string = "Invalid formatting: The data URL is not long enough.";
@@ -68,8 +68,8 @@ bool FromDataURL(const String& data_url,
     return false;
   }
   // we only support base64 data URL's
-  String::size_type data_index = data_url.find(kBase64Header);
-  if (data_index == String::npos) {
+  std::string::size_type data_index = data_url.find(kBase64Header);
+  if (data_index == std::string::npos) {
     *error_string
         = "Invalid formatting: The data URL have ';base64,' in the header.";
     return false;
@@ -99,7 +99,7 @@ bool FromDataURL(const String& data_url,
     return false;
   }
 
-  dst_buffer->reset(new uint8[*output_length]);
+  dst_buffer->reset(new uint8_t[*output_length]);
   base64::Decode(&data_url[data_index],
                  input_length,
                  dst_buffer->get(),

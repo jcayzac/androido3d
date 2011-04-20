@@ -96,7 +96,7 @@ class Viewport : public RenderNode {
   Float2 old_depth_range_;
 
   O3D_DECL_CLASS(Viewport, RenderNode);
-  DISALLOW_COPY_AND_ASSIGN(Viewport);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Viewport);
 };
 
 }  // namespace o3d

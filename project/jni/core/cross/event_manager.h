@@ -100,7 +100,7 @@ class EventManager {
 #endif
   bool valid_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventManager);
+  O3D_DISALLOW_COPY_AND_ASSIGN(EventManager);
 };
 
 }  // namespace o3d

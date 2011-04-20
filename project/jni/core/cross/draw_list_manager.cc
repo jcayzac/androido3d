@@ -64,7 +64,7 @@ void DrawListManager::UnregisterDrawList(DrawList* draw_list) {
   // Remove it from the client's Pass List map.
   DrawListIndexMap::iterator iter = draw_list_map_.find(
       draw_list->global_index());
-  DLOG_ASSERT(iter != draw_list_map_.end());
+  O3D_ASSERT(iter != draw_list_map_.end());
   draw_list_map_.erase(iter);
 }
 

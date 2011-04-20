@@ -50,11 +50,11 @@ class NamedObjectBase: public ObjectBase {
   explicit NamedObjectBase(ServiceLocator *service_locator);
 
   // \brief Returns the object's name
-  virtual const String& name() const = 0;
+  virtual const std::string& name() const = 0;
 
  private:
   O3D_DECL_CLASS(NamedObjectBase, ObjectBase);
-  DISALLOW_COPY_AND_ASSIGN(NamedObjectBase);
+  O3D_DISALLOW_COPY_AND_ASSIGN(NamedObjectBase);
 };
 
 // A class of all objects that are identifiable by a name where the name is
@@ -67,16 +67,16 @@ class NamedObject: public NamedObjectBase {
   explicit NamedObject(ServiceLocator *service_locator);
 
   // \brief Returns the object's name
-  virtual const String& name() const;
+  virtual const std::string& name() const;
 
-  void set_name(const String& new_name) {
+  void set_name(const std::string& new_name) {
     name_ = new_name;
   }
 
  private:
-  String name_;
+  std::string name_;
   O3D_DECL_CLASS(NamedObject, NamedObjectBase);
-  DISALLOW_COPY_AND_ASSIGN(NamedObject);
+  O3D_DISALLOW_COPY_AND_ASSIGN(NamedObject);
 };
 
 }  // namespace o3d

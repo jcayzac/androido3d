@@ -88,7 +88,7 @@ class Matrix4Translation : public ParamObject {
   SlaveParamMatrix4::Ref output_matrix_param_;
 
   O3D_DECL_CLASS(Matrix4Translation, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Matrix4Translation);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4Translation);
 };
 }  // namespace o3d
 

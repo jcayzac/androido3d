@@ -35,7 +35,7 @@
 #ifndef O3D_CORE_CROSS_TIMER_H_
 #define O3D_CORE_CROSS_TIMER_H_
 
-#include "build/build_config.h"
+#include "base/cross/config.h"
 #ifdef TARGET_OS_IPHONE
 #include <CoreFoundation/CoreFoundation.h>
 #elif OS_MACOSX
@@ -69,16 +69,6 @@ class ElapsedTimeTimer {
 #if defined(OS_LINUX) || defined(__ANDROID__)
   typedef uint64_t TimeStamp;
 #endif
-
-#ifdef OS_WIN
-  typedef LARGE_INTEGER TimeStamp;
-#endif
-
-#ifdef OS_WIN
-  // The frequency of the windows performance counter in ticks per second.
-  TimeStamp windows_timer_frequency_;
-#endif
-
 
   // The value of the tick count from the windows performance counter from the
   // last time GetElapsedTime was called.

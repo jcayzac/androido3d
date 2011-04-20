@@ -49,7 +49,7 @@ class InterfaceTraits {
   static char unique_;
 
   InterfaceTraits();
-  DISALLOW_COPY_AND_ASSIGN(InterfaceTraits);
+  O3D_DISALLOW_COPY_AND_ASSIGN(InterfaceTraits);
 };
 
 template <typename Interface>

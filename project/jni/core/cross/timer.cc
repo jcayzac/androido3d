@@ -32,7 +32,7 @@
 
 // This file contains the definitions of Timer related classes
 
-#include "build/build_config.h"
+#include "base/cross/config.h"
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <sys/time.h>
 #include <time.h>
@@ -50,14 +50,6 @@ static uint64_t GetCurrentTime() {
 #endif
 
 ElapsedTimeTimer::ElapsedTimeTimer() {
-#if defined(OS_WIN)
-  // Get the frequency of the windows performance clock.
-  QueryPerformanceFrequency(&windows_timer_frequency_);
-
-  // Initialize the last_time_ value with the current time.
-  QueryPerformanceCounter(&last_time_);
-#endif
-
 #if defined(TARGET_OS_IPHONE)
 	last_time_ = CFAbsoluteTimeGetCurrent();
 #elif defined(OS_MACOSX)
@@ -73,15 +65,6 @@ float ElapsedTimeTimer::GetElapsedTimeHelper(bool reset) {
   // Get current performance timer value.
   TimeStamp current_time;
 
-#ifdef OS_WIN
-  QueryPerformanceCounter(&current_time);
-
-  // Compute elapsed time since the last call.
-  elapsedTime = static_cast<float>(
-    static_cast<double>(current_time.QuadPart - last_time_.QuadPart) /
-    static_cast<double>(windows_timer_frequency_.QuadPart));
-#endif
-
 #ifdef TARGET_OS_IPHONE
   current_time = CFAbsoluteTimeGetCurrent();
   elapsedTime = static_cast<float>((current_time - last_time_));
@@ -90,7 +73,7 @@ float ElapsedTimeTimer::GetElapsedTimeHelper(bool reset) {
   AbsoluteTime elapsed_ticks = SubAbsoluteFromAbsolute(current_time,
                                                        last_time_);
   Nanoseconds elapsedInNanos = AbsoluteToNanoseconds(elapsed_ticks);
-  uint64 ns64 = UnsignedWideToUInt64(elapsedInNanos);
+  uint64_t ns64 = UnsignedWideToUInt64(elapsedInNanos);
   double elapsedInSeconds = static_cast<double>(ns64) * 0.000000001;
   elapsedTime = elapsedInSeconds;
 #endif

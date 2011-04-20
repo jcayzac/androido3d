@@ -36,7 +36,7 @@
 #ifndef O3D_CORE_CROSS_DISPLAY_WINDOW_H_
 #define O3D_CORE_CROSS_DISPLAY_WINDOW_H_
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 namespace o3d {
 class DisplayWindow {
@@ -46,7 +46,7 @@ class DisplayWindow {
  protected:
   DisplayWindow() {}
  private:
-  DISALLOW_COPY_AND_ASSIGN(DisplayWindow);
+  O3D_DISALLOW_COPY_AND_ASSIGN(DisplayWindow);
 };
 
 inline DisplayWindow::~DisplayWindow() {}

@@ -188,7 +188,7 @@ class Transform : public ParamObject {
   //  name: transform name to look for
   // Returns:
   //  An array of pointers to transforms matching the given name
-  TransformArray GetTransformsByNameInTree(const String& name) const;
+  TransformArray GetTransformsByNameInTree(const std::string& name) const;
 
   // Adds a shape do this transform.
   // Parameters:

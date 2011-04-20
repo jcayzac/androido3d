@@ -32,8 +32,8 @@
 #ifndef O3D_CORE_CROSS_GPU2D_LOCAL_TRIANGULATOR_H_
 #define O3D_CORE_CROSS_GPU2D_LOCAL_TRIANGULATOR_H_
 
-#include "base/basictypes.h"
-#include "base/logging.h"
+#include "base/cross/config.h"
+#include "base/cross/log.h"
 
 namespace o3d {
 namespace gpu2d {
@@ -110,7 +110,7 @@ class LocalTriangulator {
     bool end_;
     bool marked_;
     bool interior_;
-    DISALLOW_COPY_AND_ASSIGN(Vertex);
+    O3D_DISALLOW_COPY_AND_ASSIGN(Vertex);
   };
 
   // The triangles the Triangulator produces.
@@ -124,7 +124,7 @@ class LocalTriangulator {
 
     // Gets the vertex at the given index, 0 <= index < 3.
     Vertex* get_vertex(int index) {
-      DCHECK(index >= 0 && index < 3);
+      O3D_ASSERT(index >= 0 && index < 3);
       return v_[index];
     }
 
@@ -159,7 +159,7 @@ class LocalTriangulator {
 
     Vertex* v_[3];
 
-    DISALLOW_COPY_AND_ASSIGN(Triangle);
+    O3D_DISALLOW_COPY_AND_ASSIGN(Triangle);
   };
 
   LocalTriangulator();
@@ -172,7 +172,7 @@ class LocalTriangulator {
   // Returns a mutable vertex stored in the triangulator. Use this to
   // set up the vertices before a triangulation.
   Vertex* get_vertex(int index) {
-    DCHECK(index >= 0 && index < 4);
+    O3D_ASSERT(index >= 0 && index < 4);
     return &vertices_[index];
   }
 
@@ -199,7 +199,7 @@ class LocalTriangulator {
   // Returns the computed triangle at index, 0 <= index <
   // num_triangles().
   Triangle* get_triangle(int index) {
-    DCHECK(index >= 0 && index < num_triangles_);
+    O3D_ASSERT(index >= 0 && index < num_triangles_);
     return &triangles_[index];
   }
 
@@ -212,7 +212,7 @@ class LocalTriangulator {
   // Fetches the given interior vertex, 0 <= index <
   // num_interior_vertices(). Returns NULL if index is out of range.
   Vertex* get_interior_vertex(int index) {
-    DCHECK(index >= 0 && index < num_interior_vertices_);
+    O3D_ASSERT(index >= 0 && index < num_interior_vertices_);
     return interior_vertices_[index];
   }
 
@@ -245,7 +245,7 @@ class LocalTriangulator {
   Triangle triangles_[3];
   int num_triangles_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalTriangulator);
+  O3D_DISALLOW_COPY_AND_ASSIGN(LocalTriangulator);
 };
 
 }  // namespace gpu2d

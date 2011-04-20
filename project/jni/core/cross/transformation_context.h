@@ -34,7 +34,7 @@
 #define O3D_CORE_CROSS_TRANSFORMATION_CONTEXT_H_
 
 #include "core/cross/service_implementation.h"
-#include "core/cross/math_types.h"
+#include "base/cross/types.h"
 
 namespace o3d {
 

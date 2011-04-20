@@ -81,19 +81,19 @@ class DisplayMode {
   }
 
   int width() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return width_;
   }
   int height() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return height_;
   }
   int refresh_rate() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return refresh_rate_;
   }
   int id() const {
-    DCHECK(valid_);
+    O3D_ASSERT(valid_);
     return id_;
   }
   bool valid() const { return valid_; }

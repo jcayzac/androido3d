@@ -102,7 +102,7 @@ Sampler::Sampler(ServiceLocator* service_locator)
 // Creates (if it doesn't already exist) and registers a Param in the
 // ParamObject and sets its value to the default_value.
 template<typename T>
-void Sampler::RegisterAndSetParam(const String& param_name,
+void Sampler::RegisterAndSetParam(const std::string& param_name,
                                   unsigned int default_value,
                                   T* typed_param_ref_pointer) {
   RegisterParamRef(param_name, typed_param_ref_pointer);

@@ -144,7 +144,7 @@ class CanvasPaint : public ParamObject {
   // Returns the bounds of the given text string when rendered with this paint.
   // The bounds are returned as a Float4 containing [left, top, right, bottom]
   // values relative to (0, 0).
-  Float4 MeasureText(const String& text);
+  Float4 MeasureText(const std::string& text);
 
   // Sets the size of the font used for text drawing.
   // Parameters:
@@ -160,13 +160,13 @@ class CanvasPaint : public ParamObject {
   // Sets the typeface of the font used for rendering text.
   // Parameters:
   //   font: typeface to use.
-  void set_text_typeface(const String& typeface) {
+  void set_text_typeface(const std::string& typeface) {
     text_typeface_ = typeface;
     needs_update_ = true;
   }
 
   // Returns the typeface used for text drawing.
-  String text_typeface() {
+  std::string text_typeface() {
     return text_typeface_;
   }
 
@@ -241,7 +241,7 @@ class CanvasPaint : public ParamObject {
   float text_size_;
 
   // Typeface of font used for text drawing.
-  String text_typeface_;
+  std::string text_typeface_;
 
   // Style of text used for rendering (e.g. bold, italic, etc)
   Style text_style_;
@@ -259,7 +259,7 @@ class CanvasPaint : public ParamObject {
   Float4 shadow_color_;
 
   O3D_DECL_CLASS(CanvasPaint, ParamObject)
-  DISALLOW_COPY_AND_ASSIGN(CanvasPaint);
+  O3D_DISALLOW_COPY_AND_ASSIGN(CanvasPaint);
 };
 
 

@@ -35,7 +35,7 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/cross/log.h"
 #include "core/cross/gpu2d/arena.h"
 #include "core/cross/gpu2d/red_black_tree.h"
 
@@ -271,7 +271,7 @@ class IntervalTree : public RedBlackTree<Interval<T, UserData> > {
     return false;
   }
 
-  DISALLOW_COPY_AND_ASSIGN(IntervalTree);
+  O3D_DISALLOW_COPY_AND_ASSIGN(IntervalTree);
 };
 
 }  // namespace gpu2d

@@ -34,7 +34,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/cross/config.h"
 
 namespace o3d {
 namespace gpu2d {
@@ -110,7 +110,7 @@ class PathCache {
   std::vector<float> interior_edge_vertices_;
 #endif  // O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
 
-  DISALLOW_COPY_AND_ASSIGN(PathCache);
+  O3D_DISALLOW_COPY_AND_ASSIGN(PathCache);
 };
 
 }  // namespace gpu2d

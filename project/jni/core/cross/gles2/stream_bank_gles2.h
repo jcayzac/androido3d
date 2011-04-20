@@ -63,7 +63,7 @@ class StreamBankGLES2 : public StreamBank {
   bool CheckForMissingVertexStreams(
       ParamCacheGLES2::VaryingParameterMap& varying_map,
       GLuint gl_program,
-      String* missing_stream);
+      std::string* missing_stream);
 
  private:
   int FindVertexStream(Stream::Semantic semantic, int index);

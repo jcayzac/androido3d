@@ -50,7 +50,7 @@ class IMainThreadTaskPoster {
   virtual void PostTask(Task* task) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IMainThreadTaskPoster);
+  O3D_DISALLOW_COPY_AND_ASSIGN(IMainThreadTaskPoster);
 };
 }
 

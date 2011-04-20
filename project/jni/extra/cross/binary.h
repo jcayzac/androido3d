@@ -44,9 +44,8 @@ namespace extra {
   *
   * @sa {o3d_utils::Scene::LoadBinaryScene}
   */
-o3d::Transform* LoadFromBinaryStream(std::istream& stream, o3d::Pack& pack, IExternalResourceProvider& erp);
+Transform* LoadFromBinaryStream(std::istream& stream, Pack& pack, IExternalResourceProvider& erp);
 
-#if !defined(O3D_NO_BINARY_EXPORT)
 enum TCompressionAlgorithm {
 	COMPRESSION_NONE,
 	COMPRESSION_GZIP,
@@ -71,8 +70,7 @@ enum TCompressionAlgorithm {
   * @note Write support can be disabled by defining the
   * <code>O3D_NO_BINARY_EXPORT</code> preprocessor macro.
   */
-bool SaveToBinaryStream(std::ostream& stream, o3d::Transform& root, TCompressionAlgorithm compression = COMPRESSION_LZMA);
-#endif // O3D_NO_BINARY_EXPORT
+bool SaveToBinaryStream(std::ostream& stream, Transform& root, TCompressionAlgorithm compression = COMPRESSION_LZMA);
 
 } // namespace extra
 } // namespace o3d

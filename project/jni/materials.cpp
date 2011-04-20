@@ -26,6 +26,7 @@
 #include "shader_builder.h"
 
 namespace o3d_utils {
+using namespace o3d;
 
 /**
  * Checks a material's params by name to see if it possibly has non 1.0 alpha.
@@ -39,22 +40,22 @@ namespace o3d_utils {
  *     alpha.
  */
 bool Materials::hasNonOneAlpha(
-    o3d::Material* material, const std::string& name,
+    Material* material, const std::string& name,
     bool* nonOneAlpha) {
   bool found = false;
   *nonOneAlpha = false;
-  o3d::Texture* texture = NULL;
-  o3d::ParamSampler* samplerParam =
-      material->GetParam<o3d::ParamSampler>(name + "Sampler");
+  Texture* texture = NULL;
+  ParamSampler* samplerParam =
+      material->GetParam<ParamSampler>(name + "Sampler");
   if (samplerParam) {
     found = true;
-    o3d::Sampler* sampler = samplerParam->value();
+    Sampler* sampler = samplerParam->value();
     if (sampler) {
       texture = sampler->texture();
     }
   } else {
-    o3d::ParamTexture* textureParam =
-        material->GetParam<o3d::ParamTexture>(name + "Texture");
+    ParamTexture* textureParam =
+        material->GetParam<ParamTexture>(name + "Texture");
     if (textureParam) {
       found = true;
       texture = textureParam->value();
@@ -66,7 +67,7 @@ bool Materials::hasNonOneAlpha(
   }
 
   if (!found) {
-    o3d::ParamFloat4* colorParam = material->GetParam<o3d::ParamFloat4>(name);
+    ParamFloat4* colorParam = material->GetParam<ParamFloat4>(name);
     if (colorParam) {
       found = true;
       // TODO: this check does not work. We need to check for the
@@ -97,15 +98,15 @@ bool Materials::hasNonOneAlpha(
  * @see o3djs.material.attachStandardEffect
  */
 void Materials::PrepareMaterial(
-    o3d::Pack* pack, o3d_utils::ViewInfo* view_info, o3d::Material* material,
+    Pack* pack, o3d_utils::ViewInfo* view_info, Material* material,
     std::string opt_effect_type) {
   // Assume we want the performance list
-  o3d::DrawList* draw_list =
+  DrawList* draw_list =
       view_info->performance_draw_pass_info()->draw_list();
   // First check if we have a tag telling us that it is or is not
   // transparent
   if (!material->draw_list()) {
-    o3d::ParamBoolean* param = material->GetParam<o3d::ParamBoolean>(
+    ParamBoolean* param = material->GetParam<ParamBoolean>(
         "collada.transparent");
     if (param) {
       material->set_draw_list(param->value() ?
@@ -170,35 +171,35 @@ void Materials::PrepareMaterial(
  * @see o3djs.effect.attachStandardShader
  */
 void Materials::AttachStandardEffectEx(
-    o3d::Pack* pack,
-    o3d::Material* material,
+    Pack* pack,
+    Material* material,
     const std::string& effectType) {
   if (!material->effect()) {
-    scoped_ptr<ShaderBuilder> shader_builder(ShaderBuilder::Create());
+    ::o3d::base::scoped_ptr<ShaderBuilder> shader_builder(ShaderBuilder::Create());
     if (!shader_builder->attachStandardShader(
         pack,
         material,
-        o3d::Vector3(0.0f, 0.0f, 0.0f),
+        Vector3(0.0f, 0.0f, 0.0f),
         effectType)) {
-      NOTREACHED() << "'Could not attach a standard effect";
+      O3D_NEVER_REACHED() << "'Could not attach a standard effect";
     }
   }
 };
 
 
 void Materials::AttachStandardEffect(
-    o3d::Pack* pack,
-    o3d::Material* material,
+    Pack* pack,
+    Material* material,
     o3d_utils::ViewInfo* viewInfo,
     const std::string& effectType) {
   if (!material->effect()) {
-    scoped_ptr<ShaderBuilder> shader_builder(ShaderBuilder::Create());
-    o3d::Vector3 light_pos =
+    ::o3d::base::scoped_ptr<ShaderBuilder> shader_builder(ShaderBuilder::Create());
+    Vector3 light_pos =
         Vectormath::Aos::inverse(
             viewInfo->draw_context()->view()).getTranslation();
     if (!shader_builder->attachStandardShader(
         pack, material, light_pos, effectType)) {
-       NOTREACHED() << "Could not attach a standard effect";
+       O3D_NEVER_REACHED() << "Could not attach a standard effect";
     }
   }
 }
@@ -220,8 +221,8 @@ void Materials::AttachStandardEffect(
  * @see o3djs.material.prepareMaterial
  */
 void Materials::PrepareMaterials(
-  o3d::Pack* pack, o3d_utils::ViewInfo* view_info, o3d::Pack* effect_pack) {
-  std::vector<o3d::Material*> materials = pack->GetByClass<o3d::Material>();
+  Pack* pack, o3d_utils::ViewInfo* view_info, Pack* effect_pack) {
+  std::vector<Material*> materials = pack->GetByClass<Material>();
   for (size_t ii = 0; ii < materials.size(); ++ii) {
     PrepareMaterial(effect_pack ? effect_pack : pack,
                     view_info,
@@ -280,52 +281,52 @@ void Materials::PrepareMaterials(
  *     Defaults to false.
  * @return {!o3d.Material} The created material.
  */
-o3d::Material* Materials::CreateBasicMaterial(
-    o3d::Pack* pack,
-    o3d_utils::ViewInfo* viewInfo,
-    o3d::Float4* opt_color,
-    o3d::Texture* opt_texture,
+Material* Materials::CreateBasicMaterial(
+    Pack* pack,
+    ViewInfo* viewInfo,
+    Float4* opt_color,
+    Texture* opt_texture,
     bool transparent) {
-  DCHECK(pack);
-  DCHECK(viewInfo);
-  DCHECK(opt_color != NULL || opt_texture != NULL);
+  O3D_ASSERT(pack);
+  O3D_ASSERT(viewInfo);
+  O3D_ASSERT(opt_color != NULL || opt_texture != NULL);
 
-  o3d::Material* material = pack->Create<o3d::Material>();
+  Material* material = pack->Create<Material>();
   material->set_draw_list(transparent ?
       viewInfo->z_ordered_draw_pass_info()->draw_list() :
       viewInfo->performance_draw_pass_info()->draw_list());
 
   // If it has a length assume it's a color, otherwise assume it's a texture.
   if (opt_color) {
-    material->CreateParam<o3d::ParamFloat4>("diffuse")->set_value(*opt_color);
+    material->CreateParam<ParamFloat4>("diffuse")->set_value(*opt_color);
   } else {
-    o3d::ParamSampler* paramSampler =
-          material->CreateParam<o3d::ParamSampler>("diffuseSampler");
-    o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+    ParamSampler* paramSampler =
+          material->CreateParam<ParamSampler>("diffuseSampler");
+    Sampler* sampler = pack->Create<Sampler>();
     paramSampler->set_value(sampler);
     sampler->set_texture(opt_texture);
   }
 
   // Create some suitable defaults for the material to save the user having
   // to know all this stuff right off the bat.
-  material->CreateParam<o3d::ParamFloat4>("emissive")->set_value(
-      o3d::Float4(0.0f, 0.0f, 0.0f, 1.0f));
-  material->CreateParam<o3d::ParamFloat4>("ambient")->set_value(
-      o3d::Float4(0.0f, 0.0f, 0.0f, 1.0f));
-  material->CreateParam<o3d::ParamFloat4>("specular")->set_value(
-      o3d::Float4(1.0f, 1.0f, 1.0f, 1.0f));
-  material->CreateParam<o3d::ParamFloat>("shininess")->set_value(50.0f);
-  material->CreateParam<o3d::ParamFloat>("specularFactor")->set_value(1.0f);
-  material->CreateParam<o3d::ParamFloat4>("lightColor")->set_value(
-      o3d::Float4(1.0f, 1.0f, 1.0f, 1.0f));
-  o3d::ParamFloat3* lightPositionParam =
-      material->CreateParam<o3d::ParamFloat3>("lightWorldPos");
+  material->CreateParam<ParamFloat4>("emissive")->set_value(
+      Float4(0.0f, 0.0f, 0.0f, 1.0f));
+  material->CreateParam<ParamFloat4>("ambient")->set_value(
+      Float4(0.0f, 0.0f, 0.0f, 1.0f));
+  material->CreateParam<ParamFloat4>("specular")->set_value(
+      Float4(1.0f, 1.0f, 1.0f, 1.0f));
+  material->CreateParam<ParamFloat>("shininess")->set_value(50.0f);
+  material->CreateParam<ParamFloat>("specularFactor")->set_value(1.0f);
+  material->CreateParam<ParamFloat4>("lightColor")->set_value(
+      Float4(1.0f, 1.0f, 1.0f, 1.0f));
+  ParamFloat3* lightPositionParam =
+      material->CreateParam<ParamFloat3>("lightWorldPos");
 
   AttachStandardEffect(pack, material, viewInfo, "phong");
 
   // We have to set the light position after calling attachStandardEffect
   // because attachStandardEffect sets it based on the view.
-  lightPositionParam->set_value(o3d::Float3(1000.0f, 2000.0f, 3000.0f));
+  lightPositionParam->set_value(Float3(1000.0f, 2000.0f, 3000.0f));
 
   return material;
 };
@@ -340,24 +341,24 @@ o3d::Material* Materials::CreateBasicMaterial(
  *     the format [r, g, b, a] or an O3D texture.
  * @return {!o3d.Material} The created material.
  */
-o3d::Material* Materials::CreateConstantMaterialEx(
-    o3d::Pack* pack,
-    o3d::DrawList* drawList,
-    o3d::Float4* opt_color,
-    o3d::Texture* opt_texture) {
-  DCHECK(pack);
-  DCHECK(drawList);
-  DCHECK(opt_color != NULL || opt_texture != NULL);
-  o3d::Material* material = pack->Create<o3d::Material>();
+Material* Materials::CreateConstantMaterialEx(
+    Pack* pack,
+    DrawList* drawList,
+    Float4* opt_color,
+    Texture* opt_texture) {
+  O3D_ASSERT(pack);
+  O3D_ASSERT(drawList);
+  O3D_ASSERT(opt_color != NULL || opt_texture != NULL);
+  Material* material = pack->Create<Material>();
   material->set_draw_list(drawList);
 
   // If it has a length assume it's a color, otherwise assume it's a texture.
   if (opt_color) {
-    material->CreateParam<o3d::ParamFloat4>("emissive")->set_value(*opt_color);
+    material->CreateParam<ParamFloat4>("emissive")->set_value(*opt_color);
   } else {
-    o3d::ParamSampler* paramSampler =
-          material->CreateParam<o3d::ParamSampler>("emissiveSampler");
-    o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
+    ParamSampler* paramSampler =
+          material->CreateParam<ParamSampler>("emissiveSampler");
+    Sampler* sampler = pack->Create<Sampler>();
     paramSampler->set_value(sampler);
     sampler->set_texture(opt_texture);
   }
@@ -380,15 +381,15 @@ o3d::Material* Materials::CreateConstantMaterialEx(
  *     Defaults to false.
  * @return {!o3d.Material} The created material.
  */
-o3d::Material* Materials::CreateConstantMaterial(
-    o3d::Pack* pack,
+Material* Materials::CreateConstantMaterial(
+    Pack* pack,
     o3d_utils::ViewInfo* viewInfo,
-    o3d::Float4* opt_color,
-    o3d::Texture* opt_texture,
+    Float4* opt_color,
+    Texture* opt_texture,
     bool transparent) {
-  DCHECK(pack);
-  DCHECK(viewInfo);
-  DCHECK(opt_color != NULL || opt_texture != NULL);
+  O3D_ASSERT(pack);
+  O3D_ASSERT(viewInfo);
+  O3D_ASSERT(opt_color != NULL || opt_texture != NULL);
   return CreateConstantMaterialEx(
       pack,
       transparent ? viewInfo->z_ordered_draw_pass_info()->draw_list() :
@@ -414,15 +415,15 @@ o3d::Material* Materials::CreateConstantMaterial(
  * @param {number} opt_checkSize Defaults to 10 units.
  * @return {!o3d.Material} The created material.
  */
-o3d::Material* Materials::CreateCheckerMaterial(
-  o3d::Pack* pack,
-  o3d_utils::ViewInfo* viewInfo,
-  o3d::Float4* opt_color1,
-  o3d::Float4* opt_color2,
+Material* Materials::CreateCheckerMaterial(
+  Pack* pack,
+  ViewInfo* viewInfo,
+  Float4* opt_color1,
+  Float4* opt_color2,
   bool transparent,
   float checkSize) {
-  o3d::Float4 color1(0.4f, 0.5f, 0.5f, 1.0f);
-  o3d::Float4 color2(0.6f, 0.8f, 0.8f, 1.0f);
+  Float4 color1(0.4f, 0.5f, 0.5f, 1.0f);
+  Float4 color2(0.6f, 0.8f, 0.8f, 1.0f);
   if (opt_color1) {
     color1 = *opt_color1;
   }
@@ -430,18 +431,18 @@ o3d::Material* Materials::CreateCheckerMaterial(
     color2 = *opt_color2;
   }
 
-  scoped_ptr<ShaderBuilder> builder_(ShaderBuilder::Create());
-  o3d::Effect* effect = builder_->createCheckerEffect(pack);
-  o3d::Material* material = pack->Create<o3d::Material>();;
+  ::o3d::base::scoped_ptr<ShaderBuilder> builder_(ShaderBuilder::Create());
+  Effect* effect = builder_->createCheckerEffect(pack);
+  Material* material = pack->Create<Material>();;
   material->set_effect(effect);
   material->set_draw_list(transparent ?
       viewInfo->z_ordered_draw_pass_info()->draw_list() :
       viewInfo->performance_draw_pass_info()->draw_list());
   ShaderBuilder::createUniformParameters(pack, effect, material);
 
-  material->GetParam<o3d::ParamFloat4>("color1")->set_value(color1);
-  material->GetParam<o3d::ParamFloat4>("color2")->set_value(color2);
-  material->GetParam<o3d::ParamFloat>("checkSize")->set_value(checkSize);
+  material->GetParam<ParamFloat4>("color1")->set_value(color1);
+  material->GetParam<ParamFloat4>("color2")->set_value(color2);
+  material->GetParam<ParamFloat>("checkSize")->set_value(checkSize);
 
   return material;
 };

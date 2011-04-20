@@ -23,6 +23,7 @@
 #include "debug.h"
 
 namespace o3d_utils {
+using namespace o3d;
 
 class IntStringThing {
  public:
@@ -69,7 +70,7 @@ bool ShaderBuilder::isColladaLightingType(const std::string& lightingType) {
     "constant",
   };
 
-  for (size_t ii = 0; ii < arraysize(COLLADA_LIGHTING_TYPES); ++ii) {
+  for (size_t ii = 0; ii < o3d_arraysize(COLLADA_LIGHTING_TYPES); ++ii) {
     if (strcasecmp(lightingType.c_str(), COLLADA_LIGHTING_TYPES[ii]) == 0) {
       return true;
     }
@@ -83,7 +84,7 @@ bool ShaderBuilder::isColladaLightingType(const std::string& lightingType) {
  * @return {string} The lighting type or "" if it"s not a collada standard
  *     material.
  */
-std::string ShaderBuilder::getColladaLightingType(o3d::Material* material) {
+std::string ShaderBuilder::getColladaLightingType(Material* material) {
   /**
    * The name of the parameter on a material if it"s a collada standard
    * material.
@@ -97,8 +98,8 @@ std::string ShaderBuilder::getColladaLightingType(o3d::Material* material) {
   static const char* COLLADA_LIGHTING_TYPE_PARAM_NAME =
       "collada.lightingType";
 
-  o3d::ParamString* lightingTypeParam =
-      material->GetParam<o3d::ParamString>(COLLADA_LIGHTING_TYPE_PARAM_NAME);
+  ParamString* lightingTypeParam =
+      material->GetParam<ParamString>(COLLADA_LIGHTING_TYPE_PARAM_NAME);
   if (lightingTypeParam) {
     std::string lightingType(lightingTypeParam->value());
     std::transform(lightingType.begin(), lightingType.end(),
@@ -116,7 +117,7 @@ std::string ShaderBuilder::getColladaLightingType(o3d::Material* material) {
  *     collada material.
  * @return {number} The number oc TEXCOORD streams needed.
  */
-int ShaderBuilder::getNumTexCoordStreamsNeeded(o3d::Material* material) {
+int ShaderBuilder::getNumTexCoordStreamsNeeded(Material* material) {
   /**
    * The FCollada standard materials sampler parameter name prefixes.
    * @type {!Array.<string>}
@@ -131,14 +132,14 @@ int ShaderBuilder::getNumTexCoordStreamsNeeded(o3d::Material* material) {
 
   std::string lightingType = getColladaLightingType(material);
   if (!isColladaLightingType(lightingType)) {
-    NOTREACHED() << "not a collada standard material";
+    O3D_NEVER_REACHED() << "not a collada standard material";
   }
   int numTexCoordStreamsNeeded = 0;
   for (size_t cc = 0;
-       cc < arraysize(COLLADA_SAMPLER_PARAMETER_PREFIXES);
+       cc < o3d_arraysize(COLLADA_SAMPLER_PARAMETER_PREFIXES);
        ++cc) {
     std::string samplerPrefix(COLLADA_SAMPLER_PARAMETER_PREFIXES[cc]);
-    o3d::ParamSampler* samplerParam = material->GetParam<o3d::ParamSampler>(
+    ParamSampler* samplerParam = material->GetParam<ParamSampler>(
         samplerPrefix + "Sampler");
     if (samplerParam) {
       ++numTexCoordStreamsNeeded;
@@ -284,10 +285,10 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The header.
    */
   std::string pixelShaderHeader(
-      o3d::Material* /* material */,
+      Material* /* material */,
       bool /* diffuse */,
       bool /* specular */,
-      o3d::ParamSampler* /* bumpSampler */) {
+      ParamSampler* /* bumpSampler */) {
     return "\n// #o3d SplitMarker\n";
   };
 
@@ -343,7 +344,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The code for the declarations.
    */
   std::string buildAttributeDecls(
-      o3d::Material* material,
+      Material* material,
       bool diffuse,
       bool specular,
       bool bumpSampler) {
@@ -371,7 +372,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The code for the declarations.
    */
   std::string buildVaryingDecls(
-      o3d::Material* material,
+      Material* material,
       bool diffuse,
       bool specular,
       bool bumpSampler) {
@@ -413,7 +414,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The code for the texture coordinate declaration.
    */
   std::string buildTexCoord(
-      o3d::Material* material, bool varying, const std::string& name) {
+      Material* material, bool varying, const std::string& name) {
     // In the GLSL version we need to name the incoming attributes by
     // the semantic name in order for them to get hooked up correctly.
     if (material->GetUntypedParam(name + "Sampler")) {
@@ -443,7 +444,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
    *     be written as varying values.
    * @return {string} The code for the texture coordinate declarations.
    */
-  std::string buildTexCoords(o3d::Material* material, bool varying) {
+  std::string buildTexCoords(Material* material, bool varying) {
     interpolant_.Set(0);
     if (!varying) {
       name_to_semantic_map_.clear();
@@ -468,7 +469,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The code for the texture coordinate passthrough statement.
    */
   std::string buildUVPassthrough(
-      o3d::Material* material, const std::string& name) {
+      Material* material, const std::string& name) {
     if (material->GetUntypedParam(name + "Sampler")) {
       std::string sourceName(name + "UV");
       std::string destName(sourceName);
@@ -491,7 +492,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The code for the texture coordinate passthrough
    *                  statements.
    */
-  std::string buildUVPassthroughs(o3d::Material* material) {
+  std::string buildUVPassthroughs(Material* material) {
     // TODO(petersont): in the GLSL implementation we need to generate
     // the code for these attributes before we can pass their values
     // through, because in this implementation their names must be their
@@ -642,15 +643,15 @@ class GLSLShaderBuilder : public ShaderBuilder {
    *     inspect.
    * @return {string} The texture type (1D, 2D, 3D or CUBE).
    */
-  std::string getTextureType(o3d::ParamTexture* textureParam) {
-    o3d::Texture* texture = textureParam->value();
+  std::string getTextureType(ParamTexture* textureParam) {
+    Texture* texture = textureParam->value();
     if (!texture) {
       return "2D";  // No texture value, have to make a guess.
     }
-    if (texture->IsA(o3d::Texture2D::GetApparentClass())) {
+    if (texture->IsA(Texture2D::GetApparentClass())) {
       return "2D";
     }
-    if (texture->IsA(o3d::TextureCUBE::GetApparentClass())) {
+    if (texture->IsA(TextureCUBE::GetApparentClass())) {
       return "CUBE";
     }
     return "2D";
@@ -663,13 +664,13 @@ class GLSLShaderBuilder : public ShaderBuilder {
    *     inspect.
    * @return {string} The texture type (1D, 2D, 3D or CUBE).
    */
-  std::string getSamplerType(o3d::ParamSampler* samplerParam) {
-    o3d::Sampler* sampler = samplerParam->value();
+  std::string getSamplerType(ParamSampler* samplerParam) {
+    Sampler* sampler = samplerParam->value();
     if (!sampler) {
       return "2D";
     }
-    o3d::ParamTexture* textureParam =
-        sampler->GetParam<o3d::ParamTexture>(o3d::Sampler::kTextureParamName);
+    ParamTexture* textureParam =
+        sampler->GetParam<ParamTexture>(Sampler::kTextureParamName);
     if (textureParam) {
       return getTextureType(textureParam);
     } else {
@@ -724,12 +725,12 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The effect code for the uniform parameter.
    */
   std::string buildColorParam(
-      o3d::Material* material,
+      Material* material,
       std::vector<std::string>* descriptions,
       const std::string& name,
       bool addColorParam) {
-    o3d::ParamSampler* samplerParam =
-        material->GetParam<o3d::ParamSampler>(name + "Sampler");
+    ParamSampler* samplerParam =
+        material->GetParam<ParamSampler>(name + "Sampler");
     if (samplerParam) {
       std::string type = getSamplerType(samplerParam);
       descriptions->push_back(name + type + "Texture");
@@ -752,9 +753,9 @@ class GLSLShaderBuilder : public ShaderBuilder {
    *                      emissive, ambient, diffuse or specular.
    * @return {string} The effect code for the uniform parameter retrieval.
    */
-  std::string getColorParam(o3d::Material* material, const std::string& name) {
-    o3d::ParamSampler* samplerParam =
-        material->GetParam<o3d::ParamSampler>(name + "Sampler");
+  std::string getColorParam(Material* material, const std::string& name) {
+    ParamSampler* samplerParam =
+        material->GetParam<ParamSampler>(name + "Sampler");
     if (samplerParam) {
       std::string type = getSamplerType(samplerParam);
       return std::string("  ") + FLOAT4 + " " + name + " = " + TEXTURE + type +
@@ -773,8 +774,8 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The effect code for the shader, ready to be parsed.
    */
   std::string buildConstantShaderString(
-      o3d::Material* material,
-      o3d::ParamSampler* bumpSampler,
+      Material* material,
+      ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("constant");
 	std::string str;
@@ -804,8 +805,8 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The effect code for the shader, ready to be parsed.
    */
   std::string buildLambertShaderString(
-      o3d::Material* material,
-      o3d::ParamSampler* bumpSampler,
+      Material* material,
+      ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("lambert");
 	std::string str;
@@ -856,8 +857,8 @@ class GLSLShaderBuilder : public ShaderBuilder {
    *     Change to Blinn.
    */
   std::string buildBlinnShaderString(
-      o3d::Material* material,
-      o3d::ParamSampler* bumpSampler,
+      Material* material,
+      ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("phong");
 	std::string str;
@@ -919,8 +920,8 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The effect code for the shader, ready to be parsed.
    */
   std::string buildPhongShaderString(
-      o3d::Material* material,
-      o3d::ParamSampler* bumpSampler,
+      Material* material,
+      ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("phong");
 	std::string str;
@@ -1021,7 +1022,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
    *     sampler. Default = false.
    * @return {string} The code for normal mapping in the vertex shader.
    */
-  std::string bumpVertexShaderCode(o3d::ParamSampler* opt_bumpSampler) {
+  std::string bumpVertexShaderCode(ParamSampler* opt_bumpSampler) {
 	std::string str("");
 	if ( opt_bumpSampler ) {
         str += std::string("  ") + VERTEX_VARYING_PREFIX + "binormal = " +
@@ -1040,7 +1041,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * Builds the normal calculation of the pixel shader.
    * @return {string} The code for normal computation in the pixel shader.
    */
-  std::string getNormalShaderCode(o3d::ParamSampler* bumpSampler) {
+  std::string getNormalShaderCode(ParamSampler* bumpSampler) {
     return bumpSampler ?
          (std::string(MATRIX3) + " tangentToWorld = " + MATRIX3 +
             "(" + PIXEL_VARYING_PREFIX + "tangent,\n" +
@@ -1068,9 +1069,9 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The code for the vertex declarations.
    */
   std::string buildVertexDecls(
-      o3d::Material* material,
+      Material* material,
       bool diffuse,  bool specular,
-      o3d::ParamSampler* bumpSampler) {
+      ParamSampler* bumpSampler) {
 	std::string str;
 	str += buildAttributeDecls(material, diffuse, specular, bumpSampler);
 	str += buildVaryingDecls(material, diffuse, specular, bumpSampler);
@@ -1088,11 +1089,11 @@ class GLSLShaderBuilder : public ShaderBuilder {
    *     string.
    */
   std::string buildStandardShaderString(
-      o3d::Material* material,
+      Material* material,
       const std::string& effectType,
       std::string* description) {
-    o3d::ParamSampler* bumpSampler =
-        material->GetParam<o3d::ParamSampler>("bumpSampler");
+    ParamSampler* bumpSampler =
+        material->GetParam<ParamSampler>("bumpSampler");
 
     // Create a shader string of the appropriate type, based on the
     // effectType.
@@ -1107,7 +1108,7 @@ class GLSLShaderBuilder : public ShaderBuilder {
     } else if (effectType == "constant") {
       str = buildConstantShaderString(material, bumpSampler, &descriptions);
     } else {
-      NOTREACHED() << "unknown effect type "" + effectType + """;
+      O3D_NEVER_REACHED() << "unknown effect type "" + effectType + """;
     }
 
     description->clear();
@@ -1129,15 +1130,15 @@ class GLSLShaderBuilder : public ShaderBuilder {
    *     "constant").
    * @return {o3d.Effect} The created effect.
    */
-  o3d::Effect* getStandardShader(
-      o3d::Pack* pack,
-      o3d::Material* material,
+  Effect* getStandardShader(
+      Pack* pack,
+      Material* material,
       const std::string& effectType) {
     std::string description;
     std::string shader = buildStandardShaderString(
         material, effectType, &description);
-    std::vector<o3d::Effect*> effects = pack->GetByClass<o3d::Effect>();
-    o3d::Effect* effect = NULL;
+    std::vector<Effect*> effects = pack->GetByClass<Effect>();
+    Effect* effect = NULL;
     for (size_t ii = 0; ii < effects.size(); ++ii) {
       effect = effects[ii];
       if (effect->name().compare(description) == 0 &&
@@ -1145,16 +1146,16 @@ class GLSLShaderBuilder : public ShaderBuilder {
         return effect;
       }
     }
-    effect = pack->Create<o3d::Effect>();
+    effect = pack->Create<Effect>();
     if (effect) {
       effect->set_name(description);
-DLOG(INFO) << "-----------------------------------SHADER--";
+O3D_LOG(INFO) << "-----------------------------------SHADER--";
       DumpMultiLineString(shader);
-DLOG(INFO) << "\n--------------END--";
+O3D_LOG(INFO) << "\n--------------END--";
       if (effect->LoadFromFXString(shader)) {
         return effect;
       }
-DLOG(INFO) << "LoadFromFXString failed";
+O3D_LOG(INFO) << "LoadFromFXString failed";
       pack->RemoveObject(effect);
     }
     return NULL;
@@ -1175,11 +1176,11 @@ DLOG(INFO) << "LoadFromFXString failed";
    * @return {boolean} True on success.
    */
   bool attachStandardShader(
-      o3d::Pack* pack,
-      o3d::Material* material,
-      const o3d::Vector3& lightPos,
+      Pack* pack,
+      Material* material,
+      const Vector3& lightPos,
       const std::string& effectType) {
-    o3d::Effect* effect = getStandardShader(pack, material, effectType);
+    Effect* effect = getStandardShader(pack, material, effectType);
     if (effect) {
       material->set_effect(effect);
       effect->CreateUniformParameters(material);
@@ -1187,16 +1188,16 @@ DLOG(INFO) << "LoadFromFXString failed";
       // Set a couple of the default parameters in the hopes that this will
       // help the user get something on the screen. We check to make sure they
       // are not connected to something otherwise we"ll get an error.
-      o3d::ParamFloat3* light_param =
-           material->GetParam<o3d::ParamFloat3>("lightWorldPos");
+      ParamFloat3* light_param =
+           material->GetParam<ParamFloat3>("lightWorldPos");
       if (light_param && !light_param->input_connection()) {
         light_param->set_value(
-            o3d::Float3(lightPos.getX(), lightPos.getY(), lightPos.getZ()));
+            Float3(lightPos.getX(), lightPos.getY(), lightPos.getZ()));
       }
-      o3d::ParamFloat4* color_param =
-          material->GetParam<o3d::ParamFloat4>("lightColor");
+      ParamFloat4* color_param =
+          material->GetParam<ParamFloat4>("lightColor");
       if (color_param && !color_param->input_connection()) {
-        color_param->set_value(o3d::Float4(1.0f, 1.0f, 1.0f, 1.0f));
+        color_param->set_value(Float4(1.0f, 1.0f, 1.0f, 1.0f));
       }
       return true;
     } else {
@@ -1210,15 +1211,15 @@ DLOG(INFO) << "LoadFromFXString failed";
    *     already has an effect with the same name that effect will be returned.
    * @return {!o3d.Effect} The effect.
    */
-  o3d::Effect* createCheckerEffect(o3d::Pack* pack) {
-    o3d::ObjectBaseArray effects =
-        pack->GetObjects(o3d::Effect::GetApparentClass()->name(),
+  Effect* createCheckerEffect(Pack* pack) {
+    ObjectBaseArray effects =
+        pack->GetObjects(Effect::GetApparentClass()->name(),
                          TWO_COLOR_CHECKER_EFFECT_NAME);
     if (!effects.empty()) {
-      return static_cast<o3d::Effect*>(effects[0]);
+      return static_cast<Effect*>(effects[0]);
     }
 
-    o3d::Effect* effect = pack->Create<o3d::Effect>();
+    Effect* effect = pack->Create<Effect>();
     effect->LoadFromFXString(buildCheckerShaderString());
     effect->set_name(TWO_COLOR_CHECKER_EFFECT_NAME);
     return effect;
@@ -1238,35 +1239,35 @@ ShaderBuilder* ShaderBuilder::Create() {
  * @param {!o3d.ParamObject} paramObject ParamObject on which to create Params.
  */
 void ShaderBuilder::createUniformParameters(
-    o3d::Pack* pack,
-    o3d::Effect* effect,
-    o3d::ParamObject* paramObject) {
+    Pack* pack,
+    Effect* effect,
+    ParamObject* paramObject) {
   effect->CreateUniformParameters(paramObject);
-  o3d::EffectParameterInfoArray infos;
+  EffectParameterInfoArray infos;
   effect->GetParameterInfo(&infos);
   for (size_t ii = 0; ii < infos.size(); ++ii) {
-    const o3d::EffectParameterInfo& info = infos[ii];
+    const EffectParameterInfo& info = infos[ii];
     if (info.sas_class_type() == NULL) {
       if (info.num_elements() > 0) {
-        o3d::ParamArray* paramArray = pack->Create<o3d::ParamArray>();
-        o3d::ParamParamArray* param =
-            paramObject->GetParam<o3d::ParamParamArray>(info.name());
+        ParamArray* paramArray = pack->Create<ParamArray>();
+        ParamParamArray* param =
+            paramObject->GetParam<ParamParamArray>(info.name());
         param->set_value(paramArray);
         paramArray->ResizeByClass(info.num_elements(), info.class_type());
-        if (o3d::ObjectBase::ClassIsA(
+        if (ObjectBase::ClassIsA(
             info.class_type(),
-            o3d::ParamSampler::GetApparentClass())) {
+            ParamSampler::GetApparentClass())) {
           for (size_t jj = 0; jj < (size_t)info.num_elements(); ++jj) {
-            o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
-            paramArray->GetParam<o3d::ParamSampler>(jj)->set_value(sampler);
+            Sampler* sampler = pack->Create<Sampler>();
+            paramArray->GetParam<ParamSampler>(jj)->set_value(sampler);
           }
         }
-      } else if (o3d::ObjectBase::ClassIsA(
+      } else if (ObjectBase::ClassIsA(
           info.class_type(),
-          o3d::ParamSampler::GetApparentClass())) {
-        o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
-        o3d::ParamSampler* param =
-            paramObject->GetParam<o3d::ParamSampler>(info.name());
+          ParamSampler::GetApparentClass())) {
+        Sampler* sampler = pack->Create<Sampler>();
+        ParamSampler* param =
+            paramObject->GetParam<ParamSampler>(info.name());
         param->set_value(sampler);
       }
     }

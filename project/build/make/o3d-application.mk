@@ -14,12 +14,10 @@
 # limitations under the License.
 #
 
-# library and applications should use the same version of the STL,
-# or global objects of the std:: namespace won't match!
-APP_STL := stlport_static
-
 # library and applications must use the same ABI
 APP_ABI := armeabi-v7a
+
+APP_STL := gnustl_static
 
 # O3D native source code lies here:
 O3D_NATIVE_DIR := $(O3D_DIR)/jni
@@ -30,14 +28,11 @@ APP_CFLAGS := \
   -Wall \
   -Wfloat-equal \
   -Wdisabled-optimization \
-  -DUNICODE \
-  -DRENDERER_GLES2 \
+  -DO3D_RENDERER_GLES2 \
   -DGLES2_BACKEND_NATIVE_GLES2 \
-  -DFCOLLADA_EXCEPTION=0 \
-  -DUSE_FILE32API \
-  -DGOOGLE_PROTOBUF_NO_RTTI \
   -I$(O3D_NATIVE_DIR) \
-  -I$(O3D_NATIVE_DIR)/third_party/loggingshim \
+  -I$(O3D_NATIVE_DIR)/third_party/vectormath/files/vectormathlibrary/include \
+
 
 ifneq ($(NDK_DEBUG), 0)
   # build system adds -O0 -g, so we don't need to define them here

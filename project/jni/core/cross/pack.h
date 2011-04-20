@@ -51,12 +51,10 @@ class FilePath;
 namespace o3d {
 
 class Bitmap;
-class ArchiveRequest;
 class RawData;
 class Texture;
 class Texture2D;
 class TextureCUBE;
-class FileRequest;
 class DrawContext;
 class IClassManager;
 class ObjectManager;
@@ -120,7 +118,7 @@ class Pack : public NamedObject {
   //  type_name: type name of object type you want created.
   // Returns:
   //  pointer to new object if successful.
-  ObjectBase* CreateObject(const String& type_name);
+  ObjectBase* CreateObject(const std::string& type_name);
 
   // Creates an Object based on the type.
   // Parameters:
@@ -143,7 +141,7 @@ class Pack : public NamedObject {
   //  type_name: type name of object type you want created.
   // Returns:
   //  pointer to new object if successful.
-  ObjectBase* CreateUnnamedObject(const String& type_name);
+  ObjectBase* CreateUnnamedObject(const std::string& type_name);
 
   // Creates an Object based on the type.
   // Parameters:
@@ -176,22 +174,6 @@ class Pack : public NamedObject {
   //  root: Pointer to transform to assign as the root transform.
   void set_root(Transform* root);
 
-  // Creates a new FileRequest object.  The object is owned by the Client.
-  // Parameters:
-  //  type: what type of file load will occur after download
-  // Returns:
-  //  A pointer to the newly created FileRequest, or NULL if creation failed.
-#if !defined(O3D_NO_FILE_REQUEST)
-  FileRequest* CreateFileRequest(const String& type);
-#endif  // !defined(O3D_NO_FILE_REQUEST)
-
-  // Creates a new ArchiveRequest object.  The object is owned by the Client.
-  // Returns:
-  //  A pointer to the newly created ArchiveRequest, or NULL if creation failed.
-#if !defined(O3D_NO_ARCHIVE_REQUEST)
-  ArchiveRequest* CreateArchiveRequest();
-#endif  // !defined(O3D_NO_ARCHIVE_REQUEST)
-
   // Creates a new Texture object from a local file. If the file doesn't exist,
   // or won't load, NULL is returned. The file formats supported are JPEG, PNG,
   // TGA and DDS. If the file contains a cube map, it will be created as an
@@ -206,15 +188,8 @@ class Pack : public NamedObject {
   //  generate_mipmaps: Whether to generate mip-maps or not.
   // Returns:
   //  A pointer to the texture or NULL if it did not load
-  Texture* CreateTextureFromFile(const String& uri,
-                                 const FilePath& filepath,
-                                 image::ImageFileType file_type,
-                                 bool generate_mipmaps);
-
-  // This version takes a String |filename| argument instead of the preferred
-  // FilePath argument.  The use of this method should be phased out.
-  Texture* CreateTextureFromFile(const String& uri,
-                                 const String& filename,
+  Texture* CreateTextureFromExternalResource(const std::string& uri,
+                                 const ExternalResource& resource,
                                  image::ImageFileType file_type,
                                  bool generate_mipmaps);
 
@@ -226,7 +201,7 @@ class Pack : public NamedObject {
   // Creates a new Texture object given a memory stream object which must contain
   // binary data in a known image file format (such as JPG or PNG)
   Texture* CreateTextureFromStream(MemoryReadStream* stream,
-                                   const String& uri,
+                                   const std::string& uri,
                                    bool generate_mips);
 
   // Creates a new Bitmap object of the specified size and format and
@@ -246,12 +221,12 @@ class Pack : public NamedObject {
   //   bitmaps: A vector of pointers to bitmaps. If empty there was an error.
   std::vector<Bitmap*> CreateBitmapsFromRawData(RawData* raw_data);
 
-  // Creates a new RawData from a String containing a data URL.
+  // Creates a new RawData from a std::string containing a data URL.
   // Parameters:
   //   data_url: Contains the data URL that is to be decoded.
   // Returns:
   //   A pointer to the RawData that contains the data URL's data.
-  RawData* CreateRawDataFromDataURL(const String& data_url);
+  RawData* CreateRawDataFromDataURL(const std::string& data_url);
 
   // Creates a new Texture2D object of the specified size and format and
   // reserves the necessary resources for it.
@@ -364,7 +339,7 @@ class Pack : public NamedObject {
   // Returns:
   //   std::vector of pointers to type of the objects that matched by name.
   template<typename T>
-  std::vector<T*> Get(const String& name) const {
+  std::vector<T*> Get(const std::string& name) const {
     std::vector<T*> objects;
     if (ObjectBase::ClassIsA(T::GetApparentClass(),
                              NamedObject::GetApparentClass())) {
@@ -392,8 +367,8 @@ class Pack : public NamedObject {
   //                   both Transforms and Shapes.
   // Returns:
   //   Array of Object Pointers.
-  ObjectBaseArray GetObjects(const String& name,
-                             const String& class_type_name) const;
+  ObjectBaseArray GetObjects(const std::string& name,
+                             const std::string& class_type_name) const;
 
   // Search the pack for all objects of a certain class.
   // This function is for Javascript.
@@ -403,11 +378,11 @@ class Pack : public NamedObject {
   //                   both Transforms and Shapes.
   // Returns:
   //   Array of Object Pointers.
-  ObjectBaseArray GetObjectsByClassName(const String& class_type_name) const;
+  ObjectBaseArray GetObjectsByClassName(const std::string& class_type_name) const;
 
   // helper function
   Texture* CreateTextureFromBitmaps(
-      const BitmapRefArray& bitmaps, const String& uri, bool generate_mips);
+      const BitmapRefArray& bitmaps, const std::string& uri, bool generate_mips);
 
  private:
   // Texture objects function as factories for RenderSurface objects.
@@ -458,7 +433,7 @@ class Pack : public NamedObject {
   Transform::Ref root_;
 
   O3D_DECL_CLASS(Pack, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(Pack);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Pack);
 };
 
 // Array container for Pack pointers.

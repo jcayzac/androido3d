@@ -35,7 +35,7 @@
 // partial pathnames (from the image URI's in the collada file) to files in the
 // archive
 
-#include "base/string_util.h"
+#include "base/cross/string_util.h"
 #include "import/cross/collada_zip_archive.h"
 
 using std::vector;
@@ -46,7 +46,8 @@ namespace o3d {
 ColladaZipArchive::ColladaZipArchive(const std::string &zip_filename,
                                      int *result)
   : ZipArchive(zip_filename, result) {
-  if (result && (*result == UNZ_OK)) {
+  if (result && (*result == 0)) {
+    O3D_LOG(INFO) << "ColladaZipArchive(\"" << zip_filename << "\")";
     // look through the archive and locate the first file with a .dae extension
     vector<ZipFileInfo> infolist;
     GetInformationList(&infolist);
@@ -54,6 +55,7 @@ ColladaZipArchive::ColladaZipArchive(const std::string &zip_filename,
     bool dae_found = false;
     for (vector<ZipFileInfo>::size_type i = 0; i < infolist.size(); ++i) {
       const char *name = infolist[i].name.c_str();
+      O3D_LOG(INFO) << "Found file <" << zip_filename << ">/" << name;
       int length = strlen(name);
 
       if (length > 4) {
@@ -68,7 +70,10 @@ ColladaZipArchive::ColladaZipArchive(const std::string &zip_filename,
       }
     }
 
-    if (!dae_found && result) *result = -1;
+    if (!dae_found && result) {
+      O3D_LOG(ERROR) << "Can't find any DAE file in archive";
+      *result = -1;
+    }
   }
 }
 

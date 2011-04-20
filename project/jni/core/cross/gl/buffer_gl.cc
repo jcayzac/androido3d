@@ -59,7 +59,7 @@ GLenum BufferAccessModeToGLenum(Buffer::AccessMode access_mode) {
     case Buffer::NONE:
       break;
   }
-  DCHECK(false);
+  O3D_ASSERT(false);
   return GL_READ_WRITE_ARB;
 }
 
@@ -74,18 +74,18 @@ VertexBufferGL::VertexBufferGL(ServiceLocator* service_locator)
       renderer_(static_cast<RendererGL*>(
           service_locator->GetService<Renderer>())),
       gl_buffer_(0) {
-  DLOG(INFO) << "VertexBufferGL Construct";
+  O3D_LOG(INFO) << "VertexBufferGL Construct";
 }
 
 // Destructor releases the OpenGL VBO.
 VertexBufferGL::~VertexBufferGL() {
-  DLOG(INFO) << "VertexBufferGL Destruct \"" << name() << "\"";
+  O3D_LOG(INFO) << "VertexBufferGL Destruct \"" << name() << "\"";
   ConcreteFree();
 }
 
 // Creates a OpenGL vertex buffer of the requested size.
 bool VertexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
-  DLOG(INFO) << "VertexBufferGL Allocate  \"" << name() << "\"";
+  O3D_LOG(INFO) << "VertexBufferGL Allocate  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   ConcreteFree();
   // Create a new VBO.
@@ -117,7 +117,7 @@ void VertexBufferGL::ConcreteFree() {
 // buffer data is currently stored.
 bool VertexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
                                   void **buffer_data) {
-  DLOG(INFO) << "VertexBufferGL Lock  \"" << name() << "\"";
+  O3D_LOG(INFO) << "VertexBufferGL Lock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
   *buffer_data = glMapBufferARB(GL_ARRAY_BUFFER_ARB,
@@ -138,7 +138,7 @@ bool VertexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
 // Calls Unlock on the OpenGL buffer to notify that the contents of the buffer
 // are now ready for use.
 bool VertexBufferGL::ConcreteUnlock() {
-  DLOG(INFO) << "VertexBufferGL Unlock  \"" << name() << "\"";
+  O3D_LOG(INFO) << "VertexBufferGL Unlock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
   if (!glUnmapBufferARB(GL_ARRAY_BUFFER)) {
@@ -167,18 +167,18 @@ IndexBufferGL::IndexBufferGL(ServiceLocator* service_locator)
       renderer_(static_cast<RendererGL*>(
           service_locator->GetService<Renderer>())),
       gl_buffer_(0) {
-  DLOG(INFO) << "IndexBufferGL Construct";
+  O3D_LOG(INFO) << "IndexBufferGL Construct";
 }
 
 // Destructor releases the OpenGL index buffer.
 IndexBufferGL::~IndexBufferGL() {
-  DLOG(INFO) << "IndexBufferGL Destruct  \"" << name() << "\"";
+  O3D_LOG(INFO) << "IndexBufferGL Destruct  \"" << name() << "\"";
   ConcreteFree();
 }
 
 // Creates a OpenGL index buffer of the requested size.
 bool IndexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
-  DLOG(INFO) << "IndexBufferGL Allocate  \"" << name() << "\"";
+  O3D_LOG(INFO) << "IndexBufferGL Allocate  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   ConcreteFree();
   // Create a new VBO.
@@ -207,7 +207,7 @@ void IndexBufferGL::ConcreteFree() {
 // Maps the OpenGL buffer to get the address in memory of the buffer data.
 bool IndexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
                                  void **buffer_data) {
-  DLOG(INFO) << "IndexBufferGL Lock  \"" << name() << "\"";
+  O3D_LOG(INFO) << "IndexBufferGL Lock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, gl_buffer_);
   if (!num_elements())
@@ -231,7 +231,7 @@ bool IndexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
 // Calls Unlock on the OpenGL buffer to notify that the contents of the buffer
 // are now ready for use.
 bool IndexBufferGL::ConcreteUnlock() {
-  DLOG(INFO) << "IndexBufferGL Unlock  \"" << name() << "\"";
+  O3D_LOG(INFO) << "IndexBufferGL Unlock  \"" << name() << "\"";
   renderer_->MakeCurrentLazy();
   if (!num_elements())
     return true;

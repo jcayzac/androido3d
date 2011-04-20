@@ -33,9 +33,6 @@
 #define O3D_CORE_CROSS_GL_GL_HEADERS_H_
 
 #include <GL/glew.h>
-#if defined(OS_WIN)
-#include <GL/wglew.h>
-#endif
 #include <Cg/cg.h>
 #include <Cg/cgGL.h>
 

@@ -38,6 +38,7 @@
 #include "shader_builder.h"
 
 namespace o3d_utils {
+using namespace o3d;
 
 /**
  * Adds missing texture coordinate streams to a primitive.
@@ -59,25 +60,25 @@ namespace o3d_utils {
  *
  * @param {!o3d.Element} element Element to add streams to.
  */
-void Scene::AddMissingTexCoordStreams(o3d::Element* element) {
+void Scene::AddMissingTexCoordStreams(Element* element) {
   // TODO: We should store that info. The conditioner should either
   // make streams that way or pass on the info so we can do it here.
-  if (element->IsA(o3d::Primitive::GetApparentClass())) {
-    o3d::Primitive* primitive = down_cast<o3d::Primitive*>(element);
-    o3d::Material* material = element->material();
-    o3d::StreamBank* streamBank = primitive->stream_bank();
+  if (element->IsA(Primitive::GetApparentClass())) {
+    Primitive* primitive = down_cast<Primitive*>(element);
+    Material* material = element->material();
+    StreamBank* streamBank = primitive->stream_bank();
     std::string lightingType = ShaderBuilder::getColladaLightingType(material);
     if (!lightingType.empty()) {
       int numTexCoordStreamsNeeded =
           ShaderBuilder::getNumTexCoordStreamsNeeded(material);
       // Count the number of TEXCOORD streams the streamBank has.
-      const o3d::StreamParamVector& streams =
+      const StreamParamVector& streams =
             streamBank->vertex_stream_params();
-      const o3d::Stream* lastTexCoordStream = NULL;
+      const Stream* lastTexCoordStream = NULL;
       int numTexCoordStreams = 0;
       for (int ii = 0; ii < static_cast<int>(streams.size()); ++ii) {
-        const o3d::Stream* stream = &streams[ii]->stream();
-        if (stream->semantic() == o3d::Stream::TEXCOORD) {
+        const Stream* stream = &streams[ii]->stream();
+        if (stream->semantic() == Stream::TEXCOORD) {
           lastTexCoordStream = stream;
           ++numTexCoordStreams;
         }
@@ -104,8 +105,8 @@ void Scene::AddMissingTexCoordStreams(o3d::Element* element) {
  * @param {!o3d.Shape} shape Shape to add missing streams to.
  * @see o3djs.element.addMissingTexCoordStreams
  */
-void Scene::AddMissingTexCoordStreams(o3d::Shape* shape) {
-  const o3d::ElementRefArray& elements = shape->GetElementRefs();
+void Scene::AddMissingTexCoordStreams(Shape* shape) {
+  const ElementRefArray& elements = shape->GetElementRefs();
   for (size_t ee = 0; ee < elements.size(); ++ee) {
     AddMissingTexCoordStreams(elements[ee]);
   }
@@ -115,8 +116,8 @@ void Scene::AddMissingTexCoordStreams(o3d::Shape* shape) {
  * Sets the bounding box and z sort points of a shape's elements.
  * @param {!o3d.Shape} shape Shape to set info on.
  */
-void Scene::SetBoundingBoxesAndZSortPoints(o3d::Shape* shape) {
-  const o3d::ElementRefArray& elements = shape->GetElementRefs();
+void Scene::SetBoundingBoxesAndZSortPoints(Shape* shape) {
+  const ElementRefArray& elements = shape->GetElementRefs();
   for (size_t ee = 0; ee < elements.size(); ++ee) {
     Primitives::SetBoundingBoxAndZSortPoint(elements[ee]);
   }
@@ -128,7 +129,7 @@ void Scene::SetBoundingBoxesAndZSortPoints(o3d::Shape* shape) {
  * @param {!o3d.Pack} pack Pack to manage created objects.
  * @param {!o3d.Shape} shape Shape to prepare.
  */
-void Scene::PrepareShape(o3d::Pack* pack, o3d::Shape* shape) {
+void Scene::PrepareShape(Pack* pack, Shape* shape) {
   shape->CreateDrawElements(pack, NULL);
   SetBoundingBoxesAndZSortPoints(shape);
   AddMissingTexCoordStreams(shape);
@@ -139,42 +140,42 @@ void Scene::PrepareShape(o3d::Pack* pack, o3d::Shape* shape) {
  * zSortPoint and creating DrawElements.
  * @param {!o3d.Pack} pack Pack to manage created objects.
  */
-void Scene::PrepareShapes(o3d::Pack* pack) {
-  std::vector<o3d::Shape*> shapes = pack->GetByClass<o3d::Shape>();
+void Scene::PrepareShapes(Pack* pack) {
+  std::vector<Shape*> shapes = pack->GetByClass<Shape>();
   for (size_t ss = 0; ss < shapes.size(); ++ss) {
     PrepareShape(pack, shapes[ss]);
   }
 };
 
 Scene* Scene::DummyScene(
-    o3d::Client* client,
-    o3d_utils::ViewInfo* view_info)
+  Client* client,
+  ViewInfo* view_info)
 {
-  o3d::Pack* pack = client->CreatePack();
-  pack->set_root(pack->Create<o3d::Transform>());
-  o3d::ParamFloat* time = pack->root()->CreateParam<o3d::ParamFloat>("time");
+  Pack* pack = client->CreatePack();
+  pack->set_root(pack->Create<Transform>());
+  ParamFloat* time = pack->root()->CreateParam<ParamFloat>("time");
 
-  o3d::Shape* shape = pack->Create<o3d::Shape>();
+  Shape* shape = pack->Create<Shape>();
   pack->root()->AddShape(shape);
 
-  o3d::Primitive* prim = Primitives::CreateSphere(
+  Primitive* prim = Primitives::CreateSphere(
       pack, 10.0f, 8, 5, NULL);
   // Setup the material with collada parameters so the shader builder will
   // make a shader for us.
   // NOTE: This is NOT the typical way to do this. This is only because
   //    we have a collada specific shader builder in shader_builder.cpp
   //    which is NOT part of O3D.
-  o3d::Material* material = pack->Create<o3d::Material>();
-  o3d::Sampler* sampler = pack->Create<o3d::Sampler>();
-  o3d::Renderer* renderer =
-      pack->service_locator()->GetService<o3d::Renderer>();
+  Material* material = pack->Create<Material>();
+  Sampler* sampler = pack->Create<Sampler>();
+  Renderer* renderer =
+      pack->service_locator()->GetService<Renderer>();
   sampler->set_texture(renderer->error_texture());
-  sampler->set_min_filter(o3d::Sampler::NONE);
-  sampler->set_mag_filter(o3d::Sampler::NONE);
-  sampler->set_mip_filter(o3d::Sampler::NONE);
-  material->CreateParam<o3d::ParamString>("collada.lightingType")->set_value(
+  sampler->set_min_filter(Sampler::NONE);
+  sampler->set_mag_filter(Sampler::NONE);
+  sampler->set_mip_filter(Sampler::NONE);
+  material->CreateParam<ParamString>("collada.lightingType")->set_value(
       "constant");
-  material->CreateParam<o3d::ParamSampler>("emissiveSampler")->set_value(
+  material->CreateParam<ParamSampler>("emissiveSampler")->set_value(
       sampler);
   prim->SetOwner(shape);
   prim->set_material(material);
@@ -185,66 +186,53 @@ Scene* Scene::DummyScene(
 }
 
 Scene* Scene::LoadScene(
-    o3d::Client* client,
-    o3d_utils::ViewInfo* view_info,
+    Client* client,
+    ViewInfo* view_info,
     const std::string& filename,
-    o3d::Pack* effect_texture_pack) {
-  o3d::Pack* pack = client->CreatePack();
-  pack->set_root(pack->Create<o3d::Transform>());
-  o3d::ParamFloat* time = pack->root()->CreateParam<o3d::ParamFloat>("time");
+    Pack* effect_texture_pack) {
+  Pack* pack = client->CreatePack();
+  pack->set_root(pack->Create<Transform>());
+  ParamFloat* time = pack->root()->CreateParam<ParamFloat>("time");
 
-  o3d::Collada::Options options;
-  options.up_axis = o3d::Vector3(0.0f, 1.0f, 0.0f);
+  Collada::Options options;
+  options.up_axis = Vector3(0.0f, 1.0f, 0.0f);
   options.texture_pack = effect_texture_pack;
   options.store_textures_by_basename = effect_texture_pack != NULL;
-  if (!o3d::Collada::Import(
+  if (!Collada::Import(
       pack,
       filename,
       pack->root(),
       time,
       options)) {
-    pack->service_locator()->GetService<o3d::ObjectManager>()->DestroyPack(pack);
+    pack->service_locator()->GetService<ObjectManager>()->DestroyPack(pack);
     return 0;
   }
 
   Materials::PrepareMaterials(pack, view_info, effect_texture_pack);
   PrepareShapes(pack);
 
-  #if 1  // print total polygons.
-  {
-    int total = 0;
-    std::vector<o3d::IndexBuffer*> bufs = pack->GetByClass<o3d::IndexBuffer>();
-    for (size_t ii = 0; ii < bufs.size(); ++ii) {
-      int num = bufs[ii]->num_elements() / 3;
-      DLOG(INFO) << "IndexBuffer: " << bufs[ii]->name() << " : polys: " << num;
-      total += num;
-    }
-    DLOG(INFO) << "Total Polygons: " << total;
-  }
-  #endif
-
   return new Scene(pack, pack->root(), time);
 }
 
 Scene* Scene::LoadBinaryScene(
-  o3d::Client* client,
-  o3d_utils::ViewInfo* view_info,
+  Client* client,
+  ViewInfo* view_info,
   const std::string& filename,
-  o3d::extra::IExternalResourceProvider& external_resource_provider) {
+  extra::IExternalResourceProvider& external_resource_provider) {
 
-  o3d::Transform* root = 0;
-  o3d::Pack* pack = client->CreatePack();
+  Transform* root = 0;
+  Pack* pack = client->CreatePack();
 
   std::ifstream ifs(filename.c_str(), std::ios::in|std::ios::binary);
   if (ifs.is_open()) {
-    root = o3d::extra::LoadFromBinaryStream(ifs, *pack, external_resource_provider);
+    root = extra::LoadFromBinaryStream(ifs, *pack, external_resource_provider);
     ifs.close();
   }
   else {
-    DLOG(ERROR) << "Can't open " << filename;
+    O3D_LOG(ERROR) << "Can't open " << filename;
   }
   if (!root) {
-    pack->service_locator()->GetService<o3d::ObjectManager>()->DestroyPack(pack);
+    pack->service_locator()->GetService<ObjectManager>()->DestroyPack(pack);
     return 0;
   }
 
@@ -255,21 +243,21 @@ Scene* Scene::LoadBinaryScene(
   #if 1  // print total polygons.
   {
     int total = 0;
-    std::vector<o3d::IndexBuffer*> bufs = pack->GetByClass<o3d::IndexBuffer>();
+    std::vector<IndexBuffer*> bufs = pack->GetByClass<IndexBuffer>();
     for (size_t ii = 0; ii < bufs.size(); ++ii) {
       int num = bufs[ii]->num_elements() / 3;
-      DLOG(INFO) << "IndexBuffer: " << bufs[ii]->name() << " : polys: " << num;
+      O3D_LOG(INFO) << "IndexBuffer: " << bufs[ii]->name() << " : polys: " << num;
       total += num;
     }
-    DLOG(INFO) << "Total Polygons: " << total;
+    O3D_LOG(INFO) << "Total Polygons: " << total;
   }
   #endif
 
-  return new Scene(pack, pack->root(), pack->root()->GetParam<o3d::ParamFloat>("time"));
+  return new Scene(pack, pack->root(), pack->root()->GetParam<ParamFloat>("time"));
 }
 
 
-Scene::Scene(o3d::Pack* pack, o3d::Transform* root, o3d::ParamFloat* time)
+Scene::Scene(Pack* pack, Transform* root, ParamFloat* time)
     : pack_(pack),
       root_(root),
       time_(time) {
@@ -280,20 +268,20 @@ Scene::~Scene() {
   pack_->Destroy();
 }
 
-void Scene::SetParent(o3d::Transform* parent) {
+void Scene::SetParent(Transform* parent) {
   root_->SetParent(parent);
 }
 
-void Scene::SetLocalMatrix(const o3d::Matrix4& mat) {
+void Scene::SetLocalMatrix(const Matrix4& mat) {
   root_->set_local_matrix(mat);
 }
 
 void Scene::SetLocalMatrix(const float* mat) {
-  root_->set_local_matrix(o3d::Matrix4(
-      o3d::Vector4(mat[0], mat[1], mat[2], mat[3]),
-      o3d::Vector4(mat[4], mat[5], mat[6], mat[7]),
-      o3d::Vector4(mat[8], mat[9], mat[10], mat[11]),
-      o3d::Vector4(mat[12], mat[13], mat[14], mat[15])));
+  root_->set_local_matrix(Matrix4(
+      Vector4(mat[0], mat[1], mat[2], mat[3]),
+      Vector4(mat[4], mat[5], mat[6], mat[7]),
+      Vector4(mat[8], mat[9], mat[10], mat[11]),
+      Vector4(mat[12], mat[13], mat[14], mat[15])));
 }
 
 void Scene::SetAnimationTime(float timeInSeconds) {
@@ -302,19 +290,19 @@ void Scene::SetAnimationTime(float timeInSeconds) {
 
 class Cloner {
  public:
-  static Scene* Clone(o3d::Client* client, const Scene* src);
+  static Scene* Clone(Client* client, const Scene* src);
 
  private:
-  class CopierBase : public o3d::RefCounted {
+  class CopierBase : public RefCounted {
    public:
-    typedef o3d::SmartPointer<CopierBase> Ref;
+    typedef SmartPointer<CopierBase> Ref;
 
     virtual ~CopierBase() { }
 
     virtual bool Copy(
         Cloner* cloner,
-        const o3d::ObjectBase* src,
-        o3d::ObjectBase* dst) = 0;
+        const ObjectBase* src,
+        ObjectBase* dst) = 0;
   };
 
   template <typename T>
@@ -322,11 +310,9 @@ class Cloner {
    public:
     virtual bool Copy(
         Cloner* cloner,
-        const o3d::ObjectBase* src,
-        o3d::ObjectBase* dst) {
-//DLOG(INFO) << "Checking if object is: " << T::GetApparentClass()->name();
+        const ObjectBase* src,
+        ObjectBase* dst) {
       if (src->IsA(T::GetApparentClass()) && dst->IsA(T::GetApparentClass())) {
-//DLOG(INFO) << "Copying as: " <<  T::GetApparentClass()->name();
         cloner->Copy(static_cast<const T*>(src), static_cast<T*>(dst));
         return true;
       }
@@ -334,7 +320,7 @@ class Cloner {
     }
   };
 
-  Cloner(o3d::Client* client)
+  Cloner(Client* client)
       : client_(client) {
   }
 
@@ -343,243 +329,220 @@ class Cloner {
   void CheckError() {
     const std::string& error = client_->GetLastError();
     if (!error.empty()) {
-      DLOG(INFO) << "============O3D ERROR===================="
+      O3D_LOG(INFO) << "============O3D ERROR===================="
                  << error;
       client_->ClearLastError();
     }
   }
 
-  static bool ShouldClone(o3d::ObjectBase* obj) {
+  static bool ShouldClone(ObjectBase* obj) {
     // Check by class.
-    if (obj->IsA(o3d::Curve::GetApparentClass()) ||
-        obj->IsA(o3d::Material::GetApparentClass()) ||
-        obj->IsA(o3d::Effect::GetApparentClass()) ||
-        obj->IsA(o3d::IndexBuffer::GetApparentClass()) ||
-        obj->IsA(o3d::Skin::GetApparentClass()) ||
-        obj->IsA(o3d::Texture::GetApparentClass())) {
+    if (obj->IsA(Curve::GetApparentClass()) ||
+        obj->IsA(Material::GetApparentClass()) ||
+        obj->IsA(Effect::GetApparentClass()) ||
+        obj->IsA(IndexBuffer::GetApparentClass()) ||
+        obj->IsA(Skin::GetApparentClass()) ||
+        obj->IsA(Texture::GetApparentClass())) {
       return false;
     }
     return true;
   };
 
-  void Copy(const o3d::Element* src_element, o3d::Element* dst_element) {
-//DLOG(INFO) << "Copy Element";
-    Copy(static_cast<const o3d::ParamObject*>(src_element),
-         static_cast<o3d::ParamObject*>(dst_element));
+  void Copy(const Element* src_element, Element* dst_element) {
+    Copy(static_cast<const ParamObject*>(src_element),
+         static_cast<ParamObject*>(dst_element));
 
-    o3d::Shape* owner = src_element->owner();
-    dst_element->SetOwner(owner ? GetNew<o3d::Shape>(owner) : NULL);
+    Shape* owner = src_element->owner();
+    dst_element->SetOwner(owner ? GetNew<Shape>(owner) : NULL);
   }
 
-  void Copy(const o3d::DrawElement* src_de, o3d::DrawElement* dst_de) {
-//DLOG(INFO) << "Copy DrawElement";
-    Copy(static_cast<const o3d::ParamObject*>(src_de),
-         static_cast<o3d::ParamObject*>(dst_de));
+  void Copy(const DrawElement* src_de, DrawElement* dst_de) {
+    Copy(static_cast<const ParamObject*>(src_de),
+         static_cast<ParamObject*>(dst_de));
 
-    o3d::Element* owner = src_de->owner();
-    dst_de->SetOwner(owner ? GetNew<o3d::Element>(owner) : NULL);
+    Element* owner = src_de->owner();
+    dst_de->SetOwner(owner ? GetNew<Element>(owner) : NULL);
   }
 
-  void Copy(const o3d::NamedObject* src_object, o3d::NamedObject* dst_object) {
-//DLOG(INFO) << "Copy NamedObject";
-    Copy(static_cast<const o3d::ObjectBase*>(src_object),
-         static_cast<o3d::ObjectBase*>(dst_object));
+  void Copy(const NamedObject* src_object, NamedObject* dst_object) {
+    Copy(static_cast<const ObjectBase*>(src_object),
+         static_cast<ObjectBase*>(dst_object));
 
     dst_object->set_name(src_object->name() + "_copy");
   }
 
-  void Copy(const o3d::ParamObject* src, o3d::ParamObject* dst) {
-//DLOG(INFO) << "Copy ParamObject";
-    Copy(static_cast<const o3d::NamedObject*>(src),
-         static_cast<o3d::NamedObject*>(dst));
-    const o3d::NamedParamRefMap& params = src->params();
-    for (o3d::NamedParamRefMap::const_iterator it = params.begin();
+  void Copy(const ParamObject* src, ParamObject* dst) {
+    Copy(static_cast<const NamedObject*>(src),
+         static_cast<NamedObject*>(dst));
+    const NamedParamRefMap& params = src->params();
+    for (NamedParamRefMap::const_iterator it = params.begin();
          it != params.end();
          ++it) {
-      o3d::Param* src_param = it->second;
-      o3d::Param* dst_param = dst->GetUntypedParam(src_param->name());
-      if (src_param->IsA(o3d::RefParamBase::GetApparentClass())) {
-        o3d::RefParamBase* prb = down_cast<o3d::RefParamBase*>(src_param);
-        o3d::ObjectBase* src_value = prb->value();
+      Param* src_param = it->second;
+      Param* dst_param = dst->GetUntypedParam(src_param->name());
+      if (src_param->IsA(RefParamBase::GetApparentClass())) {
+        RefParamBase* prb = down_cast<RefParamBase*>(src_param);
+        ObjectBase* src_value = prb->value();
         if (src_value) {
-          o3d::ObjectBase* dst_value = GetNew<o3d::ObjectBase>(src_value);
-          if (dst_param->IsA(o3d::ParamDrawContext::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamDrawContext";
-            down_cast<o3d::ParamDrawContext*>(dst_param)->set_value(
-                down_cast<o3d::DrawContext*>(dst_value));
+          ObjectBase* dst_value = GetNew<ObjectBase>(src_value);
+          if (dst_param->IsA(ParamDrawContext::GetApparentClass())) {
+            down_cast<ParamDrawContext*>(dst_param)->set_value(
+                down_cast<DrawContext*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamDrawList::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamDrawList";
-            down_cast<o3d::ParamDrawList*>(dst_param)->set_value(
-                down_cast<o3d::DrawList*>(dst_value));
+          if (dst_param->IsA(ParamDrawList::GetApparentClass())) {
+            down_cast<ParamDrawList*>(dst_param)->set_value(
+                down_cast<DrawList*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamEffect::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamEffect";
-            down_cast<o3d::ParamEffect*>(dst_param)->set_value(
-                down_cast<o3d::Effect*>(dst_value));
+          if (dst_param->IsA(ParamEffect::GetApparentClass())) {
+            down_cast<ParamEffect*>(dst_param)->set_value(
+                down_cast<Effect*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamFunction::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamFunction";
-            down_cast<o3d::ParamFunction*>(dst_param)->set_value(
-                down_cast<o3d::Function*>(dst_value));
+          if (dst_param->IsA(ParamFunction::GetApparentClass())) {
+            down_cast<ParamFunction*>(dst_param)->set_value(
+                down_cast<Function*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamMaterial::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamMaterial";
-            down_cast<o3d::ParamMaterial*>(dst_param)->set_value(
-                down_cast<o3d::Material*>(dst_value));
+          if (dst_param->IsA(ParamMaterial::GetApparentClass())) {
+            down_cast<ParamMaterial*>(dst_param)->set_value(
+                down_cast<Material*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamParamArray::GetApparentClass())) {
-            down_cast<o3d::ParamParamArray*>(dst_param)->set_value(
-                down_cast<o3d::ParamArray*>(dst_value));
+          if (dst_param->IsA(ParamParamArray::GetApparentClass())) {
+            down_cast<ParamParamArray*>(dst_param)->set_value(
+                down_cast<ParamArray*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamRenderSurface::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamRenderSurface";
-            down_cast<o3d::ParamRenderSurface*>(dst_param)->set_value(
-                down_cast<o3d::RenderSurface*>(dst_value));
+          if (dst_param->IsA(ParamRenderSurface::GetApparentClass())) {
+            down_cast<ParamRenderSurface*>(dst_param)->set_value(
+                down_cast<RenderSurface*>(dst_value));
           } else
           if (dst_param->IsA(
-              o3d::ParamRenderDepthStencilSurface::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamRenderDepthSampler";
-            down_cast<o3d::ParamRenderDepthStencilSurface*>(
+              ParamRenderDepthStencilSurface::GetApparentClass())) {
+            down_cast<ParamRenderDepthStencilSurface*>(
                 dst_param)->set_value(
-                    down_cast<o3d::RenderDepthStencilSurface*>(dst_value));
+                    down_cast<RenderDepthStencilSurface*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamSampler::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamSampler";
-            down_cast<o3d::ParamSampler*>(dst_param)->set_value(
-                down_cast<o3d::Sampler*>(dst_value));
+          if (dst_param->IsA(ParamSampler::GetApparentClass())) {
+            down_cast<ParamSampler*>(dst_param)->set_value(
+                down_cast<Sampler*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamSkin::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamSkin";
-            down_cast<o3d::ParamSkin*>(dst_param)->set_value(
-                down_cast<o3d::Skin*>(dst_value));
+          if (dst_param->IsA(ParamSkin::GetApparentClass())) {
+            down_cast<ParamSkin*>(dst_param)->set_value(
+                down_cast<Skin*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamState::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamState";
-            down_cast<o3d::ParamState*>(dst_param)->set_value(
-                down_cast<o3d::State*>(dst_value));
+          if (dst_param->IsA(ParamState::GetApparentClass())) {
+            down_cast<ParamState*>(dst_param)->set_value(
+                down_cast<State*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamStreamBank::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamStreamBank";
-            down_cast<o3d::ParamStreamBank*>(dst_param)->set_value(
-                down_cast<o3d::StreamBank*>(dst_value));
+          if (dst_param->IsA(ParamStreamBank::GetApparentClass())) {
+            down_cast<ParamStreamBank*>(dst_param)->set_value(
+                down_cast<StreamBank*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamTexture::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamTexture";
-            down_cast<o3d::ParamTexture*>(dst_param)->set_value(
-                down_cast<o3d::Texture*>(dst_value));
+          if (dst_param->IsA(ParamTexture::GetApparentClass())) {
+            down_cast<ParamTexture*>(dst_param)->set_value(
+                down_cast<Texture*>(dst_value));
           } else
-          if (dst_param->IsA(o3d::ParamTransform::GetApparentClass())) {
-            //DLOG(INFO) << "Copying ParamTransform";
-            down_cast<o3d::ParamTransform*>(dst_param)->set_value(
-                down_cast<o3d::Transform*>(dst_value));
+          if (dst_param->IsA(ParamTransform::GetApparentClass())) {
+            down_cast<ParamTransform*>(dst_param)->set_value(
+                down_cast<Transform*>(dst_value));
           }
         }
       }
       if (dst_param && src_param->input_connection()) {
-        dst_param->Bind(GetNew<o3d::Param>(src_param->input_connection()));
+        dst_param->Bind(GetNew<Param>(src_param->input_connection()));
       }
     }
   }
 
-  void Copy(const o3d::ObjectBase* src_object, o3d::ObjectBase* dst_object) {
-//DLOG(INFO) << "Copy ObjectBase";
+  void Copy(const ObjectBase* src_object, ObjectBase* dst_object) {
+    // NO-OP
   }
 
   void Copy(
-      const o3d::Primitive* src_primitive, o3d::Primitive* dst_primitive) {
-//DLOG(INFO) << "Copy Primitive";
-    Copy(static_cast<const o3d::Element*>(src_primitive),
-         static_cast<o3d::Element*>(dst_primitive));
+      const Primitive* src_primitive, Primitive* dst_primitive) {
+    Copy(static_cast<const Element*>(src_primitive),
+         static_cast<Element*>(dst_primitive));
 
     dst_primitive->set_number_vertices(src_primitive->number_vertices());
     dst_primitive->set_number_primitives(src_primitive->number_primitives());
     dst_primitive->set_primitive_type(src_primitive->primitive_type());
     dst_primitive->set_start_index(src_primitive->start_index());
-    dst_primitive->set_index_buffer(GetNew<o3d::IndexBuffer>(
+    dst_primitive->set_index_buffer(GetNew<IndexBuffer>(
         src_primitive->index_buffer()));
   }
 
-  void Copy(const o3d::Shape* src_shape, o3d::Shape* dst_shape) {
-//DLOG(INFO) << "Copy Shape";
-    Copy(static_cast<const o3d::ParamObject*>(src_shape),
-         static_cast<o3d::ParamObject*>(dst_shape));
+  void Copy(const Shape* src_shape, Shape* dst_shape) {
+    Copy(static_cast<const ParamObject*>(src_shape),
+         static_cast<ParamObject*>(dst_shape));
   }
 
   void Copy(
-      const o3d::Transform* src_transform, o3d::Transform* dst_transform) {
-//DLOG(INFO) << "Copy Transform";
-    Copy(static_cast<const o3d::ParamObject*>(src_transform),
-         static_cast<o3d::ParamObject*>(dst_transform));
+      const Transform* src_transform, Transform* dst_transform) {
+    Copy(static_cast<const ParamObject*>(src_transform),
+         static_cast<ParamObject*>(dst_transform));
 
-    const o3d::ShapeRefArray& src_shapes = src_transform->GetShapeRefs();
+    const ShapeRefArray& src_shapes = src_transform->GetShapeRefs();
     for (size_t ii = 0; ii < src_shapes.size(); ++ii) {
-      dst_transform->AddShape(GetNew<o3d::Shape>(src_shapes[ii]));
+      dst_transform->AddShape(GetNew<Shape>(src_shapes[ii]));
     }
 
-    o3d::Transform* parent = src_transform->parent();
-    dst_transform->SetParent(parent ? GetNew<o3d::Transform>(parent) : NULL);
+    Transform* parent = src_transform->parent();
+    dst_transform->SetParent(parent ? GetNew<Transform>(parent) : NULL);
   }
 
-  void Copy(const o3d::SkinEval* src_skin_eval, o3d::SkinEval* dst_skin_eval) {
-//DLOG(INFO) << "Copy SkinEval";
-    Copy(static_cast<const o3d::VertexSource*>(src_skin_eval),
-         static_cast<o3d::VertexSource*>(dst_skin_eval));
+  void Copy(const SkinEval* src_skin_eval, SkinEval* dst_skin_eval) {
+    Copy(static_cast<const VertexSource*>(src_skin_eval),
+         static_cast<VertexSource*>(dst_skin_eval));
 
-    const o3d::StreamParamVector& vertex_stream_params =
+    const StreamParamVector& vertex_stream_params =
         src_skin_eval->vertex_stream_params();
     for (size_t ii = 0; ii != vertex_stream_params.size(); ++ii) {
-      const o3d::Stream& stream = vertex_stream_params[ii]->stream();
+      const Stream& stream = vertex_stream_params[ii]->stream();
       dst_skin_eval->SetVertexStream(
           stream.semantic(),
           stream.semantic_index(),
-          GetNew<o3d::Field>(&stream.field()),
+          GetNew<Field>(&stream.field()),
           stream.start_index());
-      o3d::Param* input = vertex_stream_params[ii]->input_connection();
+      Param* input = vertex_stream_params[ii]->input_connection();
       if (input != NULL) {
         dst_skin_eval->BindStream(
-            GetNew<o3d::VertexSource>(input->owner()),
+            GetNew<VertexSource>(input->owner()),
             stream.semantic(),
             stream.semantic_index());
       }
     }
   }
 
-  void Copy(const o3d::ParamArray* src_array, o3d::ParamArray* dst_array) {
-//DLOG(INFO) << "Copy ParamArray";
-    Copy(static_cast<const o3d::NamedObject*>(src_array),
-         static_cast<o3d::NamedObject*>(dst_array));
+  void Copy(const ParamArray* src_array, ParamArray* dst_array) {
+    Copy(static_cast<const NamedObject*>(src_array),
+         static_cast<NamedObject*>(dst_array));
 
-    const o3d::ParamArray::ParamRefVector& src_params = src_array->params();
-    const o3d::ParamArray::ParamRefVector& dst_params = dst_array->params();
+    const ParamArray::ParamRefVector& src_params = src_array->params();
+    const ParamArray::ParamRefVector& dst_params = dst_array->params();
     for (size_t ii = 0; ii < src_params.size(); ++ii) {
-      o3d::Param* src_param = src_params[ii];
-      o3d::Param* input = src_param->input_connection();
+      Param* src_param = src_params[ii];
+      Param* input = src_param->input_connection();
       if (input) {
-        o3d::Param* dst_param = dst_params[ii];
-        dst_param->Bind(GetNew<o3d::Param>(input));
+        Param* dst_param = dst_params[ii];
+        dst_param->Bind(GetNew<Param>(input));
       }
     }
   }
 
-  void Copy(const o3d::StreamBank* src_stream_bank,
-            o3d::StreamBank* dst_stream_bank) {
-//DLOG(INFO) << "Copy StreamBank";
-    Copy(static_cast<const o3d::ParamObject*>(src_stream_bank),
-         static_cast<o3d::ParamObject*>(dst_stream_bank));
-    const o3d::StreamParamVector& vertex_stream_params =
+  void Copy(const StreamBank* src_stream_bank,
+            StreamBank* dst_stream_bank) {
+    Copy(static_cast<const ParamObject*>(src_stream_bank),
+         static_cast<ParamObject*>(dst_stream_bank));
+    const StreamParamVector& vertex_stream_params =
         src_stream_bank->vertex_stream_params();
     for (size_t ii = 0; ii != vertex_stream_params.size(); ++ii) {
-      const o3d::Stream& stream = vertex_stream_params[ii]->stream();
+      const Stream& stream = vertex_stream_params[ii]->stream();
       dst_stream_bank->SetVertexStream(
           stream.semantic(),
           stream.semantic_index(),
-          GetNew<o3d::Field>(&stream.field()),
+          GetNew<Field>(&stream.field()),
           stream.start_index());
-      o3d::Param* input = vertex_stream_params[ii]->input_connection();
+      Param* input = vertex_stream_params[ii]->input_connection();
       if (input != NULL) {
         dst_stream_bank->BindStream(
-            GetNew<o3d::VertexSource>(input->owner()),
+            GetNew<VertexSource>(input->owner()),
             stream.semantic(),
             stream.semantic_index());
       }
@@ -587,52 +550,51 @@ class Cloner {
   }
 
   void AddMapping(
-      const o3d::ObjectBase* old_obj, const o3d::ObjectBase* new_obj) {
-    DCHECK(old_obj);
-    DCHECK(new_obj);
-    DCHECK(old_obj->IsA(o3d::ObjectBase::GetApparentClass()));
-    DCHECK(new_obj->IsA(o3d::ObjectBase::GetApparentClass()));
-    old_to_new_map_[old_obj] = const_cast<o3d::ObjectBase*>(new_obj);
+      const ObjectBase* old_obj, const ObjectBase* new_obj) {
+    O3D_ASSERT(old_obj);
+    O3D_ASSERT(new_obj);
+    O3D_ASSERT(old_obj->IsA(ObjectBase::GetApparentClass()));
+    O3D_ASSERT(new_obj->IsA(ObjectBase::GetApparentClass()));
+    old_to_new_map_[old_obj] = const_cast<ObjectBase*>(new_obj);
   }
 
   template <typename T>
-  T* GetNew(const o3d::ObjectBase* old) {
-    DCHECK(old) << " was null for type: " << T::GetApparentClass()->name();
+  T* GetNew(const ObjectBase* old) {
+    O3D_ASSERT(old) << " was null for type: " << T::GetApparentClass()->name();
     T* value = down_cast<T*>(old_to_new_map_[old]);
-    DCHECK(value == NULL || value->IsA(old->GetClass()));
+    O3D_ASSERT(value == NULL || value->IsA(old->GetClass()));
     return value;
   }
 
-  o3d::Client* client_;
-  std::map<const o3d::ObjectBase*, o3d::ObjectBase*> old_to_new_map_;
+  Client* client_;
+  std::map<const ObjectBase*, ObjectBase*> old_to_new_map_;
 };
 
-Scene* Cloner::Clone(o3d::Client* client, const Scene* src) {
+Scene* Cloner::Clone(Client* client, const Scene* src) {
   Cloner cloner(client);
   return cloner.CloneScene(src);
 }
 
 Scene* Cloner::CloneScene(const Scene* src) {
-  o3d::Pack* dst_pack = client_->CreatePack();
-  o3d::Pack* src_pack = src->pack();
+  Pack* dst_pack = client_->CreatePack();
+  Pack* src_pack = src->pack();
 
-//DLOG(INFO) << "Walk Stream Banks";
   // First, hand process the stream_banks to find which vertex buffers need to
   // be cloned and which don't
-  std::set<o3d::Buffer*> buffers_to_clone;
-  std::set<o3d::StreamBank*> stream_banks_to_clone;
-  std::vector<o3d::StreamBank*> stream_banks =
-      src_pack->GetByClass<o3d::StreamBank>();
+  std::set<Buffer*> buffers_to_clone;
+  std::set<StreamBank*> stream_banks_to_clone;
+  std::vector<StreamBank*> stream_banks =
+      src_pack->GetByClass<StreamBank>();
   for (size_t ii = 0; ii < stream_banks.size(); ++ii) {
-    o3d::StreamBank* sb = down_cast<o3d::StreamBank*>(stream_banks[ii]);
-    const o3d::StreamParamVector& params = sb->vertex_stream_params();
+    StreamBank* sb = down_cast<StreamBank*>(stream_banks[ii]);
+    const StreamParamVector& params = sb->vertex_stream_params();
     bool need_to_clone = false;
     for (size_t jj = 0; jj < params.size(); ++jj) {
-      const o3d::ParamVertexBufferStream* param = params[jj];
+      const ParamVertexBufferStream* param = params[jj];
       // If there is an input connection then we need to clone it.
       if (param->input_connection()) {
-        const o3d::Buffer* buffer = param->stream().field().buffer();
-        buffers_to_clone.insert(const_cast<o3d::Buffer*>(buffer));
+        const Buffer* buffer = param->stream().field().buffer();
+        buffers_to_clone.insert(const_cast<Buffer*>(buffer));
         need_to_clone = true;
       }
     }
@@ -641,12 +603,11 @@ Scene* Cloner::CloneScene(const Scene* src) {
     }
   }
 
-//DLOG(INFO) << "Compute buffers to keep";
   // Clone stuff not on the list.
-  std::vector<o3d::Buffer*> buffers =
-      src_pack->GetByClass<o3d::Buffer>();
-  std::set<o3d::Buffer*> all_buffers(buffers.begin(), buffers.end());
-  std::set<o3d::Buffer*> buffers_to_keep;
+  std::vector<Buffer*> buffers =
+      src_pack->GetByClass<Buffer>();
+  std::set<Buffer*> all_buffers(buffers.begin(), buffers.end());
+  std::set<Buffer*> buffers_to_keep;
 
   std::set_difference(
       all_buffers.begin(),
@@ -655,47 +616,45 @@ Scene* Cloner::CloneScene(const Scene* src) {
       buffers_to_clone.end(),
       std::inserter(buffers_to_keep, buffers_to_keep.begin()));
 
-  for (std::set<o3d::Buffer*>::iterator it = buffers_to_keep.begin();
+  for (std::set<Buffer*>::iterator it = buffers_to_keep.begin();
        it != buffers_to_keep.end(); ++it) {
-    o3d::Buffer* buffer = *it;
+    Buffer* buffer = *it;
     AddMapping(buffer, buffer);
     // The the fields
-    const o3d::FieldRefArray& fields = buffer->fields();
+    const FieldRefArray& fields = buffer->fields();
     for (size_t jj = 0; jj < fields.size(); ++jj) {
-      const o3d::Field* field = fields[jj];
+      const Field* field = fields[jj];
       AddMapping(field, field);
     }
   }
 
-//DLOG(INFO) << "Walk Primitives";
   // Next we need to look at all primitives and see if they use a streambank
   // that needs to be cloned.
-  std::vector<o3d::Primitive*> primitives =
-      src_pack->GetByClass<o3d::Primitive>();
+  std::vector<Primitive*> primitives =
+      src_pack->GetByClass<Primitive>();
   for (size_t ii = 0; ii < primitives.size(); ++ii) {
-    o3d::Primitive* p = down_cast<o3d::Primitive*>(primitives[ii]);
-    if (GetNew<o3d::StreamBank>(p->stream_bank()) != NULL) {
+    Primitive* p = down_cast<Primitive*>(primitives[ii]);
+    if (GetNew<StreamBank>(p->stream_bank()) != NULL) {
       // This primitive does NOT need to be cloned.
       AddMapping(p, p);
       // And neither do it's DrawElements
-      const o3d::DrawElementRefArray& draw_elements = p->GetDrawElementRefs();
+      const DrawElementRefArray& draw_elements = p->GetDrawElementRefs();
       for (size_t jj = 0; jj < draw_elements.size(); ++jj) {
-        o3d::DrawElement* de = draw_elements[jj];
+        DrawElement* de = draw_elements[jj];
         AddMapping(de, de);
       }
     }
   }
 
-//DLOG(INFO) << "Walk Shapes";
   // Finally we need to go through the shapes and see if they use a primitive
   // that needs to be cloned.
-  std::vector<o3d::Shape*> shapes = src_pack->GetByClass<o3d::Shape>();
+  std::vector<Shape*> shapes = src_pack->GetByClass<Shape>();
   for (size_t ii = 0; ii < shapes.size(); ++ii) {
-    o3d::Shape* s = down_cast<o3d::Shape*>(shapes[ii]);
-    const o3d::ElementRefArray& elements = s->GetElementRefs();
+    Shape* s = down_cast<Shape*>(shapes[ii]);
+    const ElementRefArray& elements = s->GetElementRefs();
     bool need_to_clone = false;
     for (size_t jj = 0; jj < elements.size(); ++jj) {
-      if (GetNew<o3d::Element>(elements[jj]) == NULL) {
+      if (GetNew<Element>(elements[jj]) == NULL) {
         need_to_clone = true;
         break;
       }
@@ -706,50 +665,47 @@ Scene* Cloner::CloneScene(const Scene* src) {
     }
   }
 
-//DLOG(INFO) << "Clone Stuff";
   CheckError();
   // Clone all the rest.
-  std::vector<o3d::ObjectBase*> objects =
-      src_pack->GetByClass<o3d::ObjectBase>();
+  std::vector<ObjectBase*> objects =
+      src_pack->GetByClass<ObjectBase>();
   for (size_t ii = 0; ii < objects.size(); ++ii) {
-    o3d::ObjectBase* src = objects[ii];
-    o3d::ObjectBase* dst = src;
-    if (GetNew<o3d::ObjectBase>(src) == NULL && ShouldClone(src)) {
+    ObjectBase* src = objects[ii];
+    ObjectBase* dst = src;
+    if (GetNew<ObjectBase>(src) == NULL && ShouldClone(src)) {
       dst = dst_pack->CreateObjectByClass(src->GetClass());
-      if (dst->IsA(o3d::ParamObject::GetApparentClass())) {
-        down_cast<o3d::ParamObject*>(dst)->CopyParams(
-            down_cast<o3d::ParamObject*>(src));
+      if (dst->IsA(ParamObject::GetApparentClass())) {
+        down_cast<ParamObject*>(dst)->CopyParams(
+            down_cast<ParamObject*>(src));
       }
-      if (dst->IsA(o3d::Buffer::GetApparentClass())) {
+      if (dst->IsA(Buffer::GetApparentClass())) {
         // Duplicate the fields.
-        o3d::Buffer* src_buf = down_cast<o3d::Buffer*>(src);
-        o3d::Buffer* dst_buf = down_cast<o3d::Buffer*>(dst);
-//DLOG(INFO) << "Create Fields";
-        const o3d::FieldRefArray& fields = src_buf->fields();
+        Buffer* src_buf = down_cast<Buffer*>(src);
+        Buffer* dst_buf = down_cast<Buffer*>(dst);
+        const FieldRefArray& fields = src_buf->fields();
         for (size_t jj = 0; jj < fields.size(); ++jj) {
-          const o3d::Field* src_field = fields[jj];
-          o3d::Field* dst_field = dst_buf->CreateField(
+          const Field* src_field = fields[jj];
+          Field* dst_field = dst_buf->CreateField(
               src_field->GetClass(), src_field->num_components());
           AddMapping(src_field, dst_field);
         }
         dst_buf->AllocateElements(src_buf->num_elements());
-//DLOG(INFO) << "Copy Fields";
         for (size_t jj = 0; jj < fields.size(); ++jj) {
-          const o3d::Field* src_field = fields[jj];
-          o3d::Field* dst_field = GetNew<o3d::Field>(src_field);
+          const Field* src_field = fields[jj];
+          Field* dst_field = GetNew<Field>(src_field);
           dst_field->Copy(*src_field);
 CheckError();
           AddMapping(src_field, dst_field);
         }
       }
-      if (dst->IsA(o3d::ParamArray::GetApparentClass())) {
+      if (dst->IsA(ParamArray::GetApparentClass())) {
         // Duplicate the params
-        o3d::ParamArray* src_array = down_cast<o3d::ParamArray*>(src);
-        o3d::ParamArray* dst_array = down_cast<o3d::ParamArray*>(dst);
-        const o3d::ParamArray::ParamRefVector& src_params = src_array->params();
+        ParamArray* src_array = down_cast<ParamArray*>(src);
+        ParamArray* dst_array = down_cast<ParamArray*>(dst);
+        const ParamArray::ParamRefVector& src_params = src_array->params();
         for (size_t jj = 0; jj < src_params.size(); ++jj) {
-          o3d::Param* src_param = src_params[jj];
-          o3d::Param* dst_param =
+          Param* src_param = src_params[jj];
+          Param* dst_param =
               dst_array->CreateParamByClass(jj, src_param->GetClass());
           AddMapping(src_param, dst_param);
         }
@@ -758,48 +714,40 @@ CheckError();
     AddMapping(src, dst);
 
     // Map the params.
-    if (dst->IsA(o3d::ParamObject::GetApparentClass())) {
-      o3d::ParamObject* src_obj = down_cast<o3d::ParamObject*>(src);
-      o3d::ParamObject* dst_obj = down_cast<o3d::ParamObject*>(dst);
-      const o3d::NamedParamRefMap& params = src_obj->params();
-      for (o3d::NamedParamRefMap::const_iterator it = params.begin();
+    if (dst->IsA(ParamObject::GetApparentClass())) {
+      ParamObject* src_obj = down_cast<ParamObject*>(src);
+      ParamObject* dst_obj = down_cast<ParamObject*>(dst);
+      const NamedParamRefMap& params = src_obj->params();
+      for (NamedParamRefMap::const_iterator it = params.begin();
            it != params.end(); ++it) {
-        const o3d::Param* src_param = it->second;
-        o3d::Param* dst_param = dst_obj->GetUntypedParam(src_param->name());
+        const Param* src_param = it->second;
+        Param* dst_param = dst_obj->GetUntypedParam(src_param->name());
         AddMapping(src_param, dst_param);
       }
     }
   }
 
-//DLOG(INFO) << "Setup Copier";
   std::vector<CopierBase::Ref> copiers;
   // TODO(gman): Init this just once.
   // NOTE: The order here is important. Derived types must
   //    come before Base types.
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::SkinEval>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::StreamBank>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::Primitive>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::Element>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::DrawElement>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::Transform>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::Shape>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::ParamArray>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::ParamObject>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::NamedObject>));
-  copiers.push_back(CopierBase::Ref(new Copier<o3d::ObjectBase>));
+  copiers.push_back(CopierBase::Ref(new Copier<SkinEval>));
+  copiers.push_back(CopierBase::Ref(new Copier<StreamBank>));
+  copiers.push_back(CopierBase::Ref(new Copier<Primitive>));
+  copiers.push_back(CopierBase::Ref(new Copier<Element>));
+  copiers.push_back(CopierBase::Ref(new Copier<DrawElement>));
+  copiers.push_back(CopierBase::Ref(new Copier<Transform>));
+  copiers.push_back(CopierBase::Ref(new Copier<Shape>));
+  copiers.push_back(CopierBase::Ref(new Copier<ParamArray>));
+  copiers.push_back(CopierBase::Ref(new Copier<ParamObject>));
+  copiers.push_back(CopierBase::Ref(new Copier<NamedObject>));
+  copiers.push_back(CopierBase::Ref(new Copier<ObjectBase>));
 
   // Now copy/bind everything.
-//DLOG(INFO) << "Copy Stuff";
   for (size_t ii = 0; ii < objects.size(); ++ii) {
-    o3d::ObjectBase* src = objects[ii];
-    o3d::ObjectBase* dst = GetNew<o3d::ObjectBase>(src);
+    ObjectBase* src = objects[ii];
+    ObjectBase* dst = GetNew<ObjectBase>(src);
     if (dst && src != dst) {
-//      DLOG(INFO) << "Copying a: " << src->GetClass()->name();
-//      DLOG(INFO) << "To a : " << dst->GetClass()->name();
-//      if (src->IsA(o3d::NamedObject::GetApparentClass())) {
-//        DLOG(INFO) << "Copying: "
-//                   << down_cast<o3d::NamedObject*>(src)->name();
-//      }
       for (size_t jj = 0; jj < copiers.size(); ++jj) {
         if (copiers[jj]->Copy(this, src, dst)) {
           break;
@@ -808,16 +756,13 @@ CheckError();
 CheckError();
     }
   }
-
-//DLOG(INFO) << "Done Copying";
-
   return new Scene(
       dst_pack,
-      GetNew<o3d::Transform>(src->root()),
-      GetNew<o3d::ParamFloat>(src->time_param()));
+      GetNew<Transform>(src->root()),
+      GetNew<ParamFloat>(src->time_param()));
 }
 
-Scene* Scene::Clone(o3d::Client* client) const {
+Scene* Scene::Clone(Client* client) const {
   return Cloner::Clone(client, this);
 }
 

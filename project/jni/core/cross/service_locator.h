@@ -36,8 +36,8 @@
 #include <list>
 #include <map>
 
-#include "base/logging.h"
-#include "base/basictypes.h"
+#include "base/cross/log.h"
+#include "base/cross/config.h"
 #include "core/cross/service_interface_traits.h"
 
 namespace o3d {
@@ -93,7 +93,7 @@ class ServiceLocator {
     if (it != services_.end()) {
       return static_cast<Interface*>(it->second);
     } else {
-      DCHECK(false);
+      O3D_ASSERT(false);
       return NULL;
     }
   }
@@ -124,7 +124,7 @@ class ServiceLocator {
 
   DependencyMap dependencies_;
   ServiceMap services_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceLocator);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ServiceLocator);
 };
 }  // namespace o3d
 

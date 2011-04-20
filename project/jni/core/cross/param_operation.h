@@ -82,7 +82,7 @@ class ParamOp2FloatsToFloat2 : public ParamObject {
   SlaveParamFloat2::Ref output_param_;
 
   O3D_DECL_CLASS(ParamOp2FloatsToFloat2, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(ParamOp2FloatsToFloat2);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamOp2FloatsToFloat2);
 };
 
 // A Param operation that takes 3 floats to produce a Float3.
@@ -138,7 +138,7 @@ class ParamOp3FloatsToFloat3 : public ParamObject {
   SlaveParamFloat3::Ref output_param_;
 
   O3D_DECL_CLASS(ParamOp3FloatsToFloat3, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(ParamOp3FloatsToFloat3);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamOp3FloatsToFloat3);
 };
 
 // A Param operation that takes 4 floats to produce a Float4.
@@ -204,7 +204,7 @@ class ParamOp4FloatsToFloat4 : public ParamObject {
   SlaveParamFloat4::Ref output_param_;
 
   O3D_DECL_CLASS(ParamOp4FloatsToFloat4, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(ParamOp4FloatsToFloat4);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamOp4FloatsToFloat4);
 };
 
 // A Param operation that takes 16 floats to produce a Matrix4.
@@ -390,7 +390,7 @@ class ParamOp16FloatsToMatrix4 : public ParamObject {
   SlaveParamMatrix4::Ref output_param_;
 
   O3D_DECL_CLASS(ParamOp16FloatsToMatrix4, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(ParamOp16FloatsToMatrix4);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamOp16FloatsToMatrix4);
 };
 
 // A Param operation that takes 9 floats to produce a Matrix4.
@@ -511,7 +511,7 @@ class TRSToMatrix4 : public ParamObject {
   SlaveParamMatrix4::Ref output_param_;
 
   O3D_DECL_CLASS(TRSToMatrix4, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(TRSToMatrix4);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TRSToMatrix4);
 };
 
 }  // namespace o3d

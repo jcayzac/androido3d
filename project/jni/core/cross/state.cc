@@ -48,15 +48,15 @@ State::State(ServiceLocator* service_locator, Renderer *renderer)
       weak_pointer_manager_(this) {
 }
 
-Param* State::GetUntypedStateParam(const String& state_name) {
+Param* State::GetUntypedStateParam(const std::string& state_name) {
   Param* param = GetUntypedParam(state_name);
   if (!param) {
-    String name(state_name);
+    std::string name(state_name);
     const ObjectBase::Class* param_type =
         renderer_->GetStateParamType(name);
     if (!param_type) {
       // Try adding the o3d namespace prefix
-      name = String(O3D_STRING_CONSTANT("") + state_name);
+      name = std::string(O3D_STRING_CONSTANT("") + state_name);
       param_type = renderer_->GetStateParamType(name);
     }
     if (param_type) {

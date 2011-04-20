@@ -74,7 +74,7 @@ class CanvasShader : public ParamObject {
 
  private:
   O3D_DECL_CLASS(CanvasShader, ParamObject)
-  DISALLOW_COPY_AND_ASSIGN(CanvasShader);
+  O3D_DISALLOW_COPY_AND_ASSIGN(CanvasShader);
 };
 
 // A shader that generates a linear gradient between two specified points.
@@ -158,7 +158,7 @@ class CanvasLinearGradient : public CanvasShader {
   CanvasShader::TileMode tile_mode_;
 
   O3D_DECL_CLASS(CanvasLinearGradient, CanvasShader)
-  DISALLOW_COPY_AND_ASSIGN(CanvasLinearGradient);
+  O3D_DISALLOW_COPY_AND_ASSIGN(CanvasLinearGradient);
 };
 
 }  // namespace o3d

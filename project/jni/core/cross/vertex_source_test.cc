@@ -132,10 +132,10 @@ TEST_F(VertexSourceTest, BindStream) {
     { 7.0f, 8.0f, 9.0f, },
     { 4.0f, 5.0f, 6.0f, },
   };
-  const unsigned kNumVertices = arraysize(some_vertices);
-  const unsigned kNumComponents = arraysize(some_vertices[0]);
+  const unsigned kNumVertices = o3d_arraysize(some_vertices);
+  const unsigned kNumComponents = o3d_arraysize(some_vertices[0]);
 
-  scoped_ptr<FakeVertexSource> destination(new FakeVertexSource(
+  ::o3d::base::scoped_ptr<FakeVertexSource> destination(new FakeVertexSource(
       pack()->service_locator()));
   ASSERT_TRUE(destination != NULL);
 
@@ -190,7 +190,7 @@ TEST_F(VertexSourceTest, BindStream) {
   source_field_2->SetFromFloats(&some_vertices[0][0], kNumComponents, 0,
                                 kNumVertices);
 
-  scoped_ptr<FakeVertexSource>source(new FakeVertexSource(
+  ::o3d::base::scoped_ptr<FakeVertexSource>source(new FakeVertexSource(
       pack()->service_locator()));
   ASSERT_TRUE(source != NULL);
 
@@ -244,7 +244,7 @@ TEST_F(VertexSourceTest, BindStream) {
   source_field_1b->SetFromFloats(&some_vertices[0][0], kNumComponents, 0,
                                  kNumVertices);
 
-  scoped_ptr<FakeVertexSource>source_b(new FakeVertexSource(
+  ::o3d::base::scoped_ptr<FakeVertexSource>source_b(new FakeVertexSource(
       pack()->service_locator()));
   ASSERT_TRUE(source_b != NULL);
 

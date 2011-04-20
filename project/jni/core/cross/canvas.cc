@@ -50,7 +50,7 @@ Canvas::Canvas(ServiceLocator* service_locator)
       width_(0),
       height_(0) {
   Features* features = service_locator->GetService<Features>();
-  DCHECK(features);
+  O3D_ASSERT(features);
   flip_ = features->flip_textures();
 
   // Initialize a 0x0 bitmap
@@ -67,7 +67,7 @@ bool Canvas::SetSize(int width, int height) {
 
   sk_bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   if (!sk_bitmap_.allocPixels()) {
-    DLOG(ERROR) << "Failed to allocate Skia bitmap";
+    O3D_LOG(ERROR) << "Failed to allocate Skia bitmap";
     return false;
   }
   sk_canvas_.setBitmapDevice(sk_bitmap_);
@@ -99,7 +99,7 @@ void Canvas::DrawRect(float left,
                             paint->GetNativePaint());
 }
 
-void Canvas::DrawText(const String& text,
+void Canvas::DrawText(const std::string& text,
                       float x,
                       float y,
                       CanvasPaint* paint) {
@@ -110,7 +110,7 @@ void Canvas::DrawText(const String& text,
                       paint->GetNativePaint());
 }
 
-void Canvas::DrawTextOnPath(const String& text,
+void Canvas::DrawTextOnPath(const std::string& text,
                             std::vector<Float2> positions,
                             float horizontal_offset,
                             float vertical_offset,
@@ -154,7 +154,7 @@ void Canvas::DrawBitmap(Texture2D* texture2d,
   }
 
   Texture2D::LockHelper lock_helper(texture2d, 0, Texture::kReadOnly);
-  uint8* texture_data = lock_helper.GetDataAs<uint8>();
+  uint8_t* texture_data = lock_helper.GetDataAs<uint8_t>();
   if (!texture_data) {
     return;
   }
@@ -230,7 +230,7 @@ void Canvas::Translate(float dx, float dy) {
 
 // Copy the contents of the local bitmap to a Texture object.
 bool Canvas::CopyToTexture(Texture2D* texture_2d) const {
-  DCHECK(texture_2d);
+  O3D_ASSERT(texture_2d);
 
   if (texture_2d->width() != sk_bitmap_.width() ||
       texture_2d->height() != sk_bitmap_.height() ||
@@ -256,7 +256,7 @@ bool Canvas::CopyToTexture(Texture2D* texture_2d) const {
     height = std::max(1, height >> 1);
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
 
-    scoped_array<uint8> buffer(new uint8[width * height * 4]);
+    ::o3d::base::scoped_array<uint8_t> buffer(new uint8_t[width * height * 4]);
     bitmap.setPixels(buffer.get());
     SkCanvas canvas(bitmap);
     SkScalar scaleFactor = SkScalarDiv(SK_Scalar1, SkIntToScalar(1 << i));

@@ -37,29 +37,21 @@
 #ifndef O3D_CORE_CROSS_RENDERER_PLATFORM_H_
 #define O3D_CORE_CROSS_RENDERER_PLATFORM_H_
 
-#include "build/build_config.h"
+#include "base/cross/config.h"
 #if defined(OS_MACOSX) && !defined(TARGET_OS_IPHONE)
 #include "core/cross/gl/gl_headers.h"
 #include <OpenGL/OpenGL.h>
 #include <AGL/agl.h>
 #elif defined(OS_LINUX)
-#if defined(RENDERER_GL)
+#if defined(O3D_RENDERER_GL)
 #include "core/cross/gl/gl_headers.h"
 #include <GL/glx.h>
-#elif defined(RENDERER_GLES2)
+#elif defined(O3D_RENDERER_GLES2)
 #include "core/cross/gles2/gles2_headers.h"
 #endif
-#elif defined(OS_WIN) && defined(RENDERER_GL)
-#include "core/cross/gl/gl_headers.h"
-#include <gl/GL.h>
-#elif defined(OS_WIN) && defined(RENDERER_GLES2)
-#include "core/cross/gles2/gles2_headers.h"
-#include <gl/GL.h>
 #endif
 
-#if defined(OS_WIN)
-#include "core/win/display_window_win.h"
-#elif defined(OS_MACOSX) && !defined(TARGET_OS_IPHONE)
+#if defined(OS_MACOSX) && !defined(TARGET_OS_IPHONE)
 #include "core/mac/display_window_mac.h"
 #elif defined(OS_ANDROID)
 #elif defined(OS_LINUX)
@@ -69,11 +61,9 @@
 #error Platform not recognized.
 #endif
 
-#if defined(RENDERER_D3D9) && defined(OS_WIN)
-#include "core/win/d3d9/renderer_d3d9.h"
-#elif defined(RENDERER_GL)
+#if defined(O3D_RENDERER_GL)
 #include "core/cross/gl/renderer_gl.h"
-#elif defined(RENDERER_GLES2)
+#elif defined(O3D_RENDERER_GLES2)
 #include "core/cross/gles2/renderer_gles2.h"
 #else
 #error Renderer not recognized.

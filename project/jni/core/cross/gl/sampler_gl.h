@@ -57,7 +57,7 @@ class SamplerGL : public Sampler {
 
   RendererGL* renderer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SamplerGL);
+  O3D_DISALLOW_COPY_AND_ASSIGN(SamplerGL);
 };
 }  // namespace o3d
 

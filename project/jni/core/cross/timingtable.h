@@ -37,7 +37,7 @@
 #ifndef O3D_CORE_CROSS_TIMINGTABLE_H_
 #define O3D_CORE_CROSS_TIMINGTABLE_H_
 
-#ifdef PROFILE_CLIENT
+#ifdef O3D_PROFILE_CLIENT
 
 #include <map>
 #include <string>
@@ -158,16 +158,16 @@ class TimingTable {
     table_.clear();
   }
 
-  virtual void Start(const o3d::String& key) {
+  virtual void Start(const std::string& key) {
     table_[key].Start();
   }
 
-  virtual void Stop(const o3d::String& key) {
+  virtual void Stop(const std::string& key) {
     table_[key].Stop();
   }
 
   virtual void Write(o3d::StructuredWriter* writer) {
-    std::map<o3d::String, TimingRecord>::iterator iter;
+    std::map<std::string, TimingRecord>::iterator iter;
     writer->OpenArray();
     for (iter = table_.begin(); iter != table_.end(); ++iter) {
       const TimingRecord& record = iter->second;
@@ -184,9 +184,9 @@ class TimingTable {
   }
 
  private:
-  std::map<o3d::String, TimingRecord> table_;
+  std::map<std::string, TimingRecord> table_;
 };
 
-#endif  // PROFILE_CLIENT
+#endif  // O3D_PROFILE_CLIENT
 
 #endif  // O3D_CORE_CROSS_TIMINGTABLE_H_

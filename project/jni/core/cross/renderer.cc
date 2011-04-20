@@ -157,12 +157,12 @@ void Renderer::InitCommon() {
   error_object_ = ParamObject::Ref(new ParamObject(service_locator_));
   error_sampler_ = CreateSampler();
   Texture2D::Ref texture = CreateTexture2D(8, 8, Texture::XRGB8, 1, false);
-  DCHECK(!error_object_.IsNull());
+  O3D_ASSERT(!error_object_.IsNull());
   error_object_->set_name(O3D_STRING_CONSTANT("errorObject"));
-  DCHECK(!error_sampler_.IsNull());
+  O3D_ASSERT(!error_sampler_.IsNull());
   error_sampler_->set_name(O3D_STRING_CONSTANT("errorSampler"));
 
-  DCHECK(!texture.IsNull());
+  O3D_ASSERT(!texture.IsNull());
   texture->set_name(O3D_STRING_CONSTANT("errorTexture"));
   texture->CreateParam<ParamString>(O3D_STRING_CONSTANT("original_uri"))->set_value("#error");
   texture->set_alpha_is_one(true);
@@ -207,7 +207,7 @@ void Renderer::InitCommon() {
   error_sampler_->set_mip_filter(Sampler::POINT);
   error_param_sampler_ = ParamSampler::Ref(new ParamErrorSampler(
                                                service_locator_));
-  DCHECK(!error_param_sampler_.IsNull());
+  O3D_ASSERT(!error_param_sampler_.IsNull());
   error_object_->AddParam(O3D_STRING_CONSTANT("errorSampler"),
                           error_param_sampler_);
   error_param_sampler_->set_dynamic_value(error_sampler_);
@@ -254,7 +254,7 @@ void Renderer::SetClientSize(int width, int height) {
 }
 
 bool Renderer::StartRendering() {
-  DCHECK_GE(start_depth_, 0);
+  O3D_ASSERT(start_depth_ >= 0);
   bool result = true;
   if (start_depth_ == 0) {
     ++render_frame_count_;
@@ -287,8 +287,8 @@ bool Renderer::StartRendering() {
 }
 
 bool Renderer::BeginDraw() {
-  DCHECK(rendering_);
-  DCHECK(!drawing_);
+  O3D_ASSERT(rendering_);
+  O3D_ASSERT(!drawing_);
   bool result = PlatformSpecificBeginDraw();
   if (result) {
     drawing_ = true;
@@ -299,17 +299,17 @@ bool Renderer::BeginDraw() {
 }
 
 void Renderer::EndDraw() {
-  DCHECK(rendering_);
-  DCHECK(drawing_);
+  O3D_ASSERT(rendering_);
+  O3D_ASSERT(drawing_);
   ApplyDirtyStates();
   PlatformSpecificEndDraw();
   drawing_ = false;
 }
 
 void Renderer::FinishRendering() {
-  DCHECK(rendering_);
-  DCHECK(!drawing_);
-  DCHECK_GT(start_depth_, 0);
+  O3D_ASSERT(rendering_);
+  O3D_ASSERT(!drawing_);
+  O3D_ASSERT(start_depth_ > 0);
   --start_depth_;
   if (start_depth_ == 0) {
     ApplyDirtyStates();
@@ -322,8 +322,8 @@ void Renderer::FinishRendering() {
 }
 
 void Renderer::Present() {
-  DCHECK(!rendering_);
-  DCHECK(!drawing_);
+  O3D_ASSERT(!rendering_);
+  O3D_ASSERT(!drawing_);
   PlatformSpecificPresent();
   presented_once_ = true;
 }
@@ -339,12 +339,12 @@ void Renderer::Clear(const Float4 &color,
   bool covers_everything = false;
   if (!back_buffer_cleared_ && current_render_surface_is_back_buffer_) {
     covers_everything =
-        !(floats_are_different(viewport_[0], 0.0f) ||
-          floats_are_different(viewport_[1], 0.0f) ||
-          floats_are_different(viewport_[2], 1.0f) ||
-          floats_are_different(viewport_[3], 1.0f) ||
-          floats_are_different(depth_range_[0], 0.0f) ||
-          floats_are_different(depth_range_[1], 1.0f)) &&
+        !(std::not_equal_to<float>()(viewport_[0], 0.0f) ||
+          std::not_equal_to<float>()(viewport_[1], 0.0f) ||
+          std::not_equal_to<float>()(viewport_[2], 1.0f) ||
+          std::not_equal_to<float>()(viewport_[3], 1.0f) ||
+          std::not_equal_to<float>()(depth_range_[0], 0.0f) ||
+          std::not_equal_to<float>()(depth_range_[1], 1.0f)) &&
         color_flag && depth_flag && stencil_flag && write_mask_ == 0xF;
     if (!covers_everything) {
       ClearBackBuffer();
@@ -364,9 +364,9 @@ void Renderer::Clear(const Float4 &color,
 }
 
 void Renderer::ClearBackBuffer() {
-  DCHECK(rendering_);
-  DCHECK(!back_buffer_cleared_);
-  DCHECK(current_render_surface_is_back_buffer_);
+  O3D_ASSERT(rendering_);
+  O3D_ASSERT(!back_buffer_cleared_);
+  O3D_ASSERT(current_render_surface_is_back_buffer_);
 
   // Save all states that would effect clear the back buffer.
   Float4 old_viewport;
@@ -391,8 +391,8 @@ void Renderer::ClearBackBuffer() {
 }
 
 void Renderer::GetViewport(Float4* viewport, Float2* depth_range) {
-  DCHECK(viewport);
-  DCHECK(depth_range);
+  O3D_ASSERT(viewport);
+  O3D_ASSERT(depth_range);
   *viewport = viewport_;
   *depth_range = depth_range_;
 }
@@ -507,9 +507,9 @@ void Renderer::FreeParamCache(ParamCache* param_cache) {
   delete param_cache;
 }
 
-void Renderer::AddStateHandler(const String& state_name,
+void Renderer::AddStateHandler(const std::string& state_name,
                                StateHandler* state_handler) {
-  DLOG_ASSERT(state_handler_map_.find(state_name) == state_handler_map_.end())
+  O3D_ASSERT(state_handler_map_.find(state_name) == state_handler_map_.end())
       << "attempt to add duplicate state handler";
   state_handler->set_index(static_cast<int>(state_handler_map_.size()));
   state_handler_map_.insert(std::make_pair(state_name, state_handler));
@@ -517,7 +517,7 @@ void Renderer::AddStateHandler(const String& state_name,
 }
 
 const ObjectBase::Class* Renderer::GetStateParamType(
-    const String& state_name) const {
+    const std::string& state_name) const {
   StateHandlerMap::const_iterator iter = state_handler_map_.find(state_name);
   return iter != state_handler_map_.end() ? iter->second->GetClass() : NULL;
 }
@@ -528,17 +528,17 @@ void Renderer::SetInitialStates() {
        it != state_handler_map_.end(); ++it) {
     StateHandler *state_handler = it->second;
     ParamVector& param_stack = state_param_stacks_[state_handler->index()];
-    DCHECK_EQ(param_stack.size(), 1u);
+    O3D_ASSERT(param_stack.size() == 1u);
     state_handler->SetState(this, param_stack[0]);
   }
 }
 
 template <class ParamType>
 void CreateStateParam(State *state,
-                      const String &name,
+                      const std::string &name,
                       const typename ParamType::DataType &value) {
   ParamType *param = state->GetStateParam<ParamType>(name);
-  DCHECK(param);
+  O3D_ASSERT(param);
   param->set_value(value);
 }
 
@@ -659,11 +659,11 @@ void Renderer::AddDefaultStates() {
                                  State::kColorWriteEnableParamName,
                                  0xf);
   // Check that we have set every state.
-  DCHECK_EQ(default_state_->params().size(), state_param_stacks_.size());
+  O3D_ASSERT(default_state_->params().size() == state_param_stacks_.size());
 
   // Push the default state on the stack, and every handler on their respective
   // handler stack.
-  DCHECK(state_stack_.empty());
+  O3D_ASSERT(state_stack_.empty());
   state_stack_.push_back(default_state_);
   const NamedParamRefMap& param_map = default_state_->params();
   NamedParamRefMap::const_iterator end(param_map.end());
@@ -672,9 +672,9 @@ void Renderer::AddDefaultStates() {
        ++iter) {
     Param* param = iter->second.Get();
     const StateHandler* state_handler = GetStateHandler(param);
-    DCHECK(state_handler);
+    O3D_ASSERT(state_handler);
     ParamVector& param_stack = state_param_stacks_[state_handler->index()];
-    DCHECK(param_stack.empty());
+    O3D_ASSERT(param_stack.empty());
     param_stack.push_back(param);
   }
 
@@ -684,8 +684,8 @@ void Renderer::AddDefaultStates() {
 }
 
 void Renderer::RemoveDefaultStates() {
-  DCHECK_EQ(state_stack_.size(), 1u);
-  DCHECK(state_stack_[0] == default_state_);
+  O3D_ASSERT(state_stack_.size() == 1u);
+  O3D_ASSERT(state_stack_[0] == default_state_);
   state_stack_.clear();
   const NamedParamRefMap& param_map = default_state_->params();
   NamedParamRefMap::const_iterator end(param_map.end());
@@ -694,10 +694,10 @@ void Renderer::RemoveDefaultStates() {
        ++iter) {
     Param* param = iter->second.Get();
     const StateHandler* state_handler = GetStateHandler(param);
-    DCHECK(state_handler);
+    O3D_ASSERT(state_handler);
     ParamVector& param_stack = state_param_stacks_[state_handler->index()];
-    DCHECK_EQ(param_stack.size(), 1u);
-    DCHECK(param_stack[0] == param);
+    O3D_ASSERT(param_stack.size() == 1u);
+    O3D_ASSERT(param_stack[0] == param);
     param_stack.clear();
   }
   default_state_.Reset();
@@ -734,7 +734,7 @@ void Renderer::RenderElement(Element* element,
 
 // Pushes rendering states.
 void Renderer::PushRenderStates(State *state) {
-  DCHECK(!state_stack_.empty());
+  O3D_ASSERT(!state_stack_.empty());
   if (state && (state_stack_.back() != state)) {
     const NamedParamRefMap& param_map = state->params();
     NamedParamRefMap::const_iterator end(param_map.end());
@@ -759,7 +759,7 @@ void Renderer::PushRenderStates(State *state) {
 
 // Pops rendering states to back to their previous settings.
 void Renderer::PopRenderStates() {
-  DCHECK_GT(state_stack_.size(), 1u);
+  O3D_ASSERT(state_stack_.size() > 1u);
   if (state_stack_.back() != state_stack_[state_stack_.size() - 2]) {
     State* state = state_stack_.back();
     // restore the states the top state object set.
@@ -772,9 +772,9 @@ void Renderer::PopRenderStates() {
       const StateHandler* state_handler = GetStateHandler(param);
       if (state_handler) {
         ParamVector& param_stack = state_param_stacks_[state_handler->index()];
-        DCHECK(param_stack.back() == param);
+        O3D_ASSERT(param_stack.back() == param);
         param_stack.pop_back();
-        DCHECK(!param_stack.empty());
+        O3D_ASSERT(!param_stack.empty());
         state_handler->SetState(this, param_stack.back());
       }
     }
@@ -786,7 +786,7 @@ void Renderer::SetRenderSurfaces(
     const RenderSurface* surface,
     const RenderDepthStencilSurface* depth_surface,
     bool is_back_buffer) {
-  DCHECK(rendering_);
+  O3D_ASSERT(rendering_);
   current_render_surface_is_back_buffer_ = is_back_buffer;
   if (surface != NULL || depth_surface != NULL) {
     SetRenderSurfacesPlatformSpecific(surface, depth_surface);
@@ -814,10 +814,10 @@ void Renderer::GetRenderSurfaces(
     const RenderSurface** surface,
     const RenderDepthStencilSurface** depth_surface,
     bool* is_back_buffer) {
-  DCHECK(rendering_);
-  DCHECK(surface);
-  DCHECK(depth_surface);
-  DCHECK(is_back_buffer);
+  O3D_ASSERT(rendering_);
+  O3D_ASSERT(surface);
+  O3D_ASSERT(depth_surface);
+  O3D_ASSERT(is_back_buffer);
   *surface = current_render_surface_;
   *depth_surface = current_depth_surface_;
   *is_back_buffer = current_render_surface_is_back_buffer_;

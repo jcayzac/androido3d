@@ -193,13 +193,13 @@ ClassManager::ClassManager(ServiceLocator* service_locator)
 
 void ClassManager::AddClass(const ObjectBase::Class* object_class,
                             ObjectCreateFunc function) {
-  DLOG_ASSERT(object_class_info_name_map_.find(object_class->name()) ==
+  O3D_ASSERT(object_class_info_name_map_.find(object_class->name()) ==
               object_class_info_name_map_.end())
       << "attempt to register duplicate class name";
   object_class_info_name_map_.insert(
       std::make_pair(object_class->name(),
                      ObjectClassInfo(object_class, function)));
-  DLOG_ASSERT(object_creator_class_map_.find(object_class) ==
+  O3D_ASSERT(object_creator_class_map_.find(object_class) ==
               object_creator_class_map_.end())
       << "attempt to register duplicate class";
   object_creator_class_map_.insert(std::make_pair(object_class,
@@ -209,20 +209,20 @@ void ClassManager::AddClass(const ObjectBase::Class* object_class,
 void ClassManager::RemoveClass(const ObjectBase::Class* object_class) {
   ObjectClassInfoNameMap::size_type ii = object_class_info_name_map_.erase(
       object_class->name());
-  DLOG_ASSERT(ii == 1) << "attempt to unregister non-existant class name";
+  O3D_ASSERT(ii == 1) << "attempt to unregister non-existant class name";
   ObjectCreatorClassMap::size_type jj = object_creator_class_map_.erase(
       object_class);
-  DLOG_ASSERT(jj == 1) << "attempt to unregister non-existant class";
+  O3D_ASSERT(jj == 1) << "attempt to unregister non-existant class";
 }
 
 const ObjectBase::Class* ClassManager::GetClassByClassName(
-    const String& class_name) const {
+    const std::string& class_name) const {
   ObjectClassInfoNameMap::const_iterator iter =
       object_class_info_name_map_.find(class_name);
 
   if (iter == object_class_info_name_map_.end()) {
     // Try adding the o3d namespace prefix
-    String prefixed_class_name(O3D_STRING_CONSTANT("") + class_name);
+    std::string prefixed_class_name(O3D_STRING_CONSTANT("") + class_name);
     iter = object_class_info_name_map_.find(prefixed_class_name);
   }
 
@@ -231,7 +231,7 @@ const ObjectBase::Class* ClassManager::GetClassByClassName(
 }
 
 bool ClassManager::ClassNameIsAClass(
-    const String& derived_class_name,
+    const std::string& derived_class_name,
     const ObjectBase::Class* base_class) const {
   const ObjectBase::Class* derived_class = GetClassByClassName(
       derived_class_name);
@@ -240,12 +240,12 @@ bool ClassManager::ClassNameIsAClass(
 
 // Factory method to create a new object by class name.
 
-ObjectBase::Ref ClassManager::CreateObject(const String& type_name) {
+ObjectBase::Ref ClassManager::CreateObject(const std::string& type_name) {
   ObjectClassInfoNameMap::const_iterator iter =
       object_class_info_name_map_.find(type_name);
   if (iter == object_class_info_name_map_.end()) {
     // Try adding the o3d namespace prefix
-    String prefixed_type_name(O3D_STRING_CONSTANT("") + type_name);
+    std::string prefixed_type_name(O3D_STRING_CONSTANT("") + type_name);
     iter = object_class_info_name_map_.find(prefixed_type_name);
   }
 

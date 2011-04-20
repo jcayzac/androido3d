@@ -36,7 +36,7 @@
 #ifndef O3D_CORE_CROSS_GLES2_BUFFER_GLES2_H_
 #define O3D_CORE_CROSS_GLES2_BUFFER_GLES2_H_
 
-#include "base/scoped_ptr.h"
+#include "base/cross/scoped_ptr.h"
 #include "core/cross/buffer.h"
 #include "core/cross/gles2/gles2_headers.h"
 
@@ -88,7 +88,7 @@ class VertexBufferGLES2 : public VertexBuffer {
   // GLES doesn't support glMapBuffers (only WRITE_ONLY if an extension is
   // present), or even glGetBufferSubData, so we need to keep a shadow of the
   // data.
-  scoped_array<char> shadow_;
+  ::o3d::base::scoped_array<char> shadow_;
   bool read_only_;
 #endif
   GLuint gl_buffer_;
@@ -130,7 +130,7 @@ class IndexBufferGLES2 : public IndexBuffer {
   // GLES doesn't support glMapBuffers (only WRITE_ONLY if an extension is
   // present), or even glGetBufferSubData, so we need to keep a shadow of the
   // data.
-  scoped_array<char> shadow_;
+  ::o3d::base::scoped_array<char> shadow_;
   bool read_only_;
 #endif
   GLuint gl_buffer_;

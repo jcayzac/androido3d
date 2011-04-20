@@ -122,7 +122,7 @@ class ParamCache {
   // used for by a transform for itself so there is no chance that the
   // override_tracker's pointer will point to something that was freed.
 
-  DISALLOW_COPY_AND_ASSIGN(ParamCache);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamCache);
 };
 
 // A ParamCacheManager manages an array of ParamCaches.
@@ -146,7 +146,7 @@ class ParamCacheManager {
   // the top cache.
   int last_render_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(ParamCacheManager);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamCacheManager);
 };
 
 }  // namespace o3d

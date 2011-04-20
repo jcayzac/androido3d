@@ -58,11 +58,11 @@ const int kNumLoggedEvents = 5;
 
 PrimitiveGLES2::PrimitiveGLES2(ServiceLocator* service_locator)
     : Primitive(service_locator) {
-  DLOG(INFO) << "PrimitiveGLES2 Construct";
+  O3D_LOG(INFO) << "PrimitiveGLES2 Construct";
 }
 
 PrimitiveGLES2::~PrimitiveGLES2() {
-  DLOG(INFO) << "PrimitiveGLES2 Destruct";
+  O3D_LOG(INFO) << "PrimitiveGLES2 Destruct";
 }
 
 // Binds the vertex and index streams required to draw the shape.  If the
@@ -75,17 +75,17 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
                                             Material* material,
                                             ParamObject* override,
                                             ParamCache* param_cache) {
-  DLOG_ASSERT(material);
-  DLOG_ASSERT(draw_element);
-  DLOG_ASSERT(param_cache);
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "PrimitiveGLES2 Draw \""
+  O3D_ASSERT(material);
+  O3D_ASSERT(draw_element);
+  O3D_ASSERT(param_cache);
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents) << "PrimitiveGLES2 Draw \""
                                        << draw_element->name() << "\"";
   DrawElementGLES2* draw_element_gl =
       down_cast<DrawElementGLES2*>(draw_element);
   EffectGLES2* effect_gl = down_cast<EffectGLES2*>(material->effect());
-  DLOG_ASSERT(effect_gl);
+  O3D_ASSERT(effect_gl);
   StreamBankGLES2* stream_bank_gl = down_cast<StreamBankGLES2*>(stream_bank());
-  DLOG_ASSERT(stream_bank_gl);
+  O3D_ASSERT(stream_bank_gl);
 
   ParamCacheGLES2* param_cache_gl = down_cast<ParamCacheGLES2*>(param_cache);
   ParamCacheGLES2::VaryingParameterMap& varying_map =
@@ -101,7 +101,7 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
                                                 stream_bank_gl,
                                                 material,
                                                 override)) {
-      String missing_stream;
+      std::string missing_stream;
       if (!stream_bank_gl->CheckForMissingVertexStreams(
               varying_map,
               effect_gl->gl_program(),
@@ -198,55 +198,55 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
       break;
     }
     case Primitive::LINELIST : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_LINES";
       gl_primitive_type = GL_LINES;
       break;
     }
     case Primitive::LINESTRIP : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_LINE_STRIP";
       gl_primitive_type = GL_LINE_STRIP;
       break;
     }
     case Primitive::TRIANGLELIST : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_TRIANGLES";
       gl_primitive_type = GL_TRIANGLES;
       break;
     }
     case Primitive::TRIANGLESTRIP : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_TRIANGLE_STRIP";
       gl_primitive_type = GL_TRIANGLE_STRIP;
       break;
     }
     case Primitive::TRIANGLEFAN : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_TRIANGLE_FAN";
       gl_primitive_type = GL_TRIANGLE_FAN;
       break;
     }
     default : {
-      DLOG(ERROR) << "Unknown Primitive Type in Primitive: "
+      O3D_LOG(ERROR) << "Unknown Primitive Type in Primitive: "
                   << primitive_type_;
       draw = false;
     }
   }
   if (draw) {
-    DCHECK_NE(gl_primitive_type, static_cast<unsigned int>(GL_NONE));
+    O3D_ASSERT(gl_primitive_type != static_cast<unsigned int>(GL_NONE));
     renderer->AddPrimitivesRendered(number_primitives_);
     if (indexed()) {
 #ifdef GLES2_BACKEND_NATIVE_GLES2
 		glDrawElements(gl_primitive_type,
 					   index_count,
 					   GL_UNSIGNED_SHORT,
-					   BufferOffset(start_index() * sizeof(uint16)));
+					   BufferOffset(start_index() * sizeof(uint16_t)));
 #else		
       glDrawElements(gl_primitive_type,
                      index_count,
                      GL_UNSIGNED_INT,
-                     BufferOffset(start_index() * sizeof(uint32)));  // NOLINT
+                     BufferOffset(start_index() * sizeof(uint32_t)));  // NOLINT
 #endif
     } else {
       glDrawArrays(gl_primitive_type, start_index(), index_count);

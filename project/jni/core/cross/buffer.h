@@ -40,7 +40,7 @@
 #include "core/cross/field.h"
 #include "core/cross/named_object.h"
 #include "core/cross/types.h"
-#include "base/scoped_ptr.h"
+#include "base/cross/scoped_ptr.h"
 
 namespace o3d {
 
@@ -117,7 +117,7 @@ class Buffer : public NamedObject {
   //   num_components: number of components.
   // Returns:
   //   Pointer to created field.
-  Field* CreateFieldByClassName(const String& field_type_name,
+  Field* CreateFieldByClassName(const std::string& field_type_name,
                                 unsigned num_components);
 
   // Removes a field
@@ -263,7 +263,7 @@ class VertexBufferBase : public Buffer {
 
  private:
   O3D_DECL_CLASS(VertexBufferBase, Buffer);
-  DISALLOW_COPY_AND_ASSIGN(VertexBufferBase);
+  O3D_DISALLOW_COPY_AND_ASSIGN(VertexBufferBase);
 };
 
 // VertexBuffer is Buffer object used for storing vertex data for geometry
@@ -284,7 +284,7 @@ class VertexBuffer : public VertexBufferBase {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(VertexBuffer, VertexBufferBase);
-  DISALLOW_COPY_AND_ASSIGN(VertexBuffer);
+  O3D_DISALLOW_COPY_AND_ASSIGN(VertexBuffer);
 };
 
 // SourceBuffer is a buffer object stored in system memory. It is used as
@@ -315,10 +315,10 @@ class SourceBuffer : public VertexBufferBase {
   friend class IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  scoped_array<char> buffer_;  // The actual data for this buffer.
+  ::o3d::base::scoped_array<char> buffer_;  // The actual data for this buffer.
 
   O3D_DECL_CLASS(SourceBuffer, VertexBufferBase);
-  DISALLOW_COPY_AND_ASSIGN(SourceBuffer);
+  O3D_DISALLOW_COPY_AND_ASSIGN(SourceBuffer);
 };
 
 // IndexBuffer is a buffer object used for storing geometry index data (e.g.
@@ -357,7 +357,7 @@ class IndexBuffer : public Buffer {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(IndexBuffer, Buffer);
-  DISALLOW_COPY_AND_ASSIGN(IndexBuffer);
+  O3D_DISALLOW_COPY_AND_ASSIGN(IndexBuffer);
 };
 
 // BufferLockHelper can be used to lock a buffer in a safe way in that it will
@@ -395,7 +395,7 @@ class BufferLockHelper {
   void* data_;
   bool locked_;
 
-  DISALLOW_COPY_AND_ASSIGN(BufferLockHelper);
+  O3D_DISALLOW_COPY_AND_ASSIGN(BufferLockHelper);
 };
 
 }  // namespace o3d

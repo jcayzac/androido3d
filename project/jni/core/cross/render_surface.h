@@ -74,8 +74,8 @@ class RenderSurfaceBase : public ParamObject {
   //    o3d Client. It is used for rendering screenshots and for windowless
   //    mode.
   void SetClipSize(int clip_width, int clip_height) {
-    DCHECK_LE(clip_width, width());
-    DCHECK_LE(clip_height, height());
+    O3D_ASSERT(clip_width <= width());
+    O3D_ASSERT(clip_height <= height());
     clip_width_ = clip_width;
     clip_height_ = clip_height;
   }
@@ -103,7 +103,7 @@ class RenderSurfaceBase : public ParamObject {
   int clip_height_;
 
   O3D_DECL_CLASS(RenderSurfaceBase, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(RenderSurfaceBase);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceBase);
 };
 
 // A RenderSurface class encapsulates the notion of a renderable surface.
@@ -157,7 +157,7 @@ class RenderSurface : public RenderSurfaceBase {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(RenderSurface, RenderSurfaceBase);
-  DISALLOW_COPY_AND_ASSIGN(RenderSurface);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurface);
 };
 
 // A RenderDepthStencilSurface represents a depth stencil render target.
@@ -180,7 +180,7 @@ class RenderDepthStencilSurface : public RenderSurfaceBase {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   O3D_DECL_CLASS(RenderDepthStencilSurface, RenderSurfaceBase);
-  DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurface);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurface);
 };
 
 class ParamRenderSurface : public TypedRefParam<RenderSurface> {
@@ -198,7 +198,7 @@ class ParamRenderSurface : public TypedRefParam<RenderSurface> {
   static ObjectBase::Ref Create(ServiceLocator *service_locator);
 
   O3D_DECL_CLASS(ParamRenderSurface, RefParamBase);
-  DISALLOW_COPY_AND_ASSIGN(ParamRenderSurface);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamRenderSurface);
 };
 
 class ParamRenderDepthStencilSurface
@@ -217,7 +217,7 @@ class ParamRenderDepthStencilSurface
   static ObjectBase::Ref Create(ServiceLocator *service_locator);
 
   O3D_DECL_CLASS(ParamRenderDepthStencilSurface, RefParamBase);
-  DISALLOW_COPY_AND_ASSIGN(ParamRenderDepthStencilSurface);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamRenderDepthStencilSurface);
 };
 
 }  // namespace o3d

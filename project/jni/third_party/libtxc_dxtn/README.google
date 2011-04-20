@@ -9,5 +9,5 @@
  Local modifications:
  - Renamed txc_fetch_dxtn.c to txc_fetch_dxtn.cc so its header can
    include C++ headers.
- - Changed txc_dxtn.h to #include base/basictypes.h rather than
+ - Changed txc_dxtn.h to #include base/cross/config.h rather than
    GL/gl.h. Manually defined GL typedefs using basictypes.h's types.

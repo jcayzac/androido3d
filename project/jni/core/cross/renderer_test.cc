@@ -70,7 +70,7 @@ class RendererTest : public testing::Test {
 
 // This tests that a default Renderer can be created.
 TEST_F(RendererTest, CreateDefaultRenderer) {
-  scoped_ptr<Renderer> renderer(
+  ::o3d::base::scoped_ptr<Renderer> renderer(
       Renderer::CreateDefaultRenderer(service_locator()));
   EXPECT_TRUE(renderer != NULL);
 }
@@ -81,49 +81,25 @@ TEST_F(RendererTest, InitAndDestroyRenderer) {
 // TODO(apatrick): This test will not work as is with command buffers because
 //     it attempts to create a Renderer using the same ring buffer as the
 //     Renderer created in main.
-  scoped_ptr<Renderer> renderer(
+  ::o3d::base::scoped_ptr<Renderer> renderer(
       Renderer::CreateDefaultRenderer(service_locator()));
   EXPECT_TRUE(renderer->Init(*g_display_window, false));
-#if defined(RENDERER_D3D9)
-  // test that the d3d_device was correctly created
-  RendererD3D9* d3d_renderer = down_cast<RendererD3D9*>(renderer.get());
-  EXPECT_TRUE(d3d_renderer->d3d_device() != NULL);
-#elif defined(RENDERER_GL)
+#if defined(O3D_RENDERER_GL)
   // test that the Cg Context was correctly created
   RendererGL* gl_renderer = down_cast<RendererGL*>(renderer.get());
   EXPECT_TRUE(gl_renderer->cg_context() != NULL);
-#elif defined(RENDERER_GLES2)
+#elif defined(O3D_RENDERER_GLES2)
   RendererGLES2* gles2_renderer = down_cast<RendererGLES2*>(renderer.get());
 #endif
   // destroy the renderer
   renderer->Destroy();
 
-#if defined(RENDERER_D3D9)
-  // check that the renderer no longer had the D3D device.
-  EXPECT_FALSE(d3d_renderer->d3d_device() != NULL);
-#elif defined(RENDERER_GL)
+#if defined(O3D_RENDERER_GL)
   // check that the renderer no longer has a Cg Context.
   EXPECT_FALSE(gl_renderer->cg_context() != NULL);
-#elif defined(RENDERER_GLES2)
+#elif defined(O3D_RENDERER_GLES2)
 #endif
 }
-
-// Offscreen is only supported on D3D currently
-#if defined(RENDERER_D3D9)
-// Tests that creating an off-screen renderer works correctly.
-TEST_F(RendererTest, OffScreen) {
-  scoped_ptr<Renderer> renderer(
-      Renderer::CreateDefaultRenderer(service_locator()));
-  EXPECT_TRUE(renderer->Init(*g_display_window, true));
-
-  RendererD3D9 *d3d_renderer = down_cast<RendererD3D9*>(renderer.get());
-  EXPECT_TRUE(d3d_renderer->d3d_device() != NULL);
-
-  renderer->Destroy();
-
-  EXPECT_FALSE(d3d_renderer->d3d_device() != NULL);
-}
-#endif
 
 // Tests SetViewport
 TEST_F(RendererTest, SetViewport) {

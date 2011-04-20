@@ -114,10 +114,10 @@ void ProcessedPath::SetFields(const float* positions,
   // In this case we allocate a single vertex in the fields to
   // indicate this to JavaScript since we can not allocate a
   // zero-sized buffer.
-  DCHECK_NE(num_vertices, 1u);
+  O3D_ASSERT(num_vertices != 1u);
   if (num_vertices == 0) {
-    DCHECK_EQ(positions, static_cast<const float*>(NULL));
-    DCHECK_EQ(texture_coordinates, static_cast<const float*>(NULL));
+    O3D_ASSERT(positions == static_cast<const float*>(NULL));
+    O3D_ASSERT(texture_coordinates == static_cast<const float*>(NULL));
     num_vertices = 1;
   }
   Buffer* buffer = position_field->buffer();

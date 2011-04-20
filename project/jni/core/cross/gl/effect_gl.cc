@@ -33,16 +33,8 @@
 // This file contains the definition of EffectGL, the OpenGL implementation
 // of the abstract O3D class Effect.
 
-
-// Disable pointer casting warning for openGL calls that require a void* to
-// be cast to a GLuint
-#if defined(OS_WIN)
-#pragma warning(disable : 4312)
-#pragma warning(disable : 4311)
-#endif
-
 #include <sstream>
-#include "base/cross/std_functional.h"
+//#include "base/cross/std_functional.h"
 #include "core/cross/semantic_manager.h"
 #include "core/cross/error.h"
 #include "core/cross/standard_param.h"
@@ -53,10 +45,6 @@
 #include "core/cross/gl/texture_gl.h"
 #include "core/cross/gl/utils_gl.h"
 #include "core/cross/gl/utils_gl-inl.h"
-
-#if defined(OS_WIN)
-#include "core/cross/core_metrics.h"
-#endif
 
 namespace o3d {
 
@@ -84,7 +72,7 @@ static const ObjectBase::Class* CgTypeToParamType(CGtype cg_type) {
     case CG_SAMPLER3D   :
     case CG_SAMPLERCUBE : return ParamSampler::GetApparentClass();
     default : {
-      DLOG(ERROR) << "Cannot convert CGtype "
+      O3D_LOG(ERROR) << "Cannot convert CGtype "
                   << cgGetTypeString(cg_type)
                   << " to a Param type.";
       return NULL;
@@ -102,13 +90,13 @@ EffectGL::EffectGL(ServiceLocator* service_locator, CGcontext cg_context)
       cg_context_(cg_context),
       cg_vertex_(NULL),
       cg_fragment_(NULL) {
-  DLOG(INFO) << "EffectGL Construct";
+  O3D_LOG(INFO) << "EffectGL Construct";
 }
 
 // Destructor releases vertex and fragment shaders and their correspoding
 // constants tables.
 EffectGL::~EffectGL() {
-  DLOG(INFO) << "EffectGL Destruct \"" << name() << "\"";
+  O3D_LOG(INFO) << "EffectGL Destruct \"" << name() << "\"";
   if (cg_vertex_) {
     cgDestroyProgram(cg_vertex_);
   }
@@ -136,14 +124,14 @@ EffectGL::~EffectGL() {
 // across all programs (so we only have to update it once when we change the
 // viewport), because Cg won't use them currently (it uses 'program.local'
 // instead).
-static bool RewriteVertexProgramSource(String *source) {
-  String::size_type pos = source->find('\n');
-  if (pos == String::npos) {
-    DLOG(ERROR) << "could not find program declaration";
+static bool RewriteVertexProgramSource(std::string *source) {
+  std::string::size_type pos = source->find('\n');
+  if (pos == std::string::npos) {
+    O3D_LOG(ERROR) << "could not find program declaration";
     return false;
   }
-  String decl(*source, 0, pos + 1);
-  String::size_type start_comments = pos + 1;
+  std::string decl(*source, 0, pos + 1);
+  std::string::size_type start_comments = pos + 1;
   // skip the comments that contain the parameters etc.
   for (; pos < source->size(); pos = source->find('\n', pos)) {
     ++pos;
@@ -156,22 +144,22 @@ static bool RewriteVertexProgramSource(String *source) {
     // we only found comments.
     return false;
   }
-  String comments(*source, start_comments, pos - start_comments);
+  std::string comments(*source, start_comments, pos - start_comments);
 
-  String::size_type end_token = source->find("\nEND", pos + 1);
-  if (end_token == String::npos) {
-    DLOG(ERROR) << "Compiled shader doesn't have an END token";
+  std::string::size_type end_token = source->find("\nEND", pos + 1);
+  if (end_token == std::string::npos) {
+    O3D_LOG(ERROR) << "Compiled shader doesn't have an END token";
     return false;
   }
-  String instructions(*source, pos, end_token + 1 - pos);
+  std::string instructions(*source, pos, end_token + 1 - pos);
 
   // Replace accesses to 'result.position' by accesses to our temp variable
   // '$O3D_HPOS'.
   // '$' is a valid symbol for identifiers, but Cg doesn't seem to be using
   // it, so we can use it to ensure we don't have name conflicts.
   static const char kOutPositionRegister[] = "result.position";
-  for (String::size_type i = instructions.find(kOutPositionRegister);
-       i < String::npos; i = instructions.find(kOutPositionRegister, i)) {
+  for (std::string::size_type i = instructions.find(kOutPositionRegister);
+       i < std::string::npos; i = instructions.find(kOutPositionRegister, i)) {
     instructions.replace(i, strlen(kOutPositionRegister), "$O3D_HPOS");
   }
 
@@ -195,14 +183,14 @@ static bool RewriteVertexProgramSource(String *source) {
 
 // Initializes the Effect object using the shaders found in an FX formatted
 // string.
-bool EffectGL::LoadFromFXString(const String& effect) {
-  DLOG(INFO) << "EffectGL LoadFromFXString";
+bool EffectGL::LoadFromFXString(const std::string& effect) {
+  O3D_LOG(INFO) << "EffectGL LoadFromFXString";
   renderer_->MakeCurrentLazy();
 
   set_source("");
 
-  String vertex_shader_entry_point;
-  String fragment_shader_entry_point;
+  std::string vertex_shader_entry_point;
+  std::string fragment_shader_entry_point;
   MatrixLoadOrder matrix_load_order;
   // TODO(gman): Check for failure once shader parser is in.
   if (!ValidateFX(effect,
@@ -228,10 +216,10 @@ bool EffectGL::LoadFromFXString(const String& effect) {
   }
 
   if (listing && listing[0] != 0) {
-    DLOG(WARNING) << "Effect Compile Warnings: " << listing;
+    O3D_LOG(WARNING) << "Effect Compile Warnings: " << listing;
   }
 
-  String vp_assembly = cgGetProgramString(original_vp, CG_COMPILED_PROGRAM);
+  std::string vp_assembly = cgGetProgramString(original_vp, CG_COMPILED_PROGRAM);
   cgDestroyProgram(original_vp);
   if (!RewriteVertexProgramSource(&vp_assembly)) {
     return false;
@@ -247,14 +235,8 @@ bool EffectGL::LoadFromFXString(const String& effect) {
     return false;
   }
 
-#ifdef OS_WIN
-  // Get metrics for length of the vertex shader
-  const char* shader_data = cgGetProgramString(cg_vertex_, CG_COMPILED_PROGRAM);
-  metric_vertex_shader_instruction_count.AddSample(strlen(shader_data));
-#endif
-
   if (listing && listing[0] != 0) {
-    DLOG(WARNING) << "Effect post-rewrite compile warnings: " << listing;
+    O3D_LOG(WARNING) << "Effect post-rewrite compile warnings: " << listing;
   }
 
   CHECK_GL_ERROR();
@@ -288,14 +270,8 @@ bool EffectGL::LoadFromFXString(const String& effect) {
     return false;
   }
 
-#ifdef OS_WIN
-  // Get metrics for length of the fragment shader
-  shader_data = cgGetProgramString(cg_fragment_, CG_COMPILED_PROGRAM);
-  metric_pixel_shader_instruction_count.AddSample(strlen(shader_data));
-#endif
-
   if (listing && listing[0] != 0) {
-    DLOG(WARNING) << "Effect Compile Warnings: " << listing;
+    O3D_LOG(WARNING) << "Effect Compile Warnings: " << listing;
   }
 
   cgGLLoadProgram(cg_fragment_);
@@ -324,10 +300,10 @@ bool EffectGL::LoadFromFXString(const String& effect) {
 // Note that we compile the raw effect, which shouldn't have any
 // technique/pass, so we don't actually create programs, just parse the
 // uniforms and state assignments.
-void EffectGL::FillSamplerToTextureMap(const String &effect) {
+void EffectGL::FillSamplerToTextureMap(const std::string &effect) {
   CGeffect cg_effect = cgCreateEffect(cg_context_, effect.c_str(), NULL);
   if (!cg_effect) {
-    DLOG(ERROR) << "Could not compile the effect to find "
+    O3D_LOG(ERROR) << "Could not compile the effect to find "
                 << "Sampler->Texture associations";
     return;
   }
@@ -352,7 +328,7 @@ void EffectGL::FillSamplerToTextureMap(const String &effect) {
         cgGetTextureStateAssignmentValue(state_assignment);
     if (!texture_param)
       continue;
-    DCHECK((cgGetParameterType(texture_param)  == CG_TEXTURE));
+    O3D_ASSERT((cgGetParameterType(texture_param)  == CG_TEXTURE));
     sampler_to_texture_map_[cgGetParameterName(param)] =
         cgGetParameterName(texture_param);
   }
@@ -360,9 +336,9 @@ void EffectGL::FillSamplerToTextureMap(const String &effect) {
 }
 
 // TODO(o3d): remove this (OLD path for textures).
-String EffectGL::GetTextureNameFromSamplerParamName(
-    const String &sampler_name) {
-  std::map<String, String>::iterator it =
+std::string EffectGL::GetTextureNameFromSamplerParamName(
+    const std::string &sampler_name) {
+  std::map<std::string, std::string>::iterator it =
       sampler_to_texture_map_.find(sampler_name);
   if (it != sampler_to_texture_map_.end()) {
     return it->second;
@@ -376,10 +352,10 @@ String EffectGL::GetTextureNameFromSamplerParamName(
 ParamTexture* EffectGL::GetTextureParamFromCgSampler(
     CGparameter cg_sampler,
     const std::vector<ParamObject*> &param_objects) {
-  DLOG(INFO) << "EffectGL GetTextureParamFromCgSampler";
-  DLOG_ASSERT(cgGetParameterType(cg_sampler) != CG_SAMPLER);
-  String sampler_name = cgGetParameterName(cg_sampler);
-  String param_name = GetTextureNameFromSamplerParamName(sampler_name);
+  O3D_LOG(INFO) << "EffectGL GetTextureParamFromCgSampler";
+  O3D_ASSERT(cgGetParameterType(cg_sampler) != CG_SAMPLER);
+  std::string sampler_name = cgGetParameterName(cg_sampler);
+  std::string param_name = GetTextureNameFromSamplerParamName(sampler_name);
   if (param_name.size() == 0) {
     // Sampler has no texture associated with it.
     return NULL;
@@ -389,14 +365,14 @@ ParamTexture* EffectGL::GetTextureParamFromCgSampler(
     Param* param = param_objects[i]->GetUntypedParam(param_name);
     if (param && param->IsA(ParamTexture::GetApparentClass())) {
       // Success.
-      DLOG(INFO) << "EffectGL Matched CG_SAMPLER \""
+      O3D_LOG(INFO) << "EffectGL Matched CG_SAMPLER \""
                  << sampler_name
                  << "\" To Param \""
                  << param_name << "\"";
       return down_cast<ParamTexture*>(param);
     }
   }
-  DLOG(INFO) << "No matching Param for CG_TEXTURE \""
+  O3D_LOG(INFO) << "No matching Param for CG_TEXTURE \""
              << param_name
              << "\" used by CG_SAMPLER \""
              << sampler_name << "\"";
@@ -406,8 +382,8 @@ ParamTexture* EffectGL::GetTextureParamFromCgSampler(
 void EffectGL::GetShaderParamInfo(
     CGprogram program,
     CGenum name_space,
-    std::map<String, EffectParameterInfo>* info_map) {
-  DCHECK(info_map);
+    std::map<std::string, EffectParameterInfo>* info_map) {
+  O3D_ASSERT(info_map);
 
   // Loop over all parameters, visiting only CGparameters that have
   // had storage allocated to them.
@@ -419,7 +395,7 @@ void EffectGL::GetShaderParamInfo(
     CGenum direction = cgGetParameterDirection(cg_param);
     if (direction != CG_IN)
       continue;
-    String name = cgGetParameterName(cg_param);
+    std::string name = cgGetParameterName(cg_param);
     CGtype cg_type = cgGetParameterType(cg_param);
     // Texture parameters need special handling as the c3cImport system
     // records a handle to the CG_TEXTURE param, not the CG_SAMPLER
@@ -440,7 +416,7 @@ void EffectGL::GetShaderParamInfo(
         cg_type == CG_SAMPLER3D ||
         cg_type == CG_SAMPLERCUBE) {
       // rename the parameter to have the name of the texture.
-      String texture_param_name = GetTextureNameFromSamplerParamName(name);
+      std::string texture_param_name = GetTextureNameFromSamplerParamName(name);
       if (texture_param_name.size() != 0) {
         (*info_map)[texture_param_name] = EffectParameterInfo(
             texture_param_name,
@@ -480,9 +456,16 @@ void EffectGL::GetShaderParamInfo(
   }
 }
 
+namespace {
+  struct selectParamInfo {
+    EffectParameterInfo& operator()(std::pair<std::string, EffectParameterInfo>& x) const { return x.second; }
+    const EffectParameterInfo& operator()(const std::pair<std::string, EffectParameterInfo>& x) const { return x.second; }
+  };
+}
+
 void EffectGL::GetParameterInfo(EffectParameterInfoArray* info_array) {
-  DCHECK(info_array);
-  std::map<String, EffectParameterInfo> info_map;
+  O3D_ASSERT(info_array);
+  std::map<std::string, EffectParameterInfo> info_map;
   renderer_->MakeCurrentLazy();
   if (cg_vertex_) {
     GetShaderParamInfo(cg_vertex_, CG_PROGRAM, &info_map);
@@ -500,7 +483,7 @@ void EffectGL::GetParameterInfo(EffectParameterInfoArray* info_array) {
       info_map.begin(),
       info_map.end(),
       std::back_inserter(*info_array),
-      base::select2nd<std::map<String, EffectParameterInfo>::value_type>());
+      selectParamInfo());
 }
 
 void EffectGL::GetVaryingVertexShaderParamInfo(
@@ -537,7 +520,7 @@ void EffectGL::GetVaryingVertexShaderParamInfo(
 
 void EffectGL::GetStreamInfo(
     EffectStreamInfoArray* info_array) {
-  DCHECK(info_array);
+  O3D_ASSERT(info_array);
   renderer_->MakeCurrentLazy();
   info_array->clear();
   GetVaryingVertexShaderParamInfo(cg_vertex_, CG_PROGRAM, info_array);
@@ -552,7 +535,7 @@ void EffectGL::GetStreamInfo(
 // CGstateassignments in the sampler_state to set up the texture unit.
 // TODO(o3d): remove this (OLD path for textures).
 void EffectGL::SetTexturesFromEffect(ParamCacheGL* param_cache_gl) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGL EnableTexturesFromEffect";
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGL EnableTexturesFromEffect";
   ParamCacheGL::SamplerParameterMap& map = param_cache_gl->sampler_map();
   ParamCacheGL::SamplerParameterMap::iterator i;
   for (i = map.begin(); i != map.end(); ++i) {
@@ -575,7 +558,7 @@ void EffectGL::SetTexturesFromEffect(ParamCacheGL* param_cache_gl) {
 // values from their corresponding Params on the various ParamObject (as stored
 // in the ParamCacheGL).
 void EffectGL::UpdateShaderUniformsFromEffect(ParamCacheGL* param_cache_gl) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents)
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
       << "EffectGL UpdateShaderUniformsFromEffect";
   ParamCacheGL::UniformParameterMap& map = param_cache_gl->uniform_map();
   ParamCacheGL::UniformParameterMap::iterator i;
@@ -589,7 +572,7 @@ void EffectGL::UpdateShaderUniformsFromEffect(ParamCacheGL* param_cache_gl) {
 // Loop through all the uniform CGparameters on the effect and reset their
 // values.  For now, this unbinds textures contained in sampler parameters.
 void EffectGL::ResetShaderUniforms(ParamCacheGL* param_cache_gl) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGL ResetShaderUniforms";
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGL ResetShaderUniforms";
   ParamCacheGL::UniformParameterMap& map = param_cache_gl->uniform_map();
   ParamCacheGL::UniformParameterMap::iterator i;
   for (i = map.begin(); i != map.end(); ++i) {
@@ -602,10 +585,10 @@ void EffectGL::ResetShaderUniforms(ParamCacheGL* param_cache_gl) {
 // Updates the values of the vertex and fragment shader parameters using the
 // current values in the param/cgparam caches.
 void EffectGL::PrepareForDraw(ParamCacheGL* param_cache_gl) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGL PrepareForDraw \""
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents) << "EffectGL PrepareForDraw \""
                                        << name()
                                        << "\"";
-  DCHECK(renderer_->IsCurrent());
+  O3D_ASSERT(renderer_->IsCurrent());
   if (cg_vertex_ && cg_fragment_) {
     // Initialise the render states for this pass, this includes the shaders.
     cgGLBindProgram(cg_vertex_);
@@ -615,7 +598,7 @@ void EffectGL::PrepareForDraw(ParamCacheGL* param_cache_gl) {
     // TODO(o3d): remove this (OLD path for textures).
     SetTexturesFromEffect(param_cache_gl);
   } else {
-    DLOG_FIRST_N(ERROR, kNumLoggedEvents)
+    O3D_LOG_FIRST_N(ERROR, kNumLoggedEvents)
         << "No valid CGeffect found "
         << "in Effect \"" << name() << "\"";
   }
@@ -624,9 +607,9 @@ void EffectGL::PrepareForDraw(ParamCacheGL* param_cache_gl) {
 
 // Resets the render states back to their default value.
 void EffectGL::PostDraw(ParamCacheGL* param_cache_gl) {
-  DLOG_FIRST_N(INFO, kNumLoggedEvents)
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
       << "EffectGL PostDraw \"" << name() << "\"";
-  DCHECK(renderer_->IsCurrent());
+  O3D_ASSERT(renderer_->IsCurrent());
   ResetShaderUniforms(param_cache_gl);
   CHECK_GL_ERROR();
 }

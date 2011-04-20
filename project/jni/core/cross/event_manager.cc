@@ -45,7 +45,7 @@ void EventManager::ProcessQueue() {
   // down, so we can't process any late-added events.
   if (valid_ && !event_queue_.empty()) {
 #ifndef NDEBUG
-    DCHECK(!processing_event_queue_);
+    O3D_ASSERT(!processing_event_queue_);
     processing_event_queue_ = true;
 #endif
     Event event = event_queue_.front();
@@ -64,13 +64,13 @@ void EventManager::ProcessQueue() {
 
 void EventManager::SetEventCallback(Event::Type type,
                                     EventCallback* event_callback) {
-  DCHECK(Event::ValidType(type));
+  O3D_ASSERT(Event::ValidType(type));
   if (valid_)
     event_callbacks_[type].Set(event_callback);
 }
 
 void EventManager::ClearEventCallback(Event::Type type) {
-  DCHECK(Event::ValidType(type));
+  O3D_ASSERT(Event::ValidType(type));
   if (valid_)
     event_callbacks_[type].Clear();
 }
@@ -156,7 +156,7 @@ void EventManager::AddEventToQueue(const Event& event) {
 
 void EventManager::ClearAll() {
   valid_ = false;
-  for (unsigned int i = 0; i < arraysize(event_callbacks_); ++i) {
+  for (unsigned int i = 0; i < o3d_arraysize(event_callbacks_); ++i) {
     event_callbacks_[i].Clear();
   }
   event_queue_.clear();

@@ -43,7 +43,7 @@ NamedObjectBase::NamedObjectBase(ServiceLocator *service_locator)
     : ObjectBase(service_locator) {
 }
 
-const String& NamedObject::name() const {
+const std::string& NamedObject::name() const {
   return name_;
 }
 

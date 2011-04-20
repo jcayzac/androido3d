@@ -111,7 +111,7 @@ class CurveKey : public ObjectBase {
   float output_;
 
   O3D_DECL_CLASS(CurveKey, ObjectBase);
-  DISALLOW_COPY_AND_ASSIGN(CurveKey);
+  O3D_DISALLOW_COPY_AND_ASSIGN(CurveKey);
 };
 
 typedef std::vector<CurveKey::Ref> CurveKeyRefArray;
@@ -132,7 +132,7 @@ class StepCurveKey : public CurveKey {
 
  private:
   O3D_DECL_CLASS(StepCurveKey, CurveKey);
-  DISALLOW_COPY_AND_ASSIGN(StepCurveKey);
+  O3D_DISALLOW_COPY_AND_ASSIGN(StepCurveKey);
 };
 
 // An CurveKey that linearly interpolates between this key and the next key.
@@ -149,7 +149,7 @@ class LinearCurveKey : public CurveKey {
 
  private:
   O3D_DECL_CLASS(LinearCurveKey, CurveKey);
-  DISALLOW_COPY_AND_ASSIGN(LinearCurveKey);
+  O3D_DISALLOW_COPY_AND_ASSIGN(LinearCurveKey);
 };
 
 // An CurveKey that uses a bezier curve for interpolation between this key
@@ -184,7 +184,7 @@ class BezierCurveKey : public CurveKey {
   Float2 out_tangent_;
 
   O3D_DECL_CLASS(BezierCurveKey, CurveKey);
-  DISALLOW_COPY_AND_ASSIGN(BezierCurveKey);
+  O3D_DISALLOW_COPY_AND_ASSIGN(BezierCurveKey);
 };
 
 // A CurveFunctionContext is used by Curve to help with evaluation.
@@ -209,7 +209,7 @@ class CurveFunctionContext : public FunctionContext {
   unsigned last_key_index_;
 
   O3D_DECL_CLASS(CurveFunctionContext, FunctionContext);
-  DISALLOW_COPY_AND_ASSIGN(CurveFunctionContext);
+  O3D_DISALLOW_COPY_AND_ASSIGN(CurveFunctionContext);
 };
 
 // An Curve stores a bunch of spline keys and given a value
@@ -332,7 +332,7 @@ class Curve : public Function {
   template<typename T>
   T* Create() {
     T* key = down_cast<T*>(CreateKeyByClass(T::GetApparentClass()));
-    DCHECK(key);
+    O3D_ASSERT(key);
     return key;
   }
 
@@ -341,7 +341,7 @@ class Curve : public Function {
   //   key_type: class name of key to create.
   // Returns:
   //   pointer to created key.
-  CurveKey* CreateKeyByClassName(const String& key_type);
+  CurveKey* CreateKeyByClassName(const std::string& key_type);
 
   // This is an internal function. It is only called by CurveKey::Remove
   void RemoveKey(CurveKey* key);
@@ -462,7 +462,7 @@ class Curve : public Function {
   mutable std::vector<float> cache_samples_;
 
   O3D_DECL_CLASS(Curve, Function);
-  DISALLOW_COPY_AND_ASSIGN(Curve);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Curve);
 };
 
 }  // namespace o3d

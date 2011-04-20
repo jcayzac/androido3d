@@ -6,29 +6,9 @@ include $(O3D_START_MODULE)
 
 LOCAL_MODULE    := o3dcore
 LOCAL_CPP_EXTENSION := .cc
-LOCAL_CFLAGS    += \
-  -DO3D_NO_CANVAS \
-  -DO3D_NO_GPU2D \
-  -DO3D_NO_IPC \
-  -DO3D_NO_ARCHIVE_REQUEST \
-  -DO3D_NO_FILE_REQUEST \
-  -DO3D_PLUGIN_VERSION=\"0.1.43.0\" \
-  -DO3D_IMPORT_DECOMPRESS_DXT \
-
 LOCAL_C_INCLUDES += \
   $(O3D_THIRD_PARTY)/libjpeg/include \
   $(O3D_THIRD_PARTY)/libpng/include \
-
-# -DCHROME_PNG_WRITE_SUPPORT \
-# -DPNG_USER_CONFIG \
-
-# unused by Android version of O3D.
-#  canvas.cc \
-#  canvas_paint.cc \
-#  core_metrics.cc \
-#  fake_vertex_source.cc \
-#  message_commands.cc \
-#  message_queue.cc \
 
 LOCAL_SRC_FILES := $(addprefix cross/, \
   bitmap.cc \
@@ -59,7 +39,7 @@ LOCAL_SRC_FILES := $(addprefix cross/, \
   event_manager.cc \
   features.cc \
   field.cc \
-  file_request.cc \
+  file_resource.cc \
   function.cc \
   iclass_manager.cc \
   id_manager.cc \
@@ -119,9 +99,6 @@ include $(O3D_START_MODULE)
 
 LOCAL_MODULE := o3drenderer
 LOCAL_CPP_EXTENSION := .cc
-LOCAL_CFLAGS += \
-  -DO3D_RENDERER_MUST_BACK_RESOURCES \
-
 LOCAL_C_INCLUDES += \
   $(O3D_THIRD_PARTY)/libjpeg/include \
   $(O3D_THIRD_PARTY)/libpng/include \

@@ -171,8 +171,8 @@ void CopyFloat4(float* destination,
 
 bool SkinEval::StreamInfo::Init(const Stream& stream,
                                 Buffer::AccessMode access_mode) {
-  DCHECK(data_ == NULL);
-  DCHECK(buffer_ == NULL);
+  O3D_ASSERT(data_ == NULL);
+  O3D_ASSERT(buffer_ == NULL);
   const Field& field = stream.field();
   Buffer* buffer = field.buffer();
   if (!buffer || !field.IsA(FloatField::GetApparentClass())) {
@@ -205,7 +205,7 @@ bool SkinEval::StreamInfo::Init(const Stream& stream,
 
 void SkinEval::StreamInfo::Uninit() {
   if (data_) {
-    DCHECK(buffer_);
+    O3D_ASSERT(buffer_);
     buffer_->Unlock();
     data_ = NULL;
     buffer_ = NULL;
@@ -333,7 +333,7 @@ void SkinEval::DoSkinning(Skin* skin) {
 
     // Lock this input.
     if (!input_stream_infos_[ii].Init(source_stream, Buffer::READ_ONLY)) {
-      String buffer_name;
+      std::string buffer_name;
       if (source_stream.field().buffer()) {
         buffer_name = source_stream.field().buffer()->name();
       }
@@ -366,7 +366,7 @@ void SkinEval::DoSkinning(Skin* skin) {
 
       if (!output_stream_infos_[ii][jj].Init(destination_stream,
                                              Buffer::WRITE_ONLY)) {
-        String buffer_name;
+        std::string buffer_name;
         if (destination_stream.field().buffer()) {
           buffer_name = destination_stream.field().buffer()->name();
         }
@@ -552,13 +552,13 @@ ObjectBase::Ref ParamSkin::Create(ServiceLocator* service_locator) {
 
 bool Skin::LoadFromBinaryData(MemoryReadStream *stream) {
   // Make sure we have enough data for serialization ID and version
-  if (stream->GetRemainingByteCount() < 4 + sizeof(int32)) {
+  if (stream->GetRemainingByteCount() < 4 + sizeof(int32_t)) {
     O3D_ERROR(service_locator()) << "invalid empty skin data";
     return false;
   }
 
   // To insure data integrity we expect four characters kSerializationID
-  uint8 id[4];
+  uint8_t id[4];
   stream->Read(id, 4);
 
   if (memcmp(id, kSerializationID, 4)) {
@@ -567,7 +567,7 @@ bool Skin::LoadFromBinaryData(MemoryReadStream *stream) {
     return false;
   }
 
-  int32 version = stream->ReadLittleEndianInt32();
+  int32_t version = stream->ReadLittleEndianInt32();
   if (version != 1) {
     O3D_ERROR(service_locator()) << "unknown skin data version";
     return false;
@@ -576,17 +576,17 @@ bool Skin::LoadFromBinaryData(MemoryReadStream *stream) {
   int vertex_index = 0;  // start at vertex zero.
 
   while (!stream->EndOfStream()) {
-    // Make sure stream has a uint32 to read (for num_influences)
-    if (stream->GetRemainingByteCount() < sizeof(uint32)) {
+    // Make sure stream has a uint32_t to read (for num_influences)
+    if (stream->GetRemainingByteCount() < sizeof(uint32_t)) {
       FreeAll();  // We have to call this before O3D_ERROR.
       O3D_ERROR(service_locator()) << "unexpected end of skin data";
       return false;
     }
 
-    uint32 num_influences = stream->ReadLittleEndianInt32();
+    uint32_t num_influences = stream->ReadLittleEndianInt32();
 
     // Make sure the stream actually has num_influences data to read
-    const size_t kInfluenceSize = sizeof(uint32) + sizeof(float);
+    const size_t kInfluenceSize = sizeof(uint32_t) + sizeof(float);
     size_t data_size = num_influences * kInfluenceSize;
     if (stream->GetRemainingByteCount() < data_size) {
       FreeAll();  // We have to call this before O3D_ERROR.
@@ -597,7 +597,7 @@ bool Skin::LoadFromBinaryData(MemoryReadStream *stream) {
     if (num_influences > 0) {
       Skin::Influences influences(num_influences);
       for (Skin::Influences::size_type i = 0; i < num_influences; ++i) {
-        uint32 matrix_index = stream->ReadLittleEndianInt32();
+        uint32_t matrix_index = stream->ReadLittleEndianInt32();
         float weight = stream->ReadLittleEndianFloat32();
         influences[i] = Skin::Influence(matrix_index, weight);
       }
@@ -637,7 +637,7 @@ bool Skin::Set(o3d::RawData *raw_data,
     return false;
   }
 
-  const uint8 *data = raw_data->GetDataAs<uint8>(offset);
+  const uint8_t *data = raw_data->GetDataAs<uint8_t>(offset);
   if (!data) {
     return false;
   }

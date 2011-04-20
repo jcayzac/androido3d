@@ -38,7 +38,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "base/file_path.h"
+#include "base/cross/file_path.h"
 #include "core/cross/param.h"
 #include "core/cross/types.h"
 #include "core/cross/object_base.h"
@@ -129,52 +129,17 @@ class NodeInstance {
   std::vector<NodeInstance *> children_;
 };
 
-class ColladaDataMap {
- public:
-   // Adds a data to a filepath. Note, it is an error to associate more than one
-   // data to the same filepath.
-   bool AddData(const FilePath& file_path,
-                const std::string& data,
-                ServiceLocator* service_locator);
-
-   // Access to the filenames of the original data for texture and
-   // sound assets imported when ImportFile was called.  These will
-   // only return results after an import if the keep_original_data
-   // option was set to true when the Collada object was created.
-   std::vector<FilePath> GetOriginalDataFilenames() const;
-   const std::string& GetOriginalData(const FilePath& filename) const;
-
-   // Clears the map.
-   void Clear();
-
- private:
-  // A map containing the original data (still in original format)
-  // used to create the textures, sounds, etc., indexed by filename.
-  typedef std::map<FilePath, std::string> OriginalDataMap;
-  OriginalDataMap original_data_;
-};
-
 class Collada {
  public:
   struct Options {
     Options()
         : generate_mipmaps(true),
-          keep_original_data(false),
-          condition_document(false),
           up_axis(0.0f, 0.0f, 0.0f),
           base_path(FilePath::kCurrentDirectory),
           texture_pack(NULL),
           store_textures_by_basename(false) {}
     // Whether or not to generate mip-maps on the textures we load.
     bool generate_mipmaps;
-
-    // Whether or not to retain the original form for textures for later
-    // access by filename.
-    bool keep_original_data;
-
-    // Whether or not to condition documents for o3d as part of
-    // loading them.
-    bool condition_document;
 
     // What the up-axis of the imported geometry should be.
     Vector3 up_axis;
@@ -244,9 +209,9 @@ class Collada {
                      ParamFloat* animation_input,
                      const Options& options);
 
-  // Same thing but with String filename.
+  // Same thing but with std::string filename.
   static bool Import(Pack* pack,
-                     const String& filename,
+                     const std::string& filename,
                      Transform* parent,
                      ParamFloat* animation_input,
                      const Options& options);
@@ -258,10 +223,6 @@ class Collada {
 
   // Init the Collada Importer.
   static void Init(ServiceLocator* service_locator);
-
-  const ColladaDataMap& original_data_map() const {
-    return original_data_map_;
-  }
 
  private:
   // Imports the given ZIP file into the given pack.
@@ -405,7 +366,7 @@ class Collada {
 
   // Sets an O3D parameter value from a given FCollada effect parameter.
   bool SetParamFromFCEffectParam(ParamObject *param_object,
-                                 const String &param_name,
+                                 const std::string &param_name,
                                  FCDEffectParameter *fc_param);
 
   // Sets the value of a Param on the given ParamObject from an FCollada
@@ -483,14 +444,11 @@ class Collada {
   std::map<const std::string, Material*> materials_;
 
   // All the errors accumlated during loading.
-  String errors_;
+  std::string errors_;
 
   // The absolute path to the top of the model hierarchy, to use for
   // determining the relative paths to other files.
   FilePath base_path_;
-
-  // Original data by FilePath
-  ColladaDataMap original_data_map_;
 
   ColladaZipArchive *collada_zip_archive_;
 
@@ -501,7 +459,7 @@ class Collada {
 
   int unique_filename_counter_;
 
-  DISALLOW_COPY_AND_ASSIGN(Collada);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Collada);
 };
 }
 #endif  // O3D_IMPORT_CROSS_COLLADA_H_

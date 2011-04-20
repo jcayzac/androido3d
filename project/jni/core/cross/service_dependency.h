@@ -33,8 +33,8 @@
 #ifndef O3D_CORE_CROSS_SERVICE_DEPENDENCY_H_
 #define O3D_CORE_CROSS_SERVICE_DEPENDENCY_H_
 
-#include "base/basictypes.h"
-#include "base/logging.h"
+#include "base/cross/config.h"
+#include "base/cross/log.h"
 #include "core/cross/service_locator.h"
 
 namespace o3d {
@@ -56,12 +56,12 @@ class ServiceDependency : public IServiceDependency {
   }
 
   Interface* Get() const {
-    DCHECK(NULL != service_);
+    O3D_ASSERT(NULL != service_);
     return service_;
   }
 
   Interface* operator->() const {
-    DCHECK(NULL != service_);
+    O3D_ASSERT(NULL != service_);
     return service_;
   }
 
@@ -76,7 +76,7 @@ class ServiceDependency : public IServiceDependency {
 
   ServiceLocator* service_locator_;
   Interface* service_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceDependency);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ServiceDependency);
 };
 }  // namespace o3d
 

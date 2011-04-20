@@ -72,7 +72,7 @@ void Element::SetOwner(Shape* new_owner) {
 
   if (owner_ != NULL) {
     bool removed = owner_->RemoveElement(this);
-    DLOG_ASSERT(removed);
+    O3D_ASSERT(removed);
   }
 
   owner_ = new_owner;
@@ -85,7 +85,7 @@ void Element::SetOwner(Shape* new_owner) {
 // Adds a DrawElement to this Element and associates it to a group name.
 
 void Element::AddDrawElement(DrawElement* draw_element) {
-  DCHECK(draw_element);
+  O3D_ASSERT(draw_element);
   draw_elements_.push_back(DrawElement::Ref(draw_element));
 }
 

@@ -34,7 +34,7 @@
 // objects that can have Params.
 
 #include "core/cross/param_object.h"
-#include "base/cross/std_functional.h"
+//#include "base/cross/std_functional.h"
 #include "core/cross/draw_context.h"
 #include "core/cross/param.h"
 #include "core/cross/standard_param.h"
@@ -76,7 +76,7 @@ ObjectBase::Ref ParamObject::Create(ServiceLocator* service_locator) {
 }
 
 // Factory method for Param objects.  Creates a new Param on the object.
-Param* ParamObject::CreateParamByClass(const String& param_name,
+Param* ParamObject::CreateParamByClass(const std::string& param_name,
                                        const ObjectBase::Class* type) {
   if (ObjectBase::ClassIsA(type, Param::GetApparentClass())) {
     Param::Ref param(down_cast<Param*>(
@@ -96,8 +96,8 @@ Param* ParamObject::CreateParamByClass(const String& param_name,
 }
 
 // Factory method for Param objects.  Creates a new Param on the object.
-Param* ParamObject::CreateParamByClassName(const String& param_name,
-                                           const String& class_type_name) {
+Param* ParamObject::CreateParamByClassName(const std::string& param_name,
+                                           const std::string& class_type_name) {
   if (class_manager_->ClassNameIsAClass(class_type_name,
                                         Param::GetApparentClass())) {
     Param::Ref param(down_cast<Param*>(
@@ -117,11 +117,11 @@ Param* ParamObject::CreateParamByClassName(const String& param_name,
 }
 
 // Looks in the param_map for a Param with the given name.
-Param* ParamObject::GetUntypedParam(const String& name) const {
+Param* ParamObject::GetUntypedParam(const std::string& name) const {
   NamedParamRefMap::const_iterator iter = params_.find(name);
   if (iter == params_.end()) {
     // Try adding the o3d namespace prefix
-    String prefixed_name(O3D_STRING_CONSTANT("") + name);
+    std::string prefixed_name(O3D_STRING_CONSTANT("") + name);
     iter = params_.find(prefixed_name);
     if (iter == params_.end()) {
       return NULL;
@@ -135,7 +135,7 @@ Param* ParamObject::GetUntypedParam(const String& name) const {
 // it is of the correct type.  If it is of the wrong type, NULL is
 // returned.  If the param does not exist, it is created with the
 // given type.
-Param* ParamObject::GetOrCreateParamByClass(const String& param_name,
+Param* ParamObject::GetOrCreateParamByClass(const std::string& param_name,
                                             const ObjectBase::Class* type) {
   Param* param = GetUntypedParam(param_name);
   if (param) {
@@ -174,14 +174,21 @@ void ParamObject::CopyParams(ParamObject* source_param_object) {
   }
 }
 
+namespace {
+  struct selectParamRef {
+    Param::Ref& operator()(std::pair<std::string, Param::Ref>& x) const { return x.second; }
+    const Param::Ref& operator()(const std::pair<std::string, Param::Ref>& x) const { return x.second; }
+  };
+}
 
 void ParamObject::GetParamsFast(ParamVector* param_array) const {
   param_array->clear();
   param_array->reserve(params().size());
+
   std::transform(params().begin(),
                  params().end(),
                  std::back_inserter(*param_array),
-                 base::select2nd<NamedParamRefMap::value_type>());
+                 selectParamRef());
 }
 
 ParamVector ParamObject::GetParams() const {
@@ -191,7 +198,7 @@ ParamVector ParamObject::GetParams() const {
 }
 
 // Inserts the Param in the ParamObject's map of Params (indexed by name)
-bool ParamObject::AddParam(const String& param_name, Param *param) {
+bool ParamObject::AddParam(const std::string& param_name, Param *param) {
   // Makes sure the param lasts through this function.
   Param::Ref temp(param);
 
@@ -285,18 +292,18 @@ bool CheckParamIsFromParamObject(const Param* param,
 
 void ParamObject::GetInputsForParam(const Param* param,
                                     ParamVector* inputs) const {
-  DCHECK(param);
-  DCHECK(inputs);
-  DCHECK(CheckParamIsFromParamObject(param, this));
+  O3D_ASSERT(param);
+  O3D_ASSERT(inputs);
+  O3D_ASSERT(CheckParamIsFromParamObject(param, this));
   inputs->clear();
   ConcreteGetInputsForParam(param, inputs);
 }
 
 void ParamObject::GetOutputsForParam(const Param* param,
                                      ParamVector* outputs) const {
-  DCHECK(param);
-  DCHECK(outputs);
-  DCHECK(CheckParamIsFromParamObject(param, this));
+  O3D_ASSERT(param);
+  O3D_ASSERT(outputs);
+  O3D_ASSERT(CheckParamIsFromParamObject(param, this));
   outputs->clear();
   ConcreteGetOutputsForParam(param, outputs);
 }

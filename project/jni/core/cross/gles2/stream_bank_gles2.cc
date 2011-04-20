@@ -62,11 +62,11 @@ GLenum GLDataType(const Field& field) {
         return GL_UNSIGNED_BYTE;
     }
   }
-  DLOG(ERROR) << "Unknown Stream DataType";
+  O3D_LOG(ERROR) << "Unknown Stream DataType";
   return GL_INVALID_ENUM;
 }
 
-String GetAttribName(GLuint gl_program, GLuint attrib_index) {
+std::string GetAttribName(GLuint gl_program, GLuint attrib_index) {
   char buffer[1024];
   GLsizei name_len;
   GLint size;
@@ -79,12 +79,12 @@ String GetAttribName(GLuint gl_program, GLuint attrib_index) {
                     &type,
                     &buffer[0]);
   if (name_len == 0) {
-    return String("**NO INFO FOR ATTRIB**");
+    return std::string("**NO INFO FOR ATTRIB**");
   }
-  return String(&buffer[0], name_len);
+  return std::string(&buffer[0], name_len);
 }
 
-String GetAttribSemantic(GLuint gl_program, GLuint attrib_index) {
+std::string GetAttribSemantic(GLuint gl_program, GLuint attrib_index) {
   // GLES doesn't have semantics so for now we just return the names.
   return GetAttribName(gl_program, attrib_index);
 }
@@ -98,24 +98,24 @@ const int kNumLoggedEvents = 5;
 
 StreamBankGLES2::StreamBankGLES2(ServiceLocator* service_locator)
     : StreamBank(service_locator) {
-  DLOG(INFO) << "StreamBankGLES2 Construct";
+  O3D_LOG(INFO) << "StreamBankGLES2 Construct";
 }
 
 StreamBankGLES2::~StreamBankGLES2() {
-  DLOG(INFO) << "StreamBankGLES2 Destruct";
+  O3D_LOG(INFO) << "StreamBankGLES2 Destruct";
 }
 
 bool StreamBankGLES2::CheckForMissingVertexStreams(
     ParamCacheGLES2::VaryingParameterMap& varying_map,
     GLuint gl_program,
-    String* missing_stream) {
-  DCHECK(missing_stream);
-  DLOG(INFO) << "StreamBankGLES2 InsertMissingVertexStreams";
+    std::string* missing_stream) {
+  O3D_ASSERT(missing_stream);
+  O3D_LOG(INFO) << "StreamBankGLES2 InsertMissingVertexStreams";
   // Match VARYING parameters to Buffers with the matching semantics.
   ParamCacheGLES2::VaryingParameterMap::iterator i;
   for (i = varying_map.begin(); i != varying_map.end(); ++i) {
     GLuint attribute_index = i->second;
-    String semantic_string(GetAttribSemantic(gl_program, attribute_index));
+    std::string semantic_string(GetAttribSemantic(gl_program, attribute_index));
     Stream::Semantic semantic;
     int semantic_index;
     if (!SemanticNameToSemantic(semantic_string, &semantic, &semantic_index)) {
@@ -126,7 +126,7 @@ bool StreamBankGLES2::CheckForMissingVertexStreams(
       // record the matched stream into the varying parameter map for later
       // use by StreamBankGLES2::Draw().
       i->second = stream_index;
-      DLOG(INFO)
+      O3D_LOG(INFO)
           << "StreamBankGLES2 Matched PARAMETER \""
           << GetAttribName(gl_program, attribute_index) << " : "
           << semantic_string << "\" to stream "
@@ -174,7 +174,7 @@ bool StreamBankGLES2::BindStreamsForRendering(
     GLint element_count = field.num_components();
     if (element_count > 4) {
       element_count = 0;
-      DLOG_FIRST_N(ERROR, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(ERROR, kNumLoggedEvents)
           << "Unable to find stream for attrib: "
           << GetAttribName(gl_program, i->first);
     }

@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "base/string_util.h"
+#include "base/cross/string_util.h"
 #include "core/cross/stream.h"
 #include "core/cross/types.h"
 #include "core/cross/gles2/utils_gles2.h"
@@ -44,7 +44,7 @@
 namespace o3d {
 
 bool SemanticNameToSemantic(
-    const String& name, Stream::Semantic* semantic, int* semantic_index) {
+    const std::string& name, Stream::Semantic* semantic, int* semantic_index) {
   struct NameToSemantic {
     const char* const name;
     size_t length;
@@ -65,7 +65,7 @@ bool SemanticNameToSemantic(
     { kColor, sizeof(kColor) - 1, Stream::COLOR, },
     { kTexcoord, sizeof(kTexcoord) - 1, Stream::TEXCOORD, },
   };
-  for (unsigned ii = 0; ii < ARRAYSIZE_UNSAFE(lookup); ++ii) {
+  for (unsigned ii = 0; ii < 6; ++ii) {
     const NameToSemantic& info = lookup[ii];
     if (!base::strncasecmp(info.name, name.c_str(), info.length)) {
       *semantic = info.semantic;

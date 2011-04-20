@@ -35,8 +35,9 @@
 // Copyright (C) 1998-2005 Gilles Vollant
 
 #include "import/cross/zip_archive.h"
+#include "contrib/minizip/unzip.h"
 
-#include "base/basictypes.h"
+#include "base/cross/log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,63 +59,70 @@
 using std::vector;
 using std::string;
 
-#if defined(OS_WIN)
-// Windows #defines this...
-#undef DeleteFile
-#endif
-
-#ifndef ALLOW_USER_QUERY
-#define ALLOW_USER_QUERY      0   // 1: ask before overwriting files
-#endif
-
-#ifndef DEBUGLOG_DESTINATION
-#define DEBUGLOG_DESTINATION  0   // 0: no debug output   1: output to stdout
-#endif
-
-#if DEBUGLOG_DESTINATION == 1
-#define DEBUGLOG(...) printf(__VA_ARGS__)
-#else
-#define DEBUGLOG(...)
-#endif
-
-
 #define CASESENSITIVITY (1)  // activate case sensitivity
 #define WRITEBUFFERSIZE (8192)
 #define MAXFILENAME (1024)
 
+struct ZipFileInfo::LowLevelInfo {
+  unz_file_info info;
+};
+ZipFileInfo::ZipFileInfo(): low_level_info(new ZipFileInfo::LowLevelInfo) { }
+ZipFileInfo::ZipFileInfo(const ZipFileInfo& o): low_level_info(new ZipFileInfo::LowLevelInfo) {
+  *low_level_info = *o.low_level_info;
+  name = o.name;
+}
+ZipFileInfo& ZipFileInfo::operator=(const ZipFileInfo& o) {
+  *low_level_info = *o.low_level_info;
+  name = o.name;
+  return *this;
+}
+ZipFileInfo::~ZipFileInfo() {
+  delete low_level_info;
+}
+
+struct ZipArchive::PrivateStruct {
+  std::string     zip_filename_;
+  unzFile         zip_file_ref_;
+  PrivateStruct(const std::string &zip_filename): zip_filename_(zip_filename), zip_file_ref_(0) { }
+  ~PrivateStruct() {
+    if (zip_file_ref_) {
+      unzClose(zip_file_ref_);
+      zip_file_ref_ = 0;
+    }
+  }
+};
+
 // Creates a basic C++ wrapper for a zip file
 ZipArchive::ZipArchive(const std::string &zip_filename, int *result)
-    : zip_filename_(zip_filename), zip_file_ref_(0) {
-  const char *zip_filename_c = zip_filename_.c_str();
+: private_(new ZipArchive::PrivateStruct(zip_filename)) {
   char filename_try[MAXFILENAME + 16] = "";
-  strncpy(filename_try, zip_filename_c, MAXFILENAME - 1);
+  strncpy(filename_try, &zip_filename[0], MAXFILENAME - 1);
 
   // strncpy doesn't append the trailing NULL if the string is too long.
   filename_try[MAXFILENAME] = '\0';
 
-  zip_file_ref_ = unzOpen(zip_filename_c);
+  private_->zip_file_ref_ = unzOpen(&zip_filename[0]);
 
   // try appending .zip if |zip_filename| as given wasn't found
-  if (zip_file_ref_ == NULL) {
+  if (private_->zip_file_ref_ == NULL) {
     strcat(filename_try, ".zip");
-    zip_file_ref_ = unzOpen(filename_try);
+    private_->zip_file_ref_ = unzOpen(filename_try);
   }
 
-  if (zip_file_ref_ == NULL) {
-    DEBUGLOG("Cannot open %s or %s.zip\n", zip_filename_c, zip_filename_c);
+  if (private_->zip_file_ref_ == NULL) {
+    O3D_LOG(WARNING) << "Cannot open " << zip_filename << " nor " << zip_filename << ".zip as a ZIP archive";
     if (result) {
       *result = 1;
       return;
     }
   }
-  DEBUGLOG("%s opened\n", filename_try);
+  O3D_LOG(INFO) << "Opened ZIP archive "<< filename_try;
 
   *result = UNZ_OK;
 }
 
 ZipArchive::~ZipArchive() {
-  unzClose(zip_file_ref_);
-  zip_file_ref_ = 0;
+  delete private_;
 }
 
 // The returned filenames should adhere to the zip archive spec
@@ -127,17 +135,18 @@ int ZipArchive::GetInformationList(vector<ZipFileInfo> *infolist) {
   if (!infolist) return -1;
 
   unz_global_info gi;
-  int result = unzGetGlobalInfo(zip_file_ref_, &gi);
+  int result = unzGetGlobalInfo(private_->zip_file_ref_, &gi);
 
   if (result == UNZ_OK) {
-    unzGoToFirstFile(zip_file_ref_);
+    unzGoToFirstFile(private_->zip_file_ref_);
 
     for (uLong i = 0; i < gi.number_entry; ++i) {
       // get the info for this entry
       char filename_inzip[MAXFILENAME];  // MAX_PATH
       ZipFileInfo file_info;
-      result = unzGetCurrentFileInfo(zip_file_ref_,
-                                     &file_info,
+      unz_file_info* info(&file_info.low_level_info->info);
+      result = unzGetCurrentFileInfo(private_->zip_file_ref_,
+                                     info,
                                      filename_inzip,
                                      sizeof(filename_inzip),
                                      NULL,
@@ -149,9 +158,9 @@ int ZipArchive::GetInformationList(vector<ZipFileInfo> *infolist) {
       infolist->push_back(file_info);
 
       if ((i + 1) < gi.number_entry) {
-        result = unzGoToNextFile(zip_file_ref_);
+        result = unzGoToNextFile(private_->zip_file_ref_);
         if (result != UNZ_OK) {
-          DEBUGLOG("error %d with zipfile in unzGoToNextFile\n", result);
+          O3D_LOG(ERROR) << "error " << result << " with zipfile in unzGoToNextFile";
           break;
         }
       }
@@ -169,21 +178,22 @@ int ZipArchive::GetInformationList(vector<ZipFileInfo> *infolist) {
 int ZipArchive::GetFileInfo(const string &filename, ZipFileInfo *info) {
   if (!info) return -1;
 
-  unzGoToFirstFile(zip_file_ref_);
-  unzFile uf = zip_file_ref_;
+  unzGoToFirstFile(private_->zip_file_ref_);
+  unzFile uf = private_->zip_file_ref_;
 
   string actual_filename;
   GetActualFilename(filename, &actual_filename);
 
   if (unzLocateFile(uf, actual_filename.c_str(), CASESENSITIVITY) != UNZ_OK) {
-    DEBUGLOG("file %s not found in the zipfile\n", actual_filename.c_str());
+    O3D_LOG(ERROR) << "file " << actual_filename << " not found in the zipfile";
     return 2;
   }
 
   // get the info for this entry
+  unz_file_info* llinfo(&info->low_level_info->info);
   char filename_inzip[MAXFILENAME];
   int result = unzGetCurrentFileInfo(uf,
-                                     info,
+                                     llinfo,
                                      filename_inzip,
                                      sizeof(filename_inzip),
                                      NULL,
@@ -208,17 +218,12 @@ int ZipArchive::Extract() {
   const char *dirname = NULL;
 
   if (opt_do_extract == 1) {
-#if defined(OS_WIN)
-    if (opt_extractdir && ::_chdir(dirname)) {
-      DEBUGLOG("Error changing into %s, aborting\n", dirname);
-      exit(-1);
+    if (opt_extractdir) {
+      if (::chdir(dirname)) {
+        O3D_LOG(ERROR) << "Error changing into " << dirname;
+        return 2;
+      }
     }
-#else
-    if (opt_extractdir && ::chdir(dirname)) {
-      DEBUGLOG("Error changing into %s, aborting\n", dirname);
-      exit(-1);
-    }
-#endif
 
     if (filename_to_extract == NULL) {
       return DoExtract(opt_do_extract_withoutpath,
@@ -232,7 +237,7 @@ int ZipArchive::Extract() {
     }
   }
 
-  unzCloseCurrentFile(zip_file_ref_);
+  unzCloseCurrentFile(private_->zip_file_ref_);
   return 1;
 }
 
@@ -244,11 +249,11 @@ int ZipArchive::ExtractOneFile(const string &filename,
   string actual_filename;
   GetActualFilename(filename, &actual_filename);
 
-  unzGoToFirstFile(zip_file_ref_);
-  if (unzLocateFile(zip_file_ref_,
+  unzGoToFirstFile(private_->zip_file_ref_);
+  if (unzLocateFile(private_->zip_file_ref_,
                     actual_filename.c_str(),
                     CASESENSITIVITY) != UNZ_OK) {
-    DEBUGLOG("file %s not found in the zipfile\n", actual_filename.c_str());
+    O3D_LOG(ERROR) << "file " << actual_filename << " not found in the zipfile";
     return 2;
   }
 
@@ -269,11 +274,11 @@ char  *ZipArchive::GetFileData(const string &filename, size_t *size) {
   string actual_filename;
   GetActualFilename(filename, &actual_filename);
 
-  unzFile uf = zip_file_ref_;
+  unzFile uf = private_->zip_file_ref_;
 
   unzGoToFirstFile(uf);
   if (unzLocateFile(uf, actual_filename.c_str(), CASESENSITIVITY) != UNZ_OK) {
-    DEBUGLOG("file %s not found in the zipfile\n", actual_filename.c_str());
+    O3D_LOG(ERROR) << "file " << actual_filename << " not found in the zipfile";
     return NULL;
   }
 
@@ -307,13 +312,13 @@ char  *ZipArchive::GetFileData(const string &filename, size_t *size) {
     // as string data and doesn't harm anything else
     buffer = reinterpret_cast<char*>(malloc(file_info.uncompressed_size + 1));
     buffer[file_info.uncompressed_size] = 0;
-    uint32 buffer_index = 0;
+    uint32_t buffer_index = 0;
 
-    uint32 nbytes;
+    uint32_t nbytes;
     do {
       nbytes = unzReadCurrentFile(uf, temp_buffer, kBufferChunkSize);
       if (nbytes < 0) {
-        DEBUGLOG("error %d with zipfile in unzReadCurrentFile\n", result);
+        O3D_LOG(ERROR) << "error " << result << " with zipfile in unzReadCurrentFile";
         result = -1;
         break;
       }
@@ -369,7 +374,7 @@ int ZipArchive::ExtractCurrentFile(const int *popt_extract_without_path,
 
   unz_file_info file_info;
   char filename_inzip[MAXFILENAME];
-  result = unzGetCurrentFileInfo(zip_file_ref_,
+  result = unzGetCurrentFileInfo(private_->zip_file_ref_,
                                  &file_info,
                                  filename_inzip,
                                  sizeof(filename_inzip),
@@ -379,11 +384,11 @@ int ZipArchive::ExtractCurrentFile(const int *popt_extract_without_path,
                                  0);
 
   if (result != UNZ_OK) {
-    DEBUGLOG("error %d with zipfile in unzGetCurrentFileInfo\n", result);
+    O3D_LOG(ERROR) << "error " << result << " with zipfile in unzGetCurrentFileInfo";
     return result;
   }
 
-  DEBUGLOG("ExtractCurrentFile: %s\n", filename_inzip);
+  O3D_LOG(INFO) << "ExtractCurrentFile: " << filename_inzip;
 
   uInt size_buf = WRITEBUFFERSIZE;
   void *buf = malloc(size_buf);
@@ -399,7 +404,7 @@ int ZipArchive::ExtractCurrentFile(const int *popt_extract_without_path,
 
   if ((*filename_withoutpath) == '\0') {
     if ((*popt_extract_without_path) == 0) {
-      DEBUGLOG("creating directory: %s\n", filename_inzip);
+      O3D_LOG(INFO) << "creating directory: " << filename_inzip;
       MyMkDir(filename_inzip);
     }
   } else {
@@ -412,49 +417,14 @@ int ZipArchive::ExtractCurrentFile(const int *popt_extract_without_path,
       write_filename = filename_withoutpath;
     }
 
-    result = unzOpenCurrentFilePassword(zip_file_ref_, password);
+    result = unzOpenCurrentFilePassword(private_->zip_file_ref_, password);
     if (result != UNZ_OK) {
-      DEBUGLOG("error %d with zipfile in unzOpenCurrentFilePassword\n", result);
+      O3D_LOG(ERROR) << "error " << result << " with zipfile in unzOpenCurrentFilePassword";
     }
-
-#if ALLOW_USER_QUERY
-    if (((*popt_overwrite) == 0) && (result == UNZ_OK)) {
-      char rep = 0;
-      FILE* ftestexist;
-      ftestexist = fopen(write_filename, "rb");
-
-      if (ftestexist != NULL) {
-        fclose(ftestexist);
-
-        do {
-          char answer[128];
-          int ret;
-
-          DEBUGLOG("The file %s exists. Overwrite ? [y]es, [n]o, [A]ll: ",
-                   write_filename);
-
-          ret = scanf("%1s", answer);
-          if (ret != 1) {
-            exit(EXIT_FAILURE);
-          }
-          rep = answer[0];
-          if ((rep >= 'a') && (rep <= 'z'))
-            rep -= 0x20;
-        }
-        while ((rep != 'Y') && (rep != 'N') && (rep != 'A'));
-      }
-
-      if (rep == 'N')
-        skip = 1;
-
-      if (rep == 'A')
-        *popt_overwrite = 1;
-    }
-#endif  // ALLOW_USER_QUERY
 
     FILE *fout = NULL;
     if ((skip == 0) && (result == UNZ_OK)) {
-      DEBUGLOG("fopen: %s\n", write_filename);
+      O3D_LOG(INFO) << "fopen: " << write_filename;
 
       fout = fopen(write_filename, "wb");
 
@@ -469,24 +439,24 @@ int ZipArchive::ExtractCurrentFile(const int *popt_extract_without_path,
       }
 
       if (fout == NULL) {
-        DEBUGLOG("error opening %s\n", write_filename);
+        O3D_LOG(ERROR) << "error opening " << write_filename;
       }
     }
 
     if (fout != NULL) {
-      DEBUGLOG(" extracting: %s\n", write_filename);
+      O3D_LOG(INFO) << "extracting: " << write_filename;
 
       do {
-        result = unzReadCurrentFile(zip_file_ref_, buf, size_buf);
+        result = unzReadCurrentFile(private_->zip_file_ref_, buf, size_buf);
 
         if (result < 0) {
-          DEBUGLOG("error %d with zipfile in unzReadCurrentFile\n", result);
+          O3D_LOG(ERROR) << "error " << result << " with zipfile in unzReadCurrentFile";
           break;
         }
 
         if (result > 0)
           if (fwrite(buf, result, 1, fout) != 1) {
-            DEBUGLOG("error in writing extracted file\n");
+            O3D_LOG(ERROR) << "error in writing extracted file";
             result = UNZ_ERRNO;
             break;
           }
@@ -495,21 +465,15 @@ int ZipArchive::ExtractCurrentFile(const int *popt_extract_without_path,
       if (fout) {
         fclose(fout);
       }
-
-      if (result == 0) {
-        ChangeFileDate(write_filename,
-                       file_info.dosDate,
-                       file_info.tmu_date);
-      }
     }
 
     if (result == UNZ_OK) {
-      result = unzCloseCurrentFile(zip_file_ref_);
+      result = unzCloseCurrentFile(private_->zip_file_ref_);
       if (result != UNZ_OK) {
-        DEBUGLOG("error %d with zipfile in unzCloseCurrentFile\n", result);
+        O3D_LOG(ERROR) << "error " << result << " with zipfile in unzCloseCurrentFile";
       }
     } else {
-      unzCloseCurrentFile(zip_file_ref_);  // don't lose the error
+      unzCloseCurrentFile(private_->zip_file_ref_);  // don't lose the error
     }
   }
 
@@ -521,10 +485,10 @@ int ZipArchive::DoExtract(int opt_extract_without_path,
                           int opt_overwrite,
                           const char *password) {
   unz_global_info gi;
-  int result = unzGetGlobalInfo(zip_file_ref_, &gi);
+  int result = unzGetGlobalInfo(private_->zip_file_ref_, &gi);
 
   if (result != UNZ_OK)
-    DEBUGLOG("error %d with zipfile in unzGetGlobalInfo \n", result)
+    O3D_LOG(ERROR) << "error " << result << " with zipfile in unzGetGlobalInfo";
 
   for (uLong i = 0; i < gi.number_entry; ++i) {
     if (ExtractCurrentFile(&opt_extract_without_path,
@@ -533,9 +497,9 @@ int ZipArchive::DoExtract(int opt_extract_without_path,
       break;
 
     if ((i + 1) < gi.number_entry) {
-      result = unzGoToNextFile(zip_file_ref_);
+      result = unzGoToNextFile(private_->zip_file_ref_);
       if (result != UNZ_OK) {
-        DEBUGLOG("error %d with zipfile in unzGoToNextFile\n", result)
+        O3D_LOG(ERROR) << "error " << result << " with zipfile in unzGoToNextFile";
         break;
       }
     }
@@ -544,58 +508,10 @@ int ZipArchive::DoExtract(int opt_extract_without_path,
   return UNZ_OK;
 }
 
-// ChangeFileDate : change the date/time of a file
-// filename : the filename of the file where date/time must be modified
-// dosdate : the new date at the MSDos format (4 bytes)
-// tmu_date : the SAME new date at the tm_unz format
-void ZipArchive::ChangeFileDate(const char *filename,
-                                uLong dosdate,
-                                tm_unz tmu_date) {
-#if 0  // don't need or want this for now
-#ifdef WIN32
-  HANDLE hFile;
-  FILETIME ftm, ftLocal, ftCreate, ftLastAcc, ftLastWrite;
-
-  hFile = CreateFile(filename, GENERIC_READ | GENERIC_WRITE,
-                     0, NULL, OPEN_EXISTING, 0, NULL);
-  GetFileTime(hFile, &ftCreate, &ftLastAcc, &ftLastWrite);
-  DosDateTimeToFileTime((WORD)(dosdate>>16), (WORD)dosdate, &ftLocal);
-  LocalFileTimeToFileTime(&ftLocal, &ftm);
-  SetFileTime(hFile, &ftm, &ftLastAcc, &ftm);
-  CloseHandle(hFile);
-#else
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  struct utimbuf ut;
-  struct tm newdate;
-  newdate.tm_sec = tmu_date.tm_sec;
-  newdate.tm_min = tmu_date.tm_min;
-  newdate.tm_hour = tmu_date.tm_hour;
-  newdate.tm_mday = tmu_date.tm_mday;
-  newdate.tm_mon = tmu_date.tm_mon;
-
-  if (tmu_date.tm_year > 1900)
-    newdate.tm_year = tmu_date.tm_year - 1900;
-  else
-    newdate.tm_year = tmu_date.tm_year;
-
-  newdate.tm_isdst = -1;
-
-  ut.actime = ut.modtime = mktime(&newdate);
-  utime(filename, &ut);
-#endif
-#endif
-#endif
-}
-
-
 int ZipArchive::MyMkDir(const char *dirname) {
   int ret = 0;
-#if defined(OS_WIN)
-  ret = ::_mkdir(dirname);
-#else
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   ret = ::mkdir(dirname, 0775);
-#endif
 #endif
   return ret;
 }
@@ -627,7 +543,7 @@ int ZipArchive::MakeDir(const char *newdir) {
     *p = 0;
 
     if ((MyMkDir(buffer) == -1) && (errno == ENOENT)) {
-      DEBUGLOG("couldn't create directory %s\n", buffer);
+      O3D_LOG(ERROR) << "couldn't create directory " << buffer;
       free(buffer);
       return 0;
     }
@@ -642,102 +558,6 @@ int ZipArchive::MakeDir(const char *newdir) {
   return 1;
 }
 
-
-// Prints information about the given zip archive
-int ZipArchive::Print() {
-  unzGoToFirstFile(zip_file_ref_);
-
-  unz_global_info gi;
-  int result = unzGetGlobalInfo(zip_file_ref_, &gi);
-  if (result != UNZ_OK) {
-    printf("error %d with zipfile in unzGetGlobalInfo \n", result);
-  } else {
-    printf(" Length  Method   Size  Ratio   Date    Time   CRC-32     Name\n");
-    printf(" ------  ------   ----  -----   ----    ----   ------     ----\n");
-
-    for (uint32 i = 0; i < gi.number_entry; ++i) {
-      char filename_inzip[MAXFILENAME];
-      ZipFileInfo file_info;
-      result = unzGetCurrentFileInfo(zip_file_ref_,
-                                     &file_info,
-                                     filename_inzip,
-                                     sizeof(filename_inzip),
-                                     NULL,
-                                     0,
-                                     NULL,
-                                     0);
-
-      if (result != UNZ_OK) {
-        DEBUGLOG("error %d with zipfile in unzGetCurrentFileInfo\n", result);
-        break;
-      }
-
-      file_info.name = filename_inzip;
-      file_info.Print(false);
-
-      if ((i + 1) < gi.number_entry) {
-        result = unzGoToNextFile(zip_file_ref_);
-        if (result != UNZ_OK) {
-          DEBUGLOG("error %d with zipfile in unzGoToNextFile\n", result);
-          break;
-        }
-      }
-    }
-
-    DEBUGLOG("\n");
-  }
-
-  return result;
-}
-
-// Prints information about the given file
-void  ZipFileInfo::Print(bool print_header) {
-  if (print_header) {
-    printf(" Length  Method   Size  Ratio   Date    Time   CRC-32     Name\n");
-    printf(" ------  ------   ----  -----   ----    ----   ------     ----\n");
-  }
-
-  uLong ratio = 0;
-  if (uncompressed_size > 0) {
-    ratio = (compressed_size * 100) / uncompressed_size;
-  }
-
-  // display a '*' if the file is encrypted
-  char charCrypt = ' ';
-  if ((flag & 1) != 0) {
-    charCrypt = '*';
-  }
-
-  const char *string_method = "Unkn. ";
-  if (compression_method == 0) {
-    string_method = "Stored";
-  } else {
-    if (compression_method == Z_DEFLATED) {
-      uInt iLevel = (uInt)((flag & 0x6) / 2);
-      if (iLevel == 0) {
-        string_method = "Defl:N";
-      } else if (iLevel == 1) {
-        string_method = "Defl:X";
-      } else if ((iLevel == 2) || (iLevel == 3)) {
-        string_method = "Defl:F";  // 2:fast , 3 : extra fast
-      }
-    }
-  }
-
-  printf("%7lu  %6s%c%7lu %3lu%%  %2.2lu-%2.2lu-%2.2lu  "
-         "%2.2lu:%2.2lu  %8.8lx   %s\n",
-         uncompressed_size,
-         string_method,
-         charCrypt,
-         compressed_size,
-         ratio,
-         (uLong)tmu_date.tm_mon + 1,
-         (uLong)tmu_date.tm_mday,
-         (uLong)tmu_date.tm_year % 100,
-         (uLong)tmu_date.tm_hour,
-         (uLong)tmu_date.tm_min,
-         (uLong)crc, name.c_str());
-}
 
 bool ZipArchive::IsZipFile(const std::string& filename) {
   int result;
@@ -812,54 +632,6 @@ bool ZipArchive::GetTempFileFromFile(const string &filename,
   char *data = GetFileData(filename, &data_size);
 
   if (data) {
-#if defined(OS_WIN)
-    // get the temp directory
-    char temp_path[MAX_PATH];
-    if (!GetTempPathA(MAX_PATH, temp_path)) {
-      return false;
-    }
-
-    // now generate a GUID
-    UUID guid = {0};
-    UuidCreate(&guid);
-
-    // and format into a wide-string
-    char guid_string[37];
-    ::_snprintf(
-        guid_string, sizeof(guid_string) / sizeof(guid_string[0]),
-        "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        guid.Data1, guid.Data2, guid.Data3,
-        guid.Data4[0], guid.Data4[1], guid.Data4[2],
-        guid.Data4[3], guid.Data4[4], guid.Data4[5],
-        guid.Data4[6], guid.Data4[7]);
-
-    // format a complete file path for the temp file
-    char fullpath[MAX_PATH];
-
-    int dot_position = filename.rfind('.');
-    if (dot_position != string::npos) {
-      // try to retain the original file suffix (.jpg, etc.)
-      ::_snprintf(fullpath, MAX_PATH, "%s%s%s",
-                  temp_path,
-                  guid_string,
-                  filename.substr(dot_position).c_str());
-    } else {
-      ::_snprintf(fullpath, MAX_PATH, "%s\\%s",
-                  temp_path,
-                  guid_string);
-    }
-
-    FILE *tempfile = fopen(fullpath, "wb");
-
-    if (tempfile) {
-      fwrite(data, 1, data_size, tempfile);
-      fclose(tempfile);
-      *temp_filename = fullpath;
-    } else {
-      return false;
-    }
-
-#else
     // get just the final path component
     string::size_type pos = filename.rfind('/');
     if (pos != string::npos) {
@@ -876,16 +648,11 @@ bool ZipArchive::GetTempFileFromFile(const string &filename,
         return false;
       }
     }
-#endif
   }
 
   return true;
 }
 
 void ZipArchive::DeleteFile(const string &filename) {
-#if defined(OS_WIN)
-  ::_unlink(filename.c_str());
-#else
   ::unlink(filename.c_str());
-#endif
 }

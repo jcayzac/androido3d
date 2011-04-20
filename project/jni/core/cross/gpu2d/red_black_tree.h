@@ -70,7 +70,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/cross/log.h"
 #include "core/cross/gpu2d/arena.h"
 
 namespace o3d {
@@ -254,7 +254,7 @@ class RedBlackTree {
     Node* parent_;
     Color color_;
     T data_;
-    DISALLOW_COPY_AND_ASSIGN(Node);
+    O3D_DISALLOW_COPY_AND_ASSIGN(Node);
   };
 
   // Returns the root of the tree, which is needed by some subclasses.
@@ -527,7 +527,7 @@ class RedBlackTree {
         // the code; it comes about from the properties of the
         // red-black tree.
         Node* w = x_parent->right();
-        DCHECK(w != NULL) << "x's sibling should not be null.";
+        O3D_ASSERT(w != NULL) << "x's sibling should not be null.";
         if (w->color() == kRed) {
           // Case 1
           w->set_color(kBlack);
@@ -568,7 +568,7 @@ class RedBlackTree {
         // the code; it comes about from the properties of the
         // red-black tree.
         Node* w = x_parent->left();
-        DCHECK(w != NULL) << "x's sibling should not be null.";
+        O3D_ASSERT(w != NULL) << "x's sibling should not be null.";
         if (w->color() == kRed) {
           // Case 1
           w->set_color(kBlack);
@@ -685,7 +685,7 @@ class RedBlackTree {
 
    private:
     int count_;
-    DISALLOW_COPY_AND_ASSIGN(Counter);
+    O3D_DISALLOW_COPY_AND_ASSIGN(Counter);
   };
 
   //----------------------------------------------------------------------
@@ -735,10 +735,10 @@ class RedBlackTree {
     }
     prefix += "-";
     if (node == NULL) {
-      DLOG(INFO) << prefix;
+      O3D_LOG(INFO) << prefix;
       return;
     }
-    DLOG(INFO) << prefix << " " << node->data()
+    O3D_LOG(INFO) << prefix << " " << node->data()
                << ((node->color() == kBlack) ? " (black)" : " (red)");
     DumpFromNode(node->left(), indentation + 2);
     DumpFromNode(node->right(), indentation + 2);
@@ -753,7 +753,7 @@ class RedBlackTree {
   bool needs_full_ordering_comparisons_;
   bool verbose_debugging_;
 
-  DISALLOW_COPY_AND_ASSIGN(RedBlackTree);
+  O3D_DISALLOW_COPY_AND_ASSIGN(RedBlackTree);
 };
 
 }  // namespace gpu2d

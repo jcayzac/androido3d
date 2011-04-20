@@ -59,11 +59,11 @@ const int kNumLoggedEvents = 5;
 
 PrimitiveGL::PrimitiveGL(ServiceLocator* service_locator)
     : Primitive(service_locator) {
-  DLOG(INFO) << "PrimitiveGL Construct";
+  O3D_LOG(INFO) << "PrimitiveGL Construct";
 }
 
 PrimitiveGL::~PrimitiveGL() {
-  DLOG(INFO) << "PrimitiveGL Destruct";
+  O3D_LOG(INFO) << "PrimitiveGL Destruct";
 }
 
 // Binds the vertex and index streams required to draw the shape.  If the
@@ -76,16 +76,16 @@ void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
                                          Material* material,
                                          ParamObject* override,
                                          ParamCache* param_cache) {
-  DLOG_ASSERT(material);
-  DLOG_ASSERT(draw_element);
-  DLOG_ASSERT(param_cache);
-  DLOG_FIRST_N(INFO, kNumLoggedEvents) << "PrimitiveGL Draw \""
+  O3D_ASSERT(material);
+  O3D_ASSERT(draw_element);
+  O3D_ASSERT(param_cache);
+  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents) << "PrimitiveGL Draw \""
                                        << draw_element->name() << "\"";
   DrawElementGL* draw_element_gl = down_cast<DrawElementGL*>(draw_element);
   EffectGL* effect_gl = down_cast<EffectGL*>(material->effect());
-  DLOG_ASSERT(effect_gl);
+  O3D_ASSERT(effect_gl);
   StreamBankGL* stream_bank_gl = down_cast<StreamBankGL*>(stream_bank());
-  DLOG_ASSERT(stream_bank_gl); 
+  O3D_ASSERT(stream_bank_gl); 
 
   ParamCacheGL* param_cache_gl = down_cast<ParamCacheGL*>(param_cache);
   ParamCacheGL::VaryingParameterMap& varying_map =
@@ -196,49 +196,49 @@ void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
       break;
     }
     case Primitive::LINELIST : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_LINES";
       gl_primitive_type = GL_LINES;
       break;
     }
     case Primitive::LINESTRIP : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_LINE_STRIP";
       gl_primitive_type = GL_LINE_STRIP;
       break;
     }
     case Primitive::TRIANGLELIST : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_TRIANGLES";
       gl_primitive_type = GL_TRIANGLES;
       break;
     }
     case Primitive::TRIANGLESTRIP : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_TRIANGLE_STRIP";
       gl_primitive_type = GL_TRIANGLE_STRIP;
       break;
     }
     case Primitive::TRIANGLEFAN : {
-      DLOG_FIRST_N(INFO, kNumLoggedEvents)
+      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
           << "Draw " << number_primitives_ << " GL_TRIANGLE_FAN";
       gl_primitive_type = GL_TRIANGLE_FAN;
       break;
     }
     default : {
-      DLOG(ERROR) << "Unknown Primitive Type in Primitive: "
+      O3D_LOG(ERROR) << "Unknown Primitive Type in Primitive: "
                   << primitive_type_;
       draw = false;
     }
   }
   if (draw) {
-    DCHECK_NE(gl_primitive_type, static_cast<unsigned int>(GL_NONE));
+    O3D_ASSERT(gl_primitive_type != static_cast<unsigned int>(GL_NONE));
     renderer->AddPrimitivesRendered(number_primitives_);
     if (indexed())
       glDrawElements(gl_primitive_type,
                      index_count,
                      GL_UNSIGNED_INT,
-                     BUFFER_OFFSET(start_index() * sizeof(uint32)));  // NOLINT
+                     BUFFER_OFFSET(start_index() * sizeof(uint32_t)));  // NOLINT
     else
       glDrawArrays(gl_primitive_type, start_index(), index_count);
   }

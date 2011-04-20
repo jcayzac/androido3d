@@ -47,7 +47,7 @@ namespace o3d {
 
 namespace {
 
-String GetUniformSemantic(GLES2Parameter gl_param, const String& name) {
+std::string GetUniformSemantic(GLES2Parameter gl_param, const std::string& name) {
   return name;
 }
 
@@ -63,7 +63,7 @@ ParamCacheGLES2::ParamCacheGLES2(SemanticManager* semantic_manager,
 }
 
 bool ParamCacheGLES2::ValidateEffect(Effect* effect) {
-  DLOG_ASSERT(effect);
+  O3D_ASSERT(effect);
 
   EffectGLES2* effect_gles2 = down_cast<EffectGLES2*>(effect);
   return (effect_gles2->compile_count() == last_compile_count_);
@@ -74,7 +74,7 @@ void ParamCacheGLES2::UpdateCache(Effect* effect,
                                   Element* element,
                                   Material* material,
                                   ParamObject* override) {
-  DLOG_ASSERT(effect);
+  O3D_ASSERT(effect);
   EffectGLES2* effect_gl = down_cast<EffectGLES2*>(effect);
 
   ScanGLEffectParameters(effect_gl->gl_program(),
@@ -131,7 +131,7 @@ template <>
 void TypedEffectParamHandlerGLES2<ParamFloat>::SetEffectParam(
     RendererGLES2* renderer,
     GLES2Parameter gl_param) {
-  Float f = param_->value();
+  float f = param_->value();
   glUniform1f(gl_param, f);
 };
 
@@ -248,7 +248,7 @@ class EffectParamArrayHandlerGLES2 : public EffectParamHandlerGLES2 {
 
  private:
   ParamParamArray* param_;
-  scoped_array<DataType> values_;
+  ::o3d::base::scoped_array<DataType> values_;
   GLsizei size_;
 };
 
@@ -324,7 +324,7 @@ class EffectParamArraySamplerHandlerGLES2 : public EffectParamHandlerGLES2 {
 
  private:
   ParamParamArray* param_;
-  scoped_array<GLint> values_;
+  ::o3d::base::scoped_array<GLint> values_;
   GLsizei size_;
 };
 
@@ -442,7 +442,7 @@ void EffectParamArrayHandlerGLES2<ParamBoolean>::SetElements(
     GLES2Parameter gl_param,
     GLsizei count,
     const bool* values) {
-  scoped_array<GLint> local(new GLint[count]);
+  ::o3d::base::scoped_array<GLint> local(new GLint[count]);
   for (GLsizei ii = 0; ii < count; ++ii) {
     local[ii] = values[ii];
   }
@@ -592,7 +592,7 @@ static void ScanVaryingParameters(GLuint gl_program,
   glGetProgramiv(gl_program, GL_ACTIVE_ATTRIBUTES, &num_attribs);
   glGetProgramiv(gl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
-  scoped_array<char> name_buffer(new char[max_len + 1]);
+  ::o3d::base::scoped_array<char> name_buffer(new char[max_len + 1]);
   for (GLint ii = 0; ii < num_attribs; ++ii) {
     GLsizei length;
     GLsizei size;
@@ -617,7 +617,7 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
                                   EffectGLES2* effect_gl) {
   GLProgramParameterMap::const_iterator end = gl_uniform_params->end();
   for (GLProgramParameterMap::const_iterator it = gl_uniform_params->begin(); it != end; ++it) {
-	String name( it->first );
+	std::string name( it->first );
 	GLProgramParam::Ref param_info = it->second;
 
 	GLsizei size = param_info->size();
@@ -629,7 +629,7 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
         param_cache_gl->uniform_map().end()) {
       const ObjectBase::Class *sem_class = NULL;
       // Try looking by SAS class name.
-      String semantic = GetUniformSemantic(-1, name); // TODO: Remove this unneeded call/method
+      std::string semantic = GetUniformSemantic(-1, name); // TODO: Remove this unneeded call/method
       if (!semantic.empty()) {
         sem_class = semantic_manager->LookupSemantic(semantic);
       }
@@ -658,14 +658,14 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
         if (!handler.IsNull()) {
           param_cache_gl->uniform_map().insert(
               std::make_pair(location, handler));
-          DLOG(INFO) << "ElementGLES2 Matched gl_parameter \""
+          O3D_LOG(INFO) << "ElementGLES2 Matched gl_parameter \""
                      << name << "\" to Param \""
                      << param->name() << "\" from \""
                      << param_object->name() << "\"";
           break;
         } else {
           // We found a param, but it didn't match the type. keep looking.
-          DLOG(ERROR) << "ElementGLES2 Param \""
+          O3D_LOG(ERROR) << "ElementGLES2 Param \""
                       << param->name() << "\" type \""
                       << param->GetClassName() << "\" from \""
                       << param_object->name()
@@ -674,7 +674,7 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
         }
       }
       if (handler.IsNull()) {
-        DLOG(ERROR) << "No matching Param for gl_parameter \""
+        O3D_LOG(ERROR) << "No matching Param for gl_parameter \""
                     << name << "\"";
       }
     }
@@ -706,14 +706,14 @@ void ParamCacheGLES2::ScanGLEffectParameters(GLuint gl_program,
                                              ParamObject* element,
                                              Material* material,
                                              ParamObject* override) {
-  DLOG(INFO) << "DrawElementGLES2 ScanGLEffectParameters";
-  DLOG_ASSERT(material);
-  DLOG_ASSERT(draw_element);
-  DLOG_ASSERT(element);
+  O3D_LOG(INFO) << "DrawElementGLES2 ScanGLEffectParameters";
+  O3D_ASSERT(material);
+  O3D_ASSERT(draw_element);
+  O3D_ASSERT(element);
   EffectGLES2* effect_gl = static_cast<EffectGLES2*>(material->effect());
-  DLOG_ASSERT(effect_gl);
+  O3D_ASSERT(effect_gl);
   if (gl_program == 0)  {
-    DLOG(ERROR) << "Can't scan an empty Program for Parameters.";
+    O3D_LOG(ERROR) << "Can't scan an empty Program for Parameters.";
     return;
   }
   uniform_map_.clear();

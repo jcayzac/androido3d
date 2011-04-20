@@ -106,7 +106,7 @@ class ProcessedPath : public ObjectBase {
   gpu2d::PathCache cache;
 
   O3D_DECL_CLASS(ProcessedPath, ObjectBase);
-  DISALLOW_COPY_AND_ASSIGN(ProcessedPath);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ProcessedPath);
 };
 
 }  // namespace o3d

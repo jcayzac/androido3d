@@ -685,13 +685,13 @@ TEST_F(CurveTest, EvaluateBezierCurveKey) {
   const float kFrameRate = 24.0f;
 
   static const KeyInfo key_infos[] = {
-    { arraysize(bezier_data_0), bezier_data_0,
-      arraysize(expected_results_0), expected_results_0, },
-    { arraysize(bezier_data_1), bezier_data_1,
-      arraysize(expected_results_1), expected_results_1, },
+    { o3d_arraysize(bezier_data_0), bezier_data_0,
+      o3d_arraysize(expected_results_0), expected_results_0, },
+    { o3d_arraysize(bezier_data_1), bezier_data_1,
+      o3d_arraysize(expected_results_1), expected_results_1, },
   };
 
-  for (unsigned tt = 0; tt < arraysize(key_infos); ++tt) {
+  for (unsigned tt = 0; tt < o3d_arraysize(key_infos); ++tt) {
     Curve* curve = pack()->Create<Curve>();
     ASSERT_TRUE(curve != NULL);
 
@@ -765,7 +765,7 @@ TEST_F(CurveTest, CurveRawDataEmpty) {
   Curve* curve = pack()->Create<Curve>();
   ASSERT_TRUE(curve != NULL);
 
-  uint8 p[2];
+  uint8_t p[2];
   MemoryReadStream read_stream(p, 0);  // empty stream
 
   bool success = curve->LoadFromBinaryData(&read_stream);
@@ -780,7 +780,7 @@ TEST_F(CurveTest, CurveRawDataCorrupt) {
   ASSERT_TRUE(curve != NULL);
 
   const int kDataLength = 256;
-  uint8 p[kDataLength];
+  uint8_t p[kDataLength];
   for (int i = 0; i < kDataLength; ++i) p[i] = i;  // not valid curve data
 
   MemoryReadStream read_stream(p, kDataLength);
@@ -797,7 +797,7 @@ TEST_F(CurveTest, CurveRawDataIncomplete) {
   ASSERT_TRUE(curve != NULL);
 
   const int kDataLength = 512;  // enough storage for test
-  MemoryBuffer<uint8> buffer(kDataLength);
+  MemoryBuffer<uint8_t> buffer(kDataLength);
   MemoryWriteStream write_stream(buffer, kDataLength);
   write_stream.WriteLittleEndianInt32(1);  // version 1
   write_stream.WriteByte(3);  // bezier
@@ -825,7 +825,7 @@ TEST_F(CurveTest, CurveRawDataValid) {
   curve->set_use_cache(false);
 
   const int kDataLength = 512;  // enough storage for test
-  MemoryBuffer<uint8> buffer(kDataLength);
+  MemoryBuffer<uint8_t> buffer(kDataLength);
   MemoryWriteStream write_stream(buffer, kDataLength);
 
   // write out serialization ID
@@ -835,7 +835,7 @@ TEST_F(CurveTest, CurveRawDataValid) {
   write_stream.WriteLittleEndianInt32(1);
 
   // Write out some bezier data (one that we tested above)
-  size_t n = arraysize(bezier_data_0);
+  size_t n = o3d_arraysize(bezier_data_0);
 
   for (size_t i = 0; i < n; ++i) {
     const BezierKey &key = bezier_data_0[i];
@@ -860,7 +860,7 @@ TEST_F(CurveTest, CurveRawDataValid) {
   EXPECT_TRUE(success);
 
   // Validate some test points on curve
-  size_t num_tests = arraysize(expected_results_0);
+  size_t num_tests = o3d_arraysize(expected_results_0);
   const float kFrameRate = 24.0f;
   for (unsigned ii = 0; ii < num_tests; ++ii) {
     const ExpectedResult& expected_result = expected_results_0[ii];
@@ -871,15 +871,15 @@ TEST_F(CurveTest, CurveRawDataValid) {
 
   // Now, let's try a very nice test to verify that we properly
   // serialize -- this is a round trip test
-  MemoryBuffer<uint8> serialized_data;
+  MemoryBuffer<uint8_t> serialized_data;
   SerializeCurve(*curve, &serialized_data);
 
   // Make sure serialized data length is identical to what we made
   ASSERT_EQ(data_size, serialized_data.GetLength());
 
   // Make sure the data matches
-  uint8 *original = buffer;
-  uint8 *serialized = serialized_data;
+  uint8_t *original = buffer;
+  uint8_t *serialized = serialized_data;
   EXPECT_EQ(0, memcmp(original, serialized, data_size));
 }
 

@@ -132,8 +132,8 @@ TEST_F(BufferTest, CreateFields) {
     { 10, 11, 12, },
     { 13, 14, 15, },
   };
-  const unsigned kNumComponents1 = arraysize(in_floats_1[0]);
-  const unsigned kNumElements = arraysize(in_floats_1);
+  const unsigned kNumComponents1 = o3d_arraysize(in_floats_1[0]);
+  const unsigned kNumElements = o3d_arraysize(in_floats_1);
   const unsigned kStride1 = kNumComponents1;
   const size_t kSize1 = sizeof(in_floats_1[0]);
 
@@ -209,8 +209,8 @@ TEST_F(BufferTest, ReshuffleFields) {
     { 10, 11, 12, },
     { 13, 14, 15, },
   };
-  const unsigned kNumComponents1 = arraysize(in_floats_1[0]);
-  const unsigned kNumElements = arraysize(in_floats_1);
+  const unsigned kNumComponents1 = o3d_arraysize(in_floats_1[0]);
+  const unsigned kNumElements = o3d_arraysize(in_floats_1);
   const unsigned kStride1 = kNumComponents1;
   const size_t kSize1 = sizeof(in_floats_1[0]);
 
@@ -251,7 +251,7 @@ TEST_F(BufferTest, ReshuffleFields) {
     { 5, },
     { 7, },
   };
-  const unsigned kNumComponents2 = arraysize(in_floats_2[0]);
+  const unsigned kNumComponents2 = o3d_arraysize(in_floats_2[0]);
   const unsigned kStride2 = kNumComponents2;
   const size_t kSize2 = sizeof(in_floats_2[0]);
 
@@ -337,13 +337,13 @@ TEST_F(BufferTest, VertexBuffer) {
   Field* field = buffer->CreateField(UInt32Field::GetApparentClass(), 1);
   ASSERT_TRUE(field != NULL);
   ASSERT_TRUE(buffer->AllocateElements(kSize));
-  EXPECT_EQ(kSize * sizeof(uint32), buffer->GetSizeInBytes());  // NOLINT
+  EXPECT_EQ(kSize * sizeof(uint32_t), buffer->GetSizeInBytes());  // NOLINT
 
   // Put some data into the buffer.
-  uint32 *data = NULL;
+  uint32_t *data = NULL;
   ASSERT_TRUE(buffer->LockAs(Buffer::WRITE_ONLY, &data));
   ASSERT_TRUE(data != NULL);
-  for (uint32 i = 0; i < kSize; ++i) {
+  for (uint32_t i = 0; i < kSize; ++i) {
     data[i] = i;
   }
   ASSERT_TRUE(buffer->Unlock());
@@ -352,7 +352,7 @@ TEST_F(BufferTest, VertexBuffer) {
   // Read the data from the buffer, checks that it's the expected values.
   ASSERT_TRUE(buffer->LockAs(Buffer::READ_ONLY, &data));
   ASSERT_TRUE(data != NULL);
-  for (uint32 i = 0; i < kSize; ++i) {
+  for (uint32_t i = 0; i < kSize; ++i) {
     EXPECT_EQ(i, data[i]);
   }
   ASSERT_TRUE(buffer->Unlock());
@@ -370,13 +370,13 @@ TEST_F(BufferTest, TestSourceBuffer) {
   Field* field = buffer->CreateField(UInt32Field::GetApparentClass(), 1);
   ASSERT_TRUE(field != NULL);
   ASSERT_TRUE(buffer->AllocateElements(kSize));
-  EXPECT_EQ(kSize * sizeof(uint32), buffer->GetSizeInBytes());  // NOLINT
+  EXPECT_EQ(kSize * sizeof(uint32_t), buffer->GetSizeInBytes());  // NOLINT
 
   // Put some data into the buffer.
-  uint32 *data = NULL;
+  uint32_t *data = NULL;
   ASSERT_TRUE(buffer->LockAs(Buffer::WRITE_ONLY, &data));
   ASSERT_TRUE(data != NULL);
-  for (uint32 i = 0; i < kSize; ++i) {
+  for (uint32_t i = 0; i < kSize; ++i) {
     data[i] = i;
   }
   ASSERT_TRUE(buffer->Unlock());
@@ -385,7 +385,7 @@ TEST_F(BufferTest, TestSourceBuffer) {
   // Read the data from the buffer, checks that it's the expected values.
   ASSERT_TRUE(buffer->LockAs(Buffer::READ_ONLY, &data));
   ASSERT_TRUE(data != NULL);
-  for (uint32 i = 0; i < kSize; ++i) {
+  for (uint32_t i = 0; i < kSize; ++i) {
     EXPECT_EQ(i, data[i]);
   }
   ASSERT_TRUE(buffer->Unlock());
@@ -405,10 +405,10 @@ TEST_F(BufferTest, TestIndexBuffer) {
   EXPECT_EQ(kSize, buffer->num_elements());
 
   // Put some data into the buffer.
-  uint32 *data = NULL;
+  uint32_t *data = NULL;
   ASSERT_TRUE(buffer->LockAs(Buffer::WRITE_ONLY, &data));
   ASSERT_TRUE(data != NULL);
-  for (uint32 i = 0; i < kSize; ++i) {
+  for (uint32_t i = 0; i < kSize; ++i) {
     data[i] = i;
   }
   ASSERT_TRUE(buffer->Unlock());
@@ -417,7 +417,7 @@ TEST_F(BufferTest, TestIndexBuffer) {
   // Read the data from the buffer, checks that it's the expected values.
   ASSERT_TRUE(buffer->LockAs(Buffer::READ_ONLY, &data));
   ASSERT_TRUE(data != NULL);
-  for (uint32 i = 0; i < kSize; ++i) {
+  for (uint32_t i = 0; i < kSize; ++i) {
     EXPECT_EQ(i, data[i]);
   }
   ASSERT_TRUE(buffer->Unlock());
@@ -442,7 +442,7 @@ TEST_F(BufferTest, TestVertexBufferFromRawData) {
   buffer->CreateField(FloatField::GetApparentClass(), 1);
 
   const int kMemBufferSize = 32768;  // more than enough for our needs here
-  MemoryBuffer<uint8> mem_buffer(kMemBufferSize);
+  MemoryBuffer<uint8_t> mem_buffer(kMemBufferSize);
   MemoryWriteStream stream(mem_buffer, kMemBufferSize);
 
   // write out serialization ID
@@ -489,14 +489,14 @@ TEST_F(BufferTest, TestVertexBufferFromRawData) {
     -0.1f,  0.123f, 5.720f
   };
 
-  uint32 int_data[kNumElements * 2] = {
+  uint32_t int_data[kNumElements * 2] = {
     1, 2,
     3, 4,
     10, 11,
     12, 13
   };
 
-  uint8 byte_data[kNumElements * 4] = {
+  uint8_t byte_data[kNumElements * 4] = {
     0, 1, 2, 3,
     17, 16, 10, 11,
     100, 99, 87, 88,
@@ -528,8 +528,8 @@ TEST_F(BufferTest, TestVertexBufferFromRawData) {
   size_t total_length_in_bytes = stream.GetStreamPosition();
 
   // Create RawData object
-  String uri("test_filename");
-  uint8 *p = mem_buffer;
+  std::string uri("test_filename");
+  uint8_t *p = mem_buffer;
   RawData::Ref ref = RawData::Create(g_service_locator,
                                      uri,
                                      p,
@@ -545,8 +545,8 @@ TEST_F(BufferTest, TestVertexBufferFromRawData) {
   EXPECT_EQ(3U, buffer->fields().size());
 
   float buffer_float_data[kNumElements * 3];
-  uint32 buffer_int_data[kNumElements * 2];
-  uint8 buffer_byte_data[kNumElements * 4];
+  uint32_t buffer_int_data[kNumElements * 2];
+  uint8_t buffer_byte_data[kNumElements * 4];
 
   buffer->fields()[0].Get()->GetAsFloats(
       0, &buffer_float_data[0], 3, kNumElements);
@@ -574,15 +574,15 @@ TEST_F(BufferTest, TestVertexBufferFromRawData) {
 
   // Now, let's try a very nice test to verify that we properly
   // serialize -- this is a round trip test
-  MemoryBuffer<uint8> serialized_data;
+  MemoryBuffer<uint8_t> serialized_data;
   SerializeBuffer(*buffer, &serialized_data);
 
   // Make sure serialized data length is identical to what we made
   ASSERT_EQ(total_length_in_bytes, serialized_data.GetLength());
 
   // Make sure the data matches
-  uint8 *original = mem_buffer;
-  uint8 *serialized = serialized_data;
+  uint8_t *original = mem_buffer;
+  uint8_t *serialized = serialized_data;
   EXPECT_EQ(0, memcmp(original, serialized, total_length_in_bytes));
 }
 

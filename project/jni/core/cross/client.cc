@@ -35,9 +35,6 @@
 #include "core/cross/client.h"
 #include "core/cross/draw_context.h"
 #include "core/cross/effect.h"
-#if !defined(O3D_NO_IPC)
-#include "core/cross/message_queue.h"
-#endif
 #include "core/cross/pack.h"
 #include "core/cross/shape.h"
 #include "core/cross/transform.h"
@@ -54,13 +51,7 @@
 #include "core/cross/evaluation_counter.h"
 #include "core/cross/id_manager.h"
 #include "core/cross/profiler.h"
-#include "utils/cross/string_writer.h"
-#include "utils/cross/json_writer.h"
 #include "utils/cross/dataurl.h"
-
-#ifdef OS_WIN
-#include "core/cross/core_metrics.h"
-#endif
 
 using std::map;
 using std::vector;
@@ -87,21 +78,8 @@ Client::Client(ServiceLocator* service_locator)
       event_manager_(),
       last_tick_time_(0),
       root_(NULL),
-#ifdef OS_WIN
-      calls_(0),
-#endif
       rendergraph_root_(NULL),
       id_(IdManager::CreateId()) {
-#if !defined(O3D_NO_IPC)
-  // Create and initialize the message queue to allow external code to
-  // communicate with the Client via RPC calls.
-  message_queue_.reset(new MessageQueue(service_locator_));
-
-  if (!message_queue_->Initialize()) {
-    LOG(ERROR) << "Client failed to initialize the message queue";
-    message_queue_.reset(NULL);
-  }
-#endif
 }
 
 // Frees up all the resources allocated by the Client factory methods but
@@ -193,16 +171,6 @@ bool Client::Tick() {
 
   bool message_check_ok = true;
   bool has_new_texture = false;
-#if !defined(O3D_NO_IPC)
-  // Processes any incoming message found in the message queue.  Note that this
-  // call does not block if no new messages are found.
-
-  if (message_queue_.get()) {
-    profiler_->ProfileStart("CheckForNewMessages");
-    message_check_ok = message_queue_->CheckForNewMessages(&has_new_texture);
-    profiler_->ProfileStop("CheckForNewMessages");
-  }
-#endif
 
   event_manager_.ProcessQueue();
   event_manager_.ProcessQueue();
@@ -299,24 +267,6 @@ void Client::RenderClientInner(bool present, bool send_callback) {
     render_event_.set_active_time(
         timer.GetElapsedTimeAndReset() + last_tick_time_);
     last_tick_time_ = 0.0f;
-
-#ifdef OS_WIN
-    // Update render metrics
-    metric_render_elapsed_time.AddSample(  // Convert to ms.
-        static_cast<int>(1000 * render_event_.elapsed_time()));
-    metric_render_time_seconds += static_cast<uint64>(
-        render_event_.render_time());
-    metric_render_xforms_culled.AddSample(render_event_.transforms_culled());
-    metric_render_xforms_processed.AddSample(
-        render_event_.transforms_processed());
-    metric_render_draw_elts_culled.AddSample(
-        render_event_.draw_elements_culled());
-    metric_render_draw_elts_processed.AddSample(
-        render_event_.draw_elements_processed());
-    metric_render_draw_elts_rendered.AddSample(
-        render_event_.draw_elements_rendered());
-    metric_render_prims_rendered.AddSample(render_event_.primitives_rendered());
-#endif  // OS_WIN
   }
 }
 
@@ -446,7 +396,7 @@ void Client::SetEventCallback(Event::Type type,
   event_manager_.SetEventCallback(type, event_callback);
 }
 
-void Client::SetEventCallback(String type_name,
+void Client::SetEventCallback(std::string type_name,
                               EventCallback* event_callback) {
   Event::Type type = Event::TypeFromString(type_name.c_str());
   if (!Event::ValidType(type)) {
@@ -461,7 +411,7 @@ void Client::ClearEventCallback(Event::Type type) {
   event_manager_.ClearEventCallback(type);
 }
 
-void Client::ClearEventCallback(String type_name) {
+void Client::ClearEventCallback(std::string type_name) {
   Event::Type type = Event::TypeFromString(type_name.c_str());
   if (!Event::ValidType(type)) {
     O3D_ERROR(service_locator_) << "Invalid event type: '" <<
@@ -509,7 +459,7 @@ void Client::InvalidateAllParameters() {
   evaluation_counter_->InvalidateAllParameters();
 }
 
-String Client::GetScreenshotAsDataURL()  {
+std::string Client::GetScreenshotAsDataURL()  {
   // To take a screenshot we create a render target and render into it
   // then get a bitmap from that.
   int pot_width =
@@ -563,7 +513,7 @@ String Client::GetScreenshotAsDataURL()  {
   }
 }
 
-String Client::ToDataURL() {
+std::string Client::ToDataURL() {
   if (!renderer_.IsAvailable()) {
     O3D_ERROR(service_locator_) << "No Render Device Available";
     return dataurl::kEmptyDataURL;
@@ -579,23 +529,11 @@ String Client::ToDataURL() {
     return dataurl::kEmptyDataURL;
   }
 
-  String data_url(GetScreenshotAsDataURL());
+  std::string data_url(GetScreenshotAsDataURL());
   renderer_->FinishRendering();
 
   return data_url;
 }
-
-#if !defined(O3D_NO_IPC)
-String Client::GetMessageQueueAddress() const {
-  if (message_queue_.get()) {
-    return message_queue_->GetSocketAddress();
-  } else {
-    O3D_ERROR(service_locator_) << "Message queue not initialized";
-    return String("");
-  }
-
-}
-#endif  // !defined(O3D_NO_IPC)
 
 void Client::SetOffscreenRenderingSurfaces(
     RenderSurface::Ref surface,
@@ -614,7 +552,7 @@ void Client::ClearErrorCallback() {
   error_status_.ClearErrorCallback();
 }
 
-const String& Client::GetLastError() const {
+const std::string& Client::GetLastError() const {
   return error_status_.GetLastError();
 }
 
@@ -632,13 +570,5 @@ void Client::ProfileStop(const std::string& key) {
 
 void Client::ProfileReset() {
   profiler_->ProfileReset();
-}
-
-String Client::ProfileToString() {
-  StringWriter string_writer(StringWriter::LF);
-  JsonWriter json_writer(&string_writer, 2);
-  profiler_->Write(&json_writer);
-  json_writer.Close();
-  return string_writer.ToString();
 }
 }  // namespace o3d

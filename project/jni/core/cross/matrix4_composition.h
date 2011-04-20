@@ -88,7 +88,7 @@ class Matrix4Composition : public ParamObject {
   SlaveParamMatrix4::Ref output_matrix_param_;
 
   O3D_DECL_CLASS(Matrix4Composition, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(Matrix4Composition);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4Composition);
 };
 }  // namespace o3d
 

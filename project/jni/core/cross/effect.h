@@ -60,14 +60,14 @@ class EffectParameterInfo {
   //                  for non-array types.
   //   semantic: semantic.
   //   sas_class_type: type of standard parameter to use for this param.
-  EffectParameterInfo(const String& name,
+  EffectParameterInfo(const std::string& name,
                       const ObjectBase::Class* class_type,
                       int num_elements,
-                      const String& semantic,
+                      const std::string& semantic,
                       const ObjectBase::Class* sas_class_type);
 
   // Name of parameter.
-  const String& name() const {
+  const std::string& name() const {
     return name_;
   }
 
@@ -82,7 +82,7 @@ class EffectParameterInfo {
   }
 
   // The semantic is always in upper case.
-  const String& semantic() const {
+  const std::string& semantic() const {
     return semantic_;
   }
 
@@ -93,10 +93,10 @@ class EffectParameterInfo {
   }
 
  private:
-  String name_;
+  std::string name_;
   const ObjectBase::Class* class_type_;
   int num_elements_;
-  String semantic_;
+  std::string semantic_;
   const ObjectBase::Class* sas_class_type_;
 };
 
@@ -159,13 +159,13 @@ class Effect : public ParamObject {
   static const char* kMatrixLoadOrderPrefix;
 
   // Accessor for effect source.
-  const String& source() {
+  const std::string& source() {
     return source_;
   }
 
   // Loads the vertex and fragment shader programs from an string containing
   // a DirectX FX description.
-  virtual bool LoadFromFXString(const String& effect) = 0;
+  virtual bool LoadFromFXString(const std::string& effect) = 0;
 
   // For each of the effect's uniform parameters, creates corresponding
   // parameters on the given ParamObject. Skips SAS Parameters.
@@ -214,22 +214,22 @@ class Effect : public ParamObject {
   // must have the o3d entry point specification.
   // Parameters:
   //   effect: Effect string in o3d format.
-  //   vertex_shader_entry_point: String to receive name of vertex shader entry
+  //   vertex_shader_entry_point: std::string to receive name of vertex shader entry
   //       point.
-  //   fragment_shader_entry_point: String to receive name of fragment
+  //   fragment_shader_entry_point: std::string to receive name of fragment
   //     shader entry point.
   // Returns:
   //   true if effect was valid.
-  bool ValidateFX(const String& effect,
-                  String* vertex_shader_entry_point,
-                  String* fragment_shader_entry_point,
+  bool ValidateFX(const std::string& effect,
+                  std::string* vertex_shader_entry_point,
+                  std::string* fragment_shader_entry_point,
                   MatrixLoadOrder* matrix_load_order);
 
  protected:
   explicit Effect(ServiceLocator* service_locator);
 
   // Accessor for source.
-  void set_source(const String& source) {
+  void set_source(const std::string& source) {
     source_ = source;
   }
 
@@ -251,10 +251,10 @@ class Effect : public ParamObject {
   MatrixLoadOrder matrix_load_order_;
 
   // The source for the shaders on this effect.
-  String source_;
+  std::string source_;
 
   O3D_DECL_CLASS(Effect, NamedObject);
-  DISALLOW_COPY_AND_ASSIGN(Effect);
+  O3D_DISALLOW_COPY_AND_ASSIGN(Effect);
 };  // Effect
 
 // Array container for Effect pointers
@@ -272,7 +272,7 @@ class ParamEffect : public TypedRefParam<Effect> {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_DECL_CLASS(ParamEffect, RefParamBase);
-  DISALLOW_COPY_AND_ASSIGN(ParamEffect);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ParamEffect);
 };
 }  // namespace o3d
 

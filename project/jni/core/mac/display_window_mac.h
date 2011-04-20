@@ -65,7 +65,7 @@ class DisplayWindowMac : public DisplayWindow {
   AGLContext agl_context_;
   CGLContextObj cgl_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayWindowMac);
+  O3D_DISALLOW_COPY_AND_ASSIGN(DisplayWindowMac);
 };
 }  // end namespace o3d
 

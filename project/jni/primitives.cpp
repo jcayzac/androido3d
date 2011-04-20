@@ -23,20 +23,21 @@
 #include "core/cross/stream_bank.h"
 
 namespace o3d_utils {
+using namespace o3d;
 
 struct Triangle {
-  Triangle(uint32 i0, uint32 i1, uint32 i2) {
+  Triangle(uint32_t i0, uint32_t i1, uint32_t i2) {
     indices[0] = i0;
     indices[1] = i1;
     indices[2] = i2;
   }
 
-  uint32& operator[] (int index) {
-    DCHECK(index >= 0 && index < 3);
+  uint32_t& operator[] (int index) {
+    O3D_ASSERT(index >= 0 && index < 3);
     return indices[index];
   }
 
-  uint32 indices[3];
+  uint32_t indices[3];
 };
 
 struct Vector2 {
@@ -46,61 +47,58 @@ struct Vector2 {
   }
 
   float& operator[] (int index) {
-    DCHECK(index >= 0 && index < 2);
+    O3D_ASSERT(index >= 0 && index < 2);
     return v[index];
   }
 
   float v[2];
 };
 
-COMPILE_ASSERT(sizeof(Triangle) == sizeof(uint32) * 3, Triangle_size_is_wrong);
-COMPILE_ASSERT(sizeof(Vector2) == sizeof(float) * 2, Vector2_size_is_wrong);
-
 /**
  * Sets the bounding box and z sort point of an element.
  * @param {!o3d.Element} element Element to set bounding box and z sort point
  *     on.
  */
-void Primitives::SetBoundingBoxAndZSortPoint(o3d::Element* element) {
-  o3d::BoundingBox boundingBox;
+void Primitives::SetBoundingBoxAndZSortPoint(Element* element) {
+  BoundingBox boundingBox;
   element->GetBoundingBox(0, &boundingBox);
-  o3d::Point3 minExtent = boundingBox.min_extent();
-  o3d::Point3 maxExtent = boundingBox.max_extent();
+  Point3 minExtent = boundingBox.min_extent();
+  Point3 maxExtent = boundingBox.max_extent();
   element->set_bounding_box(boundingBox);
   element->set_cull(true);
-  element->set_z_sort_point(o3d::Float3(
+  element->set_z_sort_point(Float3(
       (minExtent.getX() + maxExtent.getX()) / 2.0f,
       (minExtent.getY() + maxExtent.getY()) / 2.0f,
       (minExtent.getZ() + maxExtent.getZ()) / 2.0f));
 };
 
 void Primitives::ApplyMatrix(
-    const o3d::Matrix4& mat,
-    std::vector<o3d::Vector3>* vectors) {
-  DCHECK(vectors);
+    const Matrix4& mat,
+    std::vector<Vector3>* vectors) {
+  O3D_ASSERT(vectors);
   for (size_t ii = 0; ii < vectors->size(); ++ii) {
-    o3d::Vector4 vec(mat * (*vectors)[ii]);
-    (*vectors)[ii] = o3d::Vector3(vec[0], vec[1], vec[2]);
+    Vector4 vec(mat * (*vectors)[ii]);
+    (*vectors)[ii] = Vector3(vec[0], vec[1], vec[2]);
   }
 }
 
 void Primitives::ApplyMatrix(
-    const o3d::Matrix4& mat,
-    std::vector<o3d::Point3>* points) {
-  DCHECK(points);
+    const Matrix4& mat,
+    std::vector<Point3>* points) {
+  O3D_ASSERT(points);
   for (size_t ii = 0; ii < points->size(); ++ii) {
-    o3d::Vector4 vec(mat * (*points)[ii]);
-    (*points)[ii] = o3d::Point3(vec[0], vec[1], vec[2]);
+    Vector4 vec(mat * (*points)[ii]);
+    (*points)[ii] = Point3(vec[0], vec[1], vec[2]);
   }
 }
 
 void Primitives::SetFieldFromVector3s(
-  o3d::FloatField* field,
-  const std::vector<o3d::Vector3>& vectors) {
-  scoped_array<float> floats(new float[vectors.size() * 3]);
+  FloatField* field,
+  const std::vector<Vector3>& vectors) {
+  ::o3d::base::scoped_array<float> floats(new float[vectors.size() * 3]);
   for (size_t ii = 0; ii < vectors.size(); ++ii) {
     size_t off = ii * 3;
-    const o3d::Vector3& src = vectors[ii];
+    const Vector3& src = vectors[ii];
     floats[off + 0] = src[0];
     floats[off + 1] = src[1];
     floats[off + 2] = src[2];
@@ -109,12 +107,12 @@ void Primitives::SetFieldFromVector3s(
 }
 
 void Primitives::SetFieldFromPoint3s(
-  o3d::FloatField* field,
-  const std::vector<o3d::Point3>& points) {
-  scoped_array<float> floats(new float[points.size() * 3]);
+  FloatField* field,
+  const std::vector<Point3>& points) {
+  ::o3d::base::scoped_array<float> floats(new float[points.size() * 3]);
   for (size_t ii = 0; ii < points.size(); ++ii) {
     size_t off = ii * 3;
-    const o3d::Point3& src = points[ii];
+    const Point3& src = points[ii];
     floats[off + 0] = src[0];
     floats[off + 1] = src[1];
     floats[off + 2] = src[2];
@@ -122,73 +120,73 @@ void Primitives::SetFieldFromPoint3s(
   field->SetFromFloats(floats.get(), 3, 0, points.size());
 }
 
-o3d::Primitive* CreatePrimitive(
-  o3d::Pack* pack,
-  std::vector<o3d::Point3>* positions,
-  std::vector<o3d::Vector3>* normals,
+Primitive* CreatePrimitive(
+  Pack* pack,
+  std::vector<Point3>* positions,
+  std::vector<Vector3>* normals,
   std::vector<Vector2>* tex_coords,
   std::vector<Triangle>* indices,
-  o3d::Primitive::PrimitiveType primitive_type) {
-  DCHECK(positions);
-  DCHECK(indices);
-  DCHECK(!normals || normals->size() == positions->size());
-  DCHECK(!tex_coords || tex_coords->size() == positions->size());
+  Primitive::PrimitiveType primitive_type) {
+  O3D_ASSERT(positions);
+  O3D_ASSERT(indices);
+  O3D_ASSERT(!normals || normals->size() == positions->size());
+  O3D_ASSERT(!tex_coords || tex_coords->size() == positions->size());
 
   size_t num_vertices = positions->size();
   size_t num_indices = indices->size() * 3;
   size_t num_primitives = 0;
   switch (primitive_type) {
-    case o3d::Primitive::POINTLIST:
+    case Primitive::POINTLIST:
       num_primitives = num_indices / 1;
       break;
-    case o3d::Primitive::LINELIST:
+    case Primitive::LINELIST:
       num_primitives = num_indices / 2;
       break;
-    case o3d::Primitive::LINESTRIP:
+    case Primitive::LINESTRIP:
       num_primitives = num_indices - 1;
       break;
-    case o3d::Primitive::TRIANGLELIST:
+    case Primitive::TRIANGLELIST:
       num_primitives = num_indices / 3;
       break;
-    case o3d::Primitive::TRIANGLESTRIP:
-    case o3d::Primitive::TRIANGLEFAN:
+    case Primitive::TRIANGLESTRIP:
+    case Primitive::TRIANGLEFAN:
       num_primitives = num_indices - 2;
       break;
     default:
-      NOTREACHED();
+      O3D_NEVER_REACHED();
   }
 
-  o3d::Primitive* prim = pack->Create<o3d::Primitive>();
-  o3d::StreamBank* sb = pack->Create<o3d::StreamBank>();
+  Primitive* prim = pack->Create<Primitive>();
+  StreamBank* sb = pack->Create<StreamBank>();
   prim->set_stream_bank(sb);
   prim->set_number_primitives(num_primitives);
   prim->set_number_vertices(num_vertices);
   prim->set_primitive_type(primitive_type);
   prim->CreateDrawElement(pack, NULL);
 
-  o3d::VertexBuffer* vb = pack->Create<o3d::VertexBuffer>();
-  o3d::FloatField* position_field = vb->CreateTypedField<o3d::FloatField>(3);
-  o3d::FloatField* normal_field = NULL;
-  o3d::FloatField* texcoord_field = NULL;
+  VertexBuffer* vb = pack->Create<VertexBuffer>();
+  FloatField* position_field = vb->CreateTypedField<FloatField>(3);
+  FloatField* normal_field = NULL;
+  FloatField* texcoord_field = NULL;
   if (normals) {
-    normal_field = vb->CreateTypedField<o3d::FloatField>(3);
+    normal_field = vb->CreateTypedField<FloatField>(3);
   }
   if (tex_coords) {
-    texcoord_field = vb->CreateTypedField<o3d::FloatField>(2);
+    texcoord_field = vb->CreateTypedField<FloatField>(2);
   }
   vb->AllocateElements(num_vertices);
   Primitives::SetFieldFromPoint3s(position_field, *positions);
-  sb->SetVertexStream(o3d::Stream::POSITION, 0, position_field, 0);
+  sb->SetVertexStream(Stream::POSITION, 0, position_field, 0);
   if (normals) {
     Primitives::SetFieldFromVector3s(normal_field, *normals);
-    sb->SetVertexStream(o3d::Stream::NORMAL, 0, normal_field, 0);
+    sb->SetVertexStream(Stream::NORMAL, 0, normal_field, 0);
   }
   if (tex_coords) {
     texcoord_field->SetFromFloats(&(*tex_coords)[0][0], 2, 0, num_vertices);
-    sb->SetVertexStream(o3d::Stream::TEXCOORD, 0, texcoord_field, 0);
+    sb->SetVertexStream(Stream::TEXCOORD, 0, texcoord_field, 0);
   }
 
-  o3d::IndexBuffer* ib = pack->Create<o3d::IndexBuffer>();
+  IndexBuffer* ib = pack->Create<IndexBuffer>();
   ib->AllocateElements(num_indices);
   ib->index_field()->SetFromUInt32s(&(*indices)[0][0], 1, 0, num_indices);
   prim->set_index_buffer(ib);
@@ -196,18 +194,18 @@ o3d::Primitive* CreatePrimitive(
   return prim;
 }
 
-o3d::Primitive* Primitives::CreatePlane(
-      o3d::Pack* pack,
+Primitive* Primitives::CreatePlane(
+      Pack* pack,
       float width,
       float depth,
       int subdivisionsWidth,
       int subdivisionsDepth,
-      o3d::Matrix4* matrix) {
-  DCHECK(subdivisionsWidth >= 1);
-  DCHECK(subdivisionsDepth >= 1);
+      Matrix4* matrix) {
+  O3D_ASSERT(subdivisionsWidth >= 1);
+  O3D_ASSERT(subdivisionsDepth >= 1);
 
-  std::vector<o3d::Point3> positions;
-  std::vector<o3d::Vector3> normals;
+  std::vector<Point3> positions;
+  std::vector<Vector3> normals;
   std::vector<Vector2> tex_coords;
   std::vector<Triangle> indices;
 
@@ -215,11 +213,11 @@ o3d::Primitive* Primitives::CreatePlane(
     for (int x = 0; x <= subdivisionsWidth; x++) {
       float u = static_cast<float>(x) / static_cast<float>(subdivisionsWidth);
       float v = static_cast<float>(z) / static_cast<float>(subdivisionsDepth);
-      positions.push_back(o3d::Point3(
+      positions.push_back(Point3(
           width * u - width * 0.5f,
           0.0f,
           depth * v - depth * 0.5f));
-      normals.push_back(o3d::Vector3(0.0f, 1.0f, 0.0f));
+      normals.push_back(Vector3(0.0f, 1.0f, 0.0f));
       tex_coords.push_back(Vector2(u, 1 - v));
     }
   }
@@ -249,20 +247,20 @@ o3d::Primitive* Primitives::CreatePlane(
 
   return CreatePrimitive(
     pack, &positions, &normals, &tex_coords, &indices,
-    o3d::Primitive::TRIANGLELIST);
+    Primitive::TRIANGLELIST);
 }
 
-o3d::Primitive* Primitives::CreateSphere(
-      o3d::Pack* pack,
+Primitive* Primitives::CreateSphere(
+      Pack* pack,
       float radius,
       int subdivisionsAxis,
       int subdivisionsHeight,
-      o3d::Matrix4* matrix) {
-  DCHECK(subdivisionsAxis >= 1);
-  DCHECK(subdivisionsHeight >= 1);
+      Matrix4* matrix) {
+  O3D_ASSERT(subdivisionsAxis >= 1);
+  O3D_ASSERT(subdivisionsHeight >= 1);
 
-  std::vector<o3d::Point3> positions;
-  std::vector<o3d::Vector3> normals;
+  std::vector<Point3> positions;
+  std::vector<Vector3> normals;
   std::vector<Vector2> tex_coords;
   std::vector<Triangle> indices;
 
@@ -282,8 +280,8 @@ o3d::Primitive* Primitives::CreateSphere(
       float ux = cosTheta * sinPhi;
       float uy = cosPhi;
       float uz = sinTheta * sinPhi;
-      positions.push_back(o3d::Point3(radius * ux, radius * uy, radius * uz));
-      normals.push_back(o3d::Vector3(ux, uy, uz));
+      positions.push_back(Point3(radius * ux, radius * uy, radius * uz));
+      normals.push_back(Vector3(ux, uy, uz));
       tex_coords.push_back(Vector2(1 - u, 1 - v));
     }
   }
@@ -313,7 +311,7 @@ o3d::Primitive* Primitives::CreateSphere(
 
   return CreatePrimitive(
     pack, &positions, &normals, &tex_coords, &indices,
-    o3d::Primitive::TRIANGLELIST);
+    Primitive::TRIANGLELIST);
 }
 
 }  // namespace o3d_utils

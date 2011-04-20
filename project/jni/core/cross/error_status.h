@@ -60,15 +60,15 @@ class ErrorStatus : public IErrorStatus {
   virtual void ClearErrorCallback();
 
   // Sets the last error. This is pretty much only called by ErrorStreamManager.
-  virtual void SetLastError(const String& error);
+  virtual void SetLastError(const std::string& error);
 
 #ifndef NDEBUG
   // For debug builds, we display where in the code the error came from.
-  virtual void SetLastError(const String& error, const char *file, int line);
+  virtual void SetLastError(const std::string& error, const char *file, int line);
 #endif
 
   // Gets the last reported error.
-  virtual const String& GetLastError() const;
+  virtual const std::string& GetLastError() const;
 
   // Clears the stored last error.
   virtual void ClearLastError();
@@ -89,12 +89,12 @@ class ErrorStatus : public IErrorStatus {
   virtual ErrorCallback* Exchange(ErrorCallback* callback);
 
  private:
-  typedef NonRecursiveCallback1Manager<const o3d::String&>
+  typedef NonRecursiveCallback1Manager<const std::string&>
       ErrorCallbackManager;
 
   ServiceImplementation<IErrorStatus> service_;
   ErrorCallbackManager error_callback_manager_;
-  String error_string_;
+  std::string error_string_;
   bool log_to_file_;
 };
 
@@ -107,7 +107,7 @@ class ErrorStatus : public IErrorStatus {
 //
 //   .. call some stuff that might generate an error.
 //
-//   String errors = error_collector.errors();
+//   std::string errors = error_collector.errors();
 //
 // }  // end of scope, old callback has been restored.
 class ErrorCollector : public IErrorStatus::ErrorCallback {
@@ -116,19 +116,19 @@ class ErrorCollector : public IErrorStatus::ErrorCallback {
   ~ErrorCollector();
 
   // Appends the error to the errors being collected.
-  virtual void Run(const String& error);
+  virtual void Run(const std::string& error);
 
   // Gets the collectd errors.
-  const String& errors() const {
+  const std::string& errors() const {
     return errors_;
   }
 
  private:
   IErrorStatus* error_status_;
   IErrorStatus::ErrorCallback* old_callback_;
-  String errors_;
+  std::string errors_;
 
-  DISALLOW_COPY_AND_ASSIGN(ErrorCollector);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ErrorCollector);
 };
 
 // This class temporarily replaces the error callback on the ErrorStatus
@@ -149,14 +149,14 @@ class ErrorSuppressor : public IErrorStatus::ErrorCallback {
   explicit ErrorSuppressor(ServiceLocator* service_locator);
   ~ErrorSuppressor();
 
-  virtual void Run(const String& error) {}
+  virtual void Run(const std::string& error) {}
 
  private:
   IErrorStatus* error_status_;
   IErrorStatus::ErrorCallback* old_callback_;
   bool old_file_logging_;
 
-  DISALLOW_COPY_AND_ASSIGN(ErrorSuppressor);
+  O3D_DISALLOW_COPY_AND_ASSIGN(ErrorSuppressor);
 };
 
 }  // namespace o3d

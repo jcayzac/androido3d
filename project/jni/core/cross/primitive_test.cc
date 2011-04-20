@@ -66,7 +66,7 @@ void PrimitiveTest::TearDown() {
 }
 
 TEST_F(PrimitiveTest, Basic) {
-  static uint32 cube_indices[] = {
+  static uint32_t cube_indices[] = {
     0, 1, 4,  // triangle v0,v1,v4
     1, 5, 4,  // triangle v1,v5,v4
     1, 2, 5,  // triangle v1,v2,v5
@@ -92,10 +92,10 @@ TEST_F(PrimitiveTest, Basic) {
   // Check Setting Index Streams.
   IndexBuffer* index_buffer = pack()->Create<IndexBuffer>();
 
-  ASSERT_TRUE(index_buffer->AllocateElements(arraysize(cube_indices)));
+  ASSERT_TRUE(index_buffer->AllocateElements(o3d_arraysize(cube_indices)));
   ASSERT_TRUE(index_buffer != NULL);
   index_buffer->index_field()->SetFromUInt32s(cube_indices, 1, 0,
-                                              arraysize(cube_indices));
+                                              o3d_arraysize(cube_indices));
   primitive->set_index_buffer(index_buffer);
   primitive->set_primitive_type(o3d::Primitive::TRIANGLELIST);
   primitive->set_number_primitives(12);

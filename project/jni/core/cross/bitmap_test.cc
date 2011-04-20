@@ -34,7 +34,7 @@
 #include "core/cross/bitmap.h"
 #include "core/cross/texture.h"
 #include "tests/common/win/testing_common.h"
-#include "base/file_path.h"
+#include "base/cross/file_path.h"
 #include "utils/cross/file_path_utils.h"
 
 namespace o3d {
@@ -43,7 +43,7 @@ class BitmapTest : public testing::Test {
 };
 
 // The first 128 bytes of tga-256x256-24bit.tga, converted to BGRX format.
-static uint8 ktga256x256_24bit_BGRX[128] = {
+static uint8_t ktga256x256_24bit_BGRX[128] = {
   0x36, 0x87, 0xbc, 0xff, 0x36, 0x87, 0xbc, 0xff,
   0x35, 0x83, 0xb5, 0xff, 0x34, 0x83, 0xb5, 0xff,
   0x35, 0x83, 0xb5, 0xff, 0x35, 0x82, 0xb5, 0xff,
@@ -62,7 +62,7 @@ static uint8 ktga256x256_24bit_BGRX[128] = {
   0x1d, 0x8d, 0x96, 0xff, 0x1b, 0x8f, 0x90, 0xff,
 };
 
-static uint8 ktga256x256_32bit_BGRA[128] = {
+static uint8_t ktga256x256_32bit_BGRA[128] = {
   0x36, 0x87, 0xbc, 0x7d, 0x36, 0x87, 0xbc, 0x7c,
   0x35, 0x83, 0xb5, 0x78, 0x34, 0x83, 0xb5, 0x77,
   0x35, 0x83, 0xb5, 0x77, 0x35, 0x82, 0xb5, 0x76,
@@ -81,7 +81,7 @@ static uint8 ktga256x256_32bit_BGRA[128] = {
   0x1d, 0x8d, 0x96, 0x75, 0x1b, 0x8f, 0x90, 0x75,
 };
 
-static uint8 kjpg256x256_BGRX[128] = {
+static uint8_t kjpg256x256_BGRX[128] = {
   0x3a, 0x88, 0xbd, 0xff, 0x38, 0x86, 0xbb, 0xff,
   0x36, 0x85, 0xb8, 0xff, 0x34, 0x83, 0xb6, 0xff,
   0x36, 0x82, 0xb6, 0xff, 0x35, 0x82, 0xb3, 0xff,
@@ -100,7 +100,7 @@ static uint8 kjpg256x256_BGRX[128] = {
   0x21, 0x8d, 0x99, 0xff, 0x1a, 0x8f, 0x8e, 0xff,
 };
 
-static uint8 kpng256x256_24bit_BGRX[128] = {
+static uint8_t kpng256x256_24bit_BGRX[128] = {
   0x36, 0x87, 0xbc, 0xff, 0x36, 0x87, 0xbc, 0xff,
   0x35, 0x83, 0xb5, 0xff, 0x34, 0x83, 0xb5, 0xff,
   0x35, 0x83, 0xb5, 0xff, 0x35, 0x82, 0xb5, 0xff,
@@ -119,7 +119,7 @@ static uint8 kpng256x256_24bit_BGRX[128] = {
   0x1d, 0x8d, 0x96, 0xff, 0x1b, 0x8f, 0x90, 0xff,
 };
 
-static uint8 kpng256x256_24bit_interlaced_BGRX[128] = {
+static uint8_t kpng256x256_24bit_interlaced_BGRX[128] = {
   0x36, 0x87, 0xbc, 0xff, 0x36, 0x87, 0xbc, 0xff,
   0x35, 0x83, 0xb5, 0xff, 0x34, 0x83, 0xb5, 0xff,
   0x35, 0x83, 0xb5, 0xff, 0x35, 0x82, 0xb5, 0xff,
@@ -138,7 +138,7 @@ static uint8 kpng256x256_24bit_interlaced_BGRX[128] = {
   0x1d, 0x8d, 0x96, 0xff, 0x1b, 0x8f, 0x90, 0xff,
 };
 
-static uint8 kpng256x256_32bit_BGRA[128] = {
+static uint8_t kpng256x256_32bit_BGRA[128] = {
   0x36, 0x87, 0xbc, 0xd4, 0x36, 0x87, 0xbc, 0xfa,
   0x35, 0x83, 0xb5, 0xff, 0x34, 0x83, 0xb5, 0xfe,
   0x35, 0x83, 0xb5, 0xf3, 0x35, 0x82, 0xb5, 0xcf,
@@ -157,7 +157,7 @@ static uint8 kpng256x256_32bit_BGRA[128] = {
   0x1d, 0x8d, 0x96, 0xff, 0x1b, 0x8f, 0x90, 0xff,
 };
 
-static uint8 kpng256x256_8bit_palette_BGRX[128] = {
+static uint8_t kpng256x256_8bit_palette_BGRX[128] = {
   0x36, 0x89, 0xbb, 0xff, 0x36, 0x89, 0xbb, 0xff,
   0x35, 0x81, 0xb5, 0xff, 0x32, 0x84, 0xb5, 0xff,
   0x35, 0x81, 0xb5, 0xff, 0x35, 0x81, 0xb5, 0xff,
@@ -176,7 +176,7 @@ static uint8 kpng256x256_8bit_palette_BGRX[128] = {
   0x1f, 0x8d, 0x91, 0xff, 0x1f, 0x8d, 0x91, 0xff,
 };
 
-static uint8 kpng20x14_4bit_palette_BGRX[128] = {
+static uint8_t kpng20x14_4bit_palette_BGRX[128] = {
   0xed, 0xed, 0xed, 0xff, 0xff, 0xff, 0xff, 0xff,
   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -195,7 +195,7 @@ static uint8 kpng20x14_4bit_palette_BGRX[128] = {
   0x54, 0x54, 0x54, 0xff, 0x33, 0x33, 0x33, 0xff,
 };
 
-static uint8 kdxt1_256x256[128] = {
+static uint8_t kdxt1_256x256[128] = {
   0x47, 0xbc, 0x06, 0xb4, 0x5a, 0x6a, 0x6a, 0xea,
   0x27, 0xb4, 0x06, 0xb4, 0x57, 0x57, 0x57, 0x5e,
   0x06, 0xb4, 0x07, 0xb4, 0xaa, 0xaa, 0xaa, 0xaa,
@@ -214,7 +214,7 @@ static uint8 kdxt1_256x256[128] = {
   0x06, 0xb4, 0x45, 0xa4, 0xfd, 0xaf, 0xaf, 0x0a,
 };
 
-static uint8 kdxt1_256x256_alpha[128] = {
+static uint8_t kdxt1_256x256_alpha[128] = {
   0x00, 0x00, 0x01, 0x00, 0xff, 0xff, 0xff, 0xff,
   0x00, 0x00, 0x01, 0x00, 0xff, 0xff, 0xff, 0xff,
   0x00, 0x00, 0x01, 0x00, 0xff, 0xff, 0xff, 0xff,
@@ -233,7 +233,7 @@ static uint8 kdxt1_256x256_alpha[128] = {
   0x00, 0x00, 0x01, 0x00, 0xff, 0xff, 0xff, 0xff,
 };
 
-static uint8 kdxt1_256x256_mipmap[128] = {
+static uint8_t kdxt1_256x256_mipmap[128] = {
   0x47, 0xbc, 0x06, 0xb4, 0x5a, 0x6a, 0x6a, 0xea,
   0x27, 0xb4, 0x06, 0xb4, 0x57, 0x57, 0x57, 0x5e,
   0x06, 0xb4, 0x07, 0xb4, 0xaa, 0xaa, 0xaa, 0xaa,
@@ -252,7 +252,7 @@ static uint8 kdxt1_256x256_mipmap[128] = {
   0x06, 0xb4, 0x45, 0xa4, 0xfd, 0xaf, 0xaf, 0x0a,
 };
 
-static uint8 kdxt3_256x256_alpha[128] = {
+static uint8_t kdxt3_256x256_alpha[128] = {
   0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77,
   0x47, 0xbc, 0x06, 0xb4, 0x5a, 0x6a, 0x6a, 0xea,
   0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77,
@@ -271,7 +271,7 @@ static uint8 kdxt3_256x256_alpha[128] = {
   0x46, 0xac, 0x83, 0x8c, 0xf0, 0x7c, 0x7c, 0x5f,
 };
 
-static uint8 kdxt3_256x256_mipmap[128] = {
+static uint8_t kdxt3_256x256_mipmap[128] = {
   0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77,
   0x47, 0xbc, 0x06, 0xb4, 0x5a, 0x6a, 0x6a, 0xea,
   0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77,
@@ -290,7 +290,7 @@ static uint8 kdxt3_256x256_mipmap[128] = {
   0x46, 0xac, 0x83, 0x8c, 0xf0, 0x7c, 0x7c, 0x5f,
 };
 
-static uint8 kdxt5_256x256_alpha[128] = {
+static uint8_t kdxt5_256x256_alpha[128] = {
   0x7e, 0x77, 0xda, 0x23, 0x00, 0x90, 0x0a, 0x00,
   0x47, 0xbc, 0x06, 0xb4, 0x5a, 0x6a, 0x6a, 0xea,
   0x78, 0x76, 0x4e, 0x02, 0x00, 0x70, 0x02, 0x00,
@@ -309,7 +309,7 @@ static uint8 kdxt5_256x256_alpha[128] = {
   0x46, 0xac, 0x83, 0x8c, 0xf0, 0x7c, 0x7c, 0x5f,
 };
 
-static uint8 kdxt5_256x256_mipmap[128] = {
+static uint8_t kdxt5_256x256_mipmap[128] = {
   0x7e, 0x77, 0xda, 0x23, 0x00, 0x90, 0x0a, 0x00,
   0x47, 0xbc, 0x06, 0xb4, 0x5a, 0x6a, 0x6a, 0xea,
   0x78, 0x76, 0x4e, 0x02, 0x00, 0x70, 0x02, 0x00,
@@ -329,7 +329,7 @@ static uint8 kdxt5_256x256_mipmap[128] = {
 };
 
 // Match the first 128 bytes of a loaded bitmap data againt known values.
-bool TestBitmapData(const Bitmap &bitmap, uint8 reference[128]) {
+bool TestBitmapData(const Bitmap &bitmap, uint8_t reference[128]) {
   if (!bitmap.image_data()) return false;
   return std::memcmp(bitmap.image_data(), reference, sizeof(reference)) == 0;
 }
@@ -337,9 +337,9 @@ bool TestBitmapData(const Bitmap &bitmap, uint8 reference[128]) {
 // Prints the first 128 bytes of a loaded bitmap data. Helper function to
 // generate the known data above.
 bool PrintBitmapData(const Bitmap &bitmap, const char *name) {
-  const uint8 *data = bitmap.image_data();
+  const uint8_t *data = bitmap.image_data();
   if (!data) return false;
-  printf("static uint8 %s[128] = {\n", name);
+  printf("static uint8_t %s[128] = {\n", name);
   for (int i = 0; i < 16; ++i) {
     printf(" ");
     for (int j = 0; j < 8; ++j) {
@@ -382,7 +382,7 @@ TEST_F(BitmapTest, Basic) {
 // Loads a 24 bit TGA file, checks it against the known data.
 TEST_F(BitmapTest, LoadTGAFile24bit) {
   // Load the texture object from a file.
-  String filename = *g_program_path + "/bitmap_test/tga-256x256-24bit.tga";
+  std::string filename = *g_program_path + "/bitmap_test/tga-256x256-24bit.tga";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
@@ -399,7 +399,7 @@ TEST_F(BitmapTest, LoadTGAFile24bit) {
 
 // Loads a 32 bit TGA file, checks it against the known data.
 TEST_F(BitmapTest, LoadTGAFile32bit) {
-  String filename = *g_program_path + "/bitmap_test/tga-256x256-32bit.tga";
+  std::string filename = *g_program_path + "/bitmap_test/tga-256x256-32bit.tga";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
@@ -419,7 +419,7 @@ TEST_F(BitmapTest, LoadTGAFileTooLarge) {
   // NOTE: the 5kx5k.tga file only has the first 4k bytes, to avoid
   // creating a 100MB test file. The code reads the header (first 18 bytes),
   // but bails before reading the actual image bytes.
-  String filename = *g_program_path + "/bitmap_test/5kx5k.tga";
+  std::string filename = *g_program_path + "/bitmap_test/5kx5k.tga";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_FALSE(Bitmap::LoadFromFile(
@@ -429,7 +429,7 @@ TEST_F(BitmapTest, LoadTGAFileTooLarge) {
 
 // Loads a JPEG file, checks it against the known data.
 TEST_F(BitmapTest, LoadJPEGFile) {
-  String filename = *g_program_path + "/bitmap_test/jpeg-256x256.jpg";
+  std::string filename = *g_program_path + "/bitmap_test/jpeg-256x256.jpg";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
@@ -446,7 +446,7 @@ TEST_F(BitmapTest, LoadJPEGFile) {
 
 // Tries to load a 5kx5k JPEG file, which should fail.
 TEST_F(BitmapTest, LoadJPEGFileTooLarge) {
-  String filename = *g_program_path + "/bitmap_test/5kx5k.jpg";
+  std::string filename = *g_program_path + "/bitmap_test/5kx5k.jpg";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_FALSE(Bitmap::LoadFromFile(
@@ -456,7 +456,7 @@ TEST_F(BitmapTest, LoadJPEGFileTooLarge) {
 
 // Loads a 24 bit PNG file, checks it against the known data.
 TEST_F(BitmapTest, LoadPNGFile24bit) {
-  String filename = *g_program_path + "/bitmap_test/png-256x256-24bit.png";
+  std::string filename = *g_program_path + "/bitmap_test/png-256x256-24bit.png";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
@@ -473,7 +473,7 @@ TEST_F(BitmapTest, LoadPNGFile24bit) {
 
 // Loads a 24 bit interlaced PNG file, checks it against the known data.
 TEST_F(BitmapTest, LoadPNGFile24bitInterlaced) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
                     "/bitmap_test/png-256x256-24bit-interlaced.png";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -490,7 +490,7 @@ TEST_F(BitmapTest, LoadPNGFile24bitInterlaced) {
 }
 
 TEST_F(BitmapTest, LoadPNGFile32bit) {
-  String filename = *g_program_path + "/bitmap_test/png-256x256-32bit.png";
+  std::string filename = *g_program_path + "/bitmap_test/png-256x256-32bit.png";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
@@ -507,7 +507,7 @@ TEST_F(BitmapTest, LoadPNGFile32bit) {
 
 // Loads a palettized PNG file, checks it against the known data.
 TEST_F(BitmapTest, LoadPNGFile8bitPalette) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
                     "/bitmap_test/png-256x256-8bit-palette.png";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -525,7 +525,7 @@ TEST_F(BitmapTest, LoadPNGFile8bitPalette) {
 
 // Loads a palettized PNG file, checks it against the known data.
 TEST_F(BitmapTest, LoadPNGFile4bitPalette) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
                     "/bitmap_test/png-20x14-4bit-palette.png";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -544,7 +544,7 @@ TEST_F(BitmapTest, LoadPNGFile4bitPalette) {
 
 // Tries to load a 5kx5k PNG file, which should fail.
 TEST_F(BitmapTest, LoadPNGFileTooLarge) {
-  String filename = *g_program_path + "/bitmap_test/5kx5k.png";
+  std::string filename = *g_program_path + "/bitmap_test/5kx5k.png";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_FALSE(Bitmap::LoadFromFile(
@@ -556,7 +556,7 @@ TEST_F(BitmapTest, LoadPNGFileTooLarge) {
 // exported from Photoshop.
 /*
 TEST_F(BitmapTest, LoadPNGFile8bitPaletteAlpha) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
       "/bitmap_test/png-256x256-8bit-palette-alpha.png";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -574,7 +574,7 @@ TEST_F(BitmapTest, LoadPNGFile8bitPaletteAlpha) {
 
 // Loads a DXT1 DDS file, checks the format.
 TEST_F(BitmapTest, LoadDDSFileDXT1) {
-  String filename = *g_program_path + "/bitmap_test/dds-dxt1-256x256.dds";
+  std::string filename = *g_program_path + "/bitmap_test/dds-dxt1-256x256.dds";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
@@ -591,7 +591,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT1) {
 
 // Loads a DXT1 DDS file with alpha, checks the format.
 TEST_F(BitmapTest, LoadDDSFileDXT1Alpha) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
       "/bitmap_test/dds-dxt1-256x256-alpha.dds";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -609,7 +609,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT1Alpha) {
 
 // Loads a DXT1 DDS file with mipmaps, checks the format.
 TEST_F(BitmapTest, LoadDDSFileDXT1Mipmap) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
       "/bitmap_test/dds-dxt1-256x256-mipmap.dds";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -630,7 +630,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT1Mipmap) {
 
 // Loads a DXT3 DDS file, checks the format.
 TEST_F(BitmapTest, LoadDDSFileDXT3) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
       "/bitmap_test/dds-dxt3-256x256-alpha.dds";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -648,7 +648,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT3) {
 
 // Loads a DXT3 DDS file with mipmaps, checks the format.
 TEST_F(BitmapTest, LoadDDSFileDXT3Mipmap) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
       "/bitmap_test/dds-dxt3-256x256-mipmap.dds";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -669,7 +669,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT3Mipmap) {
 
 // Loads a DXT5 DDS file, checks the format.
 TEST_F(BitmapTest, LoadDDSFileDXT5) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
       "/bitmap_test/dds-dxt5-256x256-alpha.dds";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -687,7 +687,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT5) {
 
 // Loads a DXT5 DDS file with mipmaps, checks the format.
 TEST_F(BitmapTest, LoadDDSFileDXT5Mipmap) {
-  String filename = *g_program_path +
+  std::string filename = *g_program_path +
       "/bitmap_test/dds-dxt5-256x256-mipmap.dds";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
@@ -711,7 +711,7 @@ TEST_F(BitmapTest, LoadDDSFileTooLarge) {
   // NOTE: the 5kx5k.dds file only has the first 4k bytes, to avoid
   // creating a 100MB test file. The code reads the header (first 128 bytes),
   // but bails before reading the actual image bytes.
-  String filename = *g_program_path + "/bitmap_test/5kx5k.dds";
+  std::string filename = *g_program_path + "/bitmap_test/5kx5k.dds";
   FilePath filepath = UTF8ToFilePath(filename);
   BitmapRefArray bitmaps;
   EXPECT_FALSE(Bitmap::LoadFromFile(
@@ -719,7 +719,7 @@ TEST_F(BitmapTest, LoadDDSFileTooLarge) {
   EXPECT_EQ(0u, bitmaps.size());
 }
 
-static uint8 kpng_8x4_drawImage[128] = {
+static uint8_t kpng_8x4_drawImage[128] = {
   // Raw dest image used in drawimage test.
   0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
   0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
@@ -739,7 +739,7 @@ static uint8 kpng_8x4_drawImage[128] = {
   0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_top_left[128] = {
+static uint8_t kpng_8x4_drawImage_top_left[128] = {
   // expected result of drawimage on top left corner of dest image.
   0x28, 0x28, 0x28, 0xff, 0x29, 0x29, 0x29, 0xff,
   0x2a, 0x2a, 0x2a, 0xff, 0x36, 0x6c, 0xd8, 0xff,
@@ -759,7 +759,7 @@ static uint8 kpng_8x4_drawImage_top_left[128] = {
   0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_top[128] = {
+static uint8_t kpng_8x4_drawImage_top[128] = {
   // expected result of drawimage on top bound of dest image.
   0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
   0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
@@ -779,7 +779,7 @@ static uint8 kpng_8x4_drawImage_top[128] = {
   0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_top_right[128] = {
+static uint8_t kpng_8x4_drawImage_top_right[128] = {
   // expected result of drawimage on top right corner of dest image.
   0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
   0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
@@ -799,7 +799,7 @@ static uint8 kpng_8x4_drawImage_top_right[128] = {
   0x24, 0x24, 0x24, 0xff, 0x25, 0x25, 0x25, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_right[128] = {
+static uint8_t kpng_8x4_drawImage_right[128] = {
   // expected result of drawimage on right bound of dest image.
   0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
   0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
@@ -819,7 +819,7 @@ static uint8 kpng_8x4_drawImage_right[128] = {
   0x20, 0x20, 0x20, 0xff, 0x21, 0x21, 0x21, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_bottom_right[128] = {
+static uint8_t kpng_8x4_drawImage_bottom_right[128] = {
   // expected result of drawimage on bottom right corner of dest image.
   0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
   0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
@@ -839,7 +839,7 @@ static uint8 kpng_8x4_drawImage_bottom_right[128] = {
   0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_bottom[128] = {
+static uint8_t kpng_8x4_drawImage_bottom[128] = {
   // expected result of drawimage on bottom bound of dest image.
   0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
   0x27, 0x27, 0x27, 0xff, 0x28, 0x28, 0x28, 0xff,
@@ -859,7 +859,7 @@ static uint8 kpng_8x4_drawImage_bottom[128] = {
   0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_bottom_left[128] = {
+static uint8_t kpng_8x4_drawImage_bottom_left[128] = {
   // expected result of drawimage on bottom left corner of dest image.
   0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
   0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
@@ -879,7 +879,7 @@ static uint8 kpng_8x4_drawImage_bottom_left[128] = {
   0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_left[128] = {
+static uint8_t kpng_8x4_drawImage_left[128] = {
   // expected result of drawimage on left bound of dest image.
   0x2c, 0x2c, 0x2c, 0xff, 0x2d, 0x2d, 0x2d, 0xff,
   0x2e, 0x2e, 0x2e, 0xff, 0x36, 0x6c, 0xd8, 0xff,
@@ -899,7 +899,7 @@ static uint8 kpng_8x4_drawImage_left[128] = {
   0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_scale_up[128] = {
+static uint8_t kpng_8x4_drawImage_scale_up[128] = {
   // expected result of scale up from 2x2 to 8x4.
   0x38, 0x38, 0x38, 0xff, 0x43, 0x43, 0x43, 0xff,
   0x52, 0x52, 0x52, 0xff, 0x63, 0x63, 0x63, 0xff,
@@ -919,7 +919,7 @@ static uint8 kpng_8x4_drawImage_scale_up[128] = {
   0x11, 0x11, 0x11, 0xff, 0x0e, 0x0e, 0x0e, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_scale_down[128] = {
+static uint8_t kpng_8x4_drawImage_scale_down[128] = {
   // expected result of scale down from 8x8 to 4x4.
   0xa0, 0xa0, 0xa0, 0xff, 0xa7, 0xa7, 0xa7, 0xff,
   0xad, 0xad, 0xad, 0xff, 0xb3, 0xb3, 0xb3, 0xff,
@@ -939,7 +939,7 @@ static uint8 kpng_8x4_drawImage_scale_down[128] = {
   0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_scale_out[128] = {
+static uint8_t kpng_8x4_drawImage_scale_out[128] = {
   // expected result of scale src image larger than dest image.
   0x7c, 0x7c, 0x7c, 0xff, 0x7e, 0x7e, 0x7e, 0xff,
   0x80, 0x80, 0x80, 0xff, 0x82, 0x82, 0x82, 0xff,
@@ -959,7 +959,7 @@ static uint8 kpng_8x4_drawImage_scale_out[128] = {
   0x57, 0x57, 0x57, 0xff, 0x59, 0x59, 0x59, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_flip[128] = {
+static uint8_t kpng_8x4_drawImage_flip[128] = {
   // expected result of flip src image.
   0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
   0x22, 0x22, 0x22, 0xff, 0x21, 0x21, 0x21, 0xff,
@@ -979,7 +979,7 @@ static uint8 kpng_8x4_drawImage_flip[128] = {
   0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
 };
 
-static uint8 kpng_8x4_drawImage_argb8[128] = {
+static uint8_t kpng_8x4_drawImage_argb8[128] = {
   // expected result of drawimage with rgb8 format.
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0xca, 0xca, 0xca, 0x3e, 0xd7, 0xd7, 0xd7, 0x9a,
@@ -1003,11 +1003,11 @@ static uint8 kpng_8x4_drawImage_argb8[128] = {
 // compare with expected results.
 TEST_F(BitmapTest, DrawImage) {
   // path of dest image.
-  String fname_dst = *g_program_path +
+  std::string fname_dst = *g_program_path +
                      "/bitmap_test/png-8x4-24bit-drawimage-dest.png";
   BitmapRefArray bitmaps;
   // load three src bitmaps in different sizes from files.
-  String filename_2x2_src = *g_program_path +
+  std::string filename_2x2_src = *g_program_path +
       "/bitmap_test/png-2x2-24bit-drawimage-src.png";
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(filename_2x2_src),
@@ -1015,7 +1015,7 @@ TEST_F(BitmapTest, DrawImage) {
   ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_2x2_src(bitmaps[0]);
 
-  String filename_4x4_src = *g_program_path +
+  std::string filename_4x4_src = *g_program_path +
       "/bitmap_test/png-4x4-24bit-drawimage-src.png";
   bitmaps.clear();
   EXPECT_TRUE(Bitmap::LoadFromFile(
@@ -1024,7 +1024,7 @@ TEST_F(BitmapTest, DrawImage) {
   ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_4x4_src(bitmaps[0]);
 
-  String filename_8x8_src = *g_program_path +
+  std::string filename_8x8_src = *g_program_path +
       "/bitmap_test/png-8x8-24bit-drawimage-src.png";
   bitmaps.clear();
   EXPECT_TRUE(Bitmap::LoadFromFile(
@@ -1172,7 +1172,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_flip, kpng_8x4_drawImage_flip));
 
   // test draw image on argb8 format.
-  String fname_dst_argb8 = *g_program_path +
+  std::string fname_dst_argb8 = *g_program_path +
                            "/bitmap_test/" +
                            "png-8x4-24bit-drawimage-argb8-dest.png";
   bitmaps.clear();
@@ -1181,7 +1181,7 @@ TEST_F(BitmapTest, DrawImage) {
       image::PNG, &bitmaps));
   ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_argb8(bitmaps[0]);
-  String fname_src_argb8 = *g_program_path +
+  std::string fname_src_argb8 = *g_program_path +
                            "/bitmap_test/" +
                            "png-4x4-24bit-drawimage-argb8-src.png";
   bitmaps.clear();
@@ -1233,7 +1233,7 @@ TEST_F(BitmapTest, SetRect) {
   bitmap->SetRect(
       kDestMip, kDestX, kDestY,
       kSrcWidth, kSrcHeight,
-      reinterpret_cast<const uint8*>(kSourcePixels) + kSourcePitch,
+      reinterpret_cast<const uint8_t*>(kSourcePixels) + kSourcePitch,
       -kSourcePitch);
   static const float kExpected3[] = {
     0.0f, 0.0f, 0.0f, 0.0f,

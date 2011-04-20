@@ -21,7 +21,7 @@
 #include "primitives.h"
 
 namespace o3d_utils {
-	using namespace o3d;
+using namespace o3d;
 
 static const char* const kBillboardShader =
 	"uniform mat4 worldViewProjection;\n"
@@ -65,8 +65,8 @@ static const char* const kBillboardTransformFlag = "__isBillboard";
 
 static Shape* GetBillboardPlaneShape( Pack *pack, ViewInfo *view_info )
 {
-	DCHECK(pack);
-	DCHECK(view_info);
+	O3D_ASSERT(pack);
+	O3D_ASSERT(view_info);
 	
 	// Let's assume if we find the shape then everything else is already created
 	// and conversely if it's not found then nothing is created.
@@ -83,7 +83,7 @@ static Shape* GetBillboardPlaneShape( Pack *pack, ViewInfo *view_info )
 	Effect* effect = pack->Create<Effect>();
 	effect->set_name(kBillboardEffectName);
 	bool success = effect->LoadFromFXString(kBillboardShader);
-	DCHECK(success);
+	O3D_ASSERT(success);
 	
 	// Create the material.
 	Material* material = pack->Create<Material>();
@@ -116,10 +116,10 @@ bool MakeBillboard(Transform *transform,
 				   float x, float y, float z,
 				   float width, float height)
 {
-	DCHECK(transform);
-	DCHECK(pack);
-	DCHECK(viewInfo);
-	DCHECK(sampler);
+	O3D_ASSERT(transform);
+	O3D_ASSERT(pack);
+	O3D_ASSERT(viewInfo);
+	O3D_ASSERT(sampler);
 
 	// Flag the transform a billboard by defining this boolean param
 	transform->CreateParam<ParamBoolean>(kBillboardTransformFlag)->set_value(true);
@@ -139,10 +139,10 @@ Id GenerateBillboard(Pack *pack,
 					 float x, float y, float z,
 					 float width, float height)
 {
-	DCHECK(pack);
-	DCHECK(viewInfo);
-	DCHECK(parent);
-	DCHECK(sampler);
+	O3D_ASSERT(pack);
+	O3D_ASSERT(viewInfo);
+	O3D_ASSERT(parent);
+	O3D_ASSERT(sampler);
 	
 	// Create the transform for positioning
 	Transform *transform = pack->Create<Transform>();
@@ -158,9 +158,9 @@ Id GenerateBillboard(Pack *pack,
 	
 bool DeleteBillboard(Pack *pack, Id bid)
 {
-	DCHECK(pack);
+	O3D_ASSERT(pack);
 	Transform *transform = down_cast<Transform*>(pack->GetObjectBaseById(bid, Transform::GetApparentClass()));
-	DCHECK(transform);
+	O3D_ASSERT(transform);
 	transform->SetParent(NULL);
 	return pack->RemoveObject(transform);
 }
@@ -169,7 +169,7 @@ bool isBillBoardTransform(const Transform *transform)
 {
 	// The transform is a billboard if it has the special param defined.
 	// Checking if the param exists is sufficient so the value is ignored.
-	DCHECK(transform);
+	O3D_ASSERT(transform);
 	return(transform->GetParam<ParamBoolean>(kBillboardTransformFlag) != NULL);
 }
 

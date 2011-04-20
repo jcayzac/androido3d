@@ -79,7 +79,7 @@ class VertexSource : public ParamObject {
 
  private:
   O3D_DECL_CLASS(VertexSource, ParamObject);
-  DISALLOW_COPY_AND_ASSIGN(VertexSource);
+  O3D_DISALLOW_COPY_AND_ASSIGN(VertexSource);
 };
 
 }  // namespace o3d

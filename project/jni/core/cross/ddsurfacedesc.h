@@ -37,15 +37,13 @@
 #ifndef O3D_CORE_CROSS_GL_DDSURFACEDESC_H_
 #define O3D_CORE_CROSS_GL_DDSURFACEDESC_H_
 
-#include "build/build_config.h"
+#include "base/cross/config.h"
 
-#ifndef OS_WIN
-typedef uint16 WORD;
-typedef uint32 DWORD;
-typedef int8 BYTE;
-typedef int32 LONG;
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+typedef int8_t BYTE;
+typedef int32_t LONG;
 typedef void* LPVOID;
-#endif
 
 #define MAKEFOURCC(ch0, ch1, ch2, ch3)                        \
   ((DWORD)(BYTE)(ch0) | ((DWORD)(BYTE)(ch1) << 8) |           \

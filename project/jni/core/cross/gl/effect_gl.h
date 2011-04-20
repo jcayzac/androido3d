@@ -35,13 +35,6 @@
 #ifndef O3D_CORE_CROSS_GL_EFFECT_GL_H_
 #define O3D_CORE_CROSS_GL_EFFECT_GL_H_
 
-// Disable compiler warning for openGL calls that require a void* to
-// be cast to a GLuint
-#if defined(OS_WIN)
-#pragma warning(disable : 4312)
-#pragma warning(disable : 4311)
-#endif
-
 #include <utility>
 #include <vector>
 #include <map>
@@ -84,7 +77,7 @@ class EffectGL : public Effect {
 
   // Reads the vertex and fragment shaders from string in the FX format.
   // It returns true if the shaders were successfully compiled.
-  virtual bool LoadFromFXString(const String& effect);
+  virtual bool LoadFromFXString(const std::string& effect);
 
   // Binds the shaders to the device and sets up all the shader parameters using
   // the values from the matching Param's of the param_object.
@@ -121,7 +114,7 @@ class EffectGL : public Effect {
   void ResetShaderUniforms(ParamCacheGL* param_cache_gl);
   void GetShaderParamInfo(CGprogram program,
                           CGenum name_space,
-                          std::map<String, EffectParameterInfo>* info_map);
+                          std::map<std::string, EffectParameterInfo>* info_map);
   void GetVaryingVertexShaderParamInfo(
       CGprogram program,
       CGenum name_space,
@@ -129,8 +122,8 @@ class EffectGL : public Effect {
 
   // TODO: remove these (OLD path for textures).
   void SetTexturesFromEffect(ParamCacheGL* param_cache_gl);
-  void FillSamplerToTextureMap(const String &effect);
-  String GetTextureNameFromSamplerParamName(const String &sampler_name);
+  void FillSamplerToTextureMap(const std::string &effect);
+  std::string GetTextureNameFromSamplerParamName(const std::string &sampler_name);
 
   SemanticManager* semantic_manager_;
   RendererGL* renderer_;
@@ -140,7 +133,7 @@ class EffectGL : public Effect {
   CGprogram cg_fragment_;
 
   // TODO: remove this (OLD path for textures).
-  std::map<String, String> sampler_to_texture_map_;
+  std::map<std::string, std::string> sampler_to_texture_map_;
 };
 }  // namespace o3d
 

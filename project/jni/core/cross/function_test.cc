@@ -94,7 +94,7 @@ class TestFunction : public Function {
 
  private:
   O3D_DECL_CLASS(TestFunction, Function);
-  DISALLOW_COPY_AND_ASSIGN(TestFunction);
+  O3D_DISALLOW_COPY_AND_ASSIGN(TestFunction);
 };
 
 O3D_DEFN_CLASS(TestFunction, Function);
