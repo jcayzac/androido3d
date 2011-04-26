@@ -1,34 +1,27 @@
 #### o3dimport
 #
-LOCAL_PATH      := $(call my-dir)
+LOCAL_PATH := $(call my-dir)
 
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
-LOCAL_MODULE    := o3dimport
+LOCAL_MODULE := o3dimport
 LOCAL_CPP_EXTENSION := .cc
-LOCAL_CFLAGS    := \
-  -D__ANDROID__ \
-  -DRENDERER_GLES2 \
-  -DGLES2_BACKEND_NATIVE_GLES2 \
+LOCAL_CFLAGS += \
   -DO3D_IMPORT_NO_CG \
   -DO3D_IMPORT_NO_CONDITIONER \
   -DO3D_IMPORT_NO_DXT_TO_PNG \
   -DO3D_IMPORT_DECOMPRESS_DXT \
   -DO3D_NO_TEMP_FILES \
-  -DFCOLLADA_EXCEPTION=0 \
-  -DUNICODE \
-  -I$(LOCAL_PATH)/../third_party/fcollada/files/LibXML/include \
-  -I$(LOCAL_PATH)/../third_party/fcollada/files \
-  -I$(LOCAL_PATH)/../third_party/loggingshim \
-  -I$(LOCAL_PATH)/../third_party/zlib \
-  -I$(LOCAL_PATH)/../third_party \
-  -I$(LOCAL_PATH)/.. \
+
+LOCAL_C_INCLUDES += \
+  $(O3D_THIRD_PARTY)/fcollada/files/LibXML/include \
+  $(O3D_THIRD_PARTY)/fcollada/files \
 
 LOCAL_SRC_FILES := $(addprefix cross/, \
-	targz_processor.cc \
-	archive_processor.cc \
-	gz_decompressor.cc \
-	tar_processor.cc \
+  targz_processor.cc \
+  archive_processor.cc \
+  gz_decompressor.cc \
+  tar_processor.cc \
   collada.cc \
   collada_zip_archive.cc \
   destination_buffer.cc \
@@ -37,6 +30,6 @@ LOCAL_SRC_FILES := $(addprefix cross/, \
   zip_archive.cc \
   )
 
-include $(BUILD_STATIC_LIBRARY)
+include $(O3D_BUILD_MODULE)
 
 

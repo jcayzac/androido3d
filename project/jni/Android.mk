@@ -13,48 +13,27 @@
 # limitations under the License.
 #
 
-LOCAL_PATH      := $(call my-dir)
-MY_PATH         := $(call my-dir)
+# This Makefile aggregates all the static libraries into a big one.
+# The Android build system apparently doesn't support this (building
+# a static library project that depends on other static libraries
+# doesn't build them), so we're doing it by hand (which is not a
+# big deal anyway)
 
-include $(CLEAR_VARS)
+LOCAL_PATH     := $(O3D_NATIVE_DIR)
 
-LOCAL_MODULE    := libo3djni
-LOCAL_CFLAGS    := \
-  -Werror \
-  -D__ANDROID__ \
-  -DRENDERER_GLES2 \
-  -DGLES2_BACKEND_NATIVE_GLES2 \
-  -I$(LOCAL_PATH)/third_party/loggingshim \
+include $(O3D_START_COMBINED_LIBRARY)
+O3D_COMBINED_LIBRARY := o3dcombined-$(_app)
 
-LOCAL_LDLIBS    := -llog -lGLESv2 -lz -ldl
-LOCAL_SRC_FILES := \
-  gl_code.cpp \
+include $(O3D_NATIVE_DIR)/AndroidLib.mk
+include $(O3D_NATIVE_DIR)/core/Android.mk
+include $(O3D_NATIVE_DIR)/import/Android.mk
+include $(O3D_NATIVE_DIR)/extra/Android.mk
+include $(O3D_NATIVE_DIR)/utils/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/fcollada/files/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/libtxc_dxtn/files/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/libjpeg/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/libpng/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/zlib/Android.mk
+include $(O3D_NATIVE_DIR)/third_party/loggingshim/Android.mk
 
-LOCAL_STATIC_LIBRARIES := \
-  o3dhelp \
-  o3dcore \
-  o3drenderer \
-  o3dimport \
-  o3dutils \
-  fcollada \
-  libxml \
-  libtxc_dxtn \
-  libjpeg \
-  libpng \
-  zlib \
-  loggingshim \
-  o3dwchar \
-
-include $(BUILD_SHARED_LIBRARY)
-
-include $(MY_PATH)/AndroidLib.mk
-include $(MY_PATH)/core/Android.mk
-include $(MY_PATH)/import/Android.mk
-include $(MY_PATH)/utils/Android.mk
-include $(MY_PATH)/third_party/fcollada/files/Android.mk
-include $(MY_PATH)/third_party/libtxc_dxtn/files/Android.mk
-include $(MY_PATH)/third_party/libjpeg/Android.mk
-include $(MY_PATH)/third_party/libpng/Android.mk
-include $(MY_PATH)/third_party/zlib/Android.mk
-include $(MY_PATH)/third_party/loggingshim/Android.mk
-
+include $(O3D_BUILD_COMBINED_LIBRARY)

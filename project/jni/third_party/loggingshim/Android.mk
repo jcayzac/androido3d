@@ -1,18 +1,11 @@
 #### loggingshim
 #
-LOCAL_PATH      := $(call my-dir)
+LOCAL_PATH := $(call my-dir)
 
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
-LOCAL_MODULE    := loggingshim
+LOCAL_MODULE := loggingshim
 LOCAL_CPP_EXTENSION := .cc
-LOCAL_CFLAGS    := \
-  -D__ANDROID__ \
-  -DUNICODE \
-  -I$(LOCAL_PATH)/.. \
-  -I$(LOCAL_PATH) \
-
-
 LOCAL_SRC_FILES := $(addprefix base/, \
   third_party/dmg_fp/dtoa.cc \
   third_party/dmg_fp/g_fmt.cc \
@@ -39,6 +32,4 @@ LOCAL_SRC_FILES := $(addprefix base/, \
   utf_string_conversions.cc \
   )
   
-include $(BUILD_STATIC_LIBRARY)
-
-
+include $(O3D_BUILD_MODULE)

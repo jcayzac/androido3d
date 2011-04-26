@@ -1,19 +1,12 @@
-
-LOCAL_PATH      := $(call my-dir)
+LOCAL_PATH := $(call my-dir)
 
 #### LibXML for fcollada
 #
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
-LOCAL_MODULE    := libxml
-LOCAL_CFLAGS    := \
-  -DLINUX \
-  -D__ANDROID__ \
-  -DUNICODE \
-  -DFCOLLADA_EXCEPTION=0 \
-  -I$(LOCAL_PATH)/LibXML/include \
-  -I$(LOCAL_PATH) \
-  -I$(LOCAL_PATH)/../../../third_party/chromium \
+LOCAL_MODULE := xml
+LOCAL_CFLAGS += -DLINUX
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/LibXML/include
 
 LOCAL_SRC_FILES := \
   LibXML/DOCBparser.c \
@@ -57,24 +50,20 @@ LOCAL_SRC_FILES := \
   LibXML/xmlwriter.c \
   StdAfx.cpp \
 
-include $(BUILD_STATIC_LIBRARY)
+include $(O3D_BUILD_MODULE)
 
 #### fcollada
 #
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
-# DLLEntry.cpp \
-
-LOCAL_MODULE    := fcollada
-LOCAL_CFLAGS    := \
+LOCAL_MODULE := fcollada
+LOCAL_CFLAGS += \
   -DLINUX \
-  -D__ANDROID__ \
-  -DUNICODE \
   -DRETAIL \
-  -DFCOLLADA_EXCEPTION=0 \
-  -I$(LOCAL_PATH)/../../../third_party/fcollada/files/LibXML/include \
-  -I$(LOCAL_PATH)/../../../third_party/fcollada/files \
-  -I$(LOCAL_PATH)/../../../third_party/chromium \
+
+LOCAL_C_INCLUDES += \
+  $(O3D_THIRD_PARTY)/fcollada/files/LibXML/include \
+  $(O3D_THIRD_PARTY)/fcollada/files \
 
 LOCAL_SRC_FILES := \
   FArchiveXML/FAXAnimationExport.cpp \
@@ -240,6 +229,4 @@ LOCAL_SRC_FILES := \
   FUtils/StdAfx.cpp \
   StdAfx.cpp \
 
-include $(BUILD_STATIC_LIBRARY)
-
-
+include $(O3D_BUILD_MODULE)

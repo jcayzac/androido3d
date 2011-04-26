@@ -5,18 +5,12 @@
 # *.[oa]
 # *~
 
-# iOS intermediate files
-build
-build/*
-
 # android intermediate files
 armeabi-v7a
 armeabi
 obj
 bin
 gen
-.generated-sources
-.lastbuildmode
 
 # android local build properties
 local.properties

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ Copyright (C) 2010 Tonchidot Corporation.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ -->
+
+<project name="pre-o3d" default=".">
+
+  <!-- import the environment under env.* prefix -->
+  <property environment="env" />
+
+  <!-- read config files -->
+  <property file="local.properties" />
+  <property file="build.properties" />
+  <property file="default.properties" />
+  <property name="sdk.dir" value="${env.ANDROID_HOME}" />
+
+  <!-- import ant tasks -->
+  <path id="android.antlibs">
+    <pathelement path="${sdk.dir}/tools/lib/anttasks.jar" />
+    <pathelement path="${sdk.dir}/tools/lib/sdklib.jar" />
+    <pathelement path="${sdk.dir}/tools/lib/androidprefs.jar" />
+  </path>
+  <taskdef name="setup" classname="com.android.ant.SetupTask" classpathref="android.antlibs" />
+  <taskdef name="if" classname="com.android.ant.IfElseTask" classpathref="android.antlibs" />
+
+  <!-- set default values -->
+  <property name="ndk.jobs" value="8" />
+  <property name="ndk.verbose" value="false" />
+  <if condition="${build.mode.debug}">
+    <then><property name="ndk.debug" value="true" /></then>
+    <else><property name="ndk.debug" value="false" /></else>
+  </if>
+
+  <macrodef name="ndk-build">
+    <attribute name="path"/>
+    <attribute name="params" default="" />
+    <attribute name="debug" default="${ndk.debug}" />
+    <attribute name="neon" default="false" />
+    <attribute name="makevariant" default="false" />
+    <sequential>
+      <local name="v" />
+      <local name="debug" />
+      <local name="neon" />
+      <local name="neon.prefix" />
+      <local name="variant" />
+      <local name="app.param" />
+      <if condition="${ndk.verbose}">
+        <then><property name="v" value="1" /></then>
+        <else><property name="v" value="0" /></else>
+      </if>
+      <if condition="@{debug}">
+        <then><property name="debug" value="1" /><property name="variant" value="debug" /></then>
+        <else><property name="debug" value="0" /><property name="variant" value="release" /></else>
+      </if>
+      <if condition="@{neon}">
+        <then><property name="neon" value="1" /><property name="neon.prefix" value="neon-" /></then>
+        <else><property name="neon" value="0" /><property name="neon.prefix" value="" /></else>
+      </if>
+      <if condition="@{makevariant}">
+        <then><property name="app.param" value="_app=${neon.prefix}${variant}" /></then>
+        <else><property name="app.param" value="" /></else>
+      </if>
+      <exec executable="ndk-build" dir="@{path}" failonerror="true">
+        <arg line="-j${ndk.jobs} O3D_DIR=${o3d.dir} NDK_DEBUG=${debug} NEON=${neon} V=${v} ${app.param} @{params}" />
+      </exec>
+    </sequential>
+  </macrodef>
+
+  <target name="-build-o3d">
+    <ndk-build path="${o3d.dir}" debug="true" neon="true" makevariant="true" params="-C ${o3d.dir}" />
+    <ndk-build path="${o3d.dir}" debug="false" neon="true" makevariant="true" params="-C ${o3d.dir}" />
+    <ndk-build path="${o3d.dir}" debug="true" makevariant="true" params="-C ${o3d.dir}" />
+    <ndk-build path="${o3d.dir}" debug="false" makevariant="true" params="-C ${o3d.dir}" />
+  </target>
+</project>

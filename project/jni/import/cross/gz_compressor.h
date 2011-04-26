@@ -41,7 +41,7 @@
 #if defined(USE_SYSTEM_ZLIB)
 #include <zlib.h>
 #else
-#include "third_party/zlib/zlib.h"
+#include "zlib.h"
 #endif
 #include "import/cross/memory_stream.h"
 

@@ -2,29 +2,25 @@
 #
 LOCAL_PATH      := $(call my-dir)
 
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
 LOCAL_MODULE    := o3dcore
 LOCAL_CPP_EXTENSION := .cc
-LOCAL_CFLAGS    := \
-  -O1 \
-  -D__ANDROID__ \
+LOCAL_CFLAGS    += \
   -DO3D_NO_CANVAS \
   -DO3D_NO_GPU2D \
   -DO3D_NO_IPC \
   -DO3D_NO_ARCHIVE_REQUEST \
   -DO3D_NO_FILE_REQUEST \
   -DO3D_PLUGIN_VERSION=\"0.1.43.0\" \
-  -DGLES2_BACKEND_NATIVE_GLES2 \
   -DO3D_IMPORT_DECOMPRESS_DXT \
-  -I$(LOCAL_PATH)/../third_party/libjpeg \
-  -I$(LOCAL_PATH)/../third_party/libpng \
-  -I$(LOCAL_PATH)/../third_party/loggingshim \
-  -I$(LOCAL_PATH)/../third_party \
-  -I$(LOCAL_PATH)/.. \
 
-#  -DCHROME_PNG_WRITE_SUPPORT \
-#  -DPNG_USER_CONFIG \
+LOCAL_C_INCLUDES += \
+  $(O3D_THIRD_PARTY)/libjpeg \
+  $(O3D_THIRD_PARTY)/libpng \
+
+# -DCHROME_PNG_WRITE_SUPPORT \
+# -DPNG_USER_CONFIG \
 
 # unused by Android version of O3D.
 #  canvas.cc \
@@ -114,26 +110,21 @@ LOCAL_SRC_FILES := $(addprefix cross/, \
   viewport.cc \
   )
 
-include $(BUILD_STATIC_LIBRARY)
+include $(O3D_BUILD_MODULE)
 
 #### o3drenderer
 #
 
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
-LOCAL_MODULE    := o3drenderer
+LOCAL_MODULE := o3drenderer
 LOCAL_CPP_EXTENSION := .cc
-LOCAL_CFLAGS    := \
-  -O1 \
-  -D__ANDROID__ \
-  -DRENDERER_GLES2 \
-  -DGLES2_BACKEND_NATIVE_GLES2 \
+LOCAL_CFLAGS += \
   -DO3D_RENDERER_MUST_BACK_RESOURCES \
-  -I$(LOCAL_PATH)/../third_party/libjpeg \
-  -I$(LOCAL_PATH)/../third_party/libpng \
-  -I$(LOCAL_PATH)/../third_party/loggingshim \
-  -I$(LOCAL_PATH)/../third_party \
-  -I$(LOCAL_PATH)/.. \
+
+LOCAL_C_INCLUDES += \
+  $(O3D_THIRD_PARTY)/libjpeg \
+  $(O3D_THIRD_PARTY)/libpng \
 
 LOCAL_SRC_FILES := $(addprefix cross/gles2/, \
   buffer_gles2.cc \
@@ -150,6 +141,6 @@ LOCAL_SRC_FILES := $(addprefix cross/gles2/, \
   utils_gles2.cc \
   )
 
-include $(BUILD_STATIC_LIBRARY)
+include $(O3D_BUILD_MODULE)
 
 

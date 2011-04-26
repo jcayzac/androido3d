@@ -1,29 +1,13 @@
-#### o3dimport
-#
 LOCAL_PATH      := $(call my-dir)
 
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
 LOCAL_MODULE    := o3dutils
 LOCAL_CPP_EXTENSION := .cc
-LOCAL_CFLAGS    := \
-  -D__ANDROID__ \
-  -DRENDERER_GLES2 \
-  -DGLES2_BACKEND_NATIVE_GLES2 \
-  -DO3D_IMPORT_NO_CG \
-  -DO3D_IMPORT_NO_CONDITIONER \
-  -DO3D_IMPORT_NO_DXT_DECOMPRESSION \
-  -DFCOLLADA_EXCEPTION=0 \
-  -DUNICODE \
-  -I$(LOCAL_PATH)/../third_party/fcollada/files/LibXML/include \
-  -I$(LOCAL_PATH)/../third_party/fcollada/files \
-  -I$(LOCAL_PATH)/../third_party/loggingshim \
-  -I$(LOCAL_PATH)/../third_party/zlib \
-  -I$(LOCAL_PATH)/../third_party \
-  -I$(LOCAL_PATH)/.. \
-
-LOCAL_REMOVED   := \
-  temporary_file.cc \
+LOCAL_C_INCLUDES += \
+  $(O3D_THIRD_PARTY)/fcollada/files/LibXML/include \
+  $(O3D_THIRD_PARTY)/fcollada/files \
+  $(O3D_THIRD_PARTY)/zlib \
 
 LOCAL_SRC_FILES := $(addprefix cross/, \
   base64.cc \
@@ -38,6 +22,4 @@ LOCAL_SRC_FILES := $(addprefix cross/, \
   text_writer.cc \
   )
 
-include $(BUILD_STATIC_LIBRARY)
-
-
+include $(O3D_BUILD_MODULE)

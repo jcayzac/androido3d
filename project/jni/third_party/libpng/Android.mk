@@ -1,16 +1,10 @@
 #### libpng
 #
-LOCAL_PATH      := $(call my-dir)
+LOCAL_PATH := $(call my-dir)
 
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
-LOCAL_MODULE    := libpng
-LOCAL_CFLAGS    := \
-  -D__ANDROID__ \
-  -DUNICODE \
-
-#  -DCHROME_PNG_WRITE_SUPPORT \
-#  -DPNG_USER_CONFIG \
+LOCAL_MODULE := png
 
 LOCAL_SRC_FILES := \
   png.c \
@@ -31,6 +25,6 @@ LOCAL_SRC_FILES := \
   pngwtran.c \
   pngwutil.c \
 
-include $(BUILD_STATIC_LIBRARY)
+include $(O3D_BUILD_MODULE)
 
 

@@ -2,13 +2,9 @@
 #
 LOCAL_PATH      := $(call my-dir)
 
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
 LOCAL_MODULE    := zlib
-LOCAL_CFLAGS    := \
-  -D__ANDROID__ \
-  -DUNICODE \
-  -I$(LOCAL_PATH)/../.. \
 
 LOCAL_SRC_FILES := \
   contrib/minizip/ioapi.c \
@@ -27,6 +23,4 @@ LOCAL_SRC_FILES := \
   uncompr.c \
   zutil.c \
 
-include $(BUILD_STATIC_LIBRARY)
-
-
+include $(O3D_BUILD_MODULE)

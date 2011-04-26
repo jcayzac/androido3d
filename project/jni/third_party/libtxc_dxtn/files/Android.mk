@@ -2,19 +2,14 @@
 #
 LOCAL_PATH      := $(call my-dir)
 
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
-LOCAL_MODULE    := libtxc_dxtn
+LOCAL_MODULE := txc_dxtn
 LOCAL_CPP_EXTENSION := .cc
-LOCAL_CFLAGS    := \
-  -D__ANDROID__ \
-  -DUNICODE \
-  -I$(LOCAL_PATH)/../../../third_party/loggingshim \
-
 LOCAL_SRC_FILES := \
   txc_compress_dxtn.c \
   txc_fetch_dxtn.cc \
 
-include $(BUILD_STATIC_LIBRARY)
+include $(O3D_BUILD_MODULE)
 
 

@@ -13,17 +13,9 @@
 # limitations under the License.
 #
 
-LOCAL_PATH      := $(call my-dir)
-
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
 LOCAL_MODULE    := o3dhelp
-LOCAL_CFLAGS    := \
-  -Werror \
-  -D__ANDROID__ \
-  -DRENDERER_GLES2 \
-  -DGLES2_BACKEND_NATIVE_GLES2 \
-  -I$(LOCAL_PATH)/third_party/loggingshim \
 
 LOCAL_SRC_FILES := \
   camera.cpp \
@@ -34,25 +26,19 @@ LOCAL_SRC_FILES := \
   render_graph.cpp \
   scene.cpp \
   shader_builder.cpp \
+  scaledquadparams.cpp \
+  camspacequad.cpp \
+  billboard.cpp \
 
-include $(BUILD_STATIC_LIBRARY)
+include $(O3D_BUILD_MODULE)
 
 #### Wchar functions
 #
-include $(CLEAR_VARS)
+include $(O3D_START_MODULE)
 
 LOCAL_MODULE    := o3dwchar
+LOCAL_SRC_FILES := wchar.cpp
 
-LOCAL_CFLAGS    := \
-  -Werror \
-  -D__ANDROID__ \
-  -DRENDERER_GLES2 \
-  -DGLES2_BACKEND_NATIVE_GLES2 \
-  -I$(LOCAL_PATH)/third_party/loggingshim \
-
-LOCAL_SRC_FILES := \
-  wchar.cpp \
-
-include $(BUILD_STATIC_LIBRARY)
+include $(O3D_BUILD_MODULE)
 
 
