@@ -34,7 +34,6 @@
 
 #include <csetjmp>
 #include "core/cross/bitmap.h"
-#include "utils/cross/file_path_utils.h"
 #include "base/cross/file_path.h"
 #include "base/cross/file_util.h"
 #include "import/cross/memory_buffer.h"

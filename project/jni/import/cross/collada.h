@@ -42,7 +42,6 @@
 #include "core/cross/param.h"
 #include "core/cross/types.h"
 #include "core/cross/object_base.h"
-#include "utils/cross/file_path_utils.h"
 
 class FCDocument;
 class FCDAnimated;
@@ -76,7 +75,6 @@ class Material;
 class Pack;
 class ParamObject;
 class Sampler;
-class ShaderBuilderHelper;
 class Shape;
 class State;
 class Texture;

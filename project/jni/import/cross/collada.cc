@@ -54,7 +54,6 @@
 #include "import/cross/destination_buffer.h"
 #include "import/cross/memory_stream.h"
 #include "import/cross/raw_data.h"
-#include "utils/cross/file_path_utils.h"
 
 // FCollada is build without exception support
 #define FCOLLADA_EXCEPTION 0
@@ -133,19 +132,19 @@ class TranslationMap : public FCDGeometryIndexTranslationMap {
 
 namespace {
 
-Vector3 FMVector3ToVector3(const FMVector3& fmvector3) {
+static inline Vector3 FMVector3ToVector3(const FMVector3& fmvector3) {
   return Vector3(fmvector3.x, fmvector3.y, fmvector3.z);
 }
 
-Vector4 FMVector4ToVector4(const FMVector4& fmvector4) {
+static inline Vector4 FMVector4ToVector4(const FMVector4& fmvector4) {
   return Vector4(fmvector4.x, fmvector4.y, fmvector4.z, fmvector4.w);
 }
 
-Float2 FMVector2ToFloat2(const FMVector2& fmvector2) {
+static inline Float2 FMVector2ToFloat2(const FMVector2& fmvector2) {
   return Float2(fmvector2.x, fmvector2.y);
 }
 
-Matrix4 FMMatrix44ToMatrix4(const FMMatrix44& fmmatrix44) {
+static inline Matrix4 FMMatrix44ToMatrix4(const FMMatrix44& fmmatrix44) {
   return Matrix4(Vector4(fmmatrix44[0][0],
                          fmmatrix44[0][1],
                          fmmatrix44[0][2],
@@ -163,6 +162,74 @@ Matrix4 FMMatrix44ToMatrix4(const FMMatrix44& fmmatrix44) {
                          fmmatrix44[3][2],
                          fmmatrix44[3][3]));
 }
+
+static bool AbsolutePath(FilePath* absolute_path) {
+  if (absolute_path->IsAbsolute()) return true;
+  else {
+    FilePath new_absolute_path(*absolute_path);
+    if (file_util::AbsolutePath(&new_absolute_path)) {
+      *absolute_path = new_absolute_path;
+      return true;
+    }
+  }
+  // OK, so we failed to make an absolute path above, and we know
+  // it's not an absolute path to begin with, so we just prepend
+  // the current working directory.
+  FilePath cwd_path;
+  if (!file_util::GetCurrentDirectory(&cwd_path))
+    return false;
+  *absolute_path = cwd_path.Append(*absolute_path);
+  return true;
+}
+
+// Tries to find a file path_to_find in path_to_search. Will start with
+// base name and progressively try each higher path. Example:
+//
+// FindFile('this/that', 'foo/bar/baf.txt');
+//
+// Looks for:
+//   this/that/foo/bar/baf.txt
+//   this/that/bar/baf.txt
+//   this/that/baf.txt
+static bool FindFileHelper(const FilePath& path_to_search,
+                    const FilePath& path_to_find,
+                    FilePath* found_path) {
+  std::vector<std::string> parts;
+  path_to_find.GetComponents(&parts);
+
+  for (size_t ii = 0; ii < parts.size(); ++ii) {
+    // build a path from parts.
+    FilePath path(path_to_search);
+    for (size_t jj = ii; jj < parts.size(); ++jj) {
+      path = path.Append(parts[jj]);
+    }
+    if (file_util::PathExists(path)) {
+      *found_path = path;
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool FindFile(const std::vector<FilePath>& paths_to_search,
+              const FilePath& path_to_find,
+              FilePath* found_path) {
+  if (file_util::PathExists(path_to_find)) {
+    *found_path = path_to_find;
+    return true;
+  }
+
+  for (size_t ii(0); ii < paths_to_search.size(); ++ii) {
+    FilePath absolute_path(paths_to_search[ii]);
+    AbsolutePath(&absolute_path);
+
+    if (FindFileHelper(absolute_path, path_to_find, found_path)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // anonymous namespace
 
 // Import the given COLLADA file or ZIP file into the given scene.
@@ -1672,6 +1739,57 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
   }
   return shape;
 }
+
+namespace {
+static bool GetRelativePathIfPossible(const FilePath& base_dir,
+                               const FilePath& candidate,
+                               FilePath *result) {
+  FilePath parent(base_dir.StripTrailingSeparators());
+  FilePath child(candidate.StripTrailingSeparators());
+
+  // If we can't convert the child to an absolute path for some
+  // reason, then we just do nothing and return the candidate.
+  if (!child.IsAbsolute() && !AbsolutePath(&child)) {
+    *result = candidate;
+    return false;
+  }
+
+  // If we can't convert the parent to an absolute path for some
+  // reason, then we just do nothing and return the absolute path to
+  // the child.
+  if (!parent.IsAbsolute() && !AbsolutePath(&parent)) {
+    *result = child;
+    return false;
+  }
+
+  std::string child_str = child.value();
+  std::string parent_str = parent.value();
+
+  // If the child is too short, it can't be a child of parent, and if
+  // it doesn't have a separator in the right place, then it also
+  // can't be a child, so we return the absolute path to the child.
+  // file_util::AbsolutePath() normalizes '/' to '\' on Windows, so we
+  // only need to check kSeparators[0].
+  if (child_str.length() <= parent_str.length() ||
+      child_str[parent_str.length()] != FilePath::kSeparators[0]) {
+    *result = child;
+    return false;
+  }
+
+  if (StartsWithASCII(child_str, parent_str, true)) {
+    // Add one to skip over the dir separator.
+    child_str = child_str.substr(parent_str.size() + 1);
+
+    // Now we know we can return the relative path.
+    *result = FilePath(child_str);
+    return true;
+  }
+  else {
+    *result = FilePath(child_str);
+    return false;
+  }
+}
+} // anonymous namespace
 
 Texture* Collada::BuildTextureFromImage(FCDImage* image) {
   const std::string filename(image->GetFilename());

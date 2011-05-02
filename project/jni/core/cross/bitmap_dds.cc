@@ -51,7 +51,6 @@
 #include "core/cross/error.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/ddsurfacedesc.h"
-#include "utils/cross/file_path_utils.h"
 #include "base/cross/file_util.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"

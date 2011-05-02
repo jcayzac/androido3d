@@ -46,7 +46,6 @@
 #include "core/cross/renderer.h"
 #include "core/cross/error.h"
 #include "core/cross/external_resource.h"
-#include "utils/cross/file_path_utils.h"
 
 namespace o3d {
 

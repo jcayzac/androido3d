@@ -36,7 +36,6 @@
 #include "import/cross/raw_data.h"
 #include "core/cross/file_resource.h"
 #include "base/cross/file_util.h"
-#include "utils/cross/file_path_utils.h"
 #include "base/cross/file_path.h"
 #include "utils/cross/dataurl.h"
 

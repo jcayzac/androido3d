@@ -11,7 +11,6 @@ LOCAL_C_INCLUDES += \
 LOCAL_SRC_FILES := $(addprefix cross/, \
   base64.cc \
   dataurl.cc \
-  file_path_utils.cc \
   )
 
 include $(O3D_BUILD_MODULE)

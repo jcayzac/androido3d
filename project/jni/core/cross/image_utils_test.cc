@@ -34,7 +34,6 @@
 #include "core/cross/image_utils.h"
 #include "tests/common/win/testing_common.h"
 #include "base/cross/file_path.h"
-#include "utils/cross/file_path_utils.h"
 #include "core/cross/math_utilities.h"
 
 namespace o3d {
