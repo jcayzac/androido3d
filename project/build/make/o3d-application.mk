@@ -52,6 +52,7 @@ else
     -funsafe-math-optimizations \
     -fsee \
     -ftracer \
+    -fstrict-aliasing \
 
 endif
 
