@@ -25,6 +25,7 @@ O3D_NATIVE_DIR := $(O3D_DIR)/jni
 # CFLAGS used at various places, that applications
 # should use too as they're used in some header files
 APP_CFLAGS := \
+  -pipe \
   -Wall \
   -Wfloat-equal \
   -Wdisabled-optimization \
