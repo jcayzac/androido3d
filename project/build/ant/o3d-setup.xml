@@ -38,7 +38,7 @@
   <taskdef name="xpath" classname="com.android.ant.XPathTask"  classpathref="android.antlibs" />
 
   <!-- set default values -->
-  <property name="ndk.jobs" value="8" />
+  <property name="ndk.jobs" value="4" />
   <property name="ndk.verbose" value="false" />
 
   <macrodef name="ndk-build">
