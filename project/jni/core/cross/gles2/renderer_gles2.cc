@@ -783,7 +783,14 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
     O3D_LOG(ERROR) << "Separate blend function extension missing.";
   }
 #elif defined(GLES2_BACKEND_NATIVE_GLES2)
-  // GLES specific initialization ?
+  std::stringstream extensions((const char*) glGetString(GL_EXTENSIONS));
+  std::string extension;
+  while(extensions >> extension) {
+    if (extension == "GL_OES_texture_npot") {
+      O3D_LOG(INFO) << "OpenGL ES supports NPOT textures";
+      SetSupportsNPOT(true);
+    }
+  }
 #endif  // GLES2_BACKEND
   O3D_LOG(INFO) << "OpenGLES2 Vendor: " << ::glGetString(GL_VENDOR);
   O3D_LOG(INFO) << "OpenGLES2 Renderer: " << ::glGetString(GL_RENDERER);
@@ -805,16 +812,6 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   ::glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 #endif
   CHECK_GL_ERROR();
-#ifndef TARGET_OS_IPHONE
-  // TODO(piman): by default, GLES2 has some minimal support for NPOT. Is it
-  // enough for what we use ?
-  SetSupportsNPOT(true);
-#else
-  // The answer to piman's question above is: NO.
-  // iphone does not support mipmapped npot textures and the code
-  // assumes that if npot is supported, then mipmapped npot works as well.
-  SetSupportsNPOT(false);
-#endif // TARGET_OS_IPHONE
 
   GLint viewport[4];
   ::glGetIntegerv(GL_VIEWPORT, &viewport[0]);
