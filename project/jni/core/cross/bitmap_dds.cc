@@ -34,20 +34,7 @@
   #include "libtxc_dxtn/files/txc_dxtn.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include <jni.h>
-#include <android/log.h>
-
-#define  LOG_TAG    "libo3djni"
-#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
-
-#elif defined(TARGET_OS_IPHONE)
-#include "iOS/iphoneo3d/log.h"
-#endif
-
 // This file contains the image codec operations for DDS files.
-
 #include "core/cross/error.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/ddsurfacedesc.h"
