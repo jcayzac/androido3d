@@ -29,7 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include "base/cross/file_path.h"
 #include "base/cross/file_util.h"
 #include "base/cross/string_util.h"
@@ -57,13 +56,8 @@
 #include "import/cross/raw_data.h"
 #include "utils/cross/file_path_utils.h"
 
-#if defined(O3D_RENDERER_GL)
-#include <GL/glew.h>
-#endif  // defined(O3D_RENDERER_GL)
-
 // FCollada is build without exception support
 #define FCOLLADA_EXCEPTION 0
-
 #include <FCollada.h>
 #include <FCDocument/FCDocument.h>
 #include <FCDocument/FCDocumentTools.h>
@@ -104,23 +98,11 @@
 #include <FCDocument/FCDTransform.h>
 #include <FUtils/FUFileManager.h>
 #include <FUtils/FUUri.h>
-#include <FUtils/FUXmlParser.h>
-
 #undef FCOLLADA_EXCEPTION
-
-#include <vector>
-using std::min;
-using std::max;
-
-#include <sstream>
-
-#define COLLADA_NAMESPACE "collada"
-#define COLLADA_NAMESPACE_SEPARATOR "."
 
 // Macro to provide a uniform prefix for all string constants created by
 // COLLADA.
-#define COLLADA_STRING_CONSTANT(value)                  \
-  (COLLADA_NAMESPACE COLLADA_NAMESPACE_SEPARATOR value)
+#define COLLADA_STRING_CONSTANT(value) ("collada." value)
 
 namespace o3d {
 static const float kPi = 3.14159265358979f;
