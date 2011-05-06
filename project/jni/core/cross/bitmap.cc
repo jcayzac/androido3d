@@ -449,10 +449,25 @@ bool Bitmap::CheckAlphaIsOne() const {
     case Texture::XRGB8:
 	case Texture::RGBX8:
       return true;
-    case Texture::ARGB8:
-    case Texture::RGBA8: {
+    case Texture::ARGB8: {
       for (unsigned int level = 0; level < num_mipmaps(); ++level) {
         const uint8_t* data = GetMipData(level) + 3;
+        const uint8_t* end = data + image::ComputeBufferSize(
+            std::max(1U, width() >> level),
+            std::max(1U, height() >> level),
+            format());
+        while (data < end) {
+          if (*data != 255) {
+            return false;
+          }
+          data += 4;
+        }
+      }
+      break;
+    }
+    case Texture::RGBA8: {
+      for (unsigned int level = 0; level < num_mipmaps(); ++level) {
+        const uint8_t* data = GetMipData(level);
         const uint8_t* end = data + image::ComputeBufferSize(
             std::max(1U, width() >> level),
             std::max(1U, height() >> level),
