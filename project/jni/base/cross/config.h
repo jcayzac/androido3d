@@ -82,9 +82,10 @@
   #define O3D_WARN_IF_USED(x)       __attribute__((warning(x)))
   #define O3D_CHECK_NULL_ARGS(x...) __attribute__((nonnull(x)))
   #define O3D_NORETURN              __attribute__((noreturn))
-  #define O3D_PURE                  __attribute__((pure));
-  #define O3D_HOT                   __attribute__((hot));
-  #define O3D_COLD                  __attribute__((cold));
+  #define O3D_PURE                  __attribute__((pure))
+  #define O3D_HOT                   __attribute__((hot))
+  #define O3D_COLD                  __attribute__((cold))
+  #define O3D_PACKED                __attribute__((packed))
 #elif defined(__ARM_CC)
   #define O3D_ALLOW_UNUSED_RESULT   __attribute__((unused))
   #define O3D_WARN_UNUSED_RESULT
@@ -95,9 +96,10 @@
   #define O3D_WARN_IF_USED(x)
   #define O3D_CHECK_NULL_ARGS(x...) __attribute__((nonnull(x)))
   #define O3D_NORETURN              __attribute__((noreturn))
-  #define O3D_PURE                  __attribute__((pure));
+  #define O3D_PURE                  __attribute__((pure))
   #define O3D_HOT
   #define O3D_COLD
+  #define O3D_PACKED                __attribute__((packed))
 #else
   #define O3D_ALLOW_UNUSED_RESULT
   #define O3D_WARN_UNUSED_RESULT
@@ -111,11 +113,19 @@
   #define O3D_PURE
   #define O3D_HOT
   #define O3D_COLD
+  #define O3D_PACKED
 #endif
 
 #if defined(__cplusplus)
 #include <new>
 #include <algorithm>
+
+// C99's 'restrict' keyword is not part of std C++
+#if defined(__GNUC__) || defined(__ARM_CC)
+	#define restrict __restrict__
+#else
+	#define restrict
+#endif
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
