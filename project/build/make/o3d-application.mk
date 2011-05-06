@@ -59,7 +59,11 @@ endif
 
 ifeq ($(NEON), 1)
   # Enable application wide NEON optimization
-  APP_CFLAGS += -mfpu=neon -mfloat-abi=softfp
+  # By default, GCC vectorizes with double registers only, so we pass
+  # -mvectorize-with-neon-quad to instruct it to use quad registers.
+  APP_CFLAGS += -mfpu=neon -mfloat-abi=softfp -mvectorize-with-neon-quad
+  # uncomment to output vectorizer stats
+  # APP_CFLAGS += -ftree-vectorizer-verbose=2
 else
   # Fallback to vfp3-d16 for ARMv7 cpus that
   # don't support NEON.
