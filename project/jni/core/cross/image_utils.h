@@ -156,10 +156,10 @@ size_t ComputeBufferSize(unsigned int width,
 //   dest_height: height of the part in dest image to be pasted to.
 //   components: number of components per pixel.
 void LanczosScale(Texture::Format format,
-                  const void* src, int src_pitch,
+                  const void* restrict src, int src_pitch,
                   int src_x, int src_y,
                   int src_width, int src_height,
-                  void* dest, int dest_pitch,
+                  void* restrict dest, int dest_pitch,
                   int dest_x, int dest_y,
                   int dest_width, int dest_height,
                   int components);
@@ -194,9 +194,9 @@ void RGBAToBGRA(uint8_t *image_data, int pixel_count);
 bool GenerateMipmap(unsigned int src_width,
                     unsigned int src_height,
                     Texture::Format format,
-                    const void *src_data,
+                    const void * restrict src_data,
                     int src_pitch,
-                    void *dst_data,
+                    void * restrict dst_data,
                     int dst_pitch);
 
 // Scales an image up to power-of-two textures, using point filtering.
@@ -214,8 +214,8 @@ bool GenerateMipmap(unsigned int src_width,
 bool ScaleUpToPOT(unsigned int width,
                   unsigned int height,
                   Texture::Format format,
-                  const void *src,
-                  void *dst,
+                  const void * restrict src,
+                  void * restrict dst,
                   int dst_pitch);
 
 // Scales an image to an arbitrary size, using point filtering.
@@ -235,10 +235,10 @@ bool ScaleUpToPOT(unsigned int width,
 bool Scale(unsigned int src_width,
            unsigned int src_height,
            Texture::Format format,
-           const void *src,
+           const void * restrict src,
            unsigned int dst_width,
            unsigned int dst_height,
-           void *dst,
+           void * restrict dst,
            int dst_pitch);
 
 // adjust start points and boundaries when using DrawImage data
@@ -260,12 +260,12 @@ bool Scale(unsigned int src_width,
 //   dest_bmp_height: original height of dest bitmap.
 // Returns:
 //   false if src or dest rectangle is out of boundaries.
-bool AdjustDrawImageBoundary(int* src_x, int* src_y,
-                             int* src_width, int* src_height,
+bool AdjustDrawImageBoundary(int* restrict src_x, int* restrict src_y,
+                             int* restrict src_width, int* restrict src_height,
                              int src_level,
                              int src_bmp_width, int src_bmp_height,
-                             int* dest_x, int* dest_y,
-                             int* dest_width, int* dest_height,
+                             int* restrict dest_x, int* restrict dest_y,
+                             int* restrict dest_width, int* restrict dest_height,
                              int dest_level,
                              int dest_bmp_width, int dest_bmp_height);
 
@@ -289,13 +289,13 @@ bool AdjustDrawImageBoundary(int* src_x, int* src_y,
 //       adjusted if SetRect can be called.
 // Returns:
 //    True if SetRect can be called.
-bool AdjustForSetRect(int* src_y,
+bool AdjustForSetRect(int* restrict src_y,
                       int src_width,
                       int src_height,
-                      int* src_pitch,
-                      int* dst_y,
+                      int* restrict src_pitch,
+                      int* restrict dst_y,
                       int dst_width,
-                      int* dst_height);
+                      int*restrict  dst_height);
 
 }  // namespace image
 }  // namespace o3d

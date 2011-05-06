@@ -31,7 +31,6 @@ include $(O3D_NATIVE_DIR)/import/Android.mk
 include $(O3D_NATIVE_DIR)/extra/Android.mk
 include $(O3D_NATIVE_DIR)/utils/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/fcollada/Android.mk
-include $(O3D_NATIVE_DIR)/third_party/libtxc_dxtn/files/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/libjpeg/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/libpng/Android.mk
 include $(O3D_NATIVE_DIR)/third_party/zlib/Android.mk

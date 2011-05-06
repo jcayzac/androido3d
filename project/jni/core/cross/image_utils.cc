@@ -100,15 +100,15 @@ size_t ComputeMipChainSize(unsigned int base_width,
 bool ScaleUpToPOT(unsigned int width,
                   unsigned int height,
                   Texture::Format format,
-                  const void *src,
-                  void *dst,
+                  const void * restrict src,
+                  void * restrict dst,
                   int dst_pitch) {
   O3D_ASSERT(CheckImageDimensions(width, height));
   switch (format) {
     case Texture::XRGB8:
     case Texture::ARGB8:
-	case Texture::RGBX8:
-	case Texture::RGBA8:
+    case Texture::RGBX8:
+    case Texture::RGBA8:
     case Texture::ABGR16F:
     case Texture::R32F:
     case Texture::ABGR32F:
@@ -132,8 +132,8 @@ unsigned int GetNumComponentsForFormat(o3d::Texture::Format format) {
   switch (format) {
     case o3d::Texture::XRGB8:
     case o3d::Texture::ARGB8:
-	case o3d::Texture::RGBX8:
-	case o3d::Texture::RGBA8:
+    case o3d::Texture::RGBX8:
+    case o3d::Texture::RGBA8:
     case o3d::Texture::ABGR16F:
     case o3d::Texture::ABGR32F:
       return 4;
@@ -172,15 +172,15 @@ uint8_t Safe8Round(float f) {
 template <typename T>
 void PointScale(
     unsigned components,
-    const void* src,
+    const void* restrict src,
     unsigned src_width,
     unsigned src_height,
-    void* dst,
+    void* restrict dst,
     int dst_pitch,
     unsigned dst_width,
     unsigned dst_height) {
-  const T* use_src = reinterpret_cast<const T*>(src);
-  T* use_dst = reinterpret_cast<T*>(dst);
+  const T* restrict use_src = reinterpret_cast<const T*>(src);
+  T* restrict use_dst = reinterpret_cast<T*>(dst);
   int pitch = dst_pitch / sizeof(*use_src) / components;
   // Start from the end to be able to do it in place.
   for (unsigned int y = dst_height - 1; y < dst_height; --y) {
@@ -206,10 +206,10 @@ void PointScale(
 bool Scale(unsigned int src_width,
            unsigned int src_height,
            Texture::Format format,
-           const void *src,
+           const void * restrict src,
            unsigned int dst_width,
            unsigned int dst_height,
-           void *dst,
+           void * restrict dst,
            int dst_pitch) {
   O3D_ASSERT(CheckImageDimensions(src_width, src_height));
   O3D_ASSERT(CheckImageDimensions(dst_width, dst_height));
@@ -250,8 +250,8 @@ namespace  {
 // utility function called in AdjustDrawImageBoundary.
 // help to adjust a specific dimension,
 // if start point or ending point is out of boundary.
-bool AdjustDrawImageBoundHelper(int* src_a, int* dest_a,
-                                int* src_length, int* dest_length,
+bool AdjustDrawImageBoundHelper(int* restrict src_a, int* restrict dest_a,
+                                int* restrict src_length, int* restrict dest_length,
                                 int src_bmp_length) {
   if (*src_length == 0 || *dest_length == 0) {
     return false;
@@ -302,10 +302,10 @@ bool AdjustDrawImageBoundHelper(int* src_a, int* dest_a,
 template <typename OriginalType,
           float convert_to_float(OriginalType value),
           OriginalType convert_to_original(float)>
-void LanczosResize1D(const void* src_data, int src_pitch,
+void LanczosResize1D(const void* restrict src_data, int src_pitch,
                      int src_x, int src_y,
                      int width, int height,
-                     void* dest_data, int dest_pitch,
+                     void* restrict dest_data, int dest_pitch,
                      int dest_x, int dest_y,
                      int nwidth,
                      bool is_width, int components) {
@@ -370,10 +370,10 @@ void LanczosResize1D(const void* src_data, int src_pitch,
       // statement coz at that time, there would be no need to check
       // which measure we are scaling.
       if (is_width) {
-        const OriginalType* inrow = PointerFromVoidPointer<const OriginalType*>(
+        const OriginalType* restrict inrow = PointerFromVoidPointer<const OriginalType*>(
             src_data, (src_y + base_y) * src_pitch) +
             (src_x + xmin) * components;
-        OriginalType* outpix = PointerFromVoidPointer<OriginalType*>(
+        OriginalType* restrict outpix = PointerFromVoidPointer<OriginalType*>(
             dest_data, (dest_y + base_y) * dest_pitch) +
             (dest_x + x) * components;
         int step = width >= 0 ? components : -components;
@@ -385,11 +385,11 @@ void LanczosResize1D(const void* src_data, int src_pitch,
           outpix[b] = convert_to_original(sum);
         }
       } else {
-        const OriginalType* inrow = PointerFromVoidPointer<const OriginalType*>(
+        const OriginalType* restrict inrow = PointerFromVoidPointer<const OriginalType*>(
             src_data,
             (src_y + xmin) * src_pitch) +
             (src_x + base_y) * components;
-        OriginalType* outpix = PointerFromVoidPointer<OriginalType*>(
+        OriginalType* restrict outpix = PointerFromVoidPointer<OriginalType*>(
             dest_data,
             (dest_y + x) * dest_pitch) +
             (dest_x + base_y) * components;
@@ -411,10 +411,10 @@ void LanczosResize1D(const void* src_data, int src_pitch,
 template <typename OriginalType,
           float convert_to_float(OriginalType value),
           OriginalType convert_to_original(float)>
-void TypedLanczosScale(const void* src, int src_pitch,
+void TypedLanczosScale(const void* restrict src, int src_pitch,
                        int src_x, int src_y,
                        int src_width, int src_height,
-                       void* dest, int dest_pitch,
+                       void* restrict dest, int dest_pitch,
                        int dest_x, int dest_y,
                        int dest_width, int dest_height,
                        int components) {
@@ -469,11 +469,11 @@ void FilterTexel(unsigned int x,
                  unsigned int y,
                  unsigned int dst_width,
                  unsigned int dst_height,
-                 void *dst_data,
+                 void * restrict dst_data,
                  int dst_pitch,
                  unsigned int src_width,
                  unsigned int src_height,
-                 const void *src_data,
+                 const void * restrict src_data,
                  int src_pitch,
                  unsigned int components) {
   O3D_ASSERT(image::CheckImageDimensions(src_width, src_height));
@@ -546,7 +546,7 @@ void FilterTexel(unsigned int x,
       O3D_ASSERT(y_contrib > 0);
       O3D_ASSERT(y_contrib <= dst_height);
       WorkType contrib = static_cast<WorkType>(x_contrib * y_contrib);
-      const OriginalType* src = PointerFromVoidPointer<const OriginalType*>(
+      const OriginalType* restrict src = PointerFromVoidPointer<const OriginalType*>(
           src_data, src_y * src_pitch);
       for (unsigned int c = 0; c < components; ++c) {
         accum[c] += contrib *
@@ -554,7 +554,7 @@ void FilterTexel(unsigned int x,
       }
     }
   }
-  OriginalType* dst = PointerFromVoidPointer<OriginalType*>(
+  OriginalType* restrict dst = PointerFromVoidPointer<OriginalType*>(
       dst_data, y * dst_pitch);
   for (unsigned int c = 0; c < components; ++c) {
     WorkType value = accum[c] / static_cast<WorkType>(src_height * src_width);
@@ -572,9 +572,9 @@ template <typename OriginalType,
 void GenerateMip(unsigned int components,
                  unsigned int src_width,
                  unsigned int src_height,
-                 const void *src_data,
+                 const void * restrict src_data,
                  int src_pitch,
-                 void *dst_data,
+                 void * restrict dst_data,
                  int dst_pitch) {
   unsigned int mip_width = std::max(1U, src_width >> 1);
   unsigned int mip_height = std::max(1U, src_height >> 1);
@@ -582,11 +582,11 @@ void GenerateMip(unsigned int components,
   if (mip_width * 2 == src_width && mip_height * 2 == src_height) {
     // Easy case: every texel maps to exactly 4 texels in the previous level.
     for (unsigned int y = 0; y < mip_height; ++y) {
-      const OriginalType* src0 = PointerFromVoidPointer<const OriginalType*>(
+      const OriginalType* restrict src0 = PointerFromVoidPointer<const OriginalType*>(
           src_data, y * 2 * src_pitch);
-      const OriginalType* src1 =
+      const OriginalType* restrict src1 =
           AddPointerOffset<const OriginalType*>(src0, src_pitch);
-      OriginalType* dst = PointerFromVoidPointer<OriginalType*>(
+      OriginalType* restrict dst = PointerFromVoidPointer<OriginalType*>(
           dst_data, y * dst_pitch);
       for (unsigned int x = 0; x < mip_width; ++x) {
         for (unsigned int c = 0; c < components; ++c) {
@@ -665,13 +665,13 @@ uint16_t DoubleToHalf(double value) {
 
 }  // anonymous namespace
 
-bool AdjustForSetRect(int* src_y,
+bool AdjustForSetRect(int* restrict src_y,
                       int src_width,
                       int src_height,
-                      int* src_pitch,
-                      int* dst_y,
+                      int* restrict src_pitch,
+                      int* restrict dst_y,
                       int dst_width,
-                      int* dst_height) {
+                      int* restrict dst_height) {
   if (src_width != dst_width || abs(src_height) != abs(*dst_height) ||
       src_width < 0) {
     return false;
@@ -696,12 +696,12 @@ bool AdjustForSetRect(int* src_y,
 }
 
 // Adjust boundaries when using DrawImage function in bitmap or texture.
-bool AdjustDrawImageBoundary(int* src_x, int* src_y,
-                             int* src_width, int* src_height,
+bool AdjustDrawImageBoundary(int* restrict src_x, int* restrict src_y,
+                             int* restrict src_width, int* restrict src_height,
                              int src_bmp_level,
                              int src_bmp_width, int src_bmp_height,
-                             int* dest_x, int* dest_y,
-                             int* dest_width, int* dest_height,
+                             int* restrict dest_x, int* restrict dest_y,
+                             int* restrict dest_width, int* restrict dest_height,
                              int dest_bmp_level,
                              int dest_bmp_width, int dest_bmp_height) {
   // if src or dest rectangle is out of boundaries, do nothing.
@@ -756,18 +756,18 @@ bool AdjustDrawImageBoundary(int* src_x, int* src_y,
   return true;
 }
 
-void LanczosScale(Texture::Format format, const void* src, int src_pitch,
+void LanczosScale(Texture::Format format, const void* restrict src, int src_pitch,
                   int src_x, int src_y,
                   int src_width, int src_height,
-                  void* dest, int dest_pitch,
+                  void* restrict dest, int dest_pitch,
                   int dest_x, int dest_y,
                   int dest_width, int dest_height,
                   int components) {
   switch (format) {
     case Texture::ARGB8:
     case Texture::XRGB8:
-	case Texture::RGBA8:
-	case Texture::RGBX8:
+    case Texture::RGBA8:
+    case Texture::RGBX8:
       TypedLanczosScale<uint8_t, UInt8ToFloat, Safe8Round>(
           src, src_pitch, src_x, src_y, src_width, src_height,
           dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
@@ -795,9 +795,9 @@ void LanczosScale(Texture::Format format, const void* src, int src_pitch,
 bool GenerateMipmap(unsigned int src_width,
                     unsigned int src_height,
                     Texture::Format format,
-                    const void *src_data,
+                    const void * restrict src_data,
                     int src_pitch,
-                    void *dst_data,
+                    void * restrict dst_data,
                     int dst_pitch) {
   unsigned int components = GetNumComponentsForFormat(format);
   if (components == 0) {
@@ -808,8 +808,8 @@ bool GenerateMipmap(unsigned int src_width,
   switch (format) {
     case Texture::ARGB8:
     case Texture::XRGB8:
-	case Texture::RGBA8:
-	case Texture::RGBX8:
+    case Texture::RGBA8:
+    case Texture::RGBX8:
       GenerateMip<uint8_t, uint32_t, uint64_t,
                   UInt8ToUInt32, UInt32ToUInt8,
                   UInt8ToUInt64, UInt64ToUInt8>(

@@ -167,9 +167,9 @@ void Bitmap::SetRect(
   O3D_ASSERT(!compressed || (dst_left == 0 && dst_top == 0 &&
                      src_width == mip_width && src_height == mip_height));
 
-  uint8_t* dst = GetPixelData(level, dst_left, dst_top);
+  uint8_t* restrict dst = GetPixelData(level, dst_left, dst_top);
 
-  const uint8_t* src = static_cast<const uint8_t*>(src_data);
+  const uint8_t* restrict src = static_cast<const uint8_t*>(src_data);
   if (!compressed) {
     unsigned bytes_per_line = image::ComputePitch(format(), src_width);
     int dst_pitch = image::ComputePitch(format(), mip_width);
