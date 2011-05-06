@@ -92,8 +92,14 @@ template<int N> struct LoggerForLevel {
 #define O3D_LOG_NAKED(level)         o3d::base::LoggerForLevel<level>::type(level, O3D_LOG_TAG)
 #define O3D_LOG(level)               O3D_LOG_NAKED(level) << "[" << __FILE__ << ":" << O3D_PRIV_STRING(__LINE__) << "] "
 #define O3D_LOG_IF(level, condition) if (condition) O3D_LOG(level)
-#define O3D_LOG_FIRST_N(level, n)    for(static int O3D_PRIV_UVAR(n); O3D_PRIV_UVAR; --O3D_PRIV_UVAR) O3D_LOG(level)
+#define O3D_LOG_FIRST_N(level, n)    for(static int O3D_PRIV_UVAR (1+2*(n)); (O3D_PRIV_UVAR=std::max(O3D_PRIV_UVAR-1,0));) if (O3D_PRIV_UVAR&1) break; else O3D_LOG(level)
 
-#define O3D_ASSERT(condition)        O3D_LOG_IF(FATAL, !(condition)) << "Assertion failed [" << O3D_PRIV_STRING(condition) << "] " << O3D_PRIV_FUNCTION_SUFFIX
-#define O3D_NEVER_REACHED()          O3D_LOG(FATAL) << "Reached supposedly-dead code " << O3D_PRIV_FUNCTION_SUFFIX
-#define O3D_NOTIMPLEMENTED()         O3D_LOG(ERROR) << "NOT IMPLEMENTED " << O3D_PRIV_FUNCTION_SUFFIX
+#ifndef NDEBUG
+  #define O3D_ASSERT(condition)      O3D_LOG_IF(FATAL, !(condition)) << "Assertion failed [" << O3D_PRIV_STRING(condition) << "] " << O3D_PRIV_FUNCTION_SUFFIX
+  #define O3D_NEVER_REACHED()        O3D_LOG(FATAL) << "Reached supposedly-dead code " << O3D_PRIV_FUNCTION_SUFFIX
+  #define O3D_NOTIMPLEMENTED()       O3D_LOG(ERROR) << "NOT IMPLEMENTED " << O3D_PRIV_FUNCTION_SUFFIX
+#else
+  #define O3D_ASSERT(condition)      O3D_LOG_IF(FATAL, (false && (condition)))
+  #define O3D_NEVER_REACHED()        O3D_LOG_IF(FATAL, false)
+  #define O3D_NOTIMPLEMENTED()       O3D_LOG_IF(ERROR, false)
+#endif
