@@ -54,6 +54,8 @@ else
     -fsee \
     -ftracer \
     -fstrict-aliasing \
+    -ftree-switch-conversion \
+    -findirect-inlining \
 
 endif
 
