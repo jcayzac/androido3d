@@ -206,9 +206,6 @@ class Bitmap : public ParamObject {
   //   A data url that represents the content of the bitmap.
   std::string ToDataURL();
 
-  // Checks that the alpha channel for the entire bitmap is 1.0
-  bool CheckAlphaIsOne() const;
-
   // Copy pixels from source bitmap. Scales if the width and height of source
   // and dest do not match.
   // Parameters:
