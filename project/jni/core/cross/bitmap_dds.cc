@@ -62,15 +62,6 @@ struct dxt_block_t {
   } bits;
 };
 
-static inline O3D_ALWAYS_INLINE bool is_little_endian() {
-  union {
-    uint32_t u;
-    uint8_t  b[4];
-  };
-  u = 0xdeadbeef;
-  return b[0]==0xef;
-}
-
 static inline O3D_ALWAYS_INLINE void dxt_decode_block (
   const uint64_t* restrict src,
   int i,
@@ -85,12 +76,9 @@ static inline O3D_ALWAYS_INLINE void dxt_decode_block (
   raw = src[0];
 
   if (!is_little_endian()) {
-    // swap color0 and color1's byte order
-    std::swap(block.colors.b8[0], block.colors.b8[1]);
-    std::swap(block.colors.b8[2], block.colors.b8[3]);
-    // swap the bits' byte order
-    std::swap(block.bits.b8[0], block.bits.b8[3]);
-    std::swap(block.bits.b8[1], block.bits.b8[2]);
+    switch_endianness32(block.colors.b32);
+    switch_endianness32(block.bits.b32);
+    std::swap(block.colors.b16[0], block.colors.b16[1]);
   }
 
   const uint16_t& color0(block.colors.b16[0]);

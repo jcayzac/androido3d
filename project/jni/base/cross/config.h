@@ -122,9 +122,9 @@
 
 // C99's 'restrict' keyword is not part of std C++
 #if defined(__GNUC__) || defined(__ARM_CC)
-	#define restrict __restrict__
+  #define restrict __restrict__
 #else
-	#define restrict
+  #define restrict
 #endif
 
 // A macro to disallow the copy constructor and operator= functions
@@ -246,6 +246,37 @@ inline To down_cast(From* f) {  // Defined as From* so we only accept pointers.
 
   return static_cast<To>(f);
 }
+
+// Return true if target is little endian
+static inline O3D_ALWAYS_INLINE bool is_little_endian() throw() {
+  union {
+    uint32_t b32;
+    uint8_t  b8[4];
+  };
+  b32 = 0xdeadbabe;
+  return b8[0]==0xbe;
+}
+
+// Functions to switch endianness
+#if defined(__GNUC__) || defined(__ARM_CC)
+static inline O3D_ALWAYS_INLINE uint32_t switch_endianness32(uint32_t x) throw() {
+  return __builtin_bswap32(x);
+}
+static inline O3D_ALWAYS_INLINE uint16_t switch_endianness16(uint16_t x) throw() {
+  return __builtin_bswap32(x<<16);
+}
+#else
+// TODO: Test this with non-gcc compilers
+static inline O3D_ALWAYS_INLINE uint16_t switch_endianness16(uint16_t x) throw() {
+  return ((x&0xff)<<8)|(x>>8)
+}
+static inline O3D_ALWAYS_INLINE uint32_t switch_endianness32(uint32_t x) throw() {
+  uint16_t hi(switch_endianness16(x&0xffff));
+  uint16_t lo(switch_endianness16(x>>16));
+  return lo|(hi<<16);
+}
+#endif
+
 } // namespace o3d
 
 #endif // __cplusplus
