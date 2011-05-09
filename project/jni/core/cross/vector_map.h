@@ -39,7 +39,6 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
-//#include "base/cross/std_functional.h"
 
 namespace o3d {
 
@@ -58,13 +57,6 @@ namespace o3d {
 // but assigning the key could mess up the sorting of the vector. So don't do
 // that (the compiler won't protect you like it would in a std::map).
 // TODO: see if that could be made safer without adding extra copies.
-#if defined(__ANDROID__0)
-// TODO(gman): Remove this when we can get vector_map to compile on Android.
-#include <map>
-template <typename Key, typename Data, typename Compare = std::less<Key> >
-class vector_map : public std::map<Key, Data, Compare> {
-};
-#else
 template <typename Key, typename Data, typename Compare = std::less<Key> >
 class vector_map {
  public:
@@ -383,7 +375,6 @@ class vector_map {
   VectorType vector_;
   key_compare compare_;
 };
-#endif  // !defined(__ANDROID__)
 
 }  // namespace o3d
 

@@ -35,7 +35,6 @@
 
 #include <cctype>
 #include <sstream>
-//#include "base/cross/std_functional.h"
 #include "core/cross/semantic_manager.h"
 #include "core/cross/error.h"
 #include "core/cross/standard_param.h"

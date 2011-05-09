@@ -34,7 +34,6 @@
 // objects that can have Params.
 
 #include "core/cross/param_object.h"
-//#include "base/cross/std_functional.h"
 #include "core/cross/draw_context.h"
 #include "core/cross/param.h"
 #include "core/cross/standard_param.h"
