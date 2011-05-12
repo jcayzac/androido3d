@@ -15,22 +15,6 @@
  */
 
 #include "base/cross/config.h"
-
-#ifdef __ANDROID__
-#include <jni.h>
-#include <android/log.h>
-
-#define  LOG_TAG    "libo3djni"
-#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
-
-#elif TARGET_OS_IPHONE
-#include "iOS/iphoneo3d/log.h"
-#endif
-
-#include <string>
-
-
 #include "core/cross/buffer.h"
 #include "core/cross/draw_element.h"
 #include "core/cross/effect.h"
@@ -44,7 +28,7 @@
 #include "core/cross/skin.h"
 #include "core/cross/texture.h"
 #include "core/cross/transform.h"
-
+#include "debug.h"
 namespace o3d_utils {
 using namespace o3d;
 
@@ -65,23 +49,23 @@ void DumpMultiLineString(const std::string& str) {
 }
 
 void DumpPoint3(const o3d::Point3& v, const char* label) {
-  LOGI("%s: %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2]);
+  O3D_LOG(INFO) << label << ": " << v[0] << ", " << v[1] << ", " << v[2];
 }
 
 void DumpVector3(const o3d::Vector3& v, const char* label) {
-  LOGI("%s: %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2]);
+  O3D_LOG(INFO) << label << ": " << v[0] << ", " << v[1] << ", " << v[2];
 }
 
 void DumpFloat3(const o3d::Float3& v, const char* label) {
-  LOGI("%s: %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2]);
+  O3D_LOG(INFO) << label << ": " << v[0] << ", " << v[1] << ", " << v[2];
 }
 
 void DumpVector4(const o3d::Vector4& v, const char* label) {
-  LOGI("%s: %.3f, %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2], v[3]);
+  O3D_LOG(INFO) << label << ": " << v[0] << ", " << v[1] << ", " << v[2] << ", " << v[3];
 }
 
 void DumpFloat4(const o3d::Float4& v, const char* label) {
-  LOGI("%s: %.3f, %.3f, %.3f, %.3f\n", label, v[0], v[1], v[2], v[3]);
+  O3D_LOG(INFO) << label << ": " << v[0] << ", " << v[1] << ", " << v[2] << ", " << v[3];
 }
 
 void DumpParams(const o3d::ParamObject* obj, const std::string& indent) {
@@ -158,12 +142,13 @@ void DumpParams(const o3d::ParamObject* obj, const std::string& indent) {
         value = v ? v->name() : "NULL";
       }
       if (input) {
-        LOGI("%s:Param: %s [%s] <- %s.%s\n", indent.c_str(),
-             param->name().c_str(), param->GetClass()->name(),
-             input->owner()->name().c_str(), input->name().c_str());
+        O3D_LOG(INFO) << indent << ":Param: " << param->name()
+        << " [" << param->GetClass()->name() << "] <- "
+        << input->owner()->name() << "." << input->name();
       } else {
-        LOGI("%s:Param: %s [%s] = %s\n", indent.c_str(), param->name().c_str(),
-             param->GetClass()->name(), value.c_str());
+        O3D_LOG(INFO) << indent << ":Param: " << param->name()
+        << " [" << param->GetClass()->name() << "] = "
+        << value;
       }
     }
   }
@@ -172,7 +157,7 @@ void DumpParams(const o3d::ParamObject* obj, const std::string& indent) {
 void DumpRenderNode(
     const o3d::RenderNode* render_node, const std::string& indent) {
   if (render_node) {
-    LOGI("%s%s\n", indent.c_str(), render_node->GetClass()->name());
+    O3D_LOG(INFO) << indent << render_node->GetClass()->name();
     DumpParams(render_node, indent + "   ");
     const o3d::RenderNodeRefArray& children = render_node->children();
     if (!children.empty()) {
@@ -187,7 +172,7 @@ void DumpRenderNode(
 void DumpDrawElement(
     const o3d::DrawElement* drawelement, const std::string& indent) {
   if (drawelement) {
-    LOGI("%sDrawElement: %s\n", indent.c_str(), drawelement->name().c_str());
+    O3D_LOG(INFO) << indent << "DrawElement: " << drawelement->name();
     DumpParams(drawelement, indent + "   ");
   }
 }
@@ -195,15 +180,16 @@ void DumpDrawElement(
 void DumpElement(const o3d::Element* element, const std::string& indent) {
   if (element) {
     const char* pre = indent.c_str();
-    LOGI("%sElement: %s\n", indent.c_str(), element->name().c_str());
+    O3D_LOG(INFO) << indent << "Element: " << element->name();
     DumpParams(element, indent + "   ");
     if (element->IsA(o3d::Primitive::GetApparentClass())) {
       const o3d::Primitive* prim = down_cast<const o3d::Primitive*>(element);
-      LOGI("%s  num_primitives: %d\n", pre, prim->number_primitives());
-      LOGI("%s  num_vertices: %d\n", pre, prim->number_vertices());
-      LOGI("%s  prim_type: %d\n", pre, prim->primitive_type());
-      LOGI("%s  start index: %d\n", pre, prim->start_index());
-      LOGI("%s  indexbuffer: %s\n", pre, prim->index_buffer()->name().c_str());
+      O3D_LOG(INFO)
+      << pre << "  num_primitives: " << prim->number_primitives() << "\n"
+      << pre << "  num_vertices: " << prim->number_vertices() << "\n"
+      << pre << "  prim_type: " << prim->primitive_type() << "\n"
+      << pre << "  start index: " << prim->start_index() << "\n"
+      << pre << "  indexbuffer: " << prim->index_buffer()->name();
       o3d::StreamBank* sb = prim->stream_bank();
       const o3d::StreamParamVector& params = sb->vertex_stream_params();
       for (size_t jj = 0; jj < params.size(); ++jj) {
@@ -211,12 +197,12 @@ void DumpElement(const o3d::Element* element, const std::string& indent) {
         const o3d::Stream& stream = param->stream();
         const o3d::Field& field = stream.field();
         const o3d::Buffer* buffer = field.buffer();
-        LOGI("%s    stream: s:%d si:%d start:%d numv:%d buf:%s:%s\n",
-             pre, stream.semantic(),
-             stream.semantic_index(), stream.start_index(),
-             stream.GetMaxVertices(),
-             buffer->name().c_str(),
-             buffer->GetClass()->name());
+        O3D_LOG(INFO) << pre << "    stream: s:" << stream.semantic()
+        << " si:" << stream.semantic_index()
+        << " start:" << stream.start_index()
+        << " numv:" << stream.GetMaxVertices()
+        << " buf:" << buffer->name()
+        << ":" << buffer->GetClass()->name();
         unsigned num = std::min(buffer->num_elements(), 5u);
         float floats[5 * 4];
         field.GetAsFloats(0, floats, field.num_components(), num);
@@ -224,17 +210,16 @@ void DumpElement(const o3d::Element* element, const std::string& indent) {
           float* v = &floats[elem * field.num_components()];
           switch (field.num_components()) {
           case 1:
-            LOGI("%s     %d: %.3f\n", pre, elem, v[0]);
+            O3D_LOG(INFO) << pre << "     " << elem << ": " << v[0];
             break;
           case 2:
-            LOGI("%s     %d: %.3f, %.3f\n", pre, elem, v[0], v[1]);
+            O3D_LOG(INFO) << pre << "     " << elem << ": " << v[0] << ", " << v[1];
             break;
           case 3:
-            LOGI("%s     %d: %.3f, %.3f, %.3f\n", pre, elem, v[0], v[1], v[2]);
+            O3D_LOG(INFO) << pre << "     " << elem << ": " << v[0] << ", " << v[1] << ", " << v[2];
             break;
           case 4:
-            LOGI("%s     %d: %.3f, %.3f, %.3f, %.3f\n", pre, elem,
-                 v[0], v[1], v[2], v[3]);
+            O3D_LOG(INFO) << pre << "     " << elem << ": " << v[0] << ", " << v[1] << ", " << v[2] << ", " << v[3];
             break;
           }
         }
@@ -242,23 +227,25 @@ void DumpElement(const o3d::Element* element, const std::string& indent) {
         const o3d::Param* input = param->input_connection();
         if (input) {
           const o3d::ParamObject* owner = input->owner();
-          LOGI("%s      input: %s:%s:%s:%s\n", pre,
-               owner->name().c_str(), owner->GetClass()->name(),
-               input->name().c_str(), input->GetClass()->name());
+          O3D_LOG(INFO) << pre << "      input: "
+          << owner->name() << ":"
+          << owner->GetClass()->name() << ":"
+          << input->name() << ":"
+          << input->GetClass()->name();
           if (owner->IsA(o3d::SkinEval::GetApparentClass())) {
             const o3d::SkinEval* se = down_cast<const o3d::SkinEval*>(owner);
-            LOGI("%s        se skin: %s\n", pre, se->skin()->name().c_str());
-            LOGI("%s        se mats: %s\n", pre,se->matrices()->name().c_str());
+            O3D_LOG(INFO) << pre << "        se skin: " << se->skin()->name();
+            O3D_LOG(INFO) << pre << "        se mats: " << se->matrices()->name();
             const o3d::ParamArray* pa = se->matrices();
-            LOGI("%s        pa size: %d\n", pre, pa->size());
+            O3D_LOG(INFO) << pre << "        pa size: " << pa->size();
             for (size_t pp = 0; pp < pa->size(); ++pp) {
               o3d::Param* mp = pa->GetUntypedParam(pp);
               o3d::Param* inp = mp->input_connection();
-              LOGI("%s        %d: <- %s:%s\n",
-                   pre, pp, inp ? inp->owner()->name().c_str() : "-",
-                   inp ? inp->name().c_str() : "-");
+              O3D_LOG(INFO) << pre << "        " << pp << ": <- "
+              << (inp ? inp->owner()->name():"-") << ":"
+              << (inp ? inp->name() : "-");
             }
-            LOGI("%s      -skineval-\n", pre);
+            O3D_LOG(INFO) << pre << "      -skineval-";
             DumpParams(se, indent + "    ");
           }
         }
@@ -277,20 +264,13 @@ void DumpElement(const o3d::Element* element, const std::string& indent) {
 
 void DumpShape(const o3d::Shape* shape, const std::string& indent) {
   if (shape) {
-    LOGI("%sShape: %s\n", indent.c_str(), shape->name().c_str());
-//    const o3d::ElementRefArray& elements = shape->GetElementRefs();
-//    if (!elements.empty()) {
-//      std::string inner = indent + "    ";
-//      for (size_t ii = 0; ii < elements.size(); ++ii) {
-//        DumpElement(elements[ii], inner);
-//      }
-//    }
+    O3D_LOG(INFO) << indent << "Shape: " << shape->name();
   }
 }
 
 void DumpTransform(const o3d::Transform* transform, const std::string& indent) {
   if (transform) {
-    LOGI("%sTransform: %s\n", indent.c_str(), transform->name().c_str());
+    O3D_LOG(INFO) << indent << "Transform: " << transform->name();
     DumpParams(transform, indent + "    ");
     const o3d::TransformRefArray& children = transform->GetChildrenRefs();
     if (!children.empty()) {
@@ -311,8 +291,11 @@ void DumpTransform(const o3d::Transform* transform, const std::string& indent) {
 
 void DumpMatrix(const o3d::Matrix4& mat) {
   for (int ii = 0; ii < 4; ++ii) {
-    LOGI("   %.3f, %.3f, %.3f, %.3f\n",
-         mat[ii][0], mat[ii][1], mat[ii][2], mat[ii][3]);
+    O3D_LOG(INFO) << "   "
+    << mat[ii][0] << ", "
+    << mat[ii][1] << ", "
+    << mat[ii][2] << ", "
+    << mat[ii][3];
   }
 }
 
