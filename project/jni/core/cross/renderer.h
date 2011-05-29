@@ -61,6 +61,7 @@
 #include "core/cross/texture.h"
 #include "core/cross/types.h"
 #include "core/cross/vector_map.h"
+#include "core/cross/transform.h"
 
 namespace o3d {
 
@@ -202,6 +203,32 @@ class Renderer {
 
   // Presents the results of the draw calls for this frame.
   void FinishRendering();
+
+  void StartPicking(int window_x, int window_y) {
+    picking_x_ = std::max(std::min(window_x, display_width()-1), 0);
+    picking_y_ = std::max(std::min(window_y, display_height()-1), 0);
+    picking_ = true;
+    PlatformSpecificStartPicking();
+  }
+
+  void get_picking_coordinates(int& window_x, int& window_y) {
+    window_x = picking_?picking_x_:-1;
+    window_y = picking_?picking_y_:-1;
+  }
+
+  ParamObject* FinishPicking() {
+    PlatformSpecificFinishPicking();
+    picking_ = false;
+    ParamObject* res = picking_result_.Get();
+    SetPickingResult(0);
+    return res;
+  }
+
+  bool picking() const {
+    return picking_;
+  }
+
+  virtual void SetCurrentPickable(const ParamObject*) = 0;
 
   // Copy the contents of the backbuffer to the window.
   void Present();
@@ -629,6 +656,12 @@ class Renderer {
   // The platform specific part of EndRendering.
   virtual void PlatformSpecificFinishRendering() = 0;
 
+  // The platform specific part of StartPicking.
+  virtual void PlatformSpecificStartPicking() = 0;
+
+  // The platform specific part of FinishPicking.
+  virtual void PlatformSpecificFinishPicking() = 0;
+
   // The platform specific part of Present.
   virtual void PlatformSpecificPresent() = 0;
 
@@ -650,6 +683,10 @@ class Renderer {
                                    int height,
                                    float min_z,
                                    float max_z) = 0;
+
+  void SetPickingResult(ParamObject* result) {
+    picking_result_ = ParamObject::Ref(result);
+  }
 
   // Sets the client's size. Derived classes must call this on Init and Resize.
   void SetClientSize(int width, int height);
@@ -756,6 +793,11 @@ class Renderer {
 
   // Whether or not we are drawing (between BeingDraw/EndDraw calls)
   bool drawing_;
+
+  // Picking
+  bool picking_;
+  int picking_x_, picking_y_;
+  ParamObject::Ref picking_result_;
 
   int width_;  // width of the client area in pixels
   int height_;  // height of the client area in pixels

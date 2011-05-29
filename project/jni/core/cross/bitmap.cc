@@ -113,6 +113,8 @@ void Bitmap::Allocate(Texture::Format format,
   switch (format) {
     case Texture::XRGB8:
     case Texture::ARGB8:
+	case Texture::RGBX8:
+	case Texture::RGBA8:
     case Texture::ABGR16F:
     case Texture::R32F:
     case Texture::ABGR32F:
@@ -478,8 +480,10 @@ bool Bitmap::CheckAlphaIsOne() const {
 
   switch (format()) {
     case Texture::XRGB8:
+	case Texture::RGBX8:
       return true;
-    case Texture::ARGB8: {
+    case Texture::ARGB8:
+    case Texture::RGBA8: {
       for (unsigned int level = 0; level < num_mipmaps(); ++level) {
         const uint8* data = GetMipData(level) + 3;
         const uint8* end = data + image::ComputeBufferSize(

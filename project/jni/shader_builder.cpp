@@ -307,7 +307,9 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The effect code for the start of the main.
    */
   std::string beginPixelShaderMain() {
-    return std::string("void main() {\n");
+    return std::string(
+      "void main() {\n"
+    );
   };
 
   /**
@@ -318,7 +320,6 @@ class GLSLShaderBuilder : public ShaderBuilder {
   std::string endPixelShaderMain(const std::string& color) {
     return std::string("  gl_FragColor = ") + color + ";\n}\n";
   };
-
 
   /**
    * The vertex and fragment shader entry points.  In glsl, this is unnecessary.
@@ -353,9 +354,9 @@ class GLSLShaderBuilder : public ShaderBuilder {
       str = str + ATTRIBUTE + FLOAT3 + " " + "normal" +
             semanticSuffix("NORMAL") + ";\n";
     }
-    str += buildTexCoords(material, false) +
-           buildBumpInputCoords(bumpSampler) +
-           END_STRUCT;
+    str += buildTexCoords(material, false);
+	str += buildBumpInputCoords(bumpSampler);
+	str += END_STRUCT;
     return str;
   };
 
@@ -377,15 +378,15 @@ class GLSLShaderBuilder : public ShaderBuilder {
     std::string str = std::string(BEGIN_OUT_STRUCT) +
         VARYING + FLOAT4 + " " +
         VARYING_DECLARATION_PREFIX + "position" +
-        semanticSuffix("POSITION") + ";\n" +
-        buildTexCoords(material, true) +
-        buildBumpOutputCoords(bumpSampler);
+        semanticSuffix("POSITION") + ";\n";
+	str += buildTexCoords(material, true);
+	str += buildBumpOutputCoords(bumpSampler);
     if (diffuse || specular) {
       str = str + VARYING + FLOAT3 + " " +
           VARYING_DECLARATION_PREFIX + "normal" +
           semanticSuffix("TEXCOORD" +
-             interpolant_.Inc() + "") + ";\n" +
-          VARYING + FLOAT3 + " " +
+             interpolant_.Inc() + "") + ";\n";
+	  str = str + VARYING + FLOAT3 + " " +
           VARYING_DECLARATION_PREFIX + "surfaceToLight" +
           semanticSuffix(
               "TEXCOORD" + interpolant_.Inc() + "") + ";\n";
@@ -447,10 +448,12 @@ class GLSLShaderBuilder : public ShaderBuilder {
     if (!varying) {
       name_to_semantic_map_.clear();
     }
-    return buildTexCoord(material, varying, "emissive") +
-           buildTexCoord(material, varying, "ambient") +
-           buildTexCoord(material, varying, "diffuse") +
-           buildTexCoord(material, varying, "specular");
+	std::string str;
+    str += buildTexCoord(material, varying, "emissive");
+    str += buildTexCoord(material, varying, "ambient");
+    str += buildTexCoord(material, varying, "diffuse");
+    str += buildTexCoord(material, varying, "specular");
+	return str;
   };
 
 
@@ -494,11 +497,13 @@ class GLSLShaderBuilder : public ShaderBuilder {
     // through, because in this implementation their names must be their
     // semantics (i.e., "texCoord4") rather than these chosen names.
     // Currently bumpUV is the only one which does not obey this rule.
-    return buildUVPassthrough(material, "emissive") +
-           buildUVPassthrough(material, "ambient") +
-           buildUVPassthrough(material, "diffuse") +
-           buildUVPassthrough(material, "specular") +
-           buildUVPassthrough(material, "bump");
+	std::string str;
+    str += buildUVPassthrough(material, "emissive");
+    str += buildUVPassthrough(material, "ambient");
+    str += buildUVPassthrough(material, "diffuse");
+    str += buildUVPassthrough(material, "specular");
+    str += buildUVPassthrough(material, "bump");
+	return str;
   };
 
 
@@ -508,14 +513,17 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The code for bump input coords.
    */
   std::string buildBumpInputCoords(bool bumpSampler) {
-    return std::string("") + (bumpSampler ?
-        (std::string("  ") + ATTRIBUTE + FLOAT3 + " tangent" +
-            semanticSuffix("TANGENT") + ";\n" +
-         "  " + ATTRIBUTE + FLOAT3 + " binormal" +
-            semanticSuffix("BINORMAL") + ";\n" +
-         "  " + ATTRIBUTE + FLOAT2 + " bumpUV" +
+	std::string str;
+	if ( bumpSampler ) {
+		str += std::string("  ") + ATTRIBUTE + FLOAT3 + " tangent" +
+            semanticSuffix("TANGENT") + ";\n";
+		str += std::string("  ") + ATTRIBUTE + FLOAT3 + " binormal" +
+            semanticSuffix("BINORMAL") + ";\n";
+		str += std::string("  ") + ATTRIBUTE + FLOAT2 + " bumpUV" +
             semanticSuffix(
-                std::string("TEXCOORD") + interpolant_.Inc()) + ";\n") : "");
+                std::string("TEXCOORD") + interpolant_.Inc()) + ";\n";
+	} 
+	return str;
   };
 
 
@@ -525,17 +533,19 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The code for bump input coords.
    */
   std::string buildBumpOutputCoords(bool bumpSampler) {
-    return std::string("") + (bumpSampler ?
-        (std::string("  ") +
+    std::string str;
+	if ( bumpSampler ) {
+        str += std::string("  ") +
          VARYING + FLOAT3 + " " + VARYING_DECLARATION_PREFIX + "tangent" +
-            semanticSuffix(
-                std::string("TEXCOORD") + interpolant_.Inc()) + ";\n" +
-         "  " + VARYING + FLOAT3 + " " + VARYING_DECLARATION_PREFIX + "binormal" +
-            semanticSuffix(std::string("TEXCOORD") +
-                interpolant_.Inc()) + ";\n" +
-         "  " + VARYING + FLOAT2 + " " + VARYING_DECLARATION_PREFIX + "bumpUV" +
-            semanticSuffix(
-                std::string("TEXCOORD") + interpolant_.Inc()) + ";\n") : "");
+            semanticSuffix(std::string("TEXCOORD") + interpolant_.Inc()) + ";\n";
+        str += std::string("  ") +
+         VARYING + FLOAT3 + " " + VARYING_DECLARATION_PREFIX + "binormal" +
+            semanticSuffix(std::string("TEXCOORD") + interpolant_.Inc()) + ";\n";
+        str += std::string("  ") +
+         VARYING + FLOAT2 + " " + VARYING_DECLARATION_PREFIX + "bumpUV" +
+            semanticSuffix(std::string("TEXCOORD") + interpolant_.Inc()) + ";\n";
+	}
+	return str;
   };
 
 
@@ -544,69 +554,69 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The effect code for the shader, ready to be parsed.
    */
   std::string buildCheckerShaderString() {
-    std::string varyingDecls = std::string(BEGIN_OUT_STRUCT) +
+    std::string varyingDecls;
+	varyingDecls += std::string(BEGIN_OUT_STRUCT) +
       VARYING + FLOAT4 + " " +
       VERTEX_VARYING_PREFIX + "position" +
-      semanticSuffix("POSITION") + ";\n" +
-      VARYING + FLOAT2 + " " +
+      semanticSuffix("POSITION") + ";\n";
+	varyingDecls += std::string("") + VARYING + FLOAT2 + " " +
       VERTEX_VARYING_PREFIX + "texCoord" +
-      semanticSuffix("TEXCOORD0") + ";\n" +
-      VARYING + FLOAT3 + " " +
+      semanticSuffix("TEXCOORD0") + ";\n";
+	varyingDecls += std::string("") + VARYING + FLOAT3 + " " +
       VERTEX_VARYING_PREFIX + "normal" +
-      semanticSuffix("TEXCOORD1") + ";\n" +
-      VARYING + FLOAT3 + " " +
+      semanticSuffix("TEXCOORD1") + ";\n";
+	varyingDecls += std::string("") + VARYING + FLOAT3 + " " +
       VERTEX_VARYING_PREFIX + "worldPosition" +
       semanticSuffix("TEXCOORD2") + ";\n" +
       END_STRUCT;
 
-    return std::string("uniform ") + MATRIX4 + " worldViewProjection" +
-      semanticSuffix("WORLDVIEWPROJECTION") + ";\n" +
-      "uniform " + MATRIX4 + " worldInverseTranspose" +
-      semanticSuffix("WORLDINVERSETRANSPOSE") + ";\n" +
-      "uniform " + MATRIX4 + " world" +
-      semanticSuffix("WORLD") + ";\n" +
-      "\n" +
-      BEGIN_IN_STRUCT +
-      ATTRIBUTE + FLOAT4 + " position" +
-      semanticSuffix("POSITION") + ";\n" +
-      ATTRIBUTE + FLOAT3 + " normal" +
-      semanticSuffix("NORMAL") + ";\n" +
-      ATTRIBUTE + FLOAT2 + " texCoord0" +
-      semanticSuffix("TEXCOORD0") + ";\n" +
-      END_STRUCT +
-      "\n" +
-      varyingDecls +
-      "\n" +
-      beginVertexShaderMain() +
-      "  " + VERTEX_VARYING_PREFIX + "position = " +
+	std::string str;
+    str += std::string("uniform ") + MATRIX4 + " worldViewProjection" +
+      semanticSuffix("WORLDVIEWPROJECTION") + ";\n";
+    str += std::string("uniform ") + MATRIX4 + " worldInverseTranspose" +
+      semanticSuffix("WORLDINVERSETRANSPOSE") + ";\n";
+    str += std::string("uniform ") + MATRIX4 + " world" +
+      semanticSuffix("WORLD") + ";\n";
+    str += "\n";
+    str += BEGIN_IN_STRUCT;
+    str += std::string("") + ATTRIBUTE + FLOAT4 + " position" +
+      semanticSuffix("POSITION") + ";\n";
+    str += std::string("") + ATTRIBUTE + FLOAT3 + " normal" +
+      semanticSuffix("NORMAL") + ";\n";
+    str += std::string("") + ATTRIBUTE + FLOAT2 + " texCoord0" +
+      semanticSuffix("TEXCOORD0") + ";\n";
+    str += END_STRUCT;
+    str += "\n";
+    str += varyingDecls + "\n";
+	str += beginVertexShaderMain();
+	str += std::string("  ") + VERTEX_VARYING_PREFIX + "position = " +
       mul(std::string(ATTRIBUTE_PREFIX) + "position",
-          "worldViewProjection") + ";\n" +
-      "  " + VERTEX_VARYING_PREFIX + "normal = " +
+          "worldViewProjection") + ";\n";
+    str += std::string("  ") + VERTEX_VARYING_PREFIX + "normal = " +
       mul(std::string(FLOAT4) + "(" +
       ATTRIBUTE_PREFIX + "normal, 0.0)",
-          "worldInverseTranspose") + ".xyz;\n" +
-      "  " + VERTEX_VARYING_PREFIX + "worldPosition = " +
-          mul(std::string(ATTRIBUTE_PREFIX) + "position", "world") +
-      ".xyz;\n" +
-      "  " + VERTEX_VARYING_PREFIX + "texCoord = " +
-      ATTRIBUTE_PREFIX + "texCoord0;\n" +
-      endVertexShaderMain() +
-      "\n" +
-      pixelShaderHeader(NULL, false, false, NULL) +
+          "worldInverseTranspose") + ".xyz;\n";
+    str += std::string("  ") + VERTEX_VARYING_PREFIX + "worldPosition = " +
+      mul(std::string(ATTRIBUTE_PREFIX) + "position", "world") + ".xyz;\n";
+    str += std::string("  ") + VERTEX_VARYING_PREFIX + "texCoord = " +
+      ATTRIBUTE_PREFIX + "texCoord0;\n";
+    str += endVertexShaderMain();
+    str += "\n";
+    str += pixelShaderHeader(NULL, false, false, NULL) +
       "uniform " + FLOAT4 + " color1;\n" +
       "uniform " + FLOAT4 + " color2;\n" +
       "uniform float checkSize;\n" +
       "uniform " + FLOAT3 + " lightWorldPos;\n" +
       "uniform " + FLOAT3 + " lightColor;\n" +
-      "\n" +
-      repeatVaryingDecls(&varyingDecls) +
+      "\n";
+    str += repeatVaryingDecls(&varyingDecls) +
       FLOAT4 + " checker(" + FLOAT2 + " uv) {\n" +
       "  float fmodResult = " + MOD + "(" +
       "    floor(checkSize * uv.x) + \n" +
       "    floor(checkSize * uv.y), 2.0);\n" +
       "  return (fmodResult < 1.0) ? color1 : color2;\n" +
-      "}\n\n" +
-      beginPixelShaderMain() +
+      "}\n\n";
+    str += beginPixelShaderMain() +
       "  " + FLOAT3 + " surfaceToLight = \n" +
       "      normalize(lightWorldPos - " +
       PIXEL_VARYING_PREFIX + "worldPosition);\n" +
@@ -617,11 +627,13 @@ class GLSLShaderBuilder : public ShaderBuilder {
       "  float directionalIntensity = \n" +
       "      clamp(dot(worldNormal, surfaceToLight), 0.0, 1.0);\n" +
       "  " + FLOAT4 +
-      " outColor = directionalIntensity * check;\n" +
-      endPixelShaderMain(
-          std::string(FLOAT4) + "(outColor.rgb, check.a)") +
-      "\n" + entryPoints() +
-      matrixLoadOrder();
+      " outColor = directionalIntensity * check;\n";
+    str += endPixelShaderMain(
+          std::string(FLOAT4) + "(outColor.rgb, check.a)");
+    str += "\n";
+    str + entryPoints();
+    str += matrixLoadOrder();
+	return str;
   };
 
   /**
@@ -689,12 +701,14 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The effect code for the common shader uniforms.
    */
   std::string buildLightingUniforms() {
-    return std::string("uniform ") + MATRIX4 + " world" +
-        semanticSuffix("WORLD") + ";\n" +
-        "uniform " + MATRIX4 +
-        " viewInverse" + semanticSuffix("VIEWINVERSE") + ";\n" +
-        "uniform " + MATRIX4 + " worldInverseTranspose" +
+	std::string str;
+    str += std::string("uniform ") + MATRIX4 + " world" +
+        semanticSuffix("WORLD") + ";\n";
+    str += std::string("uniform ") + MATRIX4 +
+        " viewInverse" + semanticSuffix("VIEWINVERSE") + ";\n";
+    str += std::string("uniform ") + MATRIX4 + " worldInverseTranspose" +
         semanticSuffix("WORLDINVERSETRANSPOSE") + ";\n";
+	return str;
   };
 
   /**
@@ -763,21 +777,23 @@ class GLSLShaderBuilder : public ShaderBuilder {
       o3d::ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("constant");
-    return buildCommonVertexUniforms() +
-           buildVertexDecls(material, false, false, bumpSampler) +
-           beginVertexShaderMain() +
-           positionVertexShaderCode() +
-           buildUVPassthroughs(material) +
-           endVertexShaderMain() +
-           pixelShaderHeader(material, false, false, bumpSampler) +
-           buildCommonPixelUniforms() +
-           repeatVaryingDecls(NULL) +
-           buildColorParam(material, descriptions, "emissive", true) +
-           beginPixelShaderMain() +
-           getColorParam(material, "emissive") +
-           endPixelShaderMain("emissive") +
-           entryPoints() +
-           matrixLoadOrder();
+	std::string str;
+    str += buildCommonVertexUniforms();
+    str += buildVertexDecls(material, false, false, bumpSampler);
+    str += beginVertexShaderMain();
+    str += positionVertexShaderCode();
+    str += buildUVPassthroughs(material);
+    str += endVertexShaderMain();
+    str += pixelShaderHeader(material, false, false, bumpSampler);
+    str += buildCommonPixelUniforms();
+    str += repeatVaryingDecls(NULL);
+    str += buildColorParam(material, descriptions, "emissive", true);
+    str += beginPixelShaderMain();
+    str += getColorParam(material, "emissive");
+    str += endPixelShaderMain("emissive");
+    str += entryPoints();
+    str += matrixLoadOrder();
+	return str;
   };
 
   /**
@@ -792,40 +808,42 @@ class GLSLShaderBuilder : public ShaderBuilder {
       o3d::ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("lambert");
-    return buildCommonVertexUniforms() +
-           buildLightingUniforms() +
-           buildVertexDecls(material, true, false, bumpSampler) +
-           beginVertexShaderMain() +
-           buildUVPassthroughs(material) +
-           positionVertexShaderCode() +
-           normalVertexShaderCode() +
-           surfaceToLightVertexShaderCode() +
-           bumpVertexShaderCode(bumpSampler) +
-           endVertexShaderMain() +
-           pixelShaderHeader(material, true, false, bumpSampler) +
-           buildCommonPixelUniforms() +
-           repeatVaryingDecls(NULL) +
-           buildColorParam(material, descriptions, "emissive", true) +
-           buildColorParam(material, descriptions, "ambient", true) +
-           buildColorParam(material, descriptions, "diffuse", true) +
-           buildColorParam(material, descriptions, "bump", false) +
-           utilityFunctions() +
-           beginPixelShaderMain() +
-           getColorParam(material, "emissive") +
-           getColorParam(material, "ambient") +
-           getColorParam(material, "diffuse") +
-           getNormalShaderCode(bumpSampler) +
+	std::string str;
+    str += buildCommonVertexUniforms();
+    str += buildLightingUniforms();
+    str += buildVertexDecls(material, true, false, bumpSampler);
+    str += beginVertexShaderMain();
+    str += buildUVPassthroughs(material);
+    str += positionVertexShaderCode();
+    str += normalVertexShaderCode();
+    str += surfaceToLightVertexShaderCode();
+    str += bumpVertexShaderCode(bumpSampler);
+    str += endVertexShaderMain();
+    str += pixelShaderHeader(material, true, false, bumpSampler);
+    str += buildCommonPixelUniforms();
+    str += repeatVaryingDecls(NULL);
+    str += buildColorParam(material, descriptions, "emissive", true);
+    str += buildColorParam(material, descriptions, "ambient", true);
+    str += buildColorParam(material, descriptions, "diffuse", true);
+    str += buildColorParam(material, descriptions, "bump", false);
+    str += utilityFunctions();
+    str += beginPixelShaderMain();
+    str += getColorParam(material, "emissive");
+    str += getColorParam(material, "ambient");
+    str += getColorParam(material, "diffuse");
+    str += getNormalShaderCode(bumpSampler) +
            "  " + FLOAT3 + " surfaceToLight = normalize(" +
            PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
            "  " + FLOAT4 +
-           " litR = lit(dot(normal, surfaceToLight), 0.0, 0.0);\n" +
-           endPixelShaderMain(std::string(FLOAT4) +
+           " litR = lit(dot(normal, surfaceToLight), 0.0, 0.0);\n";
+    str += endPixelShaderMain(std::string(FLOAT4) +
            "((emissive +\n" +
            "      lightColor *" +
            " (ambient * diffuse + diffuse * litR.y)).rgb,\n" +
-           "          diffuse.a)") +
-           entryPoints() +
-           matrixLoadOrder();
+           "          diffuse.a)");
+    str += entryPoints();
+    str += matrixLoadOrder();
+	return str;
   };
 
   /**
@@ -842,34 +860,35 @@ class GLSLShaderBuilder : public ShaderBuilder {
       o3d::ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("phong");
-    return buildCommonVertexUniforms() +
-        buildLightingUniforms() +
-      buildVertexDecls(material, true, true, bumpSampler) +
-        beginVertexShaderMain() +
-        buildUVPassthroughs(material) +
-        positionVertexShaderCode() +
-        normalVertexShaderCode() +
-        surfaceToLightVertexShaderCode() +
-        surfaceToViewVertexShaderCode() +
-        bumpVertexShaderCode(bumpSampler) +
-        endVertexShaderMain() +
-        pixelShaderHeader(material, true, true, bumpSampler) +
-        buildCommonPixelUniforms() +
-        repeatVaryingDecls(NULL) +
-        buildColorParam(material, descriptions, "emissive", true) +
-        buildColorParam(material, descriptions, "ambient", true) +
-        buildColorParam(material, descriptions, "diffuse", true) +
-        buildColorParam(material, descriptions, "specular", true) +
-        buildColorParam(material, descriptions, "bump", false) +
-        "uniform float shininess;\n" +
-        "uniform float specularFactor;\n" +
-        utilityFunctions() +
-        beginPixelShaderMain() +
-        getColorParam(material, "emissive") +
-        getColorParam(material, "ambient") +
-        getColorParam(material, "diffuse") +
-        getColorParam(material, "specular") +
-        getNormalShaderCode(bumpSampler) +
+	std::string str;
+    str += buildCommonVertexUniforms();
+    str += buildLightingUniforms();
+    str += buildVertexDecls(material, true, true, bumpSampler);
+    str += beginVertexShaderMain();
+    str += buildUVPassthroughs(material);
+    str += positionVertexShaderCode();
+    str += normalVertexShaderCode();
+    str += surfaceToLightVertexShaderCode();
+    str += surfaceToViewVertexShaderCode();
+    str += bumpVertexShaderCode(bumpSampler);
+    str += endVertexShaderMain();
+    str += pixelShaderHeader(material, true, true, bumpSampler);
+    str += buildCommonPixelUniforms();
+    str += repeatVaryingDecls(NULL);
+    str += buildColorParam(material, descriptions, "emissive", true);
+    str += buildColorParam(material, descriptions, "ambient", true);
+    str += buildColorParam(material, descriptions, "diffuse", true);
+    str += buildColorParam(material, descriptions, "specular", true);
+    str += buildColorParam(material, descriptions, "bump", false);
+    str += "uniform float shininess;\n";
+    str += "uniform float specularFactor;\n";
+    str += utilityFunctions();
+    str += beginPixelShaderMain();
+    str += getColorParam(material, "emissive");
+    str += getColorParam(material, "ambient");
+    str += getColorParam(material, "diffuse");
+    str += getColorParam(material, "specular");
+    str += getNormalShaderCode(bumpSampler) +
         "  " + FLOAT3 + " surfaceToLight = normalize(" +
         PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
         "  " + FLOAT3 + " surfaceToView = normalize(" +
@@ -879,16 +898,17 @@ class GLSLShaderBuilder : public ShaderBuilder {
         PIXEL_VARYING_PREFIX + "surfaceToView);\n" +
         "  " + FLOAT4 +
         " litR = lit(dot(normal, surfaceToLight), \n" +
-        "                    dot(normal, halfVector), shininess);\n" +
-        endPixelShaderMain(std::string(FLOAT4) +
+        "                    dot(normal, halfVector), shininess);\n";
+    str += endPixelShaderMain(std::string(FLOAT4) +
         "((emissive +\n" +
         "  lightColor *" +
         " (ambient * diffuse + diffuse * litR.y +\n" +
         "                        + specular * litR.z *" +
         " specularFactor)).rgb,\n" +
-        "      diffuse.a)") +
-        entryPoints() +
-        matrixLoadOrder();
+        "      diffuse.a)");
+    str += entryPoints();
+    str += matrixLoadOrder();
+	return str;
   };
 
   /**
@@ -903,51 +923,53 @@ class GLSLShaderBuilder : public ShaderBuilder {
       o3d::ParamSampler* bumpSampler,
       std::vector<std::string>* descriptions) {
     descriptions->push_back("phong");
-    return buildCommonVertexUniforms() +
-        buildLightingUniforms() +
-        buildVertexDecls(material, true, true, bumpSampler) +
-        beginVertexShaderMain() +
-        buildUVPassthroughs(material) +
-        positionVertexShaderCode() +
-        normalVertexShaderCode() +
-        surfaceToLightVertexShaderCode() +
-        surfaceToViewVertexShaderCode() +
-        bumpVertexShaderCode(bumpSampler) +
-        endVertexShaderMain() +
-        pixelShaderHeader(material, true, true, bumpSampler) +
-        buildCommonPixelUniforms() +
-        repeatVaryingDecls(NULL) +
-        buildColorParam(material, descriptions, "emissive", true) +
-        buildColorParam(material, descriptions, "ambient", true) +
-        buildColorParam(material, descriptions, "diffuse", true) +
-        buildColorParam(material, descriptions, "specular", true) +
-        buildColorParam(material, descriptions, "bump", false) +
-        "uniform float shininess;\n" +
-        "uniform float specularFactor;\n" +
-        utilityFunctions() +
-        beginPixelShaderMain() +
-        getColorParam(material, "emissive") +
-        getColorParam(material, "ambient") +
-        getColorParam(material, "diffuse") +
-        getColorParam(material, "specular") +
-        getNormalShaderCode(bumpSampler) +
-        "  " + FLOAT3 + " surfaceToLight = normalize(" +
-        PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
-        "  " + FLOAT3 + " surfaceToView = normalize(" +
-        PIXEL_VARYING_PREFIX + "surfaceToView);\n" +
-        "  " + FLOAT3 +
-        " halfVector = normalize(surfaceToLight + surfaceToView);\n" +
-        "  " + FLOAT4 +
-        " litR = lit(dot(normal, surfaceToLight), \n" +
-        "                    dot(normal, halfVector), shininess);\n" +
-        endPixelShaderMain(std::string(FLOAT4) +
-        "((emissive +\n" +
-        "  lightColor * (ambient * diffuse + diffuse * litR.y +\n" +
-        "                        + specular * litR.z *" +
-        " specularFactor)).rgb,\n" +
-        "      diffuse.a)") +
-        entryPoints() +
-        matrixLoadOrder();
+	std::string str;
+	str += buildCommonVertexUniforms();
+	str += buildLightingUniforms();
+	str += buildVertexDecls(material, true, true, bumpSampler);
+	str += beginVertexShaderMain();
+	str += buildUVPassthroughs(material);
+	str += positionVertexShaderCode();
+	str += normalVertexShaderCode();
+	str += surfaceToLightVertexShaderCode();
+	str += surfaceToViewVertexShaderCode();
+	str += bumpVertexShaderCode(bumpSampler);
+	str += endVertexShaderMain();
+	str += pixelShaderHeader(material, true, true, bumpSampler);
+	str += buildCommonPixelUniforms();
+	str += repeatVaryingDecls(NULL);
+	str += buildColorParam(material, descriptions, "emissive", true);
+	str += buildColorParam(material, descriptions, "ambient", true);
+	str += buildColorParam(material, descriptions, "diffuse", true);
+	str += buildColorParam(material, descriptions, "specular", true);
+	str += buildColorParam(material, descriptions, "bump", false);
+	str += "uniform float shininess;\n";
+	str += "uniform float specularFactor;\n";
+	str += utilityFunctions();
+	str += beginPixelShaderMain();
+	str += getColorParam(material, "emissive");
+	str += getColorParam(material, "ambient");
+	str += getColorParam(material, "diffuse");
+	str += getColorParam(material, "specular");
+	str += getNormalShaderCode(bumpSampler) +
+		"  " + FLOAT3 + " surfaceToLight = normalize(" +
+		PIXEL_VARYING_PREFIX + "surfaceToLight);\n" +
+		"  " + FLOAT3 + " surfaceToView = normalize(" +
+		PIXEL_VARYING_PREFIX + "surfaceToView);\n" +
+		"  " + FLOAT3 +
+		" halfVector = normalize(surfaceToLight + surfaceToView);\n" +
+		"  " + FLOAT4 +
+		" litR = lit(dot(normal, surfaceToLight), \n" +
+		"                    dot(normal, halfVector), shininess);\n";
+	str += endPixelShaderMain(std::string(FLOAT4) +
+	 					 "((emissive +\n" +
+	 					 "  lightColor * (ambient * diffuse + diffuse * litR.y +\n" +
+	 					 "                        + specular * litR.z *" +
+	 					 " specularFactor)).rgb,\n" +
+	 					 "      diffuse.a)");
+	str += entryPoints();
+	str += matrixLoadOrder();
+	return str;
   };
 
   /**
@@ -1000,15 +1022,18 @@ class GLSLShaderBuilder : public ShaderBuilder {
    * @return {string} The code for normal mapping in the vertex shader.
    */
   std::string bumpVertexShaderCode(o3d::ParamSampler* opt_bumpSampler) {
-    return opt_bumpSampler ?
-        (std::string("  ") + VERTEX_VARYING_PREFIX + "binormal = " +
-         mul(std::string(FLOAT4) + "(" +
-         ATTRIBUTE_PREFIX + "binormal, 0)",
-             "worldInverseTranspose") + ".xyz;\n" +
-         "  " + VERTEX_VARYING_PREFIX + "tangent = " +
-         mul(std::string(FLOAT4) +
-         "(" + ATTRIBUTE_PREFIX + "tangent, 0)",
-             "worldInverseTranspose") + ".xyz;\n") : "";
+	std::string str("");
+	if ( opt_bumpSampler ) {
+        str += std::string("  ") + VERTEX_VARYING_PREFIX + "binormal = " +
+         		mul(std::string(FLOAT4) + "(" +
+         		ATTRIBUTE_PREFIX + "binormal, 0)",
+             		"worldInverseTranspose") + ".xyz;\n";
+        str += std::string("  ") + VERTEX_VARYING_PREFIX + "tangent = " +
+         		mul(std::string(FLOAT4) +
+         		"(" + ATTRIBUTE_PREFIX + "tangent, 0)",
+             		"worldInverseTranspose") + ".xyz;\n";
+	}
+	return str;
   };
 
   /**
@@ -1046,10 +1071,10 @@ class GLSLShaderBuilder : public ShaderBuilder {
       o3d::Material* material,
       bool diffuse,  bool specular,
       o3d::ParamSampler* bumpSampler) {
-    return buildAttributeDecls(
-        material, diffuse, specular, bumpSampler) +
-        buildVaryingDecls(
-            material, diffuse, specular, bumpSampler);
+	std::string str;
+	str += buildAttributeDecls(material, diffuse, specular, bumpSampler);
+	str += buildVaryingDecls(material, diffuse, specular, bumpSampler);
+	return str;
   };
 
 

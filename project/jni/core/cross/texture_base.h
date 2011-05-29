@@ -57,6 +57,8 @@ class Texture : public ParamObject {
     UNKNOWN_FORMAT,
     XRGB8,  // actual format in memory is B G R X
     ARGB8,  // actual format in memory is B G R A
+    RGBX8,  // actual format in memory is R G B X
+    RGBA8,  // actual format in memory is R G B A
     ABGR16F,
     R32F,
     ABGR32F,

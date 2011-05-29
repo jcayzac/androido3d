@@ -32,6 +32,8 @@
 #ifndef O3D_CORE_CROSS_GLES2_GL_HEADERS_H_
 #define O3D_CORE_CROSS_GLES2_GL_HEADERS_H_
 
+#include "build/build_config.h"
+
 #if defined(GLES2_BACKEND_DESKTOP_GL)
 
 #include <GL/glew.h>
@@ -43,11 +45,16 @@
 
 #elif defined(GLES2_BACKEND_NATIVE_GLES2)
 
+#ifdef TARGET_OS_IPHONE
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
+#else
 #if !defined(OS_ANDROID) && !defined(__ANDROID__)
 #include <EGL/egl.h>
 #endif
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#endif
 
 #define glClearDepth glClearDepthf
 #define glDepthRange glDepthRangef

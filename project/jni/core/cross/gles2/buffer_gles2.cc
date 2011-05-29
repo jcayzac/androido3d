@@ -188,6 +188,7 @@ bool VertexBufferGLES2::OnContextRestored() {
     glBufferData(
         GL_ARRAY_BUFFER, GetSizeInBytes(), shadow_.get(), GL_STATIC_DRAW);
   }
+  return true;
 }
 
 // Index Buffers ---------------------------------------------------------------
@@ -315,5 +316,6 @@ bool IndexBufferGLES2::OnContextRestored() {
         GL_ELEMENT_ARRAY_BUFFER, GetSizeInBytes(), shadow_.get(),
         GL_STATIC_DRAW);
   }
+  return true;
 }
 }  // namespace o3d

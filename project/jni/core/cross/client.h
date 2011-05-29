@@ -36,7 +36,7 @@
 #ifndef O3D_CORE_CROSS_CLIENT_H_
 #define O3D_CORE_CROSS_CLIENT_H_
 
-#include <build/build_config.h>
+#include "build/build_config.h"
 #include <map>
 #include <ostream>
 #include <sstream>
@@ -52,6 +52,7 @@
 #include "core/cross/object_manager.h"
 #include "core/cross/semantic_manager.h"
 #include "core/cross/transformation_context.h"
+#include "core/cross/picking_context.h"
 #include "core/cross/render_node.h"
 #include "core/cross/callback.h"
 #include "core/cross/event.h"
@@ -259,6 +260,10 @@ class Client {
   //       go.
   void RenderClient(bool send_callback);
 
+  // Picking
+  ParamObject* Pick(int window_x, int window_y);
+
+
   // Sets the texture to use when a Texture or Sampler is missing while
   // rendering. If you set it to NULL you'll get an error if you try to render
   // something that is missing a needed Texture, Sampler or ParamSampler
@@ -456,6 +461,7 @@ class Client {
   DrawListManager draw_list_manager_;
   CounterManager counter_manager_;
   TransformationContext transformation_context_;
+  PickingContext picking_context_;
   SemanticManager semantic_manager_;
   ServiceDependency<Profiler> profiler_;
   ServiceDependency<Renderer> renderer_;

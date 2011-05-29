@@ -90,6 +90,10 @@ static FieldCreator g_creators[] = {
     FloatField::kRequiredComponentMultiple, },
   { UInt32Field::GetApparentClass(), UInt32Field::Create,
     UInt32Field::kRequiredComponentMultiple, },
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+  { UInt16Field::GetApparentClass(), UInt16Field::Create,
+    UInt16Field::kRequiredComponentMultiple, },
+#endif
   { UByteNField::GetApparentClass(), UByteNField::Create,
     UByteNField::kRequiredComponentMultiple, },
 };
@@ -456,6 +460,9 @@ bool Buffer::Set(o3d::RawData *raw_data,
       case Field::FIELDID_UINT32:
         field_type = UInt32Field::GetApparentClass();
         break;
+	  case Field::FIELDID_UINT16:
+		field_type = UInt16Field::GetApparentClass();
+		break;
       case Field::FIELDID_BYTE:
         field_type = UByteNField::GetApparentClass();
         break;
@@ -582,7 +589,11 @@ Field* IndexBuffer::index_field() const {
 
 IndexBuffer::IndexBuffer(ServiceLocator* service_locator)
     : Buffer(service_locator) {
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+  CreateField(UInt16Field::GetApparentClass(), 1);
+#else
   CreateField(UInt32Field::GetApparentClass(), 1);
+#endif
 }
 
 ObjectBase::Ref IndexBuffer::Create(ServiceLocator* service_locator) {

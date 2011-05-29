@@ -206,6 +206,60 @@ bool GetIdentifierAfterString(const String& original,
   return false;
 }
 
+bool PrepareFragmentShaderForPicking(std::string& source) {
+  // Copy the source
+  std::string tmp(source);
+
+  // Replace all allowed whitespaces with the 'space' character:
+  for (size_t i(0); i<source.length(); ++i)
+    tmp[i]=(source[i]=='\t' || source[i]=='\r' || source[i]=='\n')?' ':tmp[i];
+
+  // Search for /void[[:space:]]+main/ and put the position of
+  // 'main' in found_at
+  std::stringstream ss;
+  ss.rdbuf()->pubsetbuf(&tmp[0], source.length()); // avoid an unnecessary copy
+  size_t found_at=0;
+  static const std::string _main0("main");
+  static const std::string _main1("main(");
+  static const std::string _main2("main()");
+  static const std::string _main3("main(){");
+  static const std::string _void("void");
+  std::string token;
+  std::string previous;
+  while (ss >> token) {
+    // previous was "void"…
+    if (previous==_void) {
+      // …and current is "main[([)[{]?]?]?"
+      if (token==_main0 || token==_main1 || token==_main2 || token==_main3) {
+        found_at = (size_t)ss.tellg()-token.length();
+        break;
+      }
+    }
+    token.swap(previous);
+  }
+
+  // Found it?
+  if (!found_at) return false;
+
+  // Replace original with the new source
+  source.replace(found_at, _main0.length(), "o3d_render_main");
+  ss.str("");
+  ss  << "uniform mediump vec4 o3d_picking_color;\n"
+  << "uniform bool o3d_picking_mode;\n"
+  << source << "\n"
+  << "void main() {\n"
+  << "    if (o3d_picking_mode) {\n"
+  << "        gl_FragColor = o3d_picking_color;\n"
+  << "    }\n"
+  << "    else {\n"
+  << "        o3d_render_main();\n"
+  << "    }\n"
+  << "}\n";
+  ss.str().swap(source);
+
+  return true;
+}
+
 #ifdef GLES2_BACKEND_DESKTOP_GL
 const char kVertexHeader[] = "";
 const char kFragmentHeader[] = "// ";
@@ -250,6 +304,14 @@ bool EffectGLES2::LoadFromFXString(const String& effect) {
   String vertex_shader(kVertexHeader + effect.substr(0, split_pos));
   String fragment_shader(kFragmentHeader + effect.substr(split_pos));
 
+  // TODO(jcayzac): it would be better to maintain two shader programs
+  // and select the right one depending on renderer.picking(), but I
+  // don't know how to do that as of yet.
+  if (!PrepareFragmentShaderForPicking(fragment_shader)) {
+    O3D_ERROR(service_locator()) << "Failed to enable picking support in shader: " << effect;
+    return false;
+  }
+
   set_matrix_load_order(matrix_load_order);
 
   GLuint gl_vertex_shader =
@@ -289,6 +351,8 @@ bool EffectGLES2::LoadFromFXString(const String& effect) {
     glDeleteProgram(gl_program_);
     return false;
   }
+	
+  CacheGLParamMapping();
 
   CHECK_GL_ERROR();
 
@@ -309,6 +373,28 @@ bool EffectGLES2::OnContextRestored() {
     }
   }
   return true;
+}
+
+void EffectGLES2::CacheGLParamMapping()
+{
+	GLint num_uniforms = 0;
+	GLint max_len = 0;
+	glGetProgramiv(gl_program_, GL_ACTIVE_UNIFORMS, &num_uniforms);
+	glGetProgramiv(gl_program_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
+	scoped_array<char> name_buffer(new char[max_len + 1]);
+	for (GLint ii = 0; ii < num_uniforms; ++ii) {
+		GLsizei length;
+		GLsizei size;
+		GLenum gl_type;
+		glGetActiveUniform(
+						   gl_program_, ii,
+						   max_len + 1, &length, &size, &gl_type, name_buffer.get());
+		// TODO(gman): Should we check for error?
+		GLint location = glGetUniformLocation(gl_program_, name_buffer.get());
+		String name(name_buffer.get(), length);
+		GLProgramParam::Ref param(new GLProgramParam(location, gl_type, size));
+		shader_param_info_map_[name] = param;
+	}
 }
 
 void EffectGLES2::GetShaderParamInfo(
@@ -425,6 +511,10 @@ void EffectGLES2::UpdateShaderUniformsFromEffect(
   }
   renderer_->UpdateDxClippingUniform(
       glGetUniformLocation(gl_program_, "dx_clipping"));
+  const bool picking_mode_enabled(renderer_->picking());
+  glUniform1i(glGetUniformLocation(gl_program_, "o3d_picking_mode"), (GLint)picking_mode_enabled);
+  if (picking_mode_enabled)
+    renderer_->UpdatePickingColorUniform(glGetUniformLocation(gl_program_, "o3d_picking_color"));
   CHECK_GL_ERROR();
 }
 

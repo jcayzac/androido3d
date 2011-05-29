@@ -36,7 +36,7 @@
 #ifndef O3D_CORE_CROSS_PRECOMPILE_H_
 #define O3D_CORE_CROSS_PRECOMPILE_H_
 
-#include <build/build_config.h>
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

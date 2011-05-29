@@ -15,6 +15,7 @@ LOCAL_CFLAGS    := \
   -DO3D_NO_ARCHIVE_REQUEST \
   -DO3D_NO_FILE_REQUEST \
   -DO3D_PLUGIN_VERSION=\"0.1.43.0\" \
+  -DGLES2_BACKEND_NATIVE_GLES2 \
   -I$(LOCAL_PATH)/../third_party/libjpeg \
   -I$(LOCAL_PATH)/../third_party/libpng \
   -I$(LOCAL_PATH)/../third_party/loggingshim \
@@ -82,6 +83,7 @@ LOCAL_SRC_FILES := $(addprefix cross/, \
   param_cache.cc \
   param_object.cc \
   param_operation.cc \
+  picking_context.cc \
   precompile.cc \
   primitive.cc \
   profiler.cc \

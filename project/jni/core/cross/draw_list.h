@@ -42,6 +42,7 @@
 namespace o3d {
 
 class TransformationContext;
+class PickingContext;
 class DrawElement;
 class DrawElementInfo;
 class Element;
@@ -112,6 +113,7 @@ class DrawList : public NamedObject {
   typedef std::vector<DrawElementInfo*> DrawElementInfoArray;
 
   TransformationContext* transformation_context_;
+  PickingContext* picking_context_;
 
   // The view matrix that was used when this list was filled out.
   Matrix4 view_;

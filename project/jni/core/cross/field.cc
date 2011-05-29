@@ -47,6 +47,7 @@ namespace o3d {
 O3D_DEFN_CLASS(Field, NamedObject);
 O3D_DEFN_CLASS(FloatField, Field);
 O3D_DEFN_CLASS(UInt32Field, Field);
+O3D_DEFN_CLASS(UInt16Field, Field);
 O3D_DEFN_CLASS(UByteNField, Field);
 
 namespace {
@@ -222,9 +223,22 @@ inline uint32 ConvertLittleEndianUInt32ToUInt32(uint32 value) {
       reinterpret_cast<uint32*>(&value));
 }
 
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+inline uint16 ConvertLittleEndianUInt16ToUInt16(uint16 value) {
+  return MemoryReadStream::GetLittleEndianUInt16(
+      reinterpret_cast<uint16*>(&value));
+}
+#endif
+	
 inline float ConvertUInt32ToFloat(uint32 value) {
   return static_cast<float>(value);
 }
+	
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+inline float ConvertUInt16ToFloat(uint16 value) {
+  return static_cast<float>(value);
+}
+#endif
 
 inline float ConvertUByteNToFloat(uint8 value) {
   return static_cast<float>(value) / 255.0f;
@@ -238,9 +252,33 @@ inline uint32 ConvertUInt32ToUInt32(uint32 value) {
   return value;
 }
 
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+inline uint32 ConvertUInt16ToUInt32(uint16 value) {
+  return static_cast<uint32>(value > 0);
+}
+#endif
+
 inline uint32 ConvertUByteNToUInt32(uint8 value) {
   return static_cast<uint32>(value > 0);
 }
+
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+inline uint16 ConvertFloatToUInt16(float value) {
+  return static_cast<uint16>(std::max(0.0f, value));
+}
+
+inline uint16 ConvertUInt32ToUInt16(uint32 value) {
+  return static_cast<uint16>(value);
+}
+
+inline uint16 ConvertUInt16ToUInt16(uint16 value) {
+  return value;
+}
+
+inline uint16 ConvertUByteNToUInt16(uint8 value) {
+  return static_cast<uint16>(value > 0);
+}
+#endif
 
 inline uint8 ConvertFloatToUByteN(float value) {
   return static_cast<uint8>(floorf(
@@ -250,6 +288,12 @@ inline uint8 ConvertFloatToUByteN(float value) {
 inline uint8 ConvertUInt32ToUByteN(uint32 value) {
   return static_cast<uint8>(std::min<unsigned>(255, value));
 }
+
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+inline uint8 ConvertUInt16ToUByteN(uint16 value) {
+  return static_cast<uint8>(std::min<unsigned>(255, value));
+}
+#endif
 
 inline uint8 ConvertUByteNToUByteN(uint8 value) {
   return value;
@@ -330,6 +374,16 @@ void FloatField::SetFromUInt32s(const uint32* source,
   SetFrom<const uint32, float, ConvertUInt32ToFloat>(
       source, source_stride, this, destination_start_index, num_elements);
 }
+
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+void FloatField::SetFromUInt16s(const uint16* source,
+                                unsigned source_stride,
+                                unsigned destination_start_index,
+                                unsigned num_elements) {
+  SetFrom<const uint16, float, ConvertUInt16ToFloat>(
+      source, source_stride, this, destination_start_index, num_elements);
+}
+#endif
 
 void FloatField::SetFromUByteNs(const uint8* source,
                                 unsigned source_stride,
@@ -426,6 +480,16 @@ void UInt32Field::SetFromUInt32s(const uint32* source,
       source, source_stride, this, destination_start_index, num_elements);
 }
 
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+void UInt32Field::SetFromUInt16s(const uint16* source,
+                                 unsigned source_stride,
+                                 unsigned destination_start_index,
+                                 unsigned num_elements) {
+  SetFrom<const uint16, uint32, ConvertUInt16ToUInt32>(
+      source, source_stride, this, destination_start_index, num_elements);
+}
+#endif
+
 void UInt32Field::SetFromUByteNs(const uint8* source,
                                  unsigned source_stride,
                                  unsigned destination_start_index,
@@ -500,6 +564,120 @@ Field::Ref UInt32Field::Create(ServiceLocator* service_locator,
   return Field::Ref(
       new UInt32Field(service_locator, buffer, num_components, offset));
 }
+	
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+// UInt16Field -------------------
+
+UInt16Field::UInt16Field(ServiceLocator* service_locator,
+                         Buffer* buffer,
+                         unsigned num_components,
+                         unsigned offset)
+    : Field(service_locator, buffer, num_components, offset) {
+}
+
+size_t UInt16Field::GetFieldComponentSize() const {
+  return sizeof(uint16);  // NOLINT
+}
+
+void UInt16Field::SetFromFloats(const float* source,
+                                unsigned source_stride,
+                                unsigned destination_start_index,
+                                unsigned num_elements) {
+  SetFrom<const float, uint16, ConvertFloatToUInt16>(
+      source, source_stride, this, destination_start_index, num_elements);
+}
+
+void UInt16Field::SetFromUInt32s(const uint32* source,
+                                 unsigned source_stride,
+                                 unsigned destination_start_index,
+                                 unsigned num_elements) {
+  SetFrom<const uint32, uint16, ConvertUInt32ToUInt16>(
+      source, source_stride, this, destination_start_index, num_elements);
+}
+
+void UInt16Field::SetFromUInt16s(const uint16* source,
+                                 unsigned source_stride,
+                                 unsigned destination_start_index,
+                                 unsigned num_elements) {
+  SetFrom<const uint16, uint16, ConvertUInt16ToUInt16>(
+      source, source_stride, this, destination_start_index, num_elements);
+}
+
+void UInt16Field::SetFromUByteNs(const uint8* source,
+                                 unsigned source_stride,
+                                 unsigned destination_start_index,
+                                 unsigned num_elements) {
+  SetFrom<const uint8, uint16, ConvertUByteNToUInt16>(
+      source, source_stride, this, destination_start_index, num_elements);
+}
+
+bool UInt16Field::SetFromMemoryStream(MemoryReadStream* stream) {
+  if (!buffer()) {
+    O3D_ERROR(service_locator())
+        << "The buffer for field '" << name() << "' no longer exists";
+    return false;
+  }
+
+  size_t num_elements = buffer()->num_elements();
+
+  // sanity check that the stream has enough data
+  if (stream->GetRemainingByteCount() < num_elements * size()) {
+    return false;
+  }
+
+  const uint16 *source = stream->GetDirectMemoryPointerAs<const uint16>();
+
+  stream->Skip(num_elements * size());
+
+  SetFrom<const uint16, uint16, ConvertLittleEndianUInt16ToUInt16>(
+      source, num_components(), this, 0, num_elements);
+
+  return true;
+}
+
+void UInt16Field::GetAsFloats(unsigned source_start_index,
+                              float* destination,
+                              unsigned destination_stride,
+                              unsigned num_elements) const {
+  GetAs<const uint16, float, ConvertUInt16ToFloat>(
+      this,
+      source_start_index,
+      destination,
+      destination_stride,
+      num_elements);
+}
+
+void UInt16Field::GetAsUInt16s(unsigned source_start_index,
+                               uint16* destination,
+                               unsigned destination_stride,
+                               unsigned num_elements) const {
+  GetAs<const uint16, uint16, ConvertUInt16ToUInt16>(
+      this,
+      source_start_index,
+      destination,
+      destination_stride,
+      num_elements);
+}
+
+void UInt16Field::ConcreteCopy(const Field& source) {
+  DCHECK(source.IsA(GetClass()));
+  DCHECK(source.buffer());
+  unsigned num_components = source.num_components();
+  unsigned num_elements = source.buffer()->num_elements();
+  scoped_array<uint16> temp(new uint16[num_components * num_elements]);
+  down_cast<const UInt16Field*>(&source)->GetAsUInt16s(
+      0, temp.get(), num_components, num_elements);
+  SetFromUInt16s(temp.get(), num_components, 0, num_elements);
+}
+
+Field::Ref UInt16Field::Create(ServiceLocator* service_locator,
+                               Buffer* buffer,
+                               unsigned num_components,
+                               unsigned offset) {
+  return Field::Ref(
+      new UInt16Field(service_locator, buffer, num_components, offset));
+}
+#endif
 
 // UByteNField -------------------
 
@@ -536,6 +714,17 @@ void UByteNField::SetFromUInt32s(const uint32* source,
       source, source_stride, this, destination_start_index, num_elements,
       swizzle_table_);
 }
+
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+void UByteNField::SetFromUInt16s(const uint16* source,
+                                 unsigned source_stride,
+                                 unsigned destination_start_index,
+                                 unsigned num_elements) {
+  SetFromWithSwizzle<const uint16, uint8, ConvertUInt16ToUByteN>(
+      source, source_stride, this, destination_start_index, num_elements,
+      swizzle_table_);
+}
+#endif
 
 void UByteNField::SetFromUByteNs(const uint8* source,
                                  unsigned source_stride,

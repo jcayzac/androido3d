@@ -127,7 +127,13 @@ namespace o3d {
       WorldViewProjectionTranspose)             \
   O3D_STANDARD_ANNOTATION_ENTRY(                \
       WORLD_VIEW_PROJECTION_INVERSE_TRANSPOSE,  \
-      WorldViewProjectionInverseTranspose)
+      WorldViewProjectionInverseTranspose)      \
+  O3D_STANDARD_ANNOTATION_ENTRY(                \
+      BILLBOARD,                                \
+      Billboard)                                \
+  O3D_STANDARD_ANNOTATION_ENTRY(                \
+      BILLBOARD_TRANSPOSE,                      \
+      BillboardTranspose)
 
 #undef O3D_STANDARD_ANNOTATION_ENTRY
 #define O3D_STANDARD_ANNOTATION_ENTRY(enum_name, class_name) enum_name,

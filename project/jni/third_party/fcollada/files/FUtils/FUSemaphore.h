@@ -15,7 +15,11 @@
 #define _FU_SEMAPHORE_H_
 
 #ifdef __APPLE__
+#ifdef TARGET_OS_IPHONE
+#include <MobileCoreServices/MobileCoreServices.h>
+#else
 #include <CoreServices/CoreServices.h>
+#endif // TARGET_OS_IPHONE
 #endif
 
 /**
@@ -31,7 +35,11 @@ private:
 #ifdef WIN32
 	HANDLE semaphoreHandle; // WIN32
 #elif defined (__APPLE__)
+#ifdef TARGET_OS_IPHONE
+	pthread_mutex_t semaphoreHandle;
+#else
 	MPTaskID semaphoreHandle;
+#endif // TARGET_OS_IPHONE
 #else
 #warning "FUSemaphore: Semaphore not implemented for non Windows"
 #endif

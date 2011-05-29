@@ -38,7 +38,11 @@
 #define O3D_IMPORT_CROSS_GZ_COMPRESSOR_H_
 
 #include "base/basictypes.h"
-#include "zlib.h"
+#if defined(USE_SYSTEM_ZLIB)
+#include <zlib.h>
+#else
+#include "third_party/zlib/zlib.h"
+#endif
 #include "import/cross/memory_stream.h"
 
 namespace o3d {

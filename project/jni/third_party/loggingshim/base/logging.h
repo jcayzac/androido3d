@@ -11,6 +11,17 @@
 #include <sstream>
 #include <string>
 
+#ifdef TARGET_OS_IPHONE
+#include "iOS/iphoneo3d/log.h"
+
+enum LogSeverity {
+    INFO = LOGLEVEL_INFO,
+    WARNING = LOGLEVEL_WARN,
+    ERROR = LOGLEVEL_ERROR,
+    FATAL = LOGLEVEL_ERROR,
+};
+
+#else
 #include <android/log.h>
 
 #include "build/build_config.h"
@@ -21,6 +32,7 @@ enum LogSeverity {
     ERROR = ANDROID_LOG_ERROR,
     FATAL = ANDROID_LOG_FATAL,
 };
+#endif
 
 // This seems very wrong.
 inline std::ostream& operator<<(std::ostream& stream, const std::wstring& s) {

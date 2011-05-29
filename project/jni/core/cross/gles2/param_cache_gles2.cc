@@ -611,32 +611,25 @@ static void ScanVaryingParameters(GLuint gl_program,
 static void ScanUniformParameters(SemanticManager* semantic_manager,
                                   Renderer* renderer,
                                   GLuint gl_program,
+								  const GLProgramParameterMap *gl_uniform_params,
                                   ParamCacheGLES2* param_cache_gl,
                                   const ParamObjectList& param_objects,
                                   EffectGLES2* effect_gl) {
-  GLint num_uniforms = 0;
-  GLint max_len = 0;
-  glGetProgramiv(gl_program, GL_ACTIVE_UNIFORMS, &num_uniforms);
-  glGetProgramiv(gl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
-  // TODO(gman): Should we check for error?
-  scoped_array<char> name_buffer(new char[max_len + 1]);
-  for (GLint ii = 0; ii < num_uniforms; ++ii) {
-    GLsizei length;
-    GLsizei size;
-    GLenum gl_type;
-    glGetActiveUniform(
-        gl_program, ii,
-        max_len + 1, &length, &size, &gl_type, name_buffer.get());
-    // TODO(gman): Should we check for error?
-    GLint location = glGetUniformLocation(gl_program, name_buffer.get());
-    String name(name_buffer.get(), length);
+  GLProgramParameterMap::const_iterator end = gl_uniform_params->end();
+  for (GLProgramParameterMap::const_iterator it = gl_uniform_params->begin(); it != end; ++it) {
+	String name( it->first );
+	GLProgramParam::Ref param_info = it->second;
+
+	GLsizei size = param_info->size();
+	GLenum gl_type = param_info->type();
+	GLint location = param_info->location();
 
     // Find a Param of the same name, and record the link.
     if (param_cache_gl->uniform_map().find(location) ==
         param_cache_gl->uniform_map().end()) {
       const ObjectBase::Class *sem_class = NULL;
       // Try looking by SAS class name.
-      String semantic = GetUniformSemantic(ii, name);
+      String semantic = GetUniformSemantic(-1, name); // TODO: Remove this unneeded call/method
       if (!semantic.empty()) {
         sem_class = semantic_manager->LookupSemantic(semantic);
       }
@@ -691,13 +684,14 @@ static void ScanUniformParameters(SemanticManager* semantic_manager,
 static void DoScanGLEffectParameters(SemanticManager* semantic_manager,
                                      Renderer* renderer,
                                      ParamCacheGLES2* param_cache_gl,
-                                     GLuint gl_program,
+									 GLuint gl_program,
                                      EffectGLES2* effect_gl,
                                      const ParamObjectList& param_objects) {
   ScanVaryingParameters(gl_program, param_cache_gl);
   ScanUniformParameters(semantic_manager,
                         renderer,
-                        gl_program,
+						gl_program,
+                        effect_gl->GetUniformParamMapping(),
                         param_cache_gl,
                         param_objects,
                         effect_gl);

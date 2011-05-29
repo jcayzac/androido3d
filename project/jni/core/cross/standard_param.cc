@@ -175,4 +175,44 @@ void StandardParamMatrix4<WORLD_VIEW_PROJECTION_INVERSE_TRANSPOSE>::
       transformation_context_->world_view_projection())));
 }
 
+template <>
+void StandardParamMatrix4<BILLBOARD>::
+    ComputeValue() {
+		// Construct a billboard orthonormal basis:
+		// Z basis vector = normalize(camPos-objPos.xyz);
+		// X basis vector = normalize(cross(viewUp, Z basis));
+		// Y basis vector = viewUp;
+		o3d::Vector3 eye = -transformation_context_->view().getTranslation();
+		o3d::Vector3 Y(0.0f, 1.0f, 0.0f);
+		o3d::Matrix4 mat44 = o3d::Matrix4::identity();
+		o3d::Vector3 objToCamera = normalize( eye - transformation_context_->world().getTranslation() );
+		o3d::Vector3 X = normalize( cross(Y,objToCamera) );
+		o3d::Matrix3 mat;
+		mat.setCol( 0, X );
+		mat.setCol( 1, Y );
+		mat.setCol( 2, cross(X,Y) );
+		mat44.setUpper3x3(mat);
+		set_read_only_value(mat44);
+	}
+
+template <>
+void StandardParamMatrix4<BILLBOARD_TRANSPOSE>::
+    ComputeValue() {
+		// Construct a billboard orthonormal basis:
+		// Z basis vector = normalize(camPos-objPos.xyz);
+		// X basis vector = normalize(cross(viewUp, Z basis));
+		// Y basis vector = viewUp;
+		o3d::Vector3 eye = -transformation_context_->view().getTranslation();
+		o3d::Vector3 Y(0.0f, 1.0f, 0.0f);
+		o3d::Matrix4 mat44 = o3d::Matrix4::identity();
+		o3d::Vector3 objToCamera = normalize( eye - transformation_context_->world().getTranslation() );
+		o3d::Vector3 X = normalize( cross(Y,objToCamera) );
+		o3d::Matrix3 mat;
+		mat.setRow( 0, X );
+		mat.setRow( 1, Y );
+		mat.setRow( 2, cross(X,Y) );
+		mat44.setUpper3x3(mat);
+		set_read_only_value(mat44);
+	}
+	
 }  // namespace o3d

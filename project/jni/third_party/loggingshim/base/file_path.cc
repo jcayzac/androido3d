@@ -5,7 +5,11 @@
 #include "base/file_path.h"
 
 #if defined(OS_MACOSX)
+#ifdef TARGET_OS_IPHONE
+#include <MobileCoreServices/MobileCoreServices.h>
+#else
 #include <CoreServices/CoreServices.h>
+#endif // TARGET_OS_IPHONE
 #endif
 
 #include "base/logging.h"

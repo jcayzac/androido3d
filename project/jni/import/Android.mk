@@ -25,6 +25,10 @@ LOCAL_CFLAGS    := \
   -I$(LOCAL_PATH)/.. \
 
 LOCAL_SRC_FILES := $(addprefix cross/, \
+	targz_processor.cc \
+	archive_processor.cc \
+	gz_decompressor.cc \
+	tar_processor.cc \
   collada.cc \
   collada_zip_archive.cc \
   destination_buffer.cc \

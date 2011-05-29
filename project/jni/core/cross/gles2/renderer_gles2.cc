@@ -141,6 +141,11 @@ GLenum ConvertBlendEquation(State::BlendingEquation blend_equation) {
       return GL_MIN;
     case State::BLEND_MAX:
       return GL_MAX;
+#elif defined(GL_EXT_blend_minmax)
+	case State::BLEND_MIN:
+	  return GL_MIN_EXT;
+	case State::BLEND_MAX:
+	  return GL_MAX_EXT;
 #else
     case State::BLEND_MIN:
     case State::BLEND_MAX:
@@ -316,6 +321,20 @@ class StateEnableHandler : public TypedStateHandler<ParamBoolean> {
       ::glEnable(state_constant);
     } else {
       ::glDisable(state_constant);
+    }
+  }
+};
+
+// A specialization for GL_BLEND, because we don't want blending if picking is enabled
+template<>
+class StateEnableHandler<GL_BLEND> : public TypedStateHandler<ParamBoolean> {
+public:
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
+                                      ParamBoolean* param) const {
+    if (param->value() && !renderer->picking()) {
+      ::glEnable(GL_BLEND);
+    } else {
+      ::glDisable(GL_BLEND);
     }
   }
 };
@@ -579,7 +598,7 @@ RendererGLES2::RendererGLES2(ServiceLocator* service_locator)
       egl_context_(NULL),
 #endif  // GLES_BACKEND_xxx
 #endif  // OS_LINUX
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX) && !defined(TARGET_OS_IPHONE)
       mac_agl_context_(0),
       mac_cgl_context_(0),
 #endif
@@ -789,9 +808,16 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   ::glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 #endif
   CHECK_GL_ERROR();
+#ifndef TARGET_OS_IPHONE
   // TODO(piman): by default, GLES2 has some minimal support for NPOT. Is it
   // enough for what we use ?
   SetSupportsNPOT(true);
+#else
+  // The answer to piman's question above is: NO.
+  // iphone does not support mipmapped npot textures and the code
+  // assumes that if npot is supported, then mipmapped npot works as well.
+  SetSupportsNPOT(false);
+#endif // TARGET_OS_IPHONE
 
   GLint viewport[4];
   ::glGetIntegerv(GL_VIEWPORT, &viewport[0]);
@@ -1061,7 +1087,7 @@ void RendererGLES2::Destroy() {
 
 #endif  // OS_WIN
 
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX) && !defined(TARGET_OS_IPHONE)
 
 Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
     const DisplayWindow& display,
@@ -1285,7 +1311,7 @@ void RendererGLES2::Destroy() {
 
 #endif
 
-#ifdef OS_ANDROID
+#if defined(OS_ANDROID) || defined(TARGET_OS_IPHONE)
 Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
     const DisplayWindow& display_window,
     bool off_screen) {
@@ -1308,7 +1334,10 @@ bool RendererGLES2::MakeCurrent() {
   bool result = ::wglMakeCurrent(device_context_, gl_context_) != 0;
   return result;
 #endif
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX)
+#ifdef TARGET_OS_IPHONE
+	return true;
+#else
   if (mac_cgl_context_ != NULL) {
     ::CGLSetCurrentContext(mac_cgl_context_);
     return true;
@@ -1318,6 +1347,7 @@ bool RendererGLES2::MakeCurrent() {
   } else {
     return false;
   }
+#endif // TARGET_OS_IPHONE
 #endif
 #ifdef OS_LINUX
 #if defined(GLES2_BACKEND_DESKTOP_GL)
@@ -1348,7 +1378,10 @@ void RendererGLES2::PlatformSpecificClear(const Float4 &color,
                                           int stencil,
                                           bool stencil_flag) {
   MakeCurrentLazy();
-  ::glClearColor(color[0], color[1], color[2], color[3]);
+  if (picking())
+    ::glClearColor(0,0,0,0);
+  else
+    ::glClearColor(color[0], color[1], color[2], color[3]);
   ::glClearDepth(depth);
   ::glClearStencil(stencil);
 
@@ -1389,6 +1422,14 @@ void RendererGLES2::UpdateDxClippingUniform(GLint location) {
   CHECK_GL_ERROR();
 }
 
+void RendererGLES2::UpdatePickingColorUniform(GLint location) {
+  // For some reason, if location is -1 an error is signalled, despite the spec
+  // saying it is OK.
+  if (location != -1)
+    glUniform4fv(location, 1, pick_color_);
+  CHECK_GL_ERROR();
+}
+
 void RendererGLES2::SetViewportInPixels(int left,
                                         int top,
                                         int width,
@@ -1401,17 +1442,36 @@ void RendererGLES2::SetViewportInPixels(int left,
   ::glViewport(left, vieport_top, width, height);
   UpdateHelperConstant(static_cast<float>(width), static_cast<float>(height));
 
-  // If it's the full client area turn off scissor test for speed.
-  if (left == 0 &&
-      top == 0 &&
-      width == display_width() &&
-      height == display_height()) {
-    ::glDisable(GL_SCISSOR_TEST);
-  } else {
-    ::glScissor(left, vieport_top, width, height);
-    ::glEnable(GL_SCISSOR_TEST);
-  }
+  SetScissorValues();
   ::glDepthRange(min_z, max_z);
+}
+
+void RendererGLES2::SetScissorValues(bool* override) {
+  bool is_picking = picking();
+  if (override) is_picking=*override;
+
+  if (is_picking) {
+    int x, y;
+    get_picking_coordinates(x, y);
+    ::glEnable(GL_SCISSOR_TEST);
+    ::glScissor(x, display_height()-y, 1, 1);
+  }
+  else {
+    int viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    const int& left(viewport[0]);
+    const int& viewport_top(viewport[1]);
+    const int& width(viewport[2]);
+    const int& height(viewport[3]);
+    const int top = RenderSurfaceActive() ? viewport_top : display_height() - viewport_top - height;
+    if (left==0 && top==0 && width==display_width() && height==display_height()) {
+      // If it's the full client area turn off scissor test for speed.
+      ::glDisable(GL_SCISSOR_TEST);
+    } else {
+      ::glScissor(left, viewport_top, width, height);
+      ::glEnable(GL_SCISSOR_TEST);
+    }
+  }
 }
 
 // Resizes the viewport.
@@ -1453,6 +1513,18 @@ bool RendererGLES2::CancelFullscreen(const DisplayWindow& display,
 #endif
   fullscreen_ = false;
   return true;
+}
+
+void RendererGLES2::SetCurrentPickable(const ParamObject* pickable) {
+  // use the lower 32 bits of the pointer as a color
+  // FIXME:(jcayzac) need to check to pixel format of the renderbuffer to
+  // ensure it's 32-bits BGRA (might be wrong on Android)
+  const unsigned int pointer_as_a_color((uintptr_t) pickable & 0xffffffffu);
+  static const float rcpt255(1.f/255.f);
+  pick_color_[0] = rcpt255 * (float) ( pointer_as_a_color       &0xff);
+  pick_color_[1] = rcpt255 * (float) ((pointer_as_a_color >>  8)&0xff);
+  pick_color_[2] = rcpt255 * (float) ((pointer_as_a_color >> 16)&0xff);
+  pick_color_[3] = rcpt255 * (float) ((pointer_as_a_color >> 24)&0xff);
 }
 
 void RendererGLES2::GetDisplayModes(std::vector<DisplayMode> *modes) {
@@ -1553,8 +1625,44 @@ void RendererGLES2::PlatformSpecificEndDraw() {
 void RendererGLES2::PlatformSpecificFinishRendering() {
   DLOG_FIRST_N(INFO, 10) << "RendererGLES2 FinishRendering";
   DCHECK(IsCurrent());
+#ifndef TARGET_OS_IPHONE
   ::glFlush();
+#endif
   CHECK_GL_ERROR();
+}
+
+void RendererGLES2::PlatformSpecificStartPicking() {
+	DCHECK(IsCurrent());
+	DCHECK(picking());
+	saved_blend_state_ = ::glIsEnabled(GL_BLEND);
+	::glDisable(GL_BLEND);
+	::glClearColor(0,0,0,0);
+	::glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+	bool override(true);
+	SetScissorValues(&override);
+}
+
+void RendererGLES2::PlatformSpecificFinishPicking() {
+	DCHECK(IsCurrent());
+	DCHECK(picking());
+
+	int x, y;
+	get_picking_coordinates(x, y);
+	// FIXME:(jcayzac) check render buffer's pixel format
+	unsigned char pixel_value[4];
+	::glReadPixels(x, display_height()-y, 1, 1, GL_BGRA, GL_UNSIGNED_BYTE, pixel_value);
+	const uintptr_t pointer32((pixel_value[3]<<24)|(pixel_value[0]<<16)|(pixel_value[1]<<8)|pixel_value[2]);
+	// FIXME:(jcayzac) dereferencing this newly-constructed pointer
+	// will most likely crash on any 64-bit machine, if not run in
+	// 32-bit mode. Instead, we should probably keep the set of all
+	// pickable somewhere and compare our 32-bit pointer will the lowest
+	// 32 bits of each know pickable.
+	SetPickingResult((ParamObject*)pointer32);
+
+	bool override(false);
+	SetScissorValues(&override);
+	if (saved_blend_state_)
+		::glEnable(GL_BLEND);
 }
 
 void RendererGLES2::PlatformSpecificPresent() {

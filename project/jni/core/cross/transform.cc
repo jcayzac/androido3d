@@ -78,6 +78,17 @@ void GetTransformsInTreeRecursive(const Transform* tree_root,
   }
 }
 
+static inline Float4 pointerToColor(void* pointer) {
+  unsigned int u = (unsigned int) pointer;
+  static const float rcpt255(1.f/255.f);
+  return Float4(
+    rcpt255 * (float) (u&0xff),
+    rcpt255 * (float) ((u>>8)&0xff),
+    rcpt255 * (float) ((u>>16)&0xff),
+    rcpt255 * (float) ((u>>24)&0xff)
+  );
+}
+
 }  // end unnamed namespace
 
 O3D_DEFN_CLASS(Transform, ParamObject);
@@ -106,7 +117,6 @@ Transform::Transform(ServiceLocator* service_locator)
   RegisterParamRef(kVisibleParamName, &visible_param_ref_);
   RegisterParamRef(kBoundingBoxParamName, &bounding_box_param_ref_);
   RegisterParamRef(kCullParamName, &cull_param_ref_);
-
   set_visible(true);
 }
 

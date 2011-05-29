@@ -59,7 +59,8 @@ class Field : public NamedObject {
     FIELDID_UNKNOWN = 0,
     FIELDID_FLOAT32 = 1,
     FIELDID_UINT32  = 2,
-    FIELDID_BYTE    = 3
+	FIELDID_UINT16  = 3,
+    FIELDID_BYTE    = 4
   };
 
   Field(ServiceLocator* service_locator,
@@ -116,6 +117,14 @@ class Field : public NamedObject {
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements) = 0;
+
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+  // This function is the same as SetFromFloats except takes UInt16s as input.
+  virtual void SetFromUInt16s(const uint16* source,
+                              unsigned source_stride,
+                              unsigned destination_start_index,
+                              unsigned num_elements) = 0;
+#endif
 
   // This function is the same as SetFromFloats except takes UByteNs as input.
   virtual void SetFromUByteNs(const uint8* source,
@@ -210,6 +219,14 @@ class FloatField : public Field {
                               unsigned destination_start_index,
                               unsigned num_elements);
 
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+  // Overridden from Field.
+  virtual void SetFromUInt16s(const uint16* source,
+                              unsigned source_stride,
+                              unsigned destination_start_index,
+                              unsigned num_elements);
+#endif
+
   // Overridden from Field.
   virtual void SetFromUByteNs(const uint8* source,
                               unsigned source_stride,
@@ -266,6 +283,14 @@ class UInt32Field : public Field {
                               unsigned destination_start_index,
                               unsigned num_elements);
 
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+  // Overridden from Field.
+  virtual void SetFromUInt16s(const uint16* source,
+                              unsigned source_stride,
+                              unsigned destination_start_index,
+                              unsigned num_elements);
+#endif
+
   // Overridden from Field.
   virtual void SetFromUByteNs(const uint8* source,
                               unsigned source_stride,
@@ -314,6 +339,91 @@ class UInt32Field : public Field {
   DISALLOW_COPY_AND_ASSIGN(UInt32Field);
 };
 
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+	// A field the hold uint16s.
+	class UInt16Field : public Field {
+	public:
+		// When requesting a field of this type the number of componets must be a
+		// multiple of this.
+		static const unsigned kRequiredComponentMultiple = 1;
+		
+		// Overridden from Field.
+		virtual size_t GetFieldComponentSize() const;
+		
+		static Field::Ref Create(ServiceLocator* service_locator,
+								 Buffer* buffer,
+								 unsigned num_components,
+								 unsigned offset);
+		
+		// Overridden from Field.
+		virtual void SetFromFloats(const float* source,
+								   unsigned source_stride,
+								   unsigned destination_start_index,
+								   unsigned num_elements);
+		
+		// Overridden from Field.
+		virtual void SetFromUInt32s(const uint32* source,
+									unsigned source_stride,
+									unsigned destination_start_index,
+									unsigned num_elements);
+		
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+		// Overridden from Field.
+		virtual void SetFromUInt16s(const uint16* source,
+									unsigned source_stride,
+									unsigned destination_start_index,
+									unsigned num_elements);
+#endif
+		
+		// Overridden from Field.
+		virtual void SetFromUByteNs(const uint8* source,
+									unsigned source_stride,
+									unsigned destination_start_index,
+									unsigned num_elements);
+		
+		// Overridden from Field.
+		virtual bool SetFromMemoryStream(MemoryReadStream* stream);
+		
+		// Overridden from Field.
+		virtual void GetAsFloats(unsigned source_start_index,
+								 float* destination,
+								 unsigned destination_stride,
+								 unsigned num_elements) const;
+		
+		// Gets this field as uint16s.
+		//
+		// This function copies elements from the the field to the destination array.
+		// It assumes that there are a multiple of N components in the destination
+		// where N is the number of components in the field. In other words, if the
+		// field has 3 components then passing a num_elements of 2 would copy 2
+		// elements, each 3 components.
+		//
+		// Parameters:
+		//   source_start_index: element in the source to start.
+		//   destination: pointer to first element in destination array.
+		//   destination_stride: stride between elements in the destination in
+		//       destination units.
+		//   num_elements: The number of elements to copy.
+		void GetAsUInt16s(unsigned source_start_index,
+						  uint16* destination,
+						  unsigned destination_stride,
+						  unsigned num_elements) const;
+		
+	protected:
+		// Overridden from Field.
+		virtual void ConcreteCopy(const Field& source);
+		
+	private:
+		UInt16Field(ServiceLocator* service_locator,
+					Buffer* buffer,
+					unsigned num_components,
+					unsigned offset);
+		
+		O3D_DECL_CLASS(UInt16Field, Field);
+		DISALLOW_COPY_AND_ASSIGN(UInt16Field);
+	};
+#endif
+
 // A field the hold UByteNs where a UByteN is an uint8 that represents a value
 // from 0.0 to 1.0.
 class UByteNField : public Field {
@@ -341,6 +451,14 @@ class UByteNField : public Field {
                               unsigned source_stride,
                               unsigned destination_start_index,
                               unsigned num_elements);
+
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+  // Overridden from Field.
+  virtual void SetFromUInt16s(const uint16* source,
+                              unsigned source_stride,
+                              unsigned destination_start_index,
+                              unsigned num_elements);
+#endif
 
   // Overridden from Field.
   virtual void SetFromUByteNs(const uint8* source,

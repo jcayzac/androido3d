@@ -19,6 +19,7 @@
 #ifndef _INC_MATH
 #include <math.h>
 #endif // _INC_MATH
+#include "math.h"
 
 #ifndef _FM_FLOAT_H_
 #include "FMath/FMFloat.h"
@@ -107,7 +108,9 @@ namespace FMath
 	inline int IsNotANumber(float f) { return _isnan(f); }
 #elif __PPU__
 	inline int IsNotANumber(float f) { return !isfinite(f); }
-#else // Linux and Mac
+#elif __APPLE__ // Apple iOS
+	inline int IsNotANumber(float f) { return !isfinite(f); }
+#else // Linux
 	inline int IsNotANumber(float f) { return !finite(f); }
 #endif
 

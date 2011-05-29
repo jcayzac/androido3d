@@ -37,7 +37,7 @@
 #define O3D_CORE_CROSS_GLES2_RENDERER_GLES2_H_
 
 #include "core/cross/gles2/gles2_headers.h"
-#include <build/build_config.h>
+#include "build/build_config.h"
 #include "core/cross/renderer.h"
 #include "core/cross/renderer_platform.h"
 #include "core/cross/types.h"
@@ -77,6 +77,9 @@ class RendererGLES2 : public Renderer {
   virtual bool fullscreen() const {
     return fullscreen_;
   }
+
+  // Overridden from Renderer.
+  virtual void SetCurrentPickable(const ParamObject*);
 
   // Get a vector of the available fullscreen display modes.
   // Clears *modes on error.
@@ -130,7 +133,7 @@ class RendererGLES2 : public Renderer {
   // Returns whether or not this renderer is active on the current thread.
   // Don't worry, the "get" calls are el cheapo.
   bool IsCurrent() {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(TARGET_OS_IPHONE)
     if ((mac_agl_context_ != NULL) &&
         (mac_agl_context_ == aglGetCurrentContext())) {
       return true;
@@ -156,7 +159,7 @@ class RendererGLES2 : public Renderer {
 #elif defined(GLES2_BACKEND_GLES2_COMMAND_BUFFERS)
 #error RendererGLES2::IsCurrent() Not implemented.
 #endif
-#elif defined(OS_ANDROID)
+#elif defined(OS_ANDROID) || defined(TARGET_OS_IPHONE)
     return true;
 #else
     Error: must port RendererGLES2::IsCurrent() to your platform.
@@ -184,6 +187,7 @@ class RendererGLES2 : public Renderer {
 
   // Programs the helper constants into the hardware.
   void UpdateDxClippingUniform(GLint location);
+  void UpdatePickingColorUniform(GLint location);
 
   // Called when we get a new context.
   bool OnContextRestored();
@@ -206,6 +210,12 @@ class RendererGLES2 : public Renderer {
   virtual void PlatformSpecificFinishRendering();
 
   // Overridden from Renderer.
+  virtual void PlatformSpecificStartPicking();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificFinishPicking();
+
+  // Overridden from Renderer.
   virtual void PlatformSpecificPresent();
 
   // Overridden from Renderer.
@@ -226,6 +236,16 @@ class RendererGLES2 : public Renderer {
                            int height,
                            float min_z,
                            float max_z);
+
+  // Sets the OpenGL scissor rectangle and enable/disable
+  // GL_SCISSOR_TEST as needed.
+  //
+  // A 'picking_mode_override' can be passed, that allows
+  // the implementation to ignore the value returned by
+  // by the picking() method and consider picking mode
+  // is either enable, if set to true, or otherwise
+  // disabled.
+  void SetScissorValues(bool* picking_mode_override=0);
 
   // Overridden from Renderer.
   virtual void SetBackBufferPlatformSpecific();
@@ -277,7 +297,7 @@ class RendererGLES2 : public Renderer {
   HGLRC gl_context_;
 #endif
 
-#ifdef OS_MACOSX
+#if defined(OS_MACOSX) && !(TARGET_OS_IPHONE)
   AGLContext    mac_agl_context_;
   CGLContextObj mac_cgl_context_;
 #endif
@@ -367,6 +387,10 @@ class RendererGLES2 : public Renderer {
 
   // Transform matrix coefficients to match DX clipping rules.
   GLfloat dx_clipping_[4];
+
+  // Pick color
+  GLfloat pick_color_[4];
+  bool saved_blend_state_;
 };
 
 }  // namespace o3d

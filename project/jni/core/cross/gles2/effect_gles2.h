@@ -61,6 +61,25 @@ class SemanticManager;
 
 // TODO(gman): Replace.
 typedef GLuint GLES2Parameter;
+	
+class GLProgramParam : public RefCounted {
+public:
+	typedef SmartPointer<GLProgramParam> Ref;
+	
+	GLProgramParam(GLint location, GLenum type, GLsizei size) :
+		location_(location), type_(type), size_(size) { }
+	~GLProgramParam() { }
+	GLint location() { return location_; }
+	GLenum type() { return type_; }
+	GLsizei size() { return size_; }
+private:
+	GLint location_;
+	GLenum type_;
+	GLsizei size_;
+};
+
+typedef std::map<String, GLProgramParam::Ref> GLProgramParameterMap;
+	
 
 // A class to set an effect parameter from an O3D parameter.
 class EffectParamHandlerGLES2 : public RefCounted {
@@ -112,8 +131,10 @@ class EffectGLES2 : public Effect {
 
   // Handler for a new context.
   bool OnContextRestored();
+  const GLProgramParameterMap* GetUniformParamMapping() { return &shader_param_info_map_; }
 
  private:
+  void CacheGLParamMapping();
   // Loops through all the parameters in the ShapeDataGLES2 and updates the
   // corresponding parameter EffectGLES2 object
   void UpdateShaderUniformsFromEffect(ParamCacheGLES2* param_cache_gl);
@@ -138,6 +159,9 @@ class EffectGLES2 : public Effect {
   GLuint gl_program_;
   int compile_count_;
 
+  // Cache the shader parameter mapping so that GPU readback only happens once
+  GLProgramParameterMap shader_param_info_map_;
+	
   // TODO(o3d): remove this (OLD path for textures).
   std::map<String, String> sampler_to_texture_map_;
 };

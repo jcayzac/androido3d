@@ -37,8 +37,8 @@
 #ifndef O3D_CORE_CROSS_RENDERER_PLATFORM_H_
 #define O3D_CORE_CROSS_RENDERER_PLATFORM_H_
 
-#include <build/build_config.h>
-#if defined(OS_MACOSX)
+#include "build/build_config.h"
+#if defined(OS_MACOSX) && !defined(TARGET_OS_IPHONE)
 #include "core/cross/gl/gl_headers.h"
 #include <OpenGL/OpenGL.h>
 #include <AGL/agl.h>
@@ -59,11 +59,12 @@
 
 #if defined(OS_WIN)
 #include "core/win/display_window_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(TARGET_OS_IPHONE)
 #include "core/mac/display_window_mac.h"
 #elif defined(OS_ANDROID)
 #elif defined(OS_LINUX)
 #include "core/linux/display_window_linux.h"
+#elif defined(TARGET_OS_IPHONE)
 #else
 #error Platform not recognized.
 #endif

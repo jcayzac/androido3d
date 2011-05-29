@@ -16,11 +16,18 @@
 
 // Sample code using O3D library.
 
+#include "build/build_config.h"
+
+#if defined(OS_ANDROID)
 #include <jni.h>
 #include <android/log.h>
-
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#elif defined(TARGET_OS_IPHONE)
+#include "iOS/iphoneo3d/log.h"
+#import <OpenGLES/ES2/gl.h>
+#import <OpenGLES/ES2/glext.h>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,9 +56,19 @@
 #include "render_graph.h"
 #include "scene.h"
 
+#if defined(OS_ANDROID)
 #define  LOG_TAG    "libo3djni"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+
+#elif defined(TARGET_OS_IPHONE)
+#define JNIEXPORT static
+#define JNICALL
+#define JNIEnv void
+#define jobject int
+#define jint int
+#define jfloat float
+#endif
 
 class DisplayWindowAndroid : public o3d::DisplayWindow {
  public:

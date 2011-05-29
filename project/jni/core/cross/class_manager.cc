@@ -143,6 +143,9 @@ ClassManager::ClassManager(ServiceLocator* service_locator)
   AddTypedClass<WorldViewProjectionTransposeParamMatrix4>();
   AddTypedClass<WorldViewProjectionInverseTransposeParamMatrix4>();
 
+  AddTypedClass<BillboardParamMatrix4>();
+  AddTypedClass<BillboardTransposeParamMatrix4>();
+
   // Other Objects.
   AddTypedClass<Bitmap>();
 #if !defined(O3D_NO_CANVAS)

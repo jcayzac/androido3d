@@ -54,6 +54,8 @@ size_t ComputeBufferSize(unsigned int width,
   switch (format) {
     case Texture::XRGB8:
     case Texture::ARGB8:
+    case Texture::RGBX8:
+    case Texture::RGBA8:
       return 4 * sizeof(uint8) * pixels;  // NOLINT
     case Texture::ABGR16F:
       return 4 * sizeof(uint16) * pixels;  // NOLINT
@@ -105,6 +107,8 @@ bool ScaleUpToPOT(unsigned int width,
   switch (format) {
     case Texture::XRGB8:
     case Texture::ARGB8:
+	case Texture::RGBX8:
+	case Texture::RGBA8:
     case Texture::ABGR16F:
     case Texture::R32F:
     case Texture::ABGR32F:
@@ -128,6 +132,8 @@ unsigned int GetNumComponentsForFormat(o3d::Texture::Format format) {
   switch (format) {
     case o3d::Texture::XRGB8:
     case o3d::Texture::ARGB8:
+	case o3d::Texture::RGBX8:
+	case o3d::Texture::RGBA8:
     case o3d::Texture::ABGR16F:
     case o3d::Texture::ABGR32F:
       return 4;
@@ -209,7 +215,9 @@ bool Scale(unsigned int src_width,
   DCHECK(CheckImageDimensions(dst_width, dst_height));
   switch (format) {
     case Texture::XRGB8:
-    case Texture::ARGB8: {
+    case Texture::ARGB8:
+    case Texture::RGBX8:
+    case Texture::RGBA8: {
       PointScale<uint8>(4, src, src_width, src_height,
                         dst, dst_pitch, dst_width, dst_height);
       break;
@@ -758,6 +766,8 @@ void LanczosScale(Texture::Format format, const void* src, int src_pitch,
   switch (format) {
     case Texture::ARGB8:
     case Texture::XRGB8:
+	case Texture::RGBA8:
+	case Texture::RGBX8:
       TypedLanczosScale<uint8, UInt8ToFloat, Safe8Round>(
           src, src_pitch, src_x, src_y, src_width, src_height,
           dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
@@ -798,6 +808,8 @@ bool GenerateMipmap(unsigned int src_width,
   switch (format) {
     case Texture::ARGB8:
     case Texture::XRGB8:
+	case Texture::RGBA8:
+	case Texture::RGBX8:
       GenerateMip<uint8, uint32, uint64,
                   UInt8ToUInt32, UInt32ToUInt8,
                   UInt8ToUInt64, UInt64ToUInt8>(

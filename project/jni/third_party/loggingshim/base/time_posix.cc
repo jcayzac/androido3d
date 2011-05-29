@@ -179,6 +179,122 @@ TimeTicks TimeTicks::HighResNow() {
 
 #endif  // !OS_MACOSX
 
+#ifdef TARGET_OS_IPHONE
+	// TODO: All of the code in this ifdef block is for resolving link errors on the iphone.
+	//       These symbols should not need to be defined so more work is needed in resolving
+	//       why references to these exist for iphone builds.
+	//       for iphone builds.
+	// TODO: This may not be the correct solution for the kTimeTToMicrosecondsOffset link error
+	//       But it temporarily gets things linking.
+	static const int64 kWindowsEpochDeltaSeconds = GG_INT64_C(11644473600);
+	static const int64 kWindowsEpochDeltaMilliseconds =
+    kWindowsEpochDeltaSeconds * Time::kMillisecondsPerSecond;
+	
+	// static
+	const int64 Time::kWindowsEpochDeltaMicroseconds =
+    kWindowsEpochDeltaSeconds * Time::kMicrosecondsPerSecond;
+	
+	// Some functions in time.cc use time_t directly, so we provide an offset
+	// to convert from time_t (Unix epoch) and internal (Windows epoch).
+	// static
+	const int64 Time::kTimeTToMicrosecondsOffset = kWindowsEpochDeltaMicroseconds;
+
+	// TODO: This is a solution for the link errors for:
+	//       "base::Time::Explode(bool, base::Time::Exploded*) const"
+	//       "base::Time::FromExploded(bool, base::Time::Exploded const&)"
+	//       It is not an ideal solution but it temporarily gets things linking.
+	//       Another solution is removing the method: Time Time::LocalMidnight()
+	//       as it is the only code that references these functions and that method
+	//       is never invoked.  And yet another solution is to instead ensure that
+	//       "Dead Code Stripping" is enabled for all builds of an app that link
+	//       with this library.
+	//       Removing these functions and enabling "Dead Code Stripping" for apps
+	//       that use the library results in successfully linking therefore this
+	//       code is never called.
+	// static
+	Time Time::FromExploded(bool is_local, const Exploded& exploded) {
+		struct tm timestruct;
+		timestruct.tm_sec    = exploded.second;
+		timestruct.tm_min    = exploded.minute;
+		timestruct.tm_hour   = exploded.hour;
+		timestruct.tm_mday   = exploded.day_of_month;
+		timestruct.tm_mon    = exploded.month - 1;
+		timestruct.tm_year   = exploded.year - 1900;
+		timestruct.tm_wday   = exploded.day_of_week;  // mktime/timegm ignore this
+		timestruct.tm_yday   = 0;     // mktime/timegm ignore this
+		timestruct.tm_isdst  = -1;    // attempt to figure it out
+		timestruct.tm_gmtoff = 0;     // not a POSIX field, so mktime/timegm ignore
+		timestruct.tm_zone   = NULL;  // not a POSIX field, so mktime/timegm ignore
+		
+		time_t seconds;
+		if (is_local)
+			seconds = mktime(&timestruct);
+		else
+			seconds = timegm(&timestruct);
+		
+		int64 milliseconds;
+		// Handle overflow.  Clamping the range to what mktime and timegm might
+		// return is the best that can be done here.  It's not ideal, but it's better
+		// than failing here or ignoring the overflow case and treating each time
+		// overflow as one second prior to the epoch.
+		if (seconds == -1 &&
+			(exploded.year < 1969 || exploded.year > 1970)) {
+			// If exploded.year is 1969 or 1970, take -1 as correct, with the
+			// time indicating 1 second prior to the epoch.  (1970 is allowed to handle
+			// time zone and DST offsets.)  Otherwise, return the most future or past
+			// time representable.  Assumes the time_t epoch is 1970-01-01 00:00:00 UTC.
+			//
+			// The minimum and maximum representible times that mktime and timegm could
+			// return are used here instead of values outside that range to allow for
+			// proper round-tripping between exploded and counter-type time
+			// representations in the presence of possible truncation to time_t by
+			// division and use with other functions that accept time_t.
+			//
+			// When representing the most distant time in the future, add in an extra
+			// 999ms to avoid the time being less than any other possible value that
+			// this function can return.
+			if (exploded.year < 1969) {
+				milliseconds = std::numeric_limits<time_t>::min() *
+				kMillisecondsPerSecond;
+			} else {
+				milliseconds = (std::numeric_limits<time_t>::max() *
+								kMillisecondsPerSecond) +
+				kMillisecondsPerSecond - 1;
+			}
+		} else {
+			milliseconds = seconds * kMillisecondsPerSecond + exploded.millisecond;
+		}
+		
+		// Adjust from Unix (1970) to Windows (1601) epoch.
+		return Time((milliseconds * kMicrosecondsPerMillisecond) +
+					kWindowsEpochDeltaMicroseconds);
+	}
+	
+	void Time::Explode(bool is_local, Exploded* exploded) const {
+		// Time stores times with microsecond resolution, but Exploded only carries
+		// millisecond resolution, so begin by being lossy.  Adjust from Windows
+		// epoch (1601) to Unix epoch (1970);
+		int64 milliseconds = (us_ - kWindowsEpochDeltaMicroseconds) /
+		kMicrosecondsPerMillisecond;
+		time_t seconds = milliseconds / kMillisecondsPerSecond;
+		
+		struct tm timestruct;
+		if (is_local)
+			localtime_r(&seconds, &timestruct);
+		else
+			gmtime_r(&seconds, &timestruct);
+		
+		exploded->year         = timestruct.tm_year + 1900;
+		exploded->month        = timestruct.tm_mon + 1;
+		exploded->day_of_week  = timestruct.tm_wday;
+		exploded->day_of_month = timestruct.tm_mday;
+		exploded->hour         = timestruct.tm_hour;
+		exploded->minute       = timestruct.tm_min;
+		exploded->second       = timestruct.tm_sec;
+		exploded->millisecond  = milliseconds % kMillisecondsPerSecond;
+	}	
+#endif	
+
 struct timespec TimeDelta::ToTimeSpec() const {
   int64 microseconds = InMicroseconds();
   time_t seconds = 0;

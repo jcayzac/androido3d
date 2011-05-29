@@ -1,0 +1,56 @@
+#!/bin/bash
+
+export PROJECT_DIR="${0%/*}"
+function usage() {
+	echo >&2 "$0 <destination_dir> [-u]"
+	echo >&2 "    Copies O3D's public headers to \"destination_dir\""
+	echo >&2 "    -u \"Update\". Only copies files that already exist in \"destination_dir\", and that have different content"
+}
+
+if [ -z "$1" ]
+then
+	echo >&2 "*** No directory specified!"
+	usage
+	exit 1
+fi
+
+if [ ! -d "$1" ]
+then
+	echo >&2 "*** Directory \"$1\" does not exist."
+	usage
+	exit 1
+fi
+
+export DEST_DIR="$1"
+
+if [ "x$2" == "x-u" ]
+then
+	export UPDATE_ONLY=1
+fi
+
+export JNI_DIR="${PROJECT_DIR}/../../jni"
+find "$JNI_DIR" -iname "*.h" | while read FN
+do
+	DST="${DEST_DIR}${FN#${JNI_DIR}*}"
+	COPY_IT=1
+	if [ $UPDATE_ONLY == 1 ]
+	then
+		if [ ! -f "${DST}" ]
+		then
+			COPY_IT=0
+		else
+			diff -q "$FN" "${DST}" >/dev/null 2>&1
+			if [ $? == 0 ]
+			then
+				COPY_IT=0
+			fi
+		fi
+	fi
+	if [ $COPY_IT == 1 ]
+	then
+		echo "$FN -> ${DST}"
+		mkdir -p "${DST%/*}"
+		cp -p "$FN" "${DST}"
+	fi
+done
+

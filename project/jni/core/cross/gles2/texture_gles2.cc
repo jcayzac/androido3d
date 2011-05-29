@@ -69,6 +69,8 @@ static GLenum GLFormatFromO3DFormat(Texture::Format format,
     case Texture::XRGB8: {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
       *internal_format = GL_RGB;
+#elif TARGET_OS_IPHONE
+	  *internal_format = GL_RGBA;
 #else
       // On GLES, the internal_format must match format.
       *internal_format = GL_BGRA;
@@ -79,11 +81,23 @@ static GLenum GLFormatFromO3DFormat(Texture::Format format,
     case Texture::ARGB8: {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
       *internal_format = GL_RGBA;
+#elif TARGET_OS_IPHONE
+	  *internal_format = GL_RGBA;
 #else
       *internal_format = GL_BGRA;
 #endif
       *data_type = GL_UNSIGNED_BYTE;
       return GL_BGRA;
+    }
+    case Texture::RGBX8: {
+      *internal_format = GL_RGBA;
+      *data_type = GL_UNSIGNED_BYTE;
+      return GL_RGBA;
+    }
+    case Texture::RGBA8: {
+      *internal_format = GL_RGBA;
+      *data_type = GL_UNSIGNED_BYTE;
+      return GL_RGBA;
     }
     case Texture::ABGR16F: {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
@@ -252,12 +266,17 @@ static bool CreateGLImages(GLenum target,
   temp_data.reset(new uint8[size]);
   memset(temp_data.get(), 0, size);
 
+#if GL_APPLE_texture_max_level
+  glTexParameteri(target, GL_TEXTURE_MAX_LEVEL_APPLE, levels - 1);
+#endif
+
   for (int i = 0; i < levels; ++i) {
     if (gl_format) {
       glTexImage2D(target, i, internal_format, mip_width, mip_height,
                    0, gl_format, type, temp_data.get());
-      if (glGetError() != GL_NO_ERROR) {
-        DLOG(ERROR) << "glTexImage2D failed";
+		GLenum err = glGetError();
+      if (err != GL_NO_ERROR) {
+        DLOG(ERROR) << "glTexImage2D failed with error code " << err;
         return false;
       }
     } else {

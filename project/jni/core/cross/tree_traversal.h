@@ -44,6 +44,7 @@
 namespace o3d {
 
 class TransformationContext;
+class PickingContext;
 class Shape;
 
 // A TreeTraversal has multiple DrawLists registered with it. Each DrawList has
@@ -203,6 +204,8 @@ class TreeTraversal : public RenderNode {
   DrawContextInfoArray draw_context_infos_by_draw_list_global_index_;
 
   TransformationContext* transformation_context_;
+  PickingContext* picking_context_;
+  class PickableStack;
 
   bool standard_params_have_been_set_;  // true if standard params
                                         // have been set.

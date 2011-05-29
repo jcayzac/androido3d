@@ -261,6 +261,44 @@ class FieldReadAccessorPoint3 : public FieldReadAccessor<Point3> {
   Point3 cache_[3];
 };
 
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+class FieldReadAccessorUnsignedShort : public FieldReadAccessor<unsigned short> {
+ public:
+  FieldReadAccessorUnsignedShort()
+      : FieldReadAccessor<unsigned short>(),
+        just_count_(false) { }
+  void InitializeJustCount(unsigned int start_index, unsigned int length) {
+    initialized_ = true;
+    real_start_index_ = start_index;
+    translated_end_index_ = length;
+    locked_ = false;
+    just_count_ = true;
+  }
+  virtual unsigned short& operator[](unsigned int translated_index) {
+    if (translated_index >= translated_end_index_) {
+      O3D_ERROR(buffer_->service_locator())
+          << "Index " << real_start_index_ + translated_index
+          << " into buffer '" << buffer_->name() << "' is out of range.";
+      translated_index = 0;
+    }
+    if (just_count_) {
+      unsigned int ctr = real_start_index_ + translated_index;
+      if ( ctr > 0x0000FFFF ) {
+          O3D_ERROR(buffer_->service_locator())
+              << "Counter value " << ctr
+              << " for buffer '" << buffer_->name() << "' is greater than 65535";
+      }
+      counter_ = (unsigned short) ctr;
+      return counter_;
+    } else {
+      return FieldReadAccessor<unsigned short>::operator[](translated_index);
+    }
+  }
+ protected:
+  unsigned short counter_;
+  bool just_count_;
+};
+#else
 class FieldReadAccessorUnsignedInt : public FieldReadAccessor<unsigned int> {
  public:
   FieldReadAccessorUnsignedInt()
@@ -291,6 +329,7 @@ class FieldReadAccessorUnsignedInt : public FieldReadAccessor<unsigned int> {
   unsigned int counter_;
   bool just_count_;
 };
+#endif
 
 // Attempts to initialize a FieldReadAccessor for the stream of vertices of
 // the primitive.  Returns newly allocated accessor which must be deleted
@@ -360,7 +399,11 @@ FieldReadAccessor<Point3>* GetVerticesAccessor(const Primitive* primitive,
 // Attempts to initialize a FieldReadAccessor for the stream of indices of
 // the primitive.  Returns success.
 bool GetIndicesAccessor(const Primitive* primitive,
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+                        FieldReadAccessor<unsigned short>* accessor,
+#else
                         FieldReadAccessor<unsigned int>* accessor,
+#endif
                         unsigned start_index,
                         unsigned index_count) {
   if (!(accessor && primitive))
@@ -389,7 +432,11 @@ bool Primitive::WalkPolygons(
     PolygonFunctor* polygon_functor) const {
   DLOG_ASSERT(polygon_functor);
 
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+  FieldReadAccessorUnsignedShort indices;
+#else
   FieldReadAccessorUnsignedInt indices;
+#endif
   scoped_ptr<FieldReadAccessor<Point3> > vertices_pointer(
       GetVerticesAccessor(this, position_stream_index));
   if (vertices_pointer.get() == NULL)

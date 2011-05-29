@@ -108,7 +108,11 @@
 #include <string>
 #include <vector>
 
+#ifdef TARGET_OS_IPHONE
+#include "minizip/unzip.h"
+#else
 #include "contrib/minizip/unzip.h"
+#endif
 
 #if defined(OS_WIN)
 // Windows #defines this.

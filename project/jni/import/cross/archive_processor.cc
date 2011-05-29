@@ -36,7 +36,11 @@
 
 #include "base/logging.h"
 #include "import/cross/memory_buffer.h"
-#include "zlib.h"
+#if defined(USE_SYSTEM_ZLIB)
+#include <zlib.h>
+#else
+#include "third_party/zlib/zlib.h"
+#endif
 
 const int kChunkSize = 16384;
 

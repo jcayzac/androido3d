@@ -17,6 +17,13 @@
 // A set of macros to use for platform detection.
 #if defined(__APPLE__)
 #define OS_MACOSX 1
+
+#include <TargetConditionals.h>
+#ifdef TARGET_OS_IPHONE
+#include <sys/types.h>
+#include </usr/include/time.h>
+#endif
+
 #elif defined(__linux__) && !defined(__ANDROID__) 
 #define OS_LINUX 1
 // Use TOOLKIT_GTK on linux if TOOLKIT_VIEWS isn't defined.

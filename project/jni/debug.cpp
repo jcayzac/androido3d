@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
+#include "build/build_config.h"
+
+#ifdef __ANDROID__
 #include <jni.h>
 #include <android/log.h>
-#include <string>
 
 #define  LOG_TAG    "libo3djni"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+
+#elif TARGET_OS_IPHONE
+#include "iOS/iphoneo3d/log.h"
+#endif
+
+#include <string>
+
 
 #include "core/cross/buffer.h"
 #include "core/cross/draw_element.h"

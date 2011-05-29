@@ -35,8 +35,10 @@
 #ifndef O3D_CORE_CROSS_TIMER_H_
 #define O3D_CORE_CROSS_TIMER_H_
 
-#include <build/build_config.h>
-#ifdef OS_MACOSX
+#include "build/build_config.h"
+#ifdef TARGET_OS_IPHONE
+#include <CoreFoundation/CoreFoundation.h>
+#elif OS_MACOSX
 #include <Carbon/Carbon.h>
 #endif
 
@@ -58,7 +60,9 @@ class ElapsedTimeTimer {
  private:
   float GetElapsedTimeHelper(bool reset);
 
-#ifdef OS_MACOSX
+#ifdef TARGET_OS_IPHONE
+  typedef CFAbsoluteTime TimeStamp;
+#elif OS_MACOSX
   typedef AbsoluteTime TimeStamp;
 #endif
 

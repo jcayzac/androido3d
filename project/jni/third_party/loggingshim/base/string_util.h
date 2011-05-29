@@ -120,6 +120,8 @@ bool IsWprintfFormatPortable(const wchar_t* format);
 #include "base/string_util_win.h"
 #elif defined(OS_POSIX)
 #include "base/string_util_posix.h"
+#elif defined(TARGET_OS_IPHONE)
+#include "base/string_util_posix.h"
 #else
 #error Define string operations appropriately for your platform
 #endif

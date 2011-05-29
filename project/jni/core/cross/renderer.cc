@@ -120,6 +120,7 @@ Renderer::Renderer(ServiceLocator* service_locator)
       need_to_render_(true),
       rendering_(false),
       drawing_(false),
+      picking_(false),
       width_(0),
       height_(0),
       display_width_(0),

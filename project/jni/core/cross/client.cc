@@ -76,6 +76,7 @@ Client::Client(ServiceLocator* service_locator)
       draw_list_manager_(service_locator),
       counter_manager_(service_locator),
       transformation_context_(service_locator),
+      picking_context_(service_locator),
       semantic_manager_(service_locator),
       profiler_(service_locator),
       renderer_(service_locator),
@@ -342,6 +343,59 @@ void Client::RenderClient(bool send_callback) {
     renderer_->SetRenderSurfaces(NULL, NULL, false);
     renderer_->FinishRendering();
   }
+}
+
+ParamObject* Client::Pick(int window_x, int window_y) {
+	if (!render_graph_root()) return 0;
+	if (render_graph_root()->children().empty()) return 0;
+	if (!renderer_.IsAvailable()) return 0;
+
+	// We always need to call StartRendering()/FinishRendering()
+	// before and after rendering stuff, but if we have rendering
+	// surfaces we also need to wrap their rendering around one
+	// set of StartRendering()/FinishRendering(). Thus the code
+	// becomes:
+	//
+	// No offscreen surfaces:
+	//     StartRendering()
+	//         ...render...
+	//     FinishRendering()
+	//
+	// Offscreen surfaces:
+	//     StartRendering()
+	//         SetRenderSurfaces(...surfaces...)
+	//             StartRendering()
+	//                 ...render...
+	//             FinishRendering()
+	//         SetRenderSurfaces(...NULL...)
+	//     FinishRendering()
+
+	const bool have_offscreen_surfaces(!(offscreen_render_surface_.IsNull() || offscreen_depth_render_surface_.IsNull()));
+	if (have_offscreen_surfaces) {
+		if (!renderer_->StartRendering()) return 0;
+		renderer_->SetRenderSurfaces(offscreen_render_surface_, offscreen_depth_render_surface_, true);
+	}
+
+	if (!renderer_->StartRendering()) return 0;
+
+	ParamObject* result = 0;
+	if (renderer_->BeginDraw()) {
+		RenderContext render_context(renderer_.Get());
+		renderer_->StartPicking(window_x, window_y);
+		render_graph_root()->RenderTree(&render_context);
+		draw_list_manager_.Reset();
+		result = renderer_->FinishPicking();
+		renderer_->EndDraw();
+	}
+
+	renderer_->FinishRendering();
+
+	if (have_offscreen_surfaces) {
+		renderer_->SetRenderSurfaces(NULL, NULL, false);
+		renderer_->FinishRendering();
+	}
+
+	return result;
 }
 
 // Executes draw calls for all visible shapes in a subtree

@@ -33,7 +33,8 @@
 #ifndef O3D_CORE_CROSS_SEMANTIC_MANAGER_H_
 #define O3D_CORE_CROSS_SEMANTIC_MANAGER_H_
 
-#include <build/build_config.h>
+#include "build/build_config.h"
+
 #include <map>
 
 #include "core/cross/types.h"

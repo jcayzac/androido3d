@@ -4,6 +4,14 @@
 #include <sstream>
 #include <string>
 
+#if !defined(TARGET_OS_IPHONE)
+#define  LOGASSERT(_severity, _tag, _va_args)  __android_log_assert(_severity,_tag,_va_args)
+#define  LOGPRINT(_severity, _tag, _va_args)  __android_log_print(_severity,_tag,_va_args)
+#else
+#define  LOGASSERT(_severity, _tag, _msg)  LOGE("%s [%s] %s\n",_tag, strrchr(mLocation,'/')+1, _msg)
+#define  LOGPRINT(_severity, _tag, _msg)  LOGW("%s [%s] %s\n",_tag, strrchr(mLocation,'/')+1, _msg)
+#endif
+
 namespace logging {
  
 Logger::Logger(LogSeverity severity, const char* tag, const char* file, int line, bool showLocation)
@@ -20,10 +28,10 @@ Logger::Logger(LogSeverity severity, const char* tag, const char* file, int line
       mInput << "\t" << mLocation;
     }
     
-	 	__android_log_print(mSeverity, mTag, mInput.str().c_str());
+	 	LOGPRINT(mSeverity, mTag, mInput.str().c_str());
 
     if (mSeverity == FATAL) {
-      //__android_log_assert(false, mTag, mInput.str().c_str());
+      //LOGASSERT(false, mTag, mInput.str().c_str());
       exit(0);
     } 
   }

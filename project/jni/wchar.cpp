@@ -17,7 +17,13 @@
 // These are here to provide working implementations for some of the
 // wchar_t functions since they are missing in the android ndk version 4.
 
+#ifdef __APPLE__
+#include "build_config.h"
+#endif
 #include <stdlib.h>
+#ifdef TARGET_OS_IPHONE
+#include <string.h>
+#endif
 
 extern "C" {
 

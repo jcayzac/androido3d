@@ -101,3 +101,7 @@ void FUUniqueStringMapT<CH>::erase(const fm::stringT<CH>& str)
 		itV->second.erase(suffix);
 	}
 }
+
+// FIX (jcayzac): fixes missing symbols when doing dead code stripping.
+template class FUUniqueStringMapT<char>;
+template class FUUniqueStringMapT<fchar>;

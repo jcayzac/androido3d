@@ -36,10 +36,35 @@
 #include "core/cross/shape.h"
 #include "core/cross/draw_list.h"
 #include "core/cross/transformation_context.h"
+#include "core/cross/picking_context.h"
 #include "core/cross/renderer.h"
 #include "core/cross/error.h"
 
 namespace o3d {
+
+// Acts as a stack for pickable objects as they get traversed by
+// the TreeTraversal (used in WalkTransform() and AddInstance()).
+// The PickingContext gets modified only if Renderer::picking()
+// returns true.
+class TreeTraversal::PickableStack {
+private:
+	PickingContext*  context;
+	ParamObject::Ref previous_pickable;
+public:
+	PickableStack(PickingContext* context, ParamObject* candidate, bool really_do_it)
+	: context(context), previous_pickable(context->pickable()) {
+		DCHECK(candidate);
+		ParamBoolean* p = candidate->GetParam<ParamBoolean>("pickable");
+		if (really_do_it && p) {
+			if (p->value()) {
+				context->set_pickable(candidate);
+			}
+		}
+	}
+	~PickableStack() {
+		context->set_pickable(previous_pickable);
+	}
+};
 
 O3D_DEFN_CLASS(TreeTraversal, RenderNode);
 
@@ -53,7 +78,8 @@ ObjectBase::Ref TreeTraversal::Create(ServiceLocator* service_locator) {
 TreeTraversal::TreeTraversal(ServiceLocator* service_locator)
     : RenderNode(service_locator),
       transformation_context_(service_locator->
-          GetService<TransformationContext>()) {
+          GetService<TransformationContext>()),
+      picking_context_(service_locator->GetService<PickingContext>()) {
   RegisterParamRef(kTransformParamName, &transform_param_);
 }
 
@@ -150,6 +176,7 @@ void TreeTraversal::WalkTransform(RenderContext* render_context,
                                   int depth,
                                   int num_non_culled_draw_contexts) {
   Renderer* renderer = render_context->renderer();
+  PickableStack pushIfPickable(picking_context_, transform, renderer->picking());
   Matrix4 world = transform->world_matrix();
   Matrix4 world_view_projection;
   bool cull_depth_was_set = false;
@@ -273,6 +300,7 @@ void TreeTraversal::AddInstance(RenderContext* render_context,
                                 Transform* override,
                                 const Matrix4& world) {
   Renderer* renderer = render_context->renderer();
+  PickableStack pushIfPickable(picking_context_, shape, renderer->picking());
   const ElementRefArray& elements = shape->GetElementRefs();
   ElementRefArray::size_type num_elements = elements.size();
   for (ElementRefArray::size_type ii = 0; ii < num_elements; ++ii) {

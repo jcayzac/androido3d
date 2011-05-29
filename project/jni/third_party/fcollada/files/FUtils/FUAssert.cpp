@@ -9,7 +9,11 @@
 #include "StdAfx.h"
 #include "FUAssert.h"
 #ifdef __APPLE__
+#ifdef TARGET_OS_IPHONE
+#include <MobileCoreServices/MobileCoreServices.h>
+#else
 #include <CoreServices/CoreServices.h>
+#endif // TARGET_OS_IPHONE
 #endif
 
 

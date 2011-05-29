@@ -416,7 +416,11 @@ fstring FUFileManager::GetApplicationFolderName()
 	static NSGetExecutablePathProcPtr NSGetExecutablePath = NULL;
 	if (NSGetExecutablePath == NULL)
 	{
+#ifdef TARGET_OS_IPHONE
+		assert( false ); // NSAddressOfSymbol not available on iphone
+#else
 		NSGetExecutablePath = (NSGetExecutablePathProcPtr) NSAddressOfSymbol(NSLookupAndBindSymbol("__NSGetExecutablePath"));
+#endif
 	}
 	if (NSGetExecutablePath != NULL)
 	{

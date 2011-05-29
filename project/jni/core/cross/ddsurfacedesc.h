@@ -37,7 +37,7 @@
 #ifndef O3D_CORE_CROSS_GL_DDSURFACEDESC_H_
 #define O3D_CORE_CROSS_GL_DDSURFACEDESC_H_
 
-#include <build/build_config.h>
+#include "build/build_config.h"
 
 #ifndef OS_WIN
 typedef uint16 WORD;

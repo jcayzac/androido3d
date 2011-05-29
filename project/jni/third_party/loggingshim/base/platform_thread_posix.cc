@@ -77,7 +77,11 @@ bool CreateThread(size_t stack_size, bool joinable,
                   PlatformThread::Delegate* delegate,
                   PlatformThreadHandle* thread_handle) {
 #if defined(OS_MACOSX)
+#ifdef TARGET_OS_IPHONE
+#warning "base::InitThreading() not implemented for IPHONE/MACOSX"
+#else
   base::InitThreading();
+#endif
 #endif  // OS_MACOSX
 
   bool success = false;

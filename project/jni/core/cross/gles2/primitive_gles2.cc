@@ -181,6 +181,8 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
   // Set up the shaders in this drawcall from the Effect.
   effect_gl->PrepareForDraw(param_cache_gl);
 
+  CHECK_GL_ERROR();
+	
   // Do the drawcall.
   GLenum gl_primitive_type = GL_NONE;
   switch (primitive_type_) {
@@ -235,14 +237,23 @@ void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
     DCHECK_NE(gl_primitive_type, static_cast<unsigned int>(GL_NONE));
     renderer->AddPrimitivesRendered(number_primitives_);
     if (indexed()) {
+#ifdef GLES2_BACKEND_NATIVE_GLES2
+		glDrawElements(gl_primitive_type,
+					   index_count,
+					   GL_UNSIGNED_SHORT,
+					   BufferOffset(start_index() * sizeof(uint16)));
+#else		
       glDrawElements(gl_primitive_type,
                      index_count,
                      GL_UNSIGNED_INT,
                      BufferOffset(start_index() * sizeof(uint32)));  // NOLINT
+#endif
     } else {
       glDrawArrays(gl_primitive_type, start_index(), index_count);
     }
   }
+	
+  CHECK_GL_ERROR();
 
   // Clean up the shaders.
   effect_gl->PostDraw(param_cache_gl);

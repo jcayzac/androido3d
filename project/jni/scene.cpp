@@ -189,7 +189,7 @@ Scene* Scene::LoadScene(
     prim->SetOwner(shape);
     prim->set_material(material);
   }
-
+	
   Materials::PrepareMaterials(pack, view_info, effect_texture_pack);
   PrepareShapes(pack);
 

@@ -198,7 +198,7 @@ CameraInfo* Camera::getViewAndProjectionFromCamera(
   }
 
   o3d::ParamString* projectionType =
-      camera->GetParam<o3d::ParamString>("'collada.projectionType");
+      camera->GetParam<o3d::ParamString>("collada.projectionType");
   if (projectionType) {
     zNear =
         camera->GetParam<o3d::ParamFloat>("collada.projectionNearZ")->value();

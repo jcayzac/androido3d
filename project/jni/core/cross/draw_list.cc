@@ -34,6 +34,7 @@
 
 #include "core/cross/draw_list.h"
 #include "core/cross/transformation_context.h"
+#include "core/cross/picking_context.h"
 #include "core/cross/draw_list_manager.h"
 #include "core/cross/renderer.h"
 #include "core/cross/material.h"
@@ -63,6 +64,7 @@ class DrawElementInfo {
            Element* element,
            Material* material,
            ParamObject* override,
+           ParamObject* pickable,
            ParamCache* param_cache) {
     world_ = world;
     world_view_projection_ = world_view_projection;
@@ -70,6 +72,7 @@ class DrawElementInfo {
     element_ = element;
     material_ = material;
     override_ = override;
+    pickable_ = pickable;
     param_cache_ = param_cache;
     priority_ = element->priority();
     effect_ = material->effect();
@@ -105,6 +108,7 @@ class DrawElementInfo {
               TransformationContext* transformation_context) {
     transformation_context->set_world(world_);
     transformation_context->set_world_view_projection(world_view_projection_);
+    render_context->renderer()->SetCurrentPickable(pickable_);
     render_context->renderer()->RenderElement(element_,
                                               draw_element_,
                                               material_,
@@ -119,6 +123,7 @@ class DrawElementInfo {
   DrawElement* draw_element_;
   Material* material_;
   ParamObject* override_;
+  ParamObject* pickable_;
   ParamCache* param_cache_;
   float priority_;  // pulled out for sorting
   float z_value_;  // pulled out for sorting
@@ -131,6 +136,7 @@ DrawList::DrawList(ServiceLocator* service_locator)
     : NamedObject(service_locator),
       transformation_context_(service_locator->
           GetService<TransformationContext>()),
+      picking_context_(service_locator->GetService<PickingContext>()),
       view_(Matrix4::identity()),
       projection_(Matrix4::identity()),
       top_draw_element_info_(0),
@@ -197,6 +203,7 @@ void DrawList::AddDrawElement(DrawElement* draw_element,
                     element,
                     material,
                     override,
+                    picking_context_->pickable(),
                     param_cache);
 }
 
@@ -238,7 +245,7 @@ void DrawList::Render(RenderContext* render_context,
         for (unsigned ii = 0; ii < top_draw_element_info_; ++ii) {
           draw_element_infos_[ii]->ComputeZValue(transformation_context_);
         }
-        std::sort(draw_element_infos_.begin(),
+        std::stable_sort(draw_element_infos_.begin(),
                   draw_element_infos_.begin() + top_draw_element_info_,
                   CompareByZValue);
         break;

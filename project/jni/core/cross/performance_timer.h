@@ -40,8 +40,10 @@
 #ifndef O3D_IMPORT_CROSS_PERFORMANCE_TIMER_H_
 #define O3D_IMPORT_CROSS_PERFORMANCE_TIMER_H_
 
-#include <build/build_config.h>
-#ifdef OS_MACOSX
+#include "build/build_config.h"
+#ifdef TARGET_OS_IPHONE
+#include <CoreFoundation/CoreFoundation.h>
+#elif OS_MACOSX
 #include <Carbon/Carbon.h>
 #endif
 #include <string>
@@ -49,7 +51,9 @@
 
 namespace o3d {
 
-#ifdef OS_MACOSX
+#ifdef TARGET_OS_IPHONE
+typedef CFAbsoluteTime PerformanceTimeStamp;
+#elif OS_MACOSX
 typedef AbsoluteTime PerformanceTimeStamp;
 #else
 typedef uint64 PerformanceTimeStamp;

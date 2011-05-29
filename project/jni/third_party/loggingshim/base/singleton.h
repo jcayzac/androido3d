@@ -182,11 +182,19 @@ class Singleton {
     Traits::Delete(reinterpret_cast<Type*>(
         base::subtle::NoBarrier_AtomicExchange(&instance_, 0)));
   }
+#ifdef TARGET_OS_IPHONE
+  static base::subtle::Atomic32 instance_;
+#else
   static base::subtle::AtomicWord instance_;
+#endif
 };
 
 template <typename Type, typename Traits, typename DifferentiatingType>
+#if TARGET_OS_IPHONE
+base::subtle::Atomic32 Singleton<Type, Traits, DifferentiatingType>::
+#else
 base::subtle::AtomicWord Singleton<Type, Traits, DifferentiatingType>::
+#endif
     instance_ = 0;
 
 #endif  // BASE_SINGLETON_H_

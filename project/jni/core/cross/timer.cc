@@ -32,7 +32,7 @@
 
 // This file contains the definitions of Timer related classes
 
-#include <build/build_config.h>
+#include "build/build_config.h"
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <sys/time.h>
 #include <time.h>
@@ -58,7 +58,9 @@ ElapsedTimeTimer::ElapsedTimeTimer() {
   QueryPerformanceCounter(&last_time_);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(TARGET_OS_IPHONE)
+	last_time_ = CFAbsoluteTimeGetCurrent();
+#elif defined(OS_MACOSX)
   last_time_ = UpTime();
 #endif
 #if defined(OS_LINUX)
@@ -80,7 +82,10 @@ float ElapsedTimeTimer::GetElapsedTimeHelper(bool reset) {
     static_cast<double>(windows_timer_frequency_.QuadPart));
 #endif
 
-#ifdef OS_MACOSX
+#ifdef TARGET_OS_IPHONE
+  current_time = CFAbsoluteTimeGetCurrent();
+  elapsedTime = static_cast<float>((current_time - last_time_));
+#elif OS_MACOSX
   current_time = UpTime();
   AbsoluteTime elapsed_ticks = SubAbsoluteFromAbsolute(current_time,
                                                        last_time_);

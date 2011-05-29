@@ -15,7 +15,11 @@
 #define _FU_CRITICAL_SECTION_H_
 
 #ifdef __APPLE__
+#ifdef TARGET_OS_IPHONE
+#include <MobileCoreServices/MobileCoreServices.h>
+#else
 #include <CoreServices/CoreServices.h>
+#endif // TARGET_OS_IPHONE
 #endif
 
 /**
@@ -32,7 +36,11 @@ private:
   CRITICAL_SECTION criticalSection; // WIN32
 #elif defined (__APPLE__)
   //Do something here.
+#ifdef TARGET_OS_IPHONE
+  pthread_mutex_t criticalSection;
+#else
   MPCriticalRegionID criticalSection;
+#endif // TARGET_OS_IPHONE
 #elif defined (LINUX) || defined(__ANDROID__)
 #else
 #warning "FUCriticalSection: Critical section not implemented for other platforms."

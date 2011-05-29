@@ -39,7 +39,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <build/build_config.h>
+#include "build/build_config.h"
 #ifdef OS_WIN
 #include <windows.h>
 #endif

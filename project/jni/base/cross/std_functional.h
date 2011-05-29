@@ -35,7 +35,7 @@
 #ifndef O3D_BASE_CROSS_STD_FUNCTIONAL_H_
 #define O3D_BASE_CROSS_STD_FUNCTIONAL_H_
 
-#include <build/build_config.h>
+#include "build/build_config.h"
 
 #if defined(__ANDROID__)
 #include <functional>
@@ -46,7 +46,7 @@ using std::select1st;
 using std::select2nd;
 }  // namespace base
 }  // namespace o3d
-#elif defined(COMPILER_GCC)
+#elif defined(COMPILER_GCC) || defined(__APPLE__)
 #include <ext/functional>
 namespace o3d {
 namespace base {
