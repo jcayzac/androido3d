@@ -1,0 +1,22 @@
+html,body,table {
+	font-family:sans-serif !important;
+}
+figure {
+	display:block !important;
+	text-align:center !important;
+	float:left !important;
+}
+figcaption {
+	display:block !important;
+}
+img[src*=stream-of-protocol-buffers] { max-height:33em !important; }
+h1,h2,h3,h4 { clear:both !important; }
+pre {
+	background-color:#ddd !important;
+	padding:0.5em !important;
+	border:1px solid #777 !important;
+	border-radius:0.5em; !important;
+}
+p {
+	text-align:justify;
+}
