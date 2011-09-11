@@ -1364,7 +1364,7 @@ void RendererGLES2::PlatformSpecificEndDraw() {
 void RendererGLES2::PlatformSpecificFinishRendering() {
   O3D_LOG_FIRST_N(INFO, 10) << "RendererGLES2 FinishRendering";
   O3D_ASSERT(IsCurrent());
-#ifndef TARGET_OS_IPHONE
+#if !defined(OS_ANDROID) && !defined(TARGET_OS_IPHONE)
   ::glFlush();
 #endif
   CHECK_GL_ERROR();
