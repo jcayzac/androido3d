@@ -1258,8 +1258,6 @@ bool RendererGLES2::CancelFullscreen(const DisplayWindow& display,
 
 void RendererGLES2::SetCurrentPickable(const ParamObject* pickable) {
   // use the lower 32 bits of the pointer as a color
-  // FIXME:(jcayzac) need to check to pixel format of the renderbuffer to
-  // ensure it's 32-bits BGRA (might be wrong on Android)
   const unsigned int pointer_as_a_color((uintptr_t) pickable & 0xffffffffu);
   static const float rcpt255(1.f/255.f);
   pick_color_[0] = rcpt255 * (float) ( pointer_as_a_color       &0xff);
@@ -1387,12 +1385,32 @@ void RendererGLES2::PlatformSpecificFinishPicking() {
 	O3D_ASSERT(IsCurrent());
 	O3D_ASSERT(picking());
 
+#ifdef _DEBUG
+	// Check that the render buffer's pixel format is 32-bits.
+	int r,g,b,a;
+	r = g = b = a = 0;
+#ifdef TARGET_OS_IPHONE
+	::glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, &r);
+	::glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_GREEN_SIZE, &g);
+	::glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_BLUE_SIZE, &b);
+	::glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_ALPHA_SIZE, &a);
+#else
+	::glGetIntegerv(GL_RED_BITS, &r);
+	::glGetIntegerv(GL_GREEN_BITS, &g);
+	::glGetIntegerv(GL_BLUE_BITS, &b);
+	::glGetIntegerv(GL_ALPHA_BITS, &a);
+#endif
+	O3D_ASSERT(r==8);
+	O3D_ASSERT(g==8);
+	O3D_ASSERT(b==8);
+	O3D_ASSERT(a==8);
+#endif
+
 	int x, y;
 	get_picking_coordinates(x, y);
-	// FIXME:(jcayzac) check render buffer's pixel format
 	unsigned char pixel_value[4];
-	::glReadPixels(x, display_height()-y, 1, 1, GL_BGRA, GL_UNSIGNED_BYTE, pixel_value);
-	const uintptr_t pointer32((pixel_value[3]<<24)|(pixel_value[0]<<16)|(pixel_value[1]<<8)|pixel_value[2]);
+	::glReadPixels(x, display_height()-y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_value);
+	const uintptr_t pointer32((pixel_value[3]<<24)|(pixel_value[2]<<16)|(pixel_value[1]<<8)|pixel_value[0]);
 	// FIXME:(jcayzac) dereferencing this newly-constructed pointer
 	// will most likely crash on any 64-bit machine, if not run in
 	// 32-bit mode. Instead, we should probably keep the set of all
