@@ -39,35 +39,35 @@
 #include "base/cross/types.h"
 
 namespace Vectormath {
-namespace Aos {
+	namespace Aos {
 
 // Creates a perspective projection matrix.
-Matrix4 CreatePerspectiveMatrix(float vertical_field_of_view_radians,
-                                float aspect,
-                                float z_near,
-                                float z_far);
+		Matrix4 CreatePerspectiveMatrix(float vertical_field_of_view_radians,
+		                                float aspect,
+		                                float z_near,
+		                                float z_far);
 
 // Creates a frustum projection matrix.
-Matrix4 CreateFrustumMatrix(float left,
-                            float right,
-                            float bottom,
-                            float top,
-                            float z_near,
-                            float z_far);
+		Matrix4 CreateFrustumMatrix(float left,
+		                            float right,
+		                            float bottom,
+		                            float top,
+		                            float z_near,
+		                            float z_far);
 
 // Creates an orthographic projection matrix.
-Matrix4 CreateOrthographicMatrix(float left,
-                                 float right,
-                                 float bottom,
-                                 float top,
-                                 float z_near,
-                                 float z_far);
+		Matrix4 CreateOrthographicMatrix(float left,
+		                                 float right,
+		                                 float bottom,
+		                                 float top,
+		                                 float z_near,
+		                                 float z_far);
 
 // Converts a 32 bit float to a 16 bit float.
-uint16_t FloatToHalf(float value);
+		uint16_t FloatToHalf(float value);
 // Converts a 16 bit float to a 32 bit float.
-float HalfToFloat(uint16_t value);
-}  // namespace Vectormath
+		float HalfToFloat(uint16_t value);
+	}  // namespace Vectormath
 }  // namespace Aos
 
 #endif  // O3D_CORE_CROSS_MATH_UTILITIES_H_

@@ -44,52 +44,52 @@ namespace o3d {
 
 // Operation to build a translation matrix from a translation vector and (if
 // bound) compose it with an input transformation matrix.
-class Matrix4Translation : public ParamObject {
- public:
-  typedef SmartPointer<Matrix4Translation> Ref;
-  typedef WeakPointer<Matrix4Translation> WeakPointerType;
+	class Matrix4Translation : public ParamObject {
+	public:
+		typedef SmartPointer<Matrix4Translation> Ref;
+		typedef WeakPointer<Matrix4Translation> WeakPointerType;
 
-  static const char* kInputMatrixParamName;
-  static const char* kTranslationParamName;
-  static const char* kOutputMatrixParamName;
+		static const char* kInputMatrixParamName;
+		static const char* kTranslationParamName;
+		static const char* kOutputMatrixParamName;
 
-  Matrix4 input_matrix() const {
-    return input_matrix_param_->value();
-  }
+		Matrix4 input_matrix() const {
+			return input_matrix_param_->value();
+		}
 
-  void set_input_matrix(const Matrix4& input_matrix) {
-    input_matrix_param_->set_value(input_matrix);
-  }
+		void set_input_matrix(const Matrix4& input_matrix) {
+			input_matrix_param_->set_value(input_matrix);
+		}
 
-  Float3 translation() const {
-    return translation_param_->value();
-  }
+		Float3 translation() const {
+			return translation_param_->value();
+		}
 
-  void set_translation(const Float3& axis) {
-    translation_param_->set_value(axis);
-  }
+		void set_translation(const Float3& axis) {
+			translation_param_->set_value(axis);
+		}
 
-  Matrix4 output_matrix() const {
-    return output_matrix_param_->value();
-  }
+		Matrix4 output_matrix() const {
+			return output_matrix_param_->value();
+		}
 
-  void UpdateOutputs();
+		void UpdateOutputs();
 
- private:
-  typedef SlaveParam<ParamMatrix4, Matrix4Translation> SlaveParamMatrix4;
+	private:
+		typedef SlaveParam<ParamMatrix4, Matrix4Translation> SlaveParamMatrix4;
 
-  explicit Matrix4Translation(ServiceLocator* service_locator);
+		explicit Matrix4Translation(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  ParamMatrix4::Ref input_matrix_param_;
-  ParamFloat3::Ref translation_param_;
-  SlaveParamMatrix4::Ref output_matrix_param_;
+		ParamMatrix4::Ref input_matrix_param_;
+		ParamFloat3::Ref translation_param_;
+		SlaveParamMatrix4::Ref output_matrix_param_;
 
-  O3D_DECL_CLASS(Matrix4Translation, ParamObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4Translation);
-};
+		O3D_DECL_CLASS(Matrix4Translation, ParamObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4Translation);
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_MATRIX4_TRANSLATION_H_

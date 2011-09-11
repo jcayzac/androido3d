@@ -43,234 +43,235 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Canvas, ParamObject);
+	O3D_DEFN_CLASS(Canvas, ParamObject);
 
-Canvas::Canvas(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      width_(0),
-      height_(0) {
-  Features* features = service_locator->GetService<Features>();
-  O3D_ASSERT(features);
-  flip_ = features->flip_textures();
+	Canvas::Canvas(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  width_(0),
+		  height_(0) {
+		Features* features = service_locator->GetService<Features>();
+		O3D_ASSERT(features);
+		flip_ = features->flip_textures();
+		// Initialize a 0x0 bitmap
+		sk_bitmap_.setConfig(SkBitmap::kARGB_8888_Config, 0, 0);
+		sk_canvas_.setBitmapDevice(sk_bitmap_);
+	}
 
-  // Initialize a 0x0 bitmap
-  sk_bitmap_.setConfig(SkBitmap::kARGB_8888_Config, 0, 0);
-  sk_canvas_.setBitmapDevice(sk_bitmap_);
-}
+	Canvas::~Canvas() {
+	}
 
-Canvas::~Canvas() {
-}
+	bool Canvas::SetSize(int width, int height) {
+		width_ = width;
+		height_ = height;
+		sk_bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height);
 
-bool Canvas::SetSize(int width, int height) {
-  width_ = width;
-  height_ = height;
+		if(!sk_bitmap_.allocPixels()) {
+			O3D_LOG(ERROR) << "Failed to allocate Skia bitmap";
+			return false;
+		}
 
-  sk_bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  if (!sk_bitmap_.allocPixels()) {
-    O3D_LOG(ERROR) << "Failed to allocate Skia bitmap";
-    return false;
-  }
-  sk_canvas_.setBitmapDevice(sk_bitmap_);
+		sk_canvas_.setBitmapDevice(sk_bitmap_);
 
-  if (flip_) {
-    // Translate and flip our canvas to change from o3d coordinates
-    // (where the lower left is (0,0)) to skia coordinates (where the
-    // upper left is (0,0))
-    sk_canvas_.translate(0, SkIntToScalar(sk_bitmap_.height()));
-    sk_canvas_.scale(SK_Scalar1, -SK_Scalar1);
-  }
+		if(flip_) {
+			// Translate and flip our canvas to change from o3d coordinates
+			// (where the lower left is (0,0)) to skia coordinates (where the
+			// upper left is (0,0))
+			sk_canvas_.translate(0, SkIntToScalar(sk_bitmap_.height()));
+			sk_canvas_.scale(SK_Scalar1, -SK_Scalar1);
+		}
 
-  return true;
-}
+		return true;
+	}
 
-void Canvas::Clear(float red, float green, float blue, float alpha) {
-  sk_bitmap_.eraseColor(Float4ToSkColor(Float4(red, green, blue, alpha)));
-}
+	void Canvas::Clear(float red, float green, float blue, float alpha) {
+		sk_bitmap_.eraseColor(Float4ToSkColor(Float4(red, green, blue, alpha)));
+	}
 
-void Canvas::DrawRect(float left,
-                      float top,
-                      float right,
-                      float bottom,
-                      CanvasPaint* paint) {
-  sk_canvas_.drawRectCoords(SkFloatToScalar(left),
-                            SkFloatToScalar(top),
-                            SkFloatToScalar(right),
-                            SkFloatToScalar(bottom),
-                            paint->GetNativePaint());
-}
+	void Canvas::DrawRect(float left,
+	                      float top,
+	                      float right,
+	                      float bottom,
+	                      CanvasPaint* paint) {
+		sk_canvas_.drawRectCoords(SkFloatToScalar(left),
+		                          SkFloatToScalar(top),
+		                          SkFloatToScalar(right),
+		                          SkFloatToScalar(bottom),
+		                          paint->GetNativePaint());
+	}
 
-void Canvas::DrawText(const std::string& text,
-                      float x,
-                      float y,
-                      CanvasPaint* paint) {
-  sk_canvas_.drawText(text.c_str(),
-                      text.length(),
-                      SkFloatToScalar(x),
-                      SkFloatToScalar(y),
-                      paint->GetNativePaint());
-}
+	void Canvas::DrawText(const std::string& text,
+	                      float x,
+	                      float y,
+	                      CanvasPaint* paint) {
+		sk_canvas_.drawText(text.c_str(),
+		                    text.length(),
+		                    SkFloatToScalar(x),
+		                    SkFloatToScalar(y),
+		                    paint->GetNativePaint());
+	}
 
-void Canvas::DrawTextOnPath(const std::string& text,
-                            std::vector<Float2> positions,
-                            float horizontal_offset,
-                            float vertical_offset,
-                            CanvasPaint* paint) {
-  unsigned int size = positions.size();
-  if (size < 2) {
-    O3D_ERROR(service_locator()) << "Must provide at least two positions"
-                                 << " for drawTextOnPath!";
-    return;
-  }
+	void Canvas::DrawTextOnPath(const std::string& text,
+	                            std::vector<Float2> positions,
+	                            float horizontal_offset,
+	                            float vertical_offset,
+	                            CanvasPaint* paint) {
+		unsigned int size = positions.size();
 
-  SkPath path;
+		if(size < 2) {
+			O3D_ERROR(service_locator()) << "Must provide at least two positions"
+			                             << " for drawTextOnPath!";
+			return;
+		}
 
-  path.moveTo(SkFloatToScalar(positions[0].getX()),
-              SkFloatToScalar(positions[0].getY()));
-  for (unsigned int i = 1; i < size; i++) {
-    path.lineTo(SkFloatToScalar(positions[i].getX()),
-                SkFloatToScalar(positions[i].getY()));
-  }
-  SkPaint nativePaint = paint->GetNativePaint();
+		SkPath path;
+		path.moveTo(SkFloatToScalar(positions[0].getX()),
+		            SkFloatToScalar(positions[0].getY()));
 
-  sk_canvas_.drawTextOnPathHV(text.c_str(),
-                              text.length(),
-                              path,
-                              SkFloatToScalar(horizontal_offset),
-                              SkFloatToScalar(vertical_offset),
-                              nativePaint);
-}
+		for(unsigned int i = 1; i < size; i++) {
+			path.lineTo(SkFloatToScalar(positions[i].getX()),
+			            SkFloatToScalar(positions[i].getY()));
+		}
 
-void Canvas::DrawBitmap(Texture2D* texture2d,
-                        float left,
-                        float bottom) {
-  if (!texture2d)
-    return;
+		SkPaint nativePaint = paint->GetNativePaint();
+		sk_canvas_.drawTextOnPathHV(text.c_str(),
+		                            text.length(),
+		                            path,
+		                            SkFloatToScalar(horizontal_offset),
+		                            SkFloatToScalar(vertical_offset),
+		                            nativePaint);
+	}
 
-  if (texture2d->format() != Texture2D::ARGB8 &&
-      texture2d->format() != Texture2D::XRGB8) {
-    O3D_ERROR(service_locator()) <<
-        "Texture format must be ARGB8 or XRGB8 for drawBitmap";
-    return;
-  }
+	void Canvas::DrawBitmap(Texture2D* texture2d,
+	                        float left,
+	                        float bottom) {
+		if(!texture2d)
+			return;
 
-  Texture2D::LockHelper lock_helper(texture2d, 0, Texture::kReadOnly);
-  uint8_t* texture_data = lock_helper.GetDataAs<uint8_t>();
-  if (!texture_data) {
-    return;
-  }
+		if(texture2d->format() != Texture2D::ARGB8 &&
+		        texture2d->format() != Texture2D::XRGB8) {
+			O3D_ERROR(service_locator()) <<
+			                             "Texture format must be ARGB8 or XRGB8 for drawBitmap";
+			return;
+		}
 
-  int height = texture2d->height();
-  int width = texture2d->width();
+		Texture2D::LockHelper lock_helper(texture2d, 0, Texture::kReadOnly);
+		uint8_t* texture_data = lock_helper.GetDataAs<uint8_t>();
 
-  // Create a temporary bitmap to copy the texture data into.
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+		if(!texture_data) {
+			return;
+		}
 
-  // Allocate enough space to copy the pixels over to the bitmap.
-  if (!bitmap.allocPixels()) {
-    O3D_ERROR(service_locator()) << "Unable to allocate bitmap";
-    return;
-  }
+		int height = texture2d->height();
+		int width = texture2d->width();
+		// Create a temporary bitmap to copy the texture data into.
+		SkBitmap bitmap;
+		bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
 
-  unsigned char* bitmap_data = static_cast<unsigned char*>(
-      bitmap.getPixels());
+		// Allocate enough space to copy the pixels over to the bitmap.
+		if(!bitmap.allocPixels()) {
+			O3D_ERROR(service_locator()) << "Unable to allocate bitmap";
+			return;
+		}
 
-  for (int yy = 0; yy < height; ++yy) {
-    memcpy(bitmap_data + yy * width * 4,
-           texture_data + yy * lock_helper.pitch(),
-           width * 4);
-  }
+		unsigned char* bitmap_data = static_cast<unsigned char*>(
+		                                 bitmap.getPixels());
 
-  if (texture2d->format() == Texture2D::XRGB8) {
-    // Set the alpha to 1
-    for (int ii = 0; ii < width * height; ii++) {
-      bitmap_data[3] = 0xff;
-      bitmap_data += 4;
-    }
-  } else {
-    // Pre-multiply (i.e. multiply the color by alpha) the color since the
-    // Skia bitmap expects it in that format.
-    for (int ii = 0; ii < width * height; ii++) {
-      unsigned char* b = (bitmap_data + 0);
-      unsigned char* g = (bitmap_data + 1);
-      unsigned char* r = (bitmap_data + 2);
-      unsigned char a = bitmap_data[3];
+		for(int yy = 0; yy < height; ++yy) {
+			memcpy(bitmap_data + yy * width * 4,
+			       texture_data + yy * lock_helper.pitch(),
+			       width * 4);
+		}
 
-      *r = SkMulDiv255Round(*r, a);
-      *g = SkMulDiv255Round(*g, a);
-      *b = SkMulDiv255Round(*b, a);
-      bitmap_data += 4;
-    }
-  }
+		if(texture2d->format() == Texture2D::XRGB8) {
+			// Set the alpha to 1
+			for(int ii = 0; ii < width * height; ii++) {
+				bitmap_data[3] = 0xff;
+				bitmap_data += 4;
+			}
+		}
+		else {
+			// Pre-multiply (i.e. multiply the color by alpha) the color since the
+			// Skia bitmap expects it in that format.
+			for(int ii = 0; ii < width * height; ii++) {
+				unsigned char* b = (bitmap_data + 0);
+				unsigned char* g = (bitmap_data + 1);
+				unsigned char* r = (bitmap_data + 2);
+				unsigned char a = bitmap_data[3];
+				*r = SkMulDiv255Round(*r, a);
+				*g = SkMulDiv255Round(*g, a);
+				*b = SkMulDiv255Round(*b, a);
+				bitmap_data += 4;
+			}
+		}
 
-  // Now copy from the temporary bitmap to the canvas bitmap.
-  SaveMatrix();
-  if (flip_) {
-    Scale(1, -1);
-    bottom = -bottom;
-  }
-  sk_canvas_.drawBitmap(bitmap,
-                        SkFloatToScalar(left),
-                        SkFloatToScalar(bottom),
-                        NULL);
-  RestoreMatrix();
-}
+		// Now copy from the temporary bitmap to the canvas bitmap.
+		SaveMatrix();
 
-void Canvas::Rotate(float degrees) {
-  sk_canvas_.rotate(SkFloatToScalar(degrees));
-}
+		if(flip_) {
+			Scale(1, -1);
+			bottom = -bottom;
+		}
 
-void Canvas::Scale(float sx, float sy) {
-  sk_canvas_.scale(SkFloatToScalar(sx), SkFloatToScalar(sy));
-}
+		sk_canvas_.drawBitmap(bitmap,
+		                      SkFloatToScalar(left),
+		                      SkFloatToScalar(bottom),
+		                      NULL);
+		RestoreMatrix();
+	}
 
-void Canvas::Translate(float dx, float dy) {
-  sk_canvas_.translate(SkFloatToScalar(dx), SkFloatToScalar(dy));
-}
+	void Canvas::Rotate(float degrees) {
+		sk_canvas_.rotate(SkFloatToScalar(degrees));
+	}
+
+	void Canvas::Scale(float sx, float sy) {
+		sk_canvas_.scale(SkFloatToScalar(sx), SkFloatToScalar(sy));
+	}
+
+	void Canvas::Translate(float dx, float dy) {
+		sk_canvas_.translate(SkFloatToScalar(dx), SkFloatToScalar(dy));
+	}
 
 // Copy the contents of the local bitmap to a Texture object.
-bool Canvas::CopyToTexture(Texture2D* texture_2d) const {
-  O3D_ASSERT(texture_2d);
+	bool Canvas::CopyToTexture(Texture2D* texture_2d) const {
+		O3D_ASSERT(texture_2d);
 
-  if (texture_2d->width() != sk_bitmap_.width() ||
-      texture_2d->height() != sk_bitmap_.height() ||
-      (texture_2d->format() != Texture2D::ARGB8 &&
-       texture_2d->format() != Texture2D::XRGB8)) {
-    O3D_ERROR(service_locator())
-        << "Texture format and size doesn't match Canvas";
-    return false;
-  }
+		if(texture_2d->width() != sk_bitmap_.width() ||
+		        texture_2d->height() != sk_bitmap_.height() ||
+		        (texture_2d->format() != Texture2D::ARGB8 &&
+		         texture_2d->format() != Texture2D::XRGB8)) {
+			O3D_ERROR(service_locator())
+			        << "Texture format and size doesn't match Canvas";
+			return false;
+		}
 
-  int width = sk_bitmap_.width();
-  int height = sk_bitmap_.height();
-  texture_2d->SetRect(0, 0, 0, width, height,
-                      sk_bitmap_.getPixels(), width * 4);
+		int width = sk_bitmap_.width();
+		int height = sk_bitmap_.height();
+		texture_2d->SetRect(0, 0, 0, width, height,
+		                    sk_bitmap_.getPixels(), width * 4);
+		// Fill in all the mipmap levels of the texture by drawing scaled down
+		// versions of the canvas bitmap contents.
+		SkBitmap bitmap;
+		int levels = texture_2d->levels();
 
-  // Fill in all the mipmap levels of the texture by drawing scaled down
-  // versions of the canvas bitmap contents.
-  SkBitmap bitmap;
-  int levels = texture_2d->levels();
+		for(int i = 1; (!levels && width > 1 && height > 1) || i < levels; i++) {
+			width = std::max(1, width >> 1);
+			height = std::max(1, height >> 1);
+			bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+			::o3d::base::scoped_array<uint8_t> buffer(new uint8_t[width * height * 4]);
+			bitmap.setPixels(buffer.get());
+			SkCanvas canvas(bitmap);
+			SkScalar scaleFactor = SkScalarDiv(SK_Scalar1, SkIntToScalar(1 << i));
+			canvas.scale(scaleFactor, scaleFactor);
+			canvas.drawBitmap(sk_bitmap_, 0, 0);
+			texture_2d->SetRect(i, 0, 0, width, height, bitmap.getPixels(), width * 4);
+		}
 
-  for (int i = 1; (!levels && width > 1 && height > 1) || i < levels; i++) {
-    width = std::max(1, width >> 1);
-    height = std::max(1, height >> 1);
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+		return true;
+	}
 
-    ::o3d::base::scoped_array<uint8_t> buffer(new uint8_t[width * height * 4]);
-    bitmap.setPixels(buffer.get());
-    SkCanvas canvas(bitmap);
-    SkScalar scaleFactor = SkScalarDiv(SK_Scalar1, SkIntToScalar(1 << i));
-    canvas.scale(scaleFactor, scaleFactor);
-    canvas.drawBitmap(sk_bitmap_, 0, 0);
-    texture_2d->SetRect(i, 0, 0, width, height, bitmap.getPixels(), width * 4);
-  }
-
-  return true;
-}
-
-ObjectBase::Ref Canvas::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new Canvas(service_locator));
-}
+	ObjectBase::Ref Canvas::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new Canvas(service_locator));
+	}
 
 
 

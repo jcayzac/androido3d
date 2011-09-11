@@ -21,26 +21,26 @@
 
 namespace o3d {
 
-class PickingContext {
-public:
-	static const InterfaceId kInterfaceId;
+	class PickingContext {
+	public:
+		static const InterfaceId kInterfaceId;
 
-	explicit PickingContext(ServiceLocator* service_locator)
-	: service_(service_locator, this) {}
+		explicit PickingContext(ServiceLocator* service_locator)
+			: service_(service_locator, this) {}
 
-	// Retrieves the current pickable object.
-	ParamObject* pickable() const {
-		return pickable_.Get();
-	}
+		// Retrieves the current pickable object.
+		ParamObject* pickable() const {
+			return pickable_.Get();
+		}
 
-	// Sets the current pickable object.
-	void set_pickable(ParamObject* pickable) {
-		pickable_ = ParamObject::Ref(pickable);
-	}
+		// Sets the current pickable object.
+		void set_pickable(ParamObject* pickable) {
+			pickable_ = ParamObject::Ref(pickable);
+		}
 
-private:
-	ServiceImplementation<PickingContext> service_;
-	ParamObject::Ref pickable_;
-};
+	private:
+		ServiceImplementation<PickingContext> service_;
+		ParamObject::Ref pickable_;
+	};
 
 }  // namespace o3d

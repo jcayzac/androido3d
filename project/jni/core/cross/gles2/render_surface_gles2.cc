@@ -39,116 +39,113 @@
 
 namespace o3d {
 
-RenderSurfaceGLES2::RenderSurfaceGLES2(ServiceLocator *service_locator,
-                                       int width,
-                                       int height,
-                                       GLenum cube_face,
-                                       int mip_level,
-                                       Texture *texture)
-    : RenderSurface(service_locator, width, height, texture),
-      cube_face_(cube_face),
-      mip_level_(mip_level) {
-  O3D_ASSERT(texture);
-}
+	RenderSurfaceGLES2::RenderSurfaceGLES2(ServiceLocator* service_locator,
+	                                       int width,
+	                                       int height,
+	                                       GLenum cube_face,
+	                                       int mip_level,
+	                                       Texture* texture)
+		: RenderSurface(service_locator, width, height, texture),
+		  cube_face_(cube_face),
+		  mip_level_(mip_level) {
+		O3D_ASSERT(texture);
+	}
 
-RenderSurfaceGLES2::~RenderSurfaceGLES2() {
-}
+	RenderSurfaceGLES2::~RenderSurfaceGLES2() {
+	}
 
-bool RenderSurfaceGLES2::OnContextRestored() {
-  O3D_LOG(INFO) << "RenderSurfaceGLES2::OnContextRestored not implemented";
-  return true;
-}
+	bool RenderSurfaceGLES2::OnContextRestored() {
+		O3D_LOG(INFO) << "RenderSurfaceGLES2::OnContextRestored not implemented";
+		return true;
+	}
 
-bool RenderSurfaceGLES2::PlatformSpecificGetIntoBitmap(
-    Bitmap::Ref bitmap) const {
-  Renderer* renderer = service_locator()->GetService<Renderer>();
-  O3D_ASSERT(renderer);
-  O3D_ASSERT(bitmap->width() == static_cast<unsigned int>(clip_width()) &&
-         bitmap->height() == static_cast<unsigned int>(clip_height()) &&
-         bitmap->num_mipmaps() == 1 &&
-         bitmap->format() == Texture::ARGB8);
+	bool RenderSurfaceGLES2::PlatformSpecificGetIntoBitmap(
+	    Bitmap::Ref bitmap) const {
+		Renderer* renderer = service_locator()->GetService<Renderer>();
+		O3D_ASSERT(renderer);
+		O3D_ASSERT(bitmap->width() == static_cast<unsigned int>(clip_width()) &&
+		           bitmap->height() == static_cast<unsigned int>(clip_height()) &&
+		           bitmap->num_mipmaps() == 1 &&
+		           bitmap->format() == Texture::ARGB8);
+		const RenderSurface* old_render_surface;
+		const RenderDepthStencilSurface* old_depth_surface;
+		bool old_is_back_buffer;
+		renderer->GetRenderSurfaces(&old_render_surface, &old_depth_surface,
+		                            &old_is_back_buffer);
+		renderer->SetRenderSurfaces(this, NULL, false);
+		::glReadPixels(0, 0, clip_width(), clip_height(), GL_BGRA, GL_UNSIGNED_BYTE,
+		               bitmap->image_data());
+		renderer->SetRenderSurfaces(old_render_surface, old_depth_surface,
+		                            old_is_back_buffer);
+		return true;
+	}
 
-  const RenderSurface* old_render_surface;
-  const RenderDepthStencilSurface* old_depth_surface;
-  bool old_is_back_buffer;
-
-  renderer->GetRenderSurfaces(&old_render_surface, &old_depth_surface,
-                              &old_is_back_buffer);
-  renderer->SetRenderSurfaces(this, NULL, false);
-
-  ::glReadPixels(0, 0, clip_width(), clip_height(), GL_BGRA, GL_UNSIGNED_BYTE,
-                 bitmap->image_data());
-
-  renderer->SetRenderSurfaces(old_render_surface, old_depth_surface,
-                              old_is_back_buffer);
-
-  return true;
-}
-
-RenderDepthStencilSurfaceGLES2::RenderDepthStencilSurfaceGLES2(
-    ServiceLocator *service_locator,
-    int width,
-    int height)
-    : RenderDepthStencilSurface(service_locator, width, height) {
-
+	RenderDepthStencilSurfaceGLES2::RenderDepthStencilSurfaceGLES2(
+	    ServiceLocator* service_locator,
+	    int width,
+	    int height)
+		: RenderDepthStencilSurface(service_locator, width, height) {
 #ifndef O3D_DISABLE_FBO
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-  // If packed depth stencil is supported, create only one buffer for both
-  // depth and stencil.
-  // TODO(piman): on GLES, test GL_OES_packed_depth_stencil
-  if (GLEW_EXT_packed_depth_stencil) {
-    glGenRenderbuffersEXT(1, render_buffers_);
-    glBindRenderbufferEXT(GL_RENDERBUFFER, render_buffers_[0]);
-    glRenderbufferStorageEXT(GL_RENDERBUFFER,
-                             GL_DEPTH24_STENCIL8_EXT,
-                             width,
-                             height);
-    CHECK_GL_ERROR();
-    render_buffers_[1] = render_buffers_[0];
-    return;
-  }
+
+		// If packed depth stencil is supported, create only one buffer for both
+		// depth and stencil.
+		// TODO(piman): on GLES, test GL_OES_packed_depth_stencil
+		if(GLEW_EXT_packed_depth_stencil) {
+			glGenRenderbuffersEXT(1, render_buffers_);
+			glBindRenderbufferEXT(GL_RENDERBUFFER, render_buffers_[0]);
+			glRenderbufferStorageEXT(GL_RENDERBUFFER,
+			                         GL_DEPTH24_STENCIL8_EXT,
+			                         width,
+			                         height);
+			CHECK_GL_ERROR();
+			render_buffers_[1] = render_buffers_[0];
+			return;
+		}
+
 #endif
-  glGenRenderbuffersEXT(2, render_buffers_);
-  glBindRenderbufferEXT(GL_RENDERBUFFER, render_buffers_[0]);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER,
+		glGenRenderbuffersEXT(2, render_buffers_);
+		glBindRenderbufferEXT(GL_RENDERBUFFER, render_buffers_[0]);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER,
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-                           GL_DEPTH_COMPONENT24,
+		                         GL_DEPTH_COMPONENT24,
 #else
-                           // On GLES, only 16bit depth is available by default.
-                           // TODO(piman): test for GL_OES_depth24 or 32 and
-                           // use those.
-                           GL_DEPTH_COMPONENT16,
+		                         // On GLES, only 16bit depth is available by default.
+		                         // TODO(piman): test for GL_OES_depth24 or 32 and
+		                         // use those.
+		                         GL_DEPTH_COMPONENT16,
 #endif
-                           width,
-                           height);
-  CHECK_GL_ERROR();
-
-  glBindRenderbufferEXT(GL_RENDERBUFFER, render_buffers_[1]);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER,
-                           GL_STENCIL_INDEX8,
-                           width,
-                           height);
-  CHECK_GL_ERROR();
+		                         width,
+		                         height);
+		CHECK_GL_ERROR();
+		glBindRenderbufferEXT(GL_RENDERBUFFER, render_buffers_[1]);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER,
+		                         GL_STENCIL_INDEX8,
+		                         width,
+		                         height);
+		CHECK_GL_ERROR();
 #endif
-}
+	}
 
-RenderDepthStencilSurfaceGLES2::~RenderDepthStencilSurfaceGLES2() {
+	RenderDepthStencilSurfaceGLES2::~RenderDepthStencilSurfaceGLES2() {
 #ifndef O3D_DISABLE_FBO
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-  // TODO(piman): on GLES, test GL_OES_packed_depth_stencil
-  if (GLEW_EXT_packed_depth_stencil) {
-    glDeleteRenderbuffersEXT(1, render_buffers_);
-    return;
-  }
-#endif
-  glDeleteRenderbuffersEXT(2, render_buffers_);
-#endif
-}
 
-bool RenderDepthStencilSurfaceGLES2::OnContextRestored() {
-  O3D_LOG(INFO)
-      << "RenderDepthStencilSurfaceGLES2::OnContextRestored not implemented";
-  return true;
-}
+		// TODO(piman): on GLES, test GL_OES_packed_depth_stencil
+		if(GLEW_EXT_packed_depth_stencil) {
+			glDeleteRenderbuffersEXT(1, render_buffers_);
+			return;
+		}
+
+#endif
+		glDeleteRenderbuffersEXT(2, render_buffers_);
+#endif
+	}
+
+	bool RenderDepthStencilSurfaceGLES2::OnContextRestored() {
+		O3D_LOG(INFO)
+		        << "RenderDepthStencilSurfaceGLES2::OnContextRestored not implemented";
+		return true;
+	}
 
 }  // end namespace o3d

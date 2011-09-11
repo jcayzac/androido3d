@@ -52,11 +52,11 @@
 namespace o3d {
 
 #ifdef TARGET_OS_IPHONE
-typedef CFAbsoluteTime PerformanceTimeStamp;
+	typedef CFAbsoluteTime PerformanceTimeStamp;
 #elif OS_MACOSX
-typedef AbsoluteTime PerformanceTimeStamp;
+	typedef AbsoluteTime PerformanceTimeStamp;
 #else
-typedef uint64_t PerformanceTimeStamp;
+	typedef uint64_t PerformanceTimeStamp;
 #endif
 
 // PerformanceTimer is designed to accurately track wallclock time
@@ -65,40 +65,40 @@ typedef uint64_t PerformanceTimeStamp;
 // print a short string to the logger containing the name of the timer,
 // and its elapsed time.
 
-class PerformanceTimer {
- public:
-  explicit PerformanceTimer(const char *name);
+	class PerformanceTimer {
+	public:
+		explicit PerformanceTimer(const char* name);
 
-  // Starts the timer.
-  void Start();
+		// Starts the timer.
+		void Start();
 
-  // Stops the timer.
-  void Stop();
+		// Stops the timer.
+		void Stop();
 
-  // Prints the name and currently elapsed timer value to the logger.
-  void Print();
+		// Prints the name and currently elapsed timer value to the logger.
+		void Print();
 
-  // Stops and prints the timer.
-  void StopAndPrint();
+		// Stops and prints the timer.
+		void StopAndPrint();
 
-  // Returns the timer's elapsed time, as of the last Stop(), in seconds.
-  double GetElapsedTime();
+		// Returns the timer's elapsed time, as of the last Stop(), in seconds.
+		double GetElapsedTime();
 
-  // Returns the name of the timer.
-  const char* name() { return name_.c_str(); }
- private:
+		// Returns the name of the timer.
+		const char* name() { return name_.c_str(); }
+	private:
 
-  // Name of the timer.
-  std::string name_;
+		// Name of the timer.
+		std::string name_;
 
-  // Time the timer was last started, in internal units.
-  PerformanceTimeStamp start_time_;
+		// Time the timer was last started, in internal units.
+		PerformanceTimeStamp start_time_;
 
-  // Accumulated elapsed time, in internal units.  Computed only on Stop().
-  PerformanceTimeStamp accum_time_;
+		// Accumulated elapsed time, in internal units.  Computed only on Stop().
+		PerformanceTimeStamp accum_time_;
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(PerformanceTimer);
-};
+		O3D_DISALLOW_COPY_AND_ASSIGN(PerformanceTimer);
+	};
 } // end namespace o3d
 
 #endif  // O3D_IMPORT_CROSS_PERFORMANCE_TIMER_H_

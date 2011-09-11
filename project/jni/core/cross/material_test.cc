@@ -42,68 +42,64 @@
 
 namespace o3d {
 
-class MaterialTest : public testing::Test {
- protected:
+	class MaterialTest : public testing::Test {
+	protected:
 
-  MaterialTest()
-      : object_manager_(g_service_locator) {}
+		MaterialTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-  TransformationContext* transformation_context_;
-  SemanticManager* semantic_manager_;
-  Pack *pack_;
-};
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+		TransformationContext* transformation_context_;
+		SemanticManager* semantic_manager_;
+		Pack* pack_;
+	};
 
-void MaterialTest::SetUp() {
-  transformation_context_ = new TransformationContext(g_service_locator);
-  semantic_manager_ = new SemanticManager(g_service_locator);
-  pack_ = object_manager_->CreatePack();
-}
+	void MaterialTest::SetUp() {
+		transformation_context_ = new TransformationContext(g_service_locator);
+		semantic_manager_ = new SemanticManager(g_service_locator);
+		pack_ = object_manager_->CreatePack();
+	}
 
-void MaterialTest::TearDown() {
-  pack_->Destroy();
-  delete semantic_manager_;
-  delete transformation_context_;
-}
+	void MaterialTest::TearDown() {
+		pack_->Destroy();
+		delete semantic_manager_;
+		delete transformation_context_;
+	}
 
 // Test the basic operations of class Material.
-TEST_F(MaterialTest, Basic) {
-  Material* material = pack()->Create<Material>();
-  // Check that material got created.
-  EXPECT_TRUE(material != NULL);
-
-  // Check that its state and effect are not set.
-  EXPECT_TRUE(material->effect() == NULL);
-  EXPECT_TRUE(material->state() == NULL);
-
-  // Check that the default params got created.
-  Param* effect_param = material->GetParam<ParamEffect>(
-      Material::kEffectParamName);
-  Param* state_param = material->GetParam<ParamState>(
-      Material::kStateParamName);
-  EXPECT_TRUE(effect_param != NULL);
-  EXPECT_TRUE(state_param != NULL);
-
-  // Check that if we set one by accessor the param is effected
-  State* state = pack()->Create<State>();
-  ASSERT_TRUE(state != NULL);
-  ParamState* typed_state_param = down_cast<ParamState*>(state_param);
-  material->set_state(state);
-  EXPECT_EQ(state, typed_state_param->value());
-
-  // Check that if we set one by param the accessor is effected
-  Effect* effect = pack()->Create<Effect>();
-  ASSERT_TRUE(effect != NULL);
-  ParamEffect* typed_effect_param = down_cast<ParamEffect*>(effect_param);
-  ASSERT_TRUE(typed_effect_param != NULL);
-  typed_effect_param->set_value(effect);
-  EXPECT_EQ(effect, material->effect());
-}
+	TEST_F(MaterialTest, Basic) {
+		Material* material = pack()->Create<Material>();
+		// Check that material got created.
+		EXPECT_TRUE(material != NULL);
+		// Check that its state and effect are not set.
+		EXPECT_TRUE(material->effect() == NULL);
+		EXPECT_TRUE(material->state() == NULL);
+		// Check that the default params got created.
+		Param* effect_param = material->GetParam<ParamEffect>(
+		                          Material::kEffectParamName);
+		Param* state_param = material->GetParam<ParamState>(
+		                         Material::kStateParamName);
+		EXPECT_TRUE(effect_param != NULL);
+		EXPECT_TRUE(state_param != NULL);
+		// Check that if we set one by accessor the param is effected
+		State* state = pack()->Create<State>();
+		ASSERT_TRUE(state != NULL);
+		ParamState* typed_state_param = down_cast<ParamState*>(state_param);
+		material->set_state(state);
+		EXPECT_EQ(state, typed_state_param->value());
+		// Check that if we set one by param the accessor is effected
+		Effect* effect = pack()->Create<Effect>();
+		ASSERT_TRUE(effect != NULL);
+		ParamEffect* typed_effect_param = down_cast<ParamEffect*>(effect_param);
+		ASSERT_TRUE(typed_effect_param != NULL);
+		typed_effect_param->set_value(effect);
+		EXPECT_EQ(effect, material->effect());
+	}
 
 }  // namespace o3d

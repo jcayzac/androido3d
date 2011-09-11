@@ -43,15 +43,15 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Buffer, NamedObject);
-O3D_DEFN_CLASS(VertexBufferBase, Buffer);
-O3D_DEFN_CLASS(VertexBuffer, VertexBufferBase);
-O3D_DEFN_CLASS(SourceBuffer, VertexBufferBase);
-O3D_DEFN_CLASS(IndexBuffer, Buffer);
+	O3D_DEFN_CLASS(Buffer, NamedObject);
+	O3D_DEFN_CLASS(VertexBufferBase, Buffer);
+	O3D_DEFN_CLASS(VertexBuffer, VertexBufferBase);
+	O3D_DEFN_CLASS(SourceBuffer, VertexBufferBase);
+	O3D_DEFN_CLASS(IndexBuffer, Buffer);
 
-const char *Buffer::kSerializationID = "BUFF";
+	const char* Buffer::kSerializationID = "BUFF";
 
-namespace {
+	namespace {
 
 // Copies a field.
 // Parameters:
@@ -61,571 +61,606 @@ namespace {
 //   num_elements: number of elements to copy.
 //   destination: address of destination data.
 //   destination_stride: amount to step for each element in the destination.
-void CopyField(const void* source,
-               size_t source_stride,
-               size_t field_size,
-               size_t num_elements,
-               void* destination,
-               size_t destination_stride) {
-  while (num_elements) {
-    memcpy(destination, source, field_size);
-    source = AddPointerOffset(source, source_stride);
-    destination = AddPointerOffset(destination, destination_stride);
-    --num_elements;
-  }
-}
+		void CopyField(const void* source,
+		               size_t source_stride,
+		               size_t field_size,
+		               size_t num_elements,
+		               void* destination,
+		               size_t destination_stride) {
+			while(num_elements) {
+				memcpy(destination, source, field_size);
+				source = AddPointerOffset(source, source_stride);
+				destination = AddPointerOffset(destination, destination_stride);
+				--num_elements;
+			}
+		}
 
-typedef Field::Ref (*FieldCreatorFunc)(ServiceLocator* service_locator,
-                                       Buffer* buffer,
-                                       unsigned num_components,
-                                       unsigned offset);
+		typedef Field::Ref(*FieldCreatorFunc)(ServiceLocator* service_locator,
+		                                      Buffer* buffer,
+		                                      unsigned num_components,
+		                                      unsigned offset);
 
-struct FieldCreator {
-  const ObjectBase::Class* field_type;
-  FieldCreatorFunc create_function;
-  unsigned required_component_multiple;
-};
-static FieldCreator g_creators[] = {
-  { FloatField::GetApparentClass(), FloatField::Create,
-    FloatField::kRequiredComponentMultiple, },
-  { UInt32Field::GetApparentClass(), UInt32Field::Create,
-    UInt32Field::kRequiredComponentMultiple, },
+		struct FieldCreator {
+			const ObjectBase::Class* field_type;
+			FieldCreatorFunc create_function;
+			unsigned required_component_multiple;
+		};
+		static FieldCreator g_creators[] = {
+			{
+				FloatField::GetApparentClass(), FloatField::Create,
+				FloatField::kRequiredComponentMultiple,
+			},
+			{
+				UInt32Field::GetApparentClass(), UInt32Field::Create,
+				UInt32Field::kRequiredComponentMultiple,
+			},
 #ifdef GLES2_BACKEND_NATIVE_GLES2
-  { UInt16Field::GetApparentClass(), UInt16Field::Create,
-    UInt16Field::kRequiredComponentMultiple, },
+			{
+				UInt16Field::GetApparentClass(), UInt16Field::Create,
+				UInt16Field::kRequiredComponentMultiple,
+			},
 #endif
-  { UByteNField::GetApparentClass(), UByteNField::Create,
-    UByteNField::kRequiredComponentMultiple, },
-};
+			{
+				UByteNField::GetApparentClass(), UByteNField::Create,
+				UByteNField::kRequiredComponentMultiple,
+			},
+		};
 
-}  // anonymouse namespace.
+	}  // anonymouse namespace.
 
 // Buffer ---------------
-Buffer::Buffer(ServiceLocator* service_locator)
-    : NamedObject(service_locator),
-      features_(service_locator->GetService<Features>()),
-      field_change_count_(0),
-      total_components_(0),
-      stride_(0),
-      num_elements_(0),
-      access_mode_(NONE),
-      lock_count_(0) {
-}
+	Buffer::Buffer(ServiceLocator* service_locator)
+		: NamedObject(service_locator),
+		  features_(service_locator->GetService<Features>()),
+		  field_change_count_(0),
+		  total_components_(0),
+		  stride_(0),
+		  num_elements_(0),
+		  access_mode_(NONE),
+		  lock_count_(0) {
+	}
 
-Buffer::~Buffer() {
-  AdjustBufferMemoryInfo(false);
-  for (unsigned ii = 0; ii < fields_.size(); ++ii) {
-    if (!fields_[ii].IsNull()) {
-      fields_[ii]->ClearBuffer();
-    }
-  }
-}
+	Buffer::~Buffer() {
+		AdjustBufferMemoryInfo(false);
 
-void Buffer::AdjustBufferMemoryInfo(bool add) {
-  // Only count VRAM/hardware buffers.
-  if (IsA(VertexBuffer::GetApparentClass()) ||
-      IsA(IndexBuffer::GetApparentClass())) {
-    size_t size_in_bytes = num_elements_ * stride_;
-    ClientInfoManager* client_info_manager =
-        service_locator()->GetService<ClientInfoManager>();
-    client_info_manager->AdjustBufferMemoryUsed(
-        static_cast<int>(size_in_bytes) * (add ? 1 : -1));
-  }
-}
+		for(unsigned ii = 0; ii < fields_.size(); ++ii) {
+			if(!fields_[ii].IsNull()) {
+				fields_[ii]->ClearBuffer();
+			}
+		}
+	}
 
-bool Buffer::AllocateElements(unsigned num_elements) {
-  if (access_mode_ != NONE) {
-    O3D_ERROR(service_locator()) << "Attempt to allocate locked Buffer '"
-                                 << name() << "'";
-    return false;
-  }
+	void Buffer::AdjustBufferMemoryInfo(bool add) {
+		// Only count VRAM/hardware buffers.
+		if(IsA(VertexBuffer::GetApparentClass()) ||
+		        IsA(IndexBuffer::GetApparentClass())) {
+			size_t size_in_bytes = num_elements_ * stride_;
+			ClientInfoManager* client_info_manager =
+			    service_locator()->GetService<ClientInfoManager>();
+			client_info_manager->AdjustBufferMemoryUsed(
+			    static_cast<int>(size_in_bytes) * (add ? 1 : -1));
+		}
+	}
 
-  if (stride_ == 0) {
-    O3D_ERROR(service_locator())
-        << "No fields have been set on Buffer '" << name() << "'";
-    return false;
-  }
+	bool Buffer::AllocateElements(unsigned num_elements) {
+		if(access_mode_ != NONE) {
+			O3D_ERROR(service_locator()) << "Attempt to allocate locked Buffer '"
+			                             << name() << "'";
+			return false;
+		}
 
-  if (num_elements > MAX_SMALL_INDEX && !features_->large_geometry()) {
-    O3D_ERROR(service_locator())
-        << "You can not allocate more then " << MAX_SMALL_INDEX
-        << " elements in a buffer unless "
-        << "you request support for large geometry when you "
-        << "initialize O3D.";
-    return false;
-  }
+		if(stride_ == 0) {
+			O3D_ERROR(service_locator())
+			        << "No fields have been set on Buffer '" << name() << "'";
+			return false;
+		}
 
-  if (num_elements > MAX_LARGE_INDEX) {
-    O3D_ERROR(service_locator())
-        << "The maximum number of elements in a buffer is " << MAX_LARGE_INDEX
-        << ".";
-    return false;
-  }
+		if(num_elements > MAX_SMALL_INDEX && !features_->large_geometry()) {
+			O3D_ERROR(service_locator())
+			        << "You can not allocate more then " << MAX_SMALL_INDEX
+			        << " elements in a buffer unless "
+			        << "you request support for large geometry when you "
+			        << "initialize O3D.";
+			return false;
+		}
 
-  size_t size_in_bytes = num_elements * stride_;
-  // Check for size_t overflow.
-  if (size_in_bytes / stride_ != num_elements) {
-    O3D_ERROR(service_locator())
-        << "Attempt to allocate too many elements for the current set of "
-        << "fields on buffer.";
-    return false;
-  }
+		if(num_elements > MAX_LARGE_INDEX) {
+			O3D_ERROR(service_locator())
+			        << "The maximum number of elements in a buffer is " << MAX_LARGE_INDEX
+			        << ".";
+			return false;
+		}
 
-  if (size_in_bytes == 0) {
-    O3D_ERROR(service_locator())
-        << "Attempt to allocate zero bytes for Buffer '" << name() << "'";
-    return false;
-  }
+		size_t size_in_bytes = num_elements * stride_;
 
-  bool success = true;
-  if (!ConcreteAllocate(size_in_bytes)) {
-    num_elements = 0;
-    size_in_bytes = 0;
-    success = false;
-  }
+		// Check for size_t overflow.
+		if(size_in_bytes / stride_ != num_elements) {
+			O3D_ERROR(service_locator())
+			        << "Attempt to allocate too many elements for the current set of "
+			        << "fields on buffer.";
+			return false;
+		}
 
-  num_elements_ = num_elements;
+		if(size_in_bytes == 0) {
+			O3D_ERROR(service_locator())
+			        << "Attempt to allocate zero bytes for Buffer '" << name() << "'";
+			return false;
+		}
 
-  AdjustBufferMemoryInfo(true);
+		bool success = true;
 
-  return success;
-}
+		if(!ConcreteAllocate(size_in_bytes)) {
+			num_elements = 0;
+			size_in_bytes = 0;
+			success = false;
+		}
 
-void Buffer::Free() {
-  if (num_elements_ > 0) {
-    ConcreteFree();
-    AdjustBufferMemoryInfo(false);
-    num_elements_ = 0;
-  }
-}
+		num_elements_ = num_elements;
+		AdjustBufferMemoryInfo(true);
+		return success;
+	}
 
-bool Buffer::ReshuffleBuffer(unsigned int new_stride, Field* field_to_remove) {
-  if (new_stride == 0) {
-    AdjustBufferMemoryInfo(false);
-    ConcreteFree();
-    stride_ = 0;
-    return true;
-  }
-  if (num_elements_) {
-    size_t size_in_bytes = num_elements_ * new_stride;
-    // Check for size_t overflow.
-    if (size_in_bytes / new_stride != num_elements_) {
-      O3D_ERROR(service_locator())
-          << "Attempt to allocate too many elements for the current set of "
-          << "fields on buffer.";
-      return false;
-    }
-    std::vector<uint8_t> temp(size_in_bytes);
+	void Buffer::Free() {
+		if(num_elements_ > 0) {
+			ConcreteFree();
+			AdjustBufferMemoryInfo(false);
+			num_elements_ = 0;
+		}
+	}
 
-    // Copy old fields into new buffer.
-    {
-      BufferLockHelper helper(this);
-      void* source = helper.GetData(Buffer::READ_ONLY);
-      if (!source) {
-        return false;
-      }
-      unsigned int offset = 0;
-      for (unsigned ii = 0; ii < fields_.size(); ++ii) {
-        Field* field = fields_[ii].Get();
-        if (field != field_to_remove) {
-          CopyField(PointerFromVoidPointer<void*>(source, field->offset()),
-                    stride_,
-                    field->size(),
-                    num_elements_,
-                    PointerFromVoidPointer<void*>(&temp[0], offset),
-                    new_stride);
-          field->set_offset(offset);
-          offset += field->size();
-        }
-      }
-    }
-    // Copy the reorganized data into a new buffer.
-    {
-      ConcreteFree();
-      AdjustBufferMemoryInfo(false);
-      if (!ConcreteAllocate(size_in_bytes)) {
-        num_elements_ = 0;
-        O3D_ERROR(service_locator())
-            << "Couldn't allocate buffer of size: " << size_in_bytes
-            << " for Buffer '" << name() << "'";
-        return false;
-      }
-      // stride_ must be set before GetData is called so that the proper size
-      // buffer is allocated. We also need to set it after this function is
-      // is completed (see CreateField, RemoveField) for when we create a new
-      // buffer with no fields yet.
-      stride_ = new_stride;
-      AdjustBufferMemoryInfo(true);
-      BufferLockHelper helper(this);
-      void* destination = helper.GetData(Buffer::WRITE_ONLY);
-      if (!destination) {
-        return false;
-      }
-      memcpy(destination, &temp[0], size_in_bytes);
-    }
-  }
-  return true;
-}
+	bool Buffer::ReshuffleBuffer(unsigned int new_stride, Field* field_to_remove) {
+		if(new_stride == 0) {
+			AdjustBufferMemoryInfo(false);
+			ConcreteFree();
+			stride_ = 0;
+			return true;
+		}
 
-Field* Buffer::CreateFieldByClassName(const std::string& field_type,
-                                      unsigned num_components) {
-  for (unsigned ii = 0; ii < o3d_arraysize(g_creators); ++ii) {
-    if (!field_type.compare(g_creators[ii].field_type->name()) ||
-        !field_type.compare(g_creators[ii].field_type->unqualified_name())) {
-      return CreateField(g_creators[ii].field_type, num_components);
-    }
-  }
+		if(num_elements_) {
+			size_t size_in_bytes = num_elements_ * new_stride;
 
-  O3D_ERROR(service_locator())
-      << "unrecognized field type '" << field_type << "'";
-  return NULL;
-}
+			// Check for size_t overflow.
+			if(size_in_bytes / new_stride != num_elements_) {
+				O3D_ERROR(service_locator())
+				        << "Attempt to allocate too many elements for the current set of "
+				        << "fields on buffer.";
+				return false;
+			}
 
-Field* Buffer::CreateField(const ObjectBase::Class* field_type,
-                           unsigned num_components) {
-  FieldCreator* creator = NULL;
-  for (unsigned ii = 0; ii < o3d_arraysize(g_creators); ++ii) {
-    if (g_creators[ii].field_type == field_type) {
-      creator = &g_creators[ii];
-      break;
-    }
-  }
+			std::vector<uint8_t> temp(size_in_bytes);
+			// Copy old fields into new buffer.
+			{
+				BufferLockHelper helper(this);
+				void* source = helper.GetData(Buffer::READ_ONLY);
 
-  if (!creator) {
-    O3D_ERROR(service_locator())
-        << "unrecognized field type '"
-        << (field_type ? field_type->name() :  "NULL") << "'";
-    return NULL;
-  }
+				if(!source) {
+					return false;
+				}
 
-  if (num_components == 0) {
-    O3D_ERROR(service_locator())
-        << "num components must be > 0 for Buffer '" << name() << "'";
-    return NULL;
-  }
+				unsigned int offset = 0;
 
-  if (num_components % creator->required_component_multiple != 0) {
-    O3D_ERROR(service_locator())
-        << "num components must be a multiple of "
-        << creator->required_component_multiple
-        << " for fields of type " << field_type->unqualified_name();
-    return NULL;
-  }
+				for(unsigned ii = 0; ii < fields_.size(); ++ii) {
+					Field* field = fields_[ii].Get();
 
-  Field::Ref field = creator->create_function(service_locator(), this,
-                                              num_components, stride_);
-  unsigned int new_stride = stride_ + field->size();
-  ReshuffleBuffer(new_stride, NULL);
+					if(field != field_to_remove) {
+						CopyField(PointerFromVoidPointer<void*>(source, field->offset()),
+						          stride_,
+						          field->size(),
+						          num_elements_,
+						          PointerFromVoidPointer<void*>(&temp[0], offset),
+						          new_stride);
+						field->set_offset(offset);
+						offset += field->size();
+					}
+				}
+			}
+			// Copy the reorganized data into a new buffer.
+			{
+				ConcreteFree();
+				AdjustBufferMemoryInfo(false);
 
-  fields_.push_back(field);
-  stride_ = new_stride;
-  total_components_ += num_components;
-  ++field_change_count_;
+				if(!ConcreteAllocate(size_in_bytes)) {
+					num_elements_ = 0;
+					O3D_ERROR(service_locator())
+					        << "Couldn't allocate buffer of size: " << size_in_bytes
+					        << " for Buffer '" << name() << "'";
+					return false;
+				}
 
-  return field;
-}
+				// stride_ must be set before GetData is called so that the proper size
+				// buffer is allocated. We also need to set it after this function is
+				// is completed (see CreateField, RemoveField) for when we create a new
+				// buffer with no fields yet.
+				stride_ = new_stride;
+				AdjustBufferMemoryInfo(true);
+				BufferLockHelper helper(this);
+				void* destination = helper.GetData(Buffer::WRITE_ONLY);
 
-void Buffer::RemoveField(Field* field) {
-  for (unsigned ii = 0; ii < fields_.size(); ++ii) {
-    if (fields_[ii] == field) {
-      unsigned int new_stride = stride_ - field->size();
-      ReshuffleBuffer(new_stride, field);
-      total_components_ -= field->num_components();
-      stride_ = new_stride;
-      field->ClearBuffer();
-      // This erase may remove the last reference to the field so field may
-      // be invalid after this line.
-      fields_.erase(fields_.begin() + ii);
-      ++field_change_count_;
-      return;
-    }
-  }
-  O3D_ERROR(service_locator())
-      << "Field '" << field->name()
-      << "' does not exist on Buffer '" << name() << "'";
-}
+				if(!destination) {
+					return false;
+				}
 
-bool Buffer::Lock(AccessMode access_mode, void** buffer_data) {
-  if (access_mode == NONE) {
-    O3D_ERROR(service_locator())
-        << "attempt to lock Buffer '" << name()
-        << "' with access mode NONE";
-    return false;
-  }
-  if (access_mode_ == NONE || access_mode == access_mode_) {
-    if (lock_count_ == 0) {
-      if (!ConcreteLock(access_mode, &locked_data_)) {
-        return false;
-      }
-    }
-    ++lock_count_;
-    *buffer_data = locked_data_;
-    return true;
-  } else {
-    O3D_ERROR(service_locator())
-        << "attempt to lock already locked Buffer '" << name()
-        << "' with different access mode";
-    return false;
-  }
-}
+				memcpy(destination, &temp[0], size_in_bytes);
+			}
+		}
 
-bool Buffer::Unlock() {
-  if (lock_count_ == 0) {
-    O3D_ERROR(service_locator())
-        << "attempt to unlock unlocked Buffer '" << name() << "'";
-    return false;
-  }
-  --lock_count_;
-  if (lock_count_ == 0) {
-    return ConcreteUnlock();
-  }
-  return true;
-}
+		return true;
+	}
 
-bool Buffer::Set(o3d::RawData *raw_data) {
-  O3D_ASSERT(raw_data);
-  return Set(raw_data, 0, raw_data->GetLength());
-}
+	Field* Buffer::CreateFieldByClassName(const std::string& field_type,
+	                                      unsigned num_components) {
+		for(unsigned ii = 0; ii < o3d_arraysize(g_creators); ++ii) {
+			if(!field_type.compare(g_creators[ii].field_type->name()) ||
+			        !field_type.compare(g_creators[ii].field_type->unqualified_name())) {
+				return CreateField(g_creators[ii].field_type, num_components);
+			}
+		}
 
-bool Buffer::Set(o3d::RawData *raw_data,
-                 size_t offset,
-                 size_t length) {
-  O3D_ASSERT(raw_data);
+		O3D_ERROR(service_locator())
+		        << "unrecognized field type '" << field_type << "'";
+		return NULL;
+	}
 
-  if (!raw_data->IsOffsetLengthValid(offset, length)) {
-    O3D_ERROR(service_locator()) << "illegal buffer data offset or size";
-    return false;
-  }
+	Field* Buffer::CreateField(const ObjectBase::Class* field_type,
+	                           unsigned num_components) {
+		FieldCreator* creator = NULL;
 
-  // GetData() returns NULL if it, for example, cannot open the temporary data
-  // file. In that case, it invokes the error callback. We just have to be
-  // careful not to dereference it.
-  const uint8_t *data = raw_data->GetDataAs<uint8_t>(offset);
-  if (!data) {
-    return false;
-  }
+		for(unsigned ii = 0; ii < o3d_arraysize(g_creators); ++ii) {
+			if(g_creators[ii].field_type == field_type) {
+				creator = &g_creators[ii];
+				break;
+			}
+		}
 
-  MemoryReadStream stream(data, length);
+		if(!creator) {
+			O3D_ERROR(service_locator())
+			        << "unrecognized field type '"
+			        << (field_type ? field_type->name() :  "NULL") << "'";
+			return NULL;
+		}
 
-  // Verify we at least have enough data for four-char kSerializationID plus
-  // version and num_fields
-  if (length < 4 + 2*sizeof(int32_t)) {
-    O3D_ERROR(service_locator())
-        << "data object does not contain buffer data";
-    return false;
-  }
+		if(num_components == 0) {
+			O3D_ERROR(service_locator())
+			        << "num components must be > 0 for Buffer '" << name() << "'";
+			return NULL;
+		}
 
-  // To insure data integrity we expect four characters kSerializationID
-  char id[5];
-  stream.Read(id, 4);
-  id[4] = 0;  // null-terminate
+		if(num_components % creator->required_component_multiple != 0) {
+			O3D_ERROR(service_locator())
+			        << "num components must be a multiple of "
+			        << creator->required_component_multiple
+			        << " for fields of type " << field_type->unqualified_name();
+			return NULL;
+		}
 
-  if (strcmp(id, kSerializationID)) {
-    O3D_ERROR(service_locator())
-        << "data object does not contain buffer data";
-    return false;
-  }
+		Field::Ref field = creator->create_function(service_locator(), this,
+		                   num_components, stride_);
+		unsigned int new_stride = stride_ + field->size();
+		ReshuffleBuffer(new_stride, NULL);
+		fields_.push_back(field);
+		stride_ = new_stride;
+		total_components_ += num_components;
+		++field_change_count_;
+		return field;
+	}
 
-  int32_t version = stream.ReadLittleEndianInt32();
-  if (version != 1) {
-    O3D_ERROR(service_locator()) << "unknown buffer data version";
-    return false;
-  }
+	void Buffer::RemoveField(Field* field) {
+		for(unsigned ii = 0; ii < fields_.size(); ++ii) {
+			if(fields_[ii] == field) {
+				unsigned int new_stride = stride_ - field->size();
+				ReshuffleBuffer(new_stride, field);
+				total_components_ -= field->num_components();
+				stride_ = new_stride;
+				field->ClearBuffer();
+				// This erase may remove the last reference to the field so field may
+				// be invalid after this line.
+				fields_.erase(fields_.begin() + ii);
+				++field_change_count_;
+				return;
+			}
+		}
 
-  // Delete existing fields.
-  // TODO: Since this removes all fields, there is no need to
-  // reshuffle (which can be expensive). We could provide a RemoveAllFields
-  // and call it here.
-  while (fields_.size() > 0) {
-    RemoveField(fields_[0]);
-  }
+		O3D_ERROR(service_locator())
+		        << "Field '" << field->name()
+		        << "' does not exist on Buffer '" << name() << "'";
+	}
 
-  // Create fields.
-  int32_t num_fields = stream.ReadLittleEndianInt32();
-  for (int32_t ff = 0; ff < num_fields; ++ff) {
-    if (stream.GetRemainingByteCount() < 2*sizeof(uint8_t)) {
-      O3D_ERROR(service_locator()) << "unexpected end of buffer data";
-      return false;
-    }
+	bool Buffer::Lock(AccessMode access_mode, void** buffer_data) {
+		if(access_mode == NONE) {
+			O3D_ERROR(service_locator())
+			        << "attempt to lock Buffer '" << name()
+			        << "' with access mode NONE";
+			return false;
+		}
 
-    uint8_t field_id = stream.ReadByte();
-    uint8_t num_components = stream.ReadByte();
+		if(access_mode_ == NONE || access_mode == access_mode_) {
+			if(lock_count_ == 0) {
+				if(!ConcreteLock(access_mode, &locked_data_)) {
+					return false;
+				}
+			}
 
-    const ObjectBase::Class *field_type;
+			++lock_count_;
+			*buffer_data = locked_data_;
+			return true;
+		}
+		else {
+			O3D_ERROR(service_locator())
+			        << "attempt to lock already locked Buffer '" << name()
+			        << "' with different access mode";
+			return false;
+		}
+	}
 
-    switch (field_id) {
-      case Field::FIELDID_FLOAT32:
-        field_type = FloatField::GetApparentClass();
-        break;
-      case Field::FIELDID_UINT32:
-        field_type = UInt32Field::GetApparentClass();
-        break;
-	  case Field::FIELDID_UINT16:
-		field_type = UInt16Field::GetApparentClass();
-		break;
-      case Field::FIELDID_BYTE:
-        field_type = UByteNField::GetApparentClass();
-        break;
+	bool Buffer::Unlock() {
+		if(lock_count_ == 0) {
+			O3D_ERROR(service_locator())
+			        << "attempt to unlock unlocked Buffer '" << name() << "'";
+			return false;
+		}
 
-      case Field::FIELDID_UNKNOWN:
-      default:
-        O3D_ERROR(service_locator()) << "unknown field_type";
-        return false;
-    }
+		--lock_count_;
 
-    Field* field = CreateField(field_type, num_components);
-    if (!field) {
-      O3D_ERROR(service_locator()) << "couldn't create field";
-      return false;
-    }
-  }
+		if(lock_count_ == 0) {
+			return ConcreteUnlock();
+		}
 
-  // Read the number of elements and allocate space
-  if (stream.GetRemainingByteCount() < sizeof(int32_t)) {
-    O3D_ERROR(service_locator()) << "unexpected end of buffer data";
-    return false;
-  }
-  int32_t num_elements = stream.ReadLittleEndianInt32();
-  if (!AllocateElements(num_elements)) {
-    O3D_ERROR(service_locator()) << "could not allocate buffer elements";
-    return false;
-  }
+		return true;
+	}
 
-  {
-    // Lock before reading in all the fields to avoid locking/unlocking
-    // for each field which would be slower
-    o3d::BufferLockHelper helper(this);
-    helper.GetData(o3d::Buffer::WRITE_ONLY);
+	bool Buffer::Set(o3d::RawData* raw_data) {
+		O3D_ASSERT(raw_data);
+		return Set(raw_data, 0, raw_data->GetLength());
+	}
 
-    // Read each field
-    for (int32_t ff = 0; ff < num_fields; ++ff) {
-      Field *field = fields()[ff];
-      if (!field->SetFromMemoryStream(&stream)) {
-        O3D_ERROR(service_locator()) <<
-            "unexpected end of buffer field data";
-        return false;
-      }
-    }
-  }
+	bool Buffer::Set(o3d::RawData* raw_data,
+	                 size_t offset,
+	                 size_t length) {
+		O3D_ASSERT(raw_data);
 
-  // Final integrity check that we consumed exactly the correct amount of data
-  if (stream.GetRemainingByteCount() != 0) {
-    O3D_ERROR(service_locator()) << "extra buffer data remaining";
-    return false;
-  }
+		if(!raw_data->IsOffsetLengthValid(offset, length)) {
+			O3D_ERROR(service_locator()) << "illegal buffer data offset or size";
+			return false;
+		}
 
-  return true;
-}
+		// GetData() returns NULL if it, for example, cannot open the temporary data
+		// file. In that case, it invokes the error callback. We just have to be
+		// careful not to dereference it.
+		const uint8_t* data = raw_data->GetDataAs<uint8_t>(offset);
 
-VertexBufferBase::VertexBufferBase(ServiceLocator* service_locator)
-    : Buffer(service_locator) {
-}
+		if(!data) {
+			return false;
+		}
 
-VertexBuffer::VertexBuffer(ServiceLocator* service_locator)
-    : VertexBufferBase(service_locator) {
-}
+		MemoryReadStream stream(data, length);
 
-ObjectBase::Ref VertexBuffer::Create(ServiceLocator* service_locator) {
-  Renderer* renderer = service_locator->GetService<Renderer>();
-  if (NULL == renderer) {
-    O3D_ERROR(service_locator) << "No Render Device Available";
-    return ObjectBase::Ref();
-  }
-  return ObjectBase::Ref(renderer->CreateVertexBuffer());
-}
+		// Verify we at least have enough data for four-char kSerializationID plus
+		// version and num_fields
+		if(length < 4 + 2 * sizeof(int32_t)) {
+			O3D_ERROR(service_locator())
+			        << "data object does not contain buffer data";
+			return false;
+		}
 
-SourceBuffer::SourceBuffer(ServiceLocator* service_locator)
-    : VertexBufferBase(service_locator),
-      buffer_() {
-}
+		// To insure data integrity we expect four characters kSerializationID
+		char id[5];
+		stream.Read(id, 4);
+		id[4] = 0;  // null-terminate
 
-SourceBuffer::~SourceBuffer() {
-  ConcreteFree();
-}
+		if(strcmp(id, kSerializationID)) {
+			O3D_ERROR(service_locator())
+			        << "data object does not contain buffer data";
+			return false;
+		}
 
-void SourceBuffer::ConcreteFree() {
-  buffer_.reset();
-}
+		int32_t version = stream.ReadLittleEndianInt32();
 
-bool SourceBuffer::ConcreteAllocate(size_t size_in_bytes) {
-  ConcreteFree();
+		if(version != 1) {
+			O3D_ERROR(service_locator()) << "unknown buffer data version";
+			return false;
+		}
 
-  buffer_.reset(new char[size_in_bytes]);
+		// Delete existing fields.
+		// TODO: Since this removes all fields, there is no need to
+		// reshuffle (which can be expensive). We could provide a RemoveAllFields
+		// and call it here.
+		while(fields_.size() > 0) {
+			RemoveField(fields_[0]);
+		}
 
-  return true;
-}
+		// Create fields.
+		int32_t num_fields = stream.ReadLittleEndianInt32();
 
-bool SourceBuffer::ConcreteLock(AccessMode access_mode, void **buffer_data) {
-  if (!buffer_.get()) {
-    return false;
-  }
+		for(int32_t ff = 0; ff < num_fields; ++ff) {
+			if(stream.GetRemainingByteCount() < 2 * sizeof(uint8_t)) {
+				O3D_ERROR(service_locator()) << "unexpected end of buffer data";
+				return false;
+			}
 
-  *buffer_data = reinterpret_cast<void*>(buffer_.get());
-  return true;
-}
+			uint8_t field_id = stream.ReadByte();
+			uint8_t num_components = stream.ReadByte();
+			const ObjectBase::Class* field_type;
 
-bool SourceBuffer::ConcreteUnlock() {
-  return buffer_.get() != NULL;
-}
+			switch(field_id) {
+			case Field::FIELDID_FLOAT32:
+				field_type = FloatField::GetApparentClass();
+				break;
+			case Field::FIELDID_UINT32:
+				field_type = UInt32Field::GetApparentClass();
+				break;
+			case Field::FIELDID_UINT16:
+				field_type = UInt16Field::GetApparentClass();
+				break;
+			case Field::FIELDID_BYTE:
+				field_type = UByteNField::GetApparentClass();
+				break;
+			case Field::FIELDID_UNKNOWN:
+			default:
+				O3D_ERROR(service_locator()) << "unknown field_type";
+				return false;
+			}
 
-ObjectBase::Ref SourceBuffer::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new SourceBuffer(service_locator));
-}
+			Field* field = CreateField(field_type, num_components);
 
-Field* IndexBuffer::index_field() const {
-  // TODO: It does not make sense for an IndexBuffer to have more
-  // than one field. For example, we do not support any way of rendering a
-  // primitive using only one of the fields of an IndexBuffer. The API allows
-  // you to create any number of fields for Buffers in general. That may not be
-  // the best design. This code verifies that there are not multiple fields
-  // on the IndexBuffer. It also checks for the case where there are no fields
-  // to prevent a crash. This function can be called from JavaScript. It
-  // should never crash. It is okay for an IndexBuffer to temporarily contain
-  // no fields. This is is used by Buffer::Set(). I added a O3D_ASSERT for debug
-  // builds.
-  O3D_ASSERT(fields().size() == 1);
-  return fields().size() == 1 ? fields()[0].Get() : NULL;
-}
+			if(!field) {
+				O3D_ERROR(service_locator()) << "couldn't create field";
+				return false;
+			}
+		}
 
-IndexBuffer::IndexBuffer(ServiceLocator* service_locator)
-    : Buffer(service_locator) {
+		// Read the number of elements and allocate space
+		if(stream.GetRemainingByteCount() < sizeof(int32_t)) {
+			O3D_ERROR(service_locator()) << "unexpected end of buffer data";
+			return false;
+		}
+
+		int32_t num_elements = stream.ReadLittleEndianInt32();
+
+		if(!AllocateElements(num_elements)) {
+			O3D_ERROR(service_locator()) << "could not allocate buffer elements";
+			return false;
+		}
+
+		{
+			// Lock before reading in all the fields to avoid locking/unlocking
+			// for each field which would be slower
+			o3d::BufferLockHelper helper(this);
+			helper.GetData(o3d::Buffer::WRITE_ONLY);
+
+			// Read each field
+			for(int32_t ff = 0; ff < num_fields; ++ff) {
+				Field* field = fields()[ff];
+
+				if(!field->SetFromMemoryStream(&stream)) {
+					O3D_ERROR(service_locator()) <<
+					                             "unexpected end of buffer field data";
+					return false;
+				}
+			}
+		}
+
+		// Final integrity check that we consumed exactly the correct amount of data
+		if(stream.GetRemainingByteCount() != 0) {
+			O3D_ERROR(service_locator()) << "extra buffer data remaining";
+			return false;
+		}
+
+		return true;
+	}
+
+	VertexBufferBase::VertexBufferBase(ServiceLocator* service_locator)
+		: Buffer(service_locator) {
+	}
+
+	VertexBuffer::VertexBuffer(ServiceLocator* service_locator)
+		: VertexBufferBase(service_locator) {
+	}
+
+	ObjectBase::Ref VertexBuffer::Create(ServiceLocator* service_locator) {
+		Renderer* renderer = service_locator->GetService<Renderer>();
+
+		if(NULL == renderer) {
+			O3D_ERROR(service_locator) << "No Render Device Available";
+			return ObjectBase::Ref();
+		}
+
+		return ObjectBase::Ref(renderer->CreateVertexBuffer());
+	}
+
+	SourceBuffer::SourceBuffer(ServiceLocator* service_locator)
+		: VertexBufferBase(service_locator),
+		  buffer_() {
+	}
+
+	SourceBuffer::~SourceBuffer() {
+		ConcreteFree();
+	}
+
+	void SourceBuffer::ConcreteFree() {
+		buffer_.reset();
+	}
+
+	bool SourceBuffer::ConcreteAllocate(size_t size_in_bytes) {
+		ConcreteFree();
+		buffer_.reset(new char[size_in_bytes]);
+		return true;
+	}
+
+	bool SourceBuffer::ConcreteLock(AccessMode access_mode, void** buffer_data) {
+		if(!buffer_.get()) {
+			return false;
+		}
+
+		*buffer_data = reinterpret_cast<void*>(buffer_.get());
+		return true;
+	}
+
+	bool SourceBuffer::ConcreteUnlock() {
+		return buffer_.get() != NULL;
+	}
+
+	ObjectBase::Ref SourceBuffer::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new SourceBuffer(service_locator));
+	}
+
+	Field* IndexBuffer::index_field() const {
+		// TODO: It does not make sense for an IndexBuffer to have more
+		// than one field. For example, we do not support any way of rendering a
+		// primitive using only one of the fields of an IndexBuffer. The API allows
+		// you to create any number of fields for Buffers in general. That may not be
+		// the best design. This code verifies that there are not multiple fields
+		// on the IndexBuffer. It also checks for the case where there are no fields
+		// to prevent a crash. This function can be called from JavaScript. It
+		// should never crash. It is okay for an IndexBuffer to temporarily contain
+		// no fields. This is is used by Buffer::Set(). I added a O3D_ASSERT for debug
+		// builds.
+		O3D_ASSERT(fields().size() == 1);
+		return fields().size() == 1 ? fields()[0].Get() : NULL;
+	}
+
+	IndexBuffer::IndexBuffer(ServiceLocator* service_locator)
+		: Buffer(service_locator) {
 #ifdef GLES2_BACKEND_NATIVE_GLES2
-  CreateField(UInt16Field::GetApparentClass(), 1);
+		CreateField(UInt16Field::GetApparentClass(), 1);
 #else
-  CreateField(UInt32Field::GetApparentClass(), 1);
+		CreateField(UInt32Field::GetApparentClass(), 1);
 #endif
-}
+	}
 
-ObjectBase::Ref IndexBuffer::Create(ServiceLocator* service_locator) {
-  Renderer* renderer = service_locator->GetService<Renderer>();
-  if (NULL == renderer) {
-    O3D_ERROR(service_locator) << "No Render Device Available";
-    return ObjectBase::Ref();
-  }
-  return ObjectBase::Ref(renderer->CreateIndexBuffer());
-}
+	ObjectBase::Ref IndexBuffer::Create(ServiceLocator* service_locator) {
+		Renderer* renderer = service_locator->GetService<Renderer>();
 
-BufferLockHelper::BufferLockHelper(Buffer* buffer)
-    : buffer_(buffer),
-      data_(NULL),
-      locked_(false) {
-}
+		if(NULL == renderer) {
+			O3D_ERROR(service_locator) << "No Render Device Available";
+			return ObjectBase::Ref();
+		}
 
-BufferLockHelper::~BufferLockHelper() {
-  if (locked_) {
-    buffer_->Unlock();
-  }
-}
+		return ObjectBase::Ref(renderer->CreateIndexBuffer());
+	}
 
-void* BufferLockHelper::GetData(Buffer::AccessMode access_mode) {
-  if (!locked_) {
-    locked_ = buffer_->Lock(access_mode, &data_);
-    if (!locked_) {
-      O3D_ERROR(buffer_->service_locator())
-          << "Unable to lock buffer '" << buffer_->name() << "'";
-    }
-  }
-  return data_;
-}
+	BufferLockHelper::BufferLockHelper(Buffer* buffer)
+		: buffer_(buffer),
+		  data_(NULL),
+		  locked_(false) {
+	}
+
+	BufferLockHelper::~BufferLockHelper() {
+		if(locked_) {
+			buffer_->Unlock();
+		}
+	}
+
+	void* BufferLockHelper::GetData(Buffer::AccessMode access_mode) {
+		if(!locked_) {
+			locked_ = buffer_->Lock(access_mode, &data_);
+
+			if(!locked_) {
+				O3D_ERROR(buffer_->service_locator())
+				        << "Unable to lock buffer '" << buffer_->name() << "'";
+			}
+		}
+
+		return data_;
+	}
 
 }  // namespace o3d

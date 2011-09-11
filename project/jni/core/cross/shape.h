@@ -41,7 +41,7 @@
 
 namespace o3d {
 
-class Pack;
+	class Pack;
 
 // TODO: A Shape is something made of Primitives. What would a HeightMap
 // be made of? It seems like Shape should be based on something like class
@@ -51,67 +51,67 @@ class Pack;
 // The Shape represents a collection of Elements. The typical example is a
 // cube with 6 faces where each face uses a different material would be
 // represented as 1 Shape with 6 Elements, one for each material.
-class Shape : public ParamObject {
- public:
-  typedef SmartPointer<Shape> Ref;
+	class Shape : public ParamObject {
+	public:
+		typedef SmartPointer<Shape> Ref;
 
-  // Gets an Array of Elements in this shape.
-  // Returns:
-  //   ElementArray of elements in this shape.
-  ElementArray GetElements() const;
+		// Gets an Array of Elements in this shape.
+		// Returns:
+		//   ElementArray of elements in this shape.
+		ElementArray GetElements() const;
 
-  void SetElements(const ElementArray& elements);
+		void SetElements(const ElementArray& elements);
 
-  // Gets a direct const reference to the elements owned by this shape.
-  // Returns:
-  //   const reference to the elements in this shape.
-  const ElementRefArray& GetElementRefs() const {
-    return elements_;
-  }
+		// Gets a direct const reference to the elements owned by this shape.
+		// Returns:
+		//   const reference to the elements in this shape.
+		const ElementRefArray& GetElementRefs() const {
+			return elements_;
+		}
 
-  // Creates DrawElements for each Element owned by this Shape. If an Element
-  // already has a DrawElement that uses material a new DrawElement will not be
-  // created.
-  // Parameters:
-  //   pack: pack used to manage created DrawElements. material: material to use
-  //   for each DrawElement. If you pass NULL it
-  //      will use the material on the element to which a draw element is being
-  //      added. In other words, a DrawPrimtive will use the material of the
-  //      corresponidng Element if material is NULL. This allows you to easily
-  //      setup the default (just draw as is) by passing NULL or setup a shadow
-  //      pass by passing in a shadow material.
-  void CreateDrawElements(Pack* pack,
-                          Material* material);
+		// Creates DrawElements for each Element owned by this Shape. If an Element
+		// already has a DrawElement that uses material a new DrawElement will not be
+		// created.
+		// Parameters:
+		//   pack: pack used to manage created DrawElements. material: material to use
+		//   for each DrawElement. If you pass NULL it
+		//      will use the material on the element to which a draw element is being
+		//      added. In other words, a DrawPrimtive will use the material of the
+		//      corresponidng Element if material is NULL. This allows you to easily
+		//      setup the default (just draw as is) by passing NULL or setup a shadow
+		//      pass by passing in a shadow material.
+		void CreateDrawElements(Pack* pack,
+		                        Material* material);
 
-  // Adds an Element to this shape. This is an internal function and should not
-  // be called directly. use Element::SetOwner
-  // Parameters:
-  //   element: Element to add.
-  void AddElement(Element* element);
+		// Adds an Element to this shape. This is an internal function and should not
+		// be called directly. use Element::SetOwner
+		// Parameters:
+		//   element: Element to add.
+		void AddElement(Element* element);
 
-  // Removes an element from this Shape. This is an internal function and should
-  // not be called directly. use Element::SetOwner
-  // Parameters:
-  //   element: Element to remove.
-  // Returns:
-  //   true if successful, false if element was not owned by this shape.
-  bool RemoveElement(Element* element);
+		// Removes an element from this Shape. This is an internal function and should
+		// not be called directly. use Element::SetOwner
+		// Parameters:
+		//   element: Element to remove.
+		// Returns:
+		//   true if successful, false if element was not owned by this shape.
+		bool RemoveElement(Element* element);
 
- private:
-  explicit Shape(ServiceLocator* service_locator);
+	private:
+		explicit Shape(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  // The elements of this Shape.
-  ElementRefArray elements_;
+		// The elements of this Shape.
+		ElementRefArray elements_;
 
-  O3D_DECL_CLASS(Shape, ParamObject)
-  O3D_DISALLOW_COPY_AND_ASSIGN(Shape);
-};  // Shape
+		O3D_DECL_CLASS(Shape, ParamObject)
+		O3D_DISALLOW_COPY_AND_ASSIGN(Shape);
+	};  // Shape
 
-typedef std::vector<Shape*> ShapeArray;
-typedef std::vector<Shape::Ref> ShapeRefArray;
+	typedef std::vector<Shape*> ShapeArray;
+	typedef std::vector<Shape::Ref> ShapeRefArray;
 
 }  // namespace o3d
 

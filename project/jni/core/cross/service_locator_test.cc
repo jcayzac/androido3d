@@ -36,80 +36,80 @@
 
 namespace o3d {
 
-namespace {
+	namespace {
 
-class IService1 {
- public:
-  static const InterfaceId kInterfaceId;
-};
+		class IService1 {
+		public:
+			static const InterfaceId kInterfaceId;
+		};
 
-const InterfaceId IService1::kInterfaceId =
-    InterfaceTraits<IService1>::kInterfaceId;
+		const InterfaceId IService1::kInterfaceId =
+		    InterfaceTraits<IService1>::kInterfaceId;
 
 // A service implementing one interface with no dependencies.
-class CService1 : public IService1 {
- public:
-  explicit CService1(ServiceLocator* service_locator)
-      : service_(service_locator, this) {
-  }
+		class CService1 : public IService1 {
+		public:
+			explicit CService1(ServiceLocator* service_locator)
+				: service_(service_locator, this) {
+			}
 
-  ServiceImplementation<IService1> service_;
-};
+			ServiceImplementation<IService1> service_;
+		};
 
-class IService2 {
- public:
-  static const InterfaceId kInterfaceId;
-};
+		class IService2 {
+		public:
+			static const InterfaceId kInterfaceId;
+		};
 
-const InterfaceId IService2::kInterfaceId =
-    InterfaceTraits<IService2>::kInterfaceId;
+		const InterfaceId IService2::kInterfaceId =
+		    InterfaceTraits<IService2>::kInterfaceId;
 
 // A service implementing one interface with one dependency.
-class DependentService2 : public IService2 {
- public:
-  explicit DependentService2(ServiceLocator* service_locator)
-      : service_(service_locator, this),
-        dependency_(service_locator) {
-  }
+		class DependentService2 : public IService2 {
+		public:
+			explicit DependentService2(ServiceLocator* service_locator)
+				: service_(service_locator, this),
+				  dependency_(service_locator) {
+			}
 
-  ServiceImplementation<IService2> service_;
-  ServiceDependency<IService1> dependency_;
-};
-}
+			ServiceImplementation<IService2> service_;
+			ServiceDependency<IService1> dependency_;
+		};
+	}
 
-class ServiceLocatorTest : public testing::Test {
- protected:
-  ServiceLocator locator_;
-};
+	class ServiceLocatorTest : public testing::Test {
+	protected:
+		ServiceLocator locator_;
+	};
 
-TEST_F(ServiceLocatorTest, ServiceNotAvailableIfNotAdded) {
-  EXPECT_FALSE(locator_.IsAvailable<IService1>());
-}
+	TEST_F(ServiceLocatorTest, ServiceNotAvailableIfNotAdded) {
+		EXPECT_FALSE(locator_.IsAvailable<IService1>());
+	}
 
-TEST_F(ServiceLocatorTest, CanRetreiveServiceImplementingSingleInterface) {
-  CService1 service1(&locator_);
-  EXPECT_TRUE(locator_.IsAvailable<IService1>());
-  EXPECT_EQ(&service1, locator_.GetService<IService1>());
-}
+	TEST_F(ServiceLocatorTest, CanRetreiveServiceImplementingSingleInterface) {
+		CService1 service1(&locator_);
+		EXPECT_TRUE(locator_.IsAvailable<IService1>());
+		EXPECT_EQ(&service1, locator_.GetService<IService1>());
+	}
 
-TEST_F(ServiceLocatorTest, CanRetreiveServiceImplementingExplicitInterface) {
-  CService1 service1(&locator_);
-  EXPECT_EQ(&service1, locator_.GetService<IService1>());
-}
+	TEST_F(ServiceLocatorTest, CanRetreiveServiceImplementingExplicitInterface) {
+		CService1 service1(&locator_);
+		EXPECT_EQ(&service1, locator_.GetService<IService1>());
+	}
 
-TEST_F(ServiceLocatorTest,
-  CanAddAndRetreiveServiceWithDependenciesWhenDepencenciesAlreadyExist) {
-  CService1 service1(&locator_);
-  DependentService2 service2(&locator_);
-  EXPECT_EQ(&service2, locator_.GetService<IService2>());
-  EXPECT_EQ(&service1, service2.dependency_.Get());
-}
+	TEST_F(ServiceLocatorTest,
+	       CanAddAndRetreiveServiceWithDependenciesWhenDepencenciesAlreadyExist) {
+		CService1 service1(&locator_);
+		DependentService2 service2(&locator_);
+		EXPECT_EQ(&service2, locator_.GetService<IService2>());
+		EXPECT_EQ(&service1, service2.dependency_.Get());
+	}
 
-TEST_F(ServiceLocatorTest,
-  CanAddAndRetreiveServiceWithDependenciesWhenDepencenciesDontYetExist) {
-  DependentService2 service2(&locator_);
-  CService1 service1(&locator_);
-  EXPECT_EQ(&service2, locator_.GetService<IService2>());
-  EXPECT_EQ(&service1, service2.dependency_.Get());
-}
+	TEST_F(ServiceLocatorTest,
+	       CanAddAndRetreiveServiceWithDependenciesWhenDepencenciesDontYetExist) {
+		DependentService2 service2(&locator_);
+		CService1 service1(&locator_);
+		EXPECT_EQ(&service2, locator_.GetService<IService2>());
+		EXPECT_EQ(&service1, service2.dependency_.Get());
+	}
 }

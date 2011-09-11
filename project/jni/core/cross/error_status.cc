@@ -35,69 +35,70 @@
 
 namespace o3d {
 
-ErrorStatus::ErrorStatus(ServiceLocator* service_locator)
-    : service_(service_locator, this), log_to_file_(true) {}
+	ErrorStatus::ErrorStatus(ServiceLocator* service_locator)
+		: service_(service_locator, this), log_to_file_(true) {}
 
-void ErrorStatus::SetErrorCallback(ErrorCallback* error_callback) {
-  error_callback_manager_.Set(error_callback);
-}
+	void ErrorStatus::SetErrorCallback(ErrorCallback* error_callback) {
+		error_callback_manager_.Set(error_callback);
+	}
 
-void ErrorStatus::ClearErrorCallback() {
-  error_callback_manager_.Clear();
-}
+	void ErrorStatus::ClearErrorCallback() {
+		error_callback_manager_.Clear();
+	}
 
-IErrorStatus::ErrorCallback* ErrorStatus::Exchange(ErrorCallback* callback) {
-  return error_callback_manager_.Exchange(callback);
-}
+	IErrorStatus::ErrorCallback* ErrorStatus::Exchange(ErrorCallback* callback) {
+		return error_callback_manager_.Exchange(callback);
+	}
 
 #ifndef NDEBUG
-void ErrorStatus::SetLastError(const std::string& error, const char *file,
-    int line) {
-  if (log_to_file_) {
-    std::stringstream ss;
-    ss << "[" << file << ":" << line << "] ";
-    O3D_LOG_NAKED(ERROR) << ss.str() << error;
-  }
-  SetLastError(error);
-}
+	void ErrorStatus::SetLastError(const std::string& error, const char* file,
+	                               int line) {
+		if(log_to_file_) {
+			std::stringstream ss;
+			ss << "[" << file << ":" << line << "] ";
+			O3D_LOG_NAKED(ERROR) << ss.str() << error;
+		}
+
+		SetLastError(error);
+	}
 #endif
 
-void ErrorStatus::SetLastError(const std::string& error) {
-  error_string_ = error;
-  error_callback_manager_.Run(error_string_);
-}
+	void ErrorStatus::SetLastError(const std::string& error) {
+		error_string_ = error;
+		error_callback_manager_.Run(error_string_);
+	}
 
-const std::string& ErrorStatus::GetLastError() const {
-  return error_string_;
-}
+	const std::string& ErrorStatus::GetLastError() const {
+		return error_string_;
+	}
 
-void ErrorStatus::ClearLastError() {
-  error_string_.clear();
-}
+	void ErrorStatus::ClearLastError() {
+		error_string_.clear();
+	}
 
-ErrorCollector::ErrorCollector(ServiceLocator* service_locator)
-    : error_status_(service_locator->GetService<IErrorStatus>()) {
-  old_callback_ = error_status_->Exchange(this);
-}
+	ErrorCollector::ErrorCollector(ServiceLocator* service_locator)
+		: error_status_(service_locator->GetService<IErrorStatus>()) {
+		old_callback_ = error_status_->Exchange(this);
+	}
 
-ErrorCollector::~ErrorCollector() {
-  error_status_->Exchange(old_callback_);
-}
+	ErrorCollector::~ErrorCollector() {
+		error_status_->Exchange(old_callback_);
+	}
 
-void ErrorCollector::Run(const std::string& error) {
-  errors_ += (errors_.empty() ? std::string("") : std::string("\n")) + error;
-}
+	void ErrorCollector::Run(const std::string& error) {
+		errors_ += (errors_.empty() ? std::string("") : std::string("\n")) + error;
+	}
 
-ErrorSuppressor::ErrorSuppressor(ServiceLocator* service_locator)
-    : error_status_(service_locator->GetService<IErrorStatus>()) {
-  old_callback_ = error_status_->Exchange(this);
-  old_file_logging_ = error_status_->IsFileLoggingActive();
-  error_status_->SetFileLoggingActive(false);
-}
+	ErrorSuppressor::ErrorSuppressor(ServiceLocator* service_locator)
+		: error_status_(service_locator->GetService<IErrorStatus>()) {
+		old_callback_ = error_status_->Exchange(this);
+		old_file_logging_ = error_status_->IsFileLoggingActive();
+		error_status_->SetFileLoggingActive(false);
+	}
 
-ErrorSuppressor::~ErrorSuppressor() {
-  error_status_->Exchange(old_callback_);
-  error_status_->SetFileLoggingActive(old_file_logging_);
-}
+	ErrorSuppressor::~ErrorSuppressor() {
+		error_status_->Exchange(old_callback_);
+		error_status_->SetFileLoggingActive(old_file_logging_);
+	}
 
 }  // namespace o3d

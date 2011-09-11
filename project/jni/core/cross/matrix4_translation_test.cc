@@ -39,43 +39,43 @@
 
 namespace o3d {
 
-class TranslationTest : public testing::Test {
- protected:
-  TranslationTest()
-      : object_manager_(g_service_locator),
-        pack_(NULL),
-        translation_(NULL) {
-  }
+	class TranslationTest : public testing::Test {
+	protected:
+		TranslationTest()
+			: object_manager_(g_service_locator),
+			  pack_(NULL),
+			  translation_(NULL) {
+		}
 
-  virtual void SetUp() {
-    pack_ = object_manager_->CreatePack();
-    translation_ = pack_->Create<Matrix4Translation>();
-  }
+		virtual void SetUp() {
+			pack_ = object_manager_->CreatePack();
+			translation_ = pack_->Create<Matrix4Translation>();
+		}
 
-  virtual void TearDown() {
-    pack_->Destroy();
-  }
+		virtual void TearDown() {
+			pack_->Destroy();
+		}
 
- protected:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack* pack_;
-  Matrix4Translation* translation_;
-};
+	protected:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+		Matrix4Translation* translation_;
+	};
 
-TEST_F(TranslationTest, OutputsInputTranslationAsMatrixIfNoParent) {
-  translation_->set_translation(Float3(1, 2, 3));
-  Matrix4 output_matrix = translation_->output_matrix();
-  Matrix4 expected(Vector4(1, 0, 0, 0), Vector4(0, 1, 0, 0),
-                   Vector4(0, 0, 1, 0), Vector4(1, 2, 3, 1));
-  ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
-}
+	TEST_F(TranslationTest, OutputsInputTranslationAsMatrixIfNoParent) {
+		translation_->set_translation(Float3(1, 2, 3));
+		Matrix4 output_matrix = translation_->output_matrix();
+		Matrix4 expected(Vector4(1, 0, 0, 0), Vector4(0, 1, 0, 0),
+		                 Vector4(0, 0, 1, 0), Vector4(1, 2, 3, 1));
+		ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
+	}
 
-TEST_F(TranslationTest, ComposesInputTranslationWithParentMatrix) {
-  translation_->set_translation(Float3(1, 2, 3));
-  Matrix4 parent = Matrix4::translation(Vector3(3, 4, 5));
-  translation_->set_input_matrix(parent);
-  Matrix4 output_matrix = translation_->output_matrix();
-  Matrix4 expected = Matrix4::translation(Vector3(4, 6, 8));
-  ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
-}
+	TEST_F(TranslationTest, ComposesInputTranslationWithParentMatrix) {
+		translation_->set_translation(Float3(1, 2, 3));
+		Matrix4 parent = Matrix4::translation(Vector3(3, 4, 5));
+		translation_->set_input_matrix(parent);
+		Matrix4 output_matrix = translation_->output_matrix();
+		Matrix4 expected = Matrix4::translation(Vector3(4, 6, 8));
+		ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
+	}
 }  // namespace o3d

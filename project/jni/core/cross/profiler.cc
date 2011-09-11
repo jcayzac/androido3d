@@ -34,18 +34,18 @@
 
 namespace o3d {
 
-const InterfaceId Profiler::kInterfaceId =
-    InterfaceTraits<Profiler>::kInterfaceId;
+	const InterfaceId Profiler::kInterfaceId =
+	    InterfaceTraits<Profiler>::kInterfaceId;
 
-Profiler::Profiler(ServiceLocator* service_locator)
-    : service_(service_locator, this) {
-}
+	Profiler::Profiler(ServiceLocator* service_locator)
+		: service_(service_locator, this) {
+	}
 
 #ifdef O3D_PROFILE_CLIENT
 
-void Profiler::Write(StructuredWriter* writer) {
-  timing_table_.Write(writer);
-}
+	void Profiler::Write(StructuredWriter* writer) {
+		timing_table_.Write(writer);
+	}
 
 #endif  // O3D_PROFILE_CLIENT
 

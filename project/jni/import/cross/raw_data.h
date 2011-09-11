@@ -48,63 +48,63 @@
 namespace o3d {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class RawData : public ParamObject {
- public:
-  typedef SmartPointer<RawData> Ref;
+	class RawData : public ParamObject {
+	public:
+		typedef SmartPointer<RawData> Ref;
 
-  static RawData::Ref Create(ServiceLocator* service_locator,
-                             const std::string &uri,
-                             const void *data,
-                             size_t length);
+		static RawData::Ref Create(ServiceLocator* service_locator,
+		                           const std::string& uri,
+		                           const void* data,
+		                           size_t length);
 
-  // Creates a RawData object, taking as input a string containing a
-  // data URL.
-  static RawData::Ref CreateFromDataURL(ServiceLocator* service_locator,
-                                        const std::string& data_url);
+		// Creates a RawData object, taking as input a string containing a
+		// data URL.
+		static RawData::Ref CreateFromDataURL(ServiceLocator* service_locator,
+		                                      const std::string& data_url);
 
-  virtual ~RawData();
+		virtual ~RawData();
 
-  const uint8_t *GetData() const;
+		const uint8_t* GetData() const;
 
-  template <typename T>
-  const T* GetDataAs(size_t offset) const {
-    return reinterpret_cast<const T*>(GetData() + offset);
-  };
+		template <typename T>
+		const T* GetDataAs(size_t offset) const {
+			return reinterpret_cast<const T*>(GetData() + offset);
+		};
 
-  size_t GetLength() const { return length_; }
+		size_t GetLength() const { return length_; }
 
-  std::string StringValue() const;
+		std::string StringValue() const;
 
-  const std::string& uri() const { return uri_; }
-  void set_uri(const std::string& uri) { uri_ = uri; }
+		const std::string& uri() const { return uri_; }
+		void set_uri(const std::string& uri) { uri_ = uri; }
 
-  // deletes the data which means IF the data is in memory it is
-  // freed.
-  void Discard();
+		// deletes the data which means IF the data is in memory it is
+		// freed.
+		void Discard();
 
-  bool IsOffsetLengthValid(size_t offset, size_t length) const;
+		bool IsOffsetLengthValid(size_t offset, size_t length) const;
 
- private:
-  std::string uri_;
-  mutable ::o3d::base::scoped_array<uint8_t> data_;
-  size_t length_;
-  bool allow_string_value_;
+	private:
+		std::string uri_;
+		mutable ::o3d::base::scoped_array<uint8_t> data_;
+		size_t length_;
+		bool allow_string_value_;
 
-  RawData(ServiceLocator* service_locator,
-          const std::string &uri,
-          const void *data,
-          size_t length);
+		RawData(ServiceLocator* service_locator,
+		        const std::string& uri,
+		        const void* data,
+		        size_t length);
 
-  // Decodes data from a data URL and stores that data in this
-  // RawData object. Returns false on error, true otherwise
-  bool SetFromDataURL(const std::string& data_url);
+		// Decodes data from a data URL and stores that data in this
+		// RawData object. Returns false on error, true otherwise
+		bool SetFromDataURL(const std::string& data_url);
 
-  friend class IClassManager;
-  friend class Pack;
+		friend class IClassManager;
+		friend class Pack;
 
-  O3D_DECL_CLASS(RawData, ParamObject)
-  O3D_DISALLOW_COPY_AND_ASSIGN(RawData);
-};
+		O3D_DECL_CLASS(RawData, ParamObject)
+		O3D_DISALLOW_COPY_AND_ASSIGN(RawData);
+	};
 
 }  // namespace o3d
 

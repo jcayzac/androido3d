@@ -46,34 +46,34 @@
 
 namespace o3d {
 
-class ElapsedTimeTimer {
- public:
-  ElapsedTimeTimer();
-  // Gets the elapsed time in seconds since the last time the timer was reset,
-  // then reset the stored time to restart the interval.
-  float GetElapsedTimeAndReset();
-  // Gets the elapsed time in seconds since the last time the timer was reset,
-  // but doesn't reset the stored time.  Use this to keep track of cumulative
-  // time rather than each interval.
-  float GetElapsedTimeWithoutClearing();
+	class ElapsedTimeTimer {
+	public:
+		ElapsedTimeTimer();
+		// Gets the elapsed time in seconds since the last time the timer was reset,
+		// then reset the stored time to restart the interval.
+		float GetElapsedTimeAndReset();
+		// Gets the elapsed time in seconds since the last time the timer was reset,
+		// but doesn't reset the stored time.  Use this to keep track of cumulative
+		// time rather than each interval.
+		float GetElapsedTimeWithoutClearing();
 
- private:
-  float GetElapsedTimeHelper(bool reset);
+	private:
+		float GetElapsedTimeHelper(bool reset);
 
 #ifdef TARGET_OS_IPHONE
-  typedef CFAbsoluteTime TimeStamp;
+		typedef CFAbsoluteTime TimeStamp;
 #elif OS_MACOSX
-  typedef AbsoluteTime TimeStamp;
+		typedef AbsoluteTime TimeStamp;
 #endif
 
 #if defined(OS_LINUX) || defined(__ANDROID__)
-  typedef uint64_t TimeStamp;
+		typedef uint64_t TimeStamp;
 #endif
 
-  // The value of the tick count from the windows performance counter from the
-  // last time GetElapsedTime was called.
-  TimeStamp last_time_;
-};
+		// The value of the tick count from the windows performance counter from the
+		// last time GetElapsedTime was called.
+		TimeStamp last_time_;
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_TIMER_H_

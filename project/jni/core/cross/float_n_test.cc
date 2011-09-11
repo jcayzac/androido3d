@@ -35,13 +35,13 @@
 
 namespace o3d {
 
-TEST(FloatNTest, Float3ToVector3) {
-  Vector3 v = Float3ToVector3(Float3(1, 2, 3));
-  ASSERT_NEAR(0.0f, length(v - Vector3(1, 2, 3)), 0.001f);
-}
+	TEST(FloatNTest, Float3ToVector3) {
+		Vector3 v = Float3ToVector3(Float3(1, 2, 3));
+		ASSERT_NEAR(0.0f, length(v - Vector3(1, 2, 3)), 0.001f);
+	}
 
-TEST(FloatNTest, Float3ToPoint3) {
-  Point3 v = Float3ToPoint3(Float3(1, 2, 3));
-  ASSERT_NEAR(0.0f, length(v - Point3(1, 2, 3)), 0.001f);
-}
+	TEST(FloatNTest, Float3ToPoint3) {
+		Point3 v = Float3ToPoint3(Float3(1, 2, 3));
+		ASSERT_NEAR(0.0f, length(v - Point3(1, 2, 3)), 0.001f);
+	}
 }  // namespace o3d

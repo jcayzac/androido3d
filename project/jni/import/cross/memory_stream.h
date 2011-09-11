@@ -52,236 +52,239 @@
 namespace o3d {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class MemoryReadStream {
- public:
-  MemoryReadStream(const uint8_t *memory, size_t n)
-      : memory_(memory), read_index_(0), length_(n) {}
+	class MemoryReadStream {
+	public:
+		MemoryReadStream(const uint8_t* memory, size_t n)
+			: memory_(memory), read_index_(0), length_(n) {}
 
-  // Explicit copy constructor
-  MemoryReadStream(const MemoryReadStream &stream)
-      : memory_(stream.memory_),
-        read_index_(stream.read_index_),
-        length_(stream.length_) {}
+		// Explicit copy constructor
+		MemoryReadStream(const MemoryReadStream& stream)
+			: memory_(stream.memory_),
+			  read_index_(stream.read_index_),
+			  length_(stream.length_) {}
 
-  virtual ~MemoryReadStream() {}
+		virtual ~MemoryReadStream() {}
 
-  // Similar to fread(), will try to copy |n| bytes to address |p|
-  // (copies fewer bytes if the stream doesn't have enough data)
-  // returns the number of bytes copied
-  virtual size_t Read(void *p, size_t n) {
-    size_t remaining = GetRemainingByteCount();
-    size_t bytes_to_read = (n < remaining) ? n : remaining;
-    memcpy(p, memory_ + read_index_, bytes_to_read);
-    read_index_ += bytes_to_read;
-    return bytes_to_read;
-  }
+		// Similar to fread(), will try to copy |n| bytes to address |p|
+		// (copies fewer bytes if the stream doesn't have enough data)
+		// returns the number of bytes copied
+		virtual size_t Read(void* p, size_t n) {
+			size_t remaining = GetRemainingByteCount();
+			size_t bytes_to_read = (n < remaining) ? n : remaining;
+			memcpy(p, memory_ + read_index_, bytes_to_read);
+			read_index_ += bytes_to_read;
+			return bytes_to_read;
+		}
 
-  // Attempts to read a complete object of type T
-  // returns |true| on success
-  template<typename T>
-  bool ReadAs(T *p) {
-    size_t bytes_read = this->Read(reinterpret_cast<char*>(p),
-                                   sizeof(T));
-    return (bytes_read == sizeof(T));
-  }
+		// Attempts to read a complete object of type T
+		// returns |true| on success
+		template<typename T>
+		bool ReadAs(T* p) {
+			size_t bytes_read = this->Read(reinterpret_cast<char*>(p),
+			                               sizeof(T));
+			return (bytes_read == sizeof(T));
+		}
 
-  // Reads the next byte in the stream (if there are any left)
-  // If the stream has run dry (is empty) then returns 0
-  // To check number of bytes available, call GetRemainingByteCount()
-  virtual uint8_t ReadByte() {
-    if (read_index_ >= length_) return 0;
+		// Reads the next byte in the stream (if there are any left)
+		// If the stream has run dry (is empty) then returns 0
+		// To check number of bytes available, call GetRemainingByteCount()
+		virtual uint8_t ReadByte() {
+			if(read_index_ >= length_) return 0;
 
-    uint8_t byte = memory_[read_index_];
-    read_index_++;
+			uint8_t byte = memory_[read_index_];
+			read_index_++;
+			return byte;
+		}
 
-    return byte;
-  }
+		// 16 and 32bit integer reading for both little and big endian
+		int16_t ReadLittleEndianInt16();
+		uint16_t ReadLittleEndianUInt16();
+		int16_t ReadBigEndianInt16();
+		uint16_t ReadBigEndianUInt16();
+		int32_t ReadLittleEndianInt32();
+		uint32_t ReadLittleEndianUInt32();
+		int32_t ReadBigEndianInt32();
+		uint32_t ReadBigEndianUInt32();
 
-  // 16 and 32bit integer reading for both little and big endian
-  int16_t ReadLittleEndianInt16();
-  uint16_t ReadLittleEndianUInt16();
-  int16_t ReadBigEndianInt16();
-  uint16_t ReadBigEndianUInt16();
-  int32_t ReadLittleEndianInt32();
-  uint32_t ReadLittleEndianUInt32();
-  int32_t ReadBigEndianInt32();
-  uint32_t ReadBigEndianUInt32();
+		// IEEE 32-bit float reading (little and big endian)
+		float ReadLittleEndianFloat32();
+		float ReadBigEndianFloat32();
 
-  // IEEE 32-bit float reading (little and big endian)
-  float ReadLittleEndianFloat32();
-  float ReadBigEndianFloat32();
+		// Returns the number of bytes left in the stream (which can be read)
+		size_t GetRemainingByteCount() {
+			return length_ - read_index_;
+		};
 
-  // Returns the number of bytes left in the stream (which can be read)
-  size_t GetRemainingByteCount() {
-    return length_ - read_index_;
-  };
+		// Returns |true| if the read position is at end-of-stream
+		// (no more bytes left to read)
+		bool EndOfStream() { return GetRemainingByteCount() == 0; }
 
-  // Returns |true| if the read position is at end-of-stream
-  // (no more bytes left to read)
-  bool EndOfStream() { return GetRemainingByteCount() == 0; }
+		// Instead of calling Read(), this gives direct access to the data
+		// without a memcpy().
+		// Calling GetRemainingByteCount() will give the number of remaining bytes
+		// starting at this address...
+		const uint8_t* GetDirectMemoryPointer() { return memory_ + read_index_; }
 
-  // Instead of calling Read(), this gives direct access to the data
-  // without a memcpy().
-  // Calling GetRemainingByteCount() will give the number of remaining bytes
-  // starting at this address...
-  const uint8_t *GetDirectMemoryPointer() { return memory_ + read_index_; }
+		// Same as GetDirectMemoryPointer() but returns pointer of desired type
+		template <typename T>
+		T* GetDirectMemoryPointerAs() {
+			return reinterpret_cast<T*>(GetDirectMemoryPointer());
+		};
 
-  // Same as GetDirectMemoryPointer() but returns pointer of desired type
-  template <typename T>
-  T *GetDirectMemoryPointerAs() {
-    return reinterpret_cast<T*>(GetDirectMemoryPointer());
-  };
+		// Advances the read position by |n| bytes
+		void Skip(size_t n) {
+			size_t remaining = GetRemainingByteCount();
+			read_index_ += (n < remaining) ? n : remaining;
+		}
 
-  // Advances the read position by |n| bytes
-  void Skip(size_t n) {
-    size_t remaining = GetRemainingByteCount();
-    read_index_ += (n < remaining) ? n : remaining;
-  }
+		// Changes the read position to the given byte offset.
+		// This allows random access into the stream similar to fseek()
+		bool Seek(size_t seek_pos) {
+			bool valid = (seek_pos >= 0 && seek_pos <= length_);
 
-  // Changes the read position to the given byte offset.
-  // This allows random access into the stream similar to fseek()
-  bool Seek(size_t seek_pos) {
-    bool valid = (seek_pos >= 0 && seek_pos <= length_);
-    if (valid) {
-      read_index_ = seek_pos;
-    }
-    return valid;
-  }
+			if(valid) {
+				read_index_ = seek_pos;
+			}
 
-  // Returns the total number of bytes in the stream
-  size_t GetTotalStreamLength() const { return length_; }
+			return valid;
+		}
+
+		// Returns the total number of bytes in the stream
+		size_t GetTotalStreamLength() const { return length_; }
 
 
-  // Returns the byte position (offset from start of stream)
-  // this is effectively the number of bytes which have, so far,
-  // been read
-  size_t GetStreamPosition() const { return read_index_; }
+		// Returns the byte position (offset from start of stream)
+		// this is effectively the number of bytes which have, so far,
+		// been read
+		size_t GetStreamPosition() const { return read_index_; }
 
-  // utility methods (swaps the value if necessary)
-  static int16_t GetLittleEndianInt16(const int16_t *value);
-  static uint16_t GetLittleEndianUInt16(const uint16_t *value);
-  static int32_t GetLittleEndianInt32(const int32_t *value);
-  static uint32_t GetLittleEndianUInt32(const uint32_t *value);
+		// utility methods (swaps the value if necessary)
+		static int16_t GetLittleEndianInt16(const int16_t* value);
+		static uint16_t GetLittleEndianUInt16(const uint16_t* value);
+		static int32_t GetLittleEndianInt32(const int32_t* value);
+		static uint32_t GetLittleEndianUInt32(const uint32_t* value);
 
- protected:
-  const uint8_t *memory_;
-  size_t read_index_;
-  size_t length_;
+	protected:
+		const uint8_t* memory_;
+		size_t read_index_;
+		size_t length_;
 
-  // Disallow assignment
-  void operator=(const MemoryReadStream&);
-};
+		// Disallow assignment
+		void operator=(const MemoryReadStream&);
+	};
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class MemoryWriteStream {
- public:
-  // May be completely initialized by calling Assign()
-  MemoryWriteStream() : memory_(NULL), write_index_(0), length_(0) {}
+	class MemoryWriteStream {
+	public:
+		// May be completely initialized by calling Assign()
+		MemoryWriteStream() : memory_(NULL), write_index_(0), length_(0) {}
 
-  MemoryWriteStream(uint8_t *memory, size_t n)
-      : memory_(memory), write_index_(0), length_(n) {}
+		MemoryWriteStream(uint8_t* memory, size_t n)
+			: memory_(memory), write_index_(0), length_(n) {}
 
-  // Explicit copy constructor
-  MemoryWriteStream(const MemoryWriteStream &stream)
-      : memory_(stream.memory_),
-        write_index_(stream.write_index_),
-        length_(stream.length_) {}
+		// Explicit copy constructor
+		MemoryWriteStream(const MemoryWriteStream& stream)
+			: memory_(stream.memory_),
+			  write_index_(stream.write_index_),
+			  length_(stream.length_) {}
 
-  virtual ~MemoryWriteStream() {}
+		virtual ~MemoryWriteStream() {}
 
-  // In the case where the default constructor was used, this is useful
-  // to assign a pointer to memory and a length in bytes.
-  void Assign(uint8_t *memory, size_t n) {
-    memory_ = memory;
-    length_ = n;
-    write_index_ = 0;
-  }
+		// In the case where the default constructor was used, this is useful
+		// to assign a pointer to memory and a length in bytes.
+		void Assign(uint8_t* memory, size_t n) {
+			memory_ = memory;
+			length_ = n;
+			write_index_ = 0;
+		}
 
-  // Changes the write position to the given byte offset.
-  // This allows random access into the stream similar to fseek()
-  bool Seek(size_t seek_pos) {
-    bool valid = (seek_pos >= 0 && seek_pos <= length_);
-    if (valid) {
-      write_index_ = seek_pos;
-    }
-    return valid;
-  }
+		// Changes the write position to the given byte offset.
+		// This allows random access into the stream similar to fseek()
+		bool Seek(size_t seek_pos) {
+			bool valid = (seek_pos >= 0 && seek_pos <= length_);
 
-  // Similar to fwrite(), will try to copy |n| bytes from address |p|
-  // (copies fewer bytes if the stream doesn't have enough data)
-  // returns the number of bytes copied
-  virtual size_t Write(const void *p, size_t n) {
-    size_t remaining = GetRemainingByteCount();
-    size_t bytes_to_write = (n < remaining) ? n : remaining;
-    memcpy(memory_ + write_index_, p, bytes_to_write);
-    write_index_ += bytes_to_write;
-    return bytes_to_write;
-  }
+			if(valid) {
+				write_index_ = seek_pos;
+			}
 
-  void WriteByte(uint8_t byte) {
-    Write(&byte, 1);
-  }
+			return valid;
+		}
 
-  // 16 and 32bit integer writing for both little and big endian
-  void WriteLittleEndianInt16(int16_t i);
-  void WriteLittleEndianUInt16(uint16_t i);
-  void WriteBigEndianInt16(int16_t i);
-  void WriteBigEndianUInt16(uint16_t i);
-  void WriteLittleEndianInt32(int32_t i);
-  void WriteLittleEndianUInt32(uint32_t i);
-  void WriteBigEndianInt32(int32_t i);
-  void WriteBigEndianUInt32(uint32_t i);
+		// Similar to fwrite(), will try to copy |n| bytes from address |p|
+		// (copies fewer bytes if the stream doesn't have enough data)
+		// returns the number of bytes copied
+		virtual size_t Write(const void* p, size_t n) {
+			size_t remaining = GetRemainingByteCount();
+			size_t bytes_to_write = (n < remaining) ? n : remaining;
+			memcpy(memory_ + write_index_, p, bytes_to_write);
+			write_index_ += bytes_to_write;
+			return bytes_to_write;
+		}
 
-  // IEEE 32-bit float writing (little and big endian)
-  void WriteLittleEndianFloat32(float f);
-  void WriteBigEndianFloat32(float f);
+		void WriteByte(uint8_t byte) {
+			Write(&byte, 1);
+		}
 
-  // Returns the number of bytes left in the stream (which can be written)
-  size_t GetRemainingByteCount() {
-    return length_ - write_index_;
-  };
+		// 16 and 32bit integer writing for both little and big endian
+		void WriteLittleEndianInt16(int16_t i);
+		void WriteLittleEndianUInt16(uint16_t i);
+		void WriteBigEndianInt16(int16_t i);
+		void WriteBigEndianUInt16(uint16_t i);
+		void WriteLittleEndianInt32(int32_t i);
+		void WriteLittleEndianUInt32(uint32_t i);
+		void WriteBigEndianInt32(int32_t i);
+		void WriteBigEndianUInt32(uint32_t i);
 
-  // Returns |true| if the read position is at end-of-stream
-  // (no more bytes left to read)
-  bool EndOfStream() { return GetRemainingByteCount() == 0; }
+		// IEEE 32-bit float writing (little and big endian)
+		void WriteLittleEndianFloat32(float f);
+		void WriteBigEndianFloat32(float f);
 
-  // Returns the total number of bytes in the stream
-  size_t GetTotalStreamLength() const { return length_; }
+		// Returns the number of bytes left in the stream (which can be written)
+		size_t GetRemainingByteCount() {
+			return length_ - write_index_;
+		};
 
-  // Returns the byte position (offset from start of stream)
-  // this is effectively the number of bytes which have, so far,
-  // been written
-  size_t GetStreamPosition() const { return write_index_; }
+		// Returns |true| if the read position is at end-of-stream
+		// (no more bytes left to read)
+		bool EndOfStream() { return GetRemainingByteCount() == 0; }
 
- protected:
-  uint8_t *memory_;
-  size_t write_index_;
-  size_t length_;
+		// Returns the total number of bytes in the stream
+		size_t GetTotalStreamLength() const { return length_; }
 
-  // Disallow assignment
-  void operator=(const MemoryWriteStream&);
-};
+		// Returns the byte position (offset from start of stream)
+		// this is effectively the number of bytes which have, so far,
+		// been written
+		size_t GetStreamPosition() const { return write_index_; }
+
+	protected:
+		uint8_t* memory_;
+		size_t write_index_;
+		size_t length_;
+
+		// Disallow assignment
+		void operator=(const MemoryWriteStream&);
+	};
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Abstract interface to process a memory stream
-class StreamProcessor {
- public:
+	class StreamProcessor {
+	public:
 
 // Status is defined in Linux
 #ifdef Status
 #undef Status
 #endif
-  enum Status {
-    IN_PROGRESS,
-    SUCCESS,
-    FAILURE,
-  };
+		enum Status {
+			IN_PROGRESS,
+			SUCCESS,
+			FAILURE,
+		};
 
-  virtual ~StreamProcessor() {}
-  virtual Status ProcessBytes(MemoryReadStream *stream,
-                              size_t bytes_to_process) = 0;
-  virtual void Close(bool success) = 0;
-};
+		virtual ~StreamProcessor() {}
+		virtual Status ProcessBytes(MemoryReadStream* stream,
+		                            size_t bytes_to_process) = 0;
+		virtual void Close(bool success) = 0;
+	};
 
 }  // namespace o3d
 

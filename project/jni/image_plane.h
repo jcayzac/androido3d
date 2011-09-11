@@ -23,70 +23,70 @@
 
 namespace o3d {
 
-class Pack;
-class ParamSampler;
-class Sampler;
-class Shape;
-class Transform;
-class Texture2D;
+	class Pack;
+	class ParamSampler;
+	class Sampler;
+	class Shape;
+	class Transform;
+	class Texture2D;
 
 }  // namespace o3d.
 
 namespace o3d_utils {
 
-class ViewInfo;
+	class ViewInfo;
 
 // An image plane is a Quad with an image mapped to it.
-class ImagePlane {
- public:
-  // Creates an ImagePlane. If the requested texture is not already loaded,
-  // loads it.
-  static ImagePlane* Create(o3d::Pack* plane_pack,
-                            o3d::Pack* texture_pack,
-                            ViewInfo* view_info,
-                            const std::string& filename,
-                            bool origin_at_center);
+	class ImagePlane {
+	public:
+		// Creates an ImagePlane. If the requested texture is not already loaded,
+		// loads it.
+		static ImagePlane* Create(o3d::Pack* plane_pack,
+		                          o3d::Pack* texture_pack,
+		                          ViewInfo* view_info,
+		                          const std::string& filename,
+		                          bool origin_at_center);
 
-  // Gets a texture from the pack. If it doesn't exist, loads it.
-  static o3d::Texture2D* GetTexture(
-      o3d::Pack* pack, const std::string& filename);
+		// Gets a texture from the pack. If it doesn't exist, loads it.
+		static o3d::Texture2D* GetTexture(
+		    o3d::Pack* pack, const std::string& filename);
 
-  // Gets an image plane shape with associated effect and material. If
-  // they don't exist in the given pack they will be created.
-  static o3d::Shape* GetImagePlaneShape(
-      o3d::Pack* pack, ViewInfo* view_info);
+		// Gets an image plane shape with associated effect and material. If
+		// they don't exist in the given pack they will be created.
+		static o3d::Shape* GetImagePlaneShape(
+		    o3d::Pack* pack, ViewInfo* view_info);
 
-  o3d::Transform* transform() const {
-    return transform_;
-  }
+		o3d::Transform* transform() const {
+			return transform_;
+		}
 
-  void SetColorMult(const o3d::Float4& color) {
-    color_mult_param_->set_value(color);
-  }
-  void SetColorMult(const float* color) {
-    SetColorMult(o3d::Float4(color[0], color[1], color[2], color[3]));
-  }
+		void SetColorMult(const o3d::Float4& color) {
+			color_mult_param_->set_value(color);
+		}
+		void SetColorMult(const float* color) {
+			SetColorMult(o3d::Float4(color[0], color[1], color[2], color[3]));
+		}
 
-  o3d::Float4 GetColorMult() const {
-    return color_mult_param_->value();
-  }
+		o3d::Float4 GetColorMult() const {
+			return color_mult_param_->value();
+		}
 
- private:
-  ImagePlane();
+	private:
+		ImagePlane();
 
-  bool Init(
-      o3d::Texture2D* texture,
-      o3d::Pack* plane_pack,
-      ViewInfo* view_info,
-      const std::string& filename,
-      bool origin_at_center);
+		bool Init(
+		    o3d::Texture2D* texture,
+		    o3d::Pack* plane_pack,
+		    ViewInfo* view_info,
+		    const std::string& filename,
+		    bool origin_at_center);
 
-  o3d::Sampler* sampler_;
-  o3d::ParamSampler* sampler_param_;
-  o3d::ParamFloat4* color_mult_param_;
-  o3d::Transform* transform_;
-  o3d::Transform* scale_transform_;
-};
+		o3d::Sampler* sampler_;
+		o3d::ParamSampler* sampler_param_;
+		o3d::ParamFloat4* color_mult_param_;
+		o3d::Transform* transform_;
+		o3d::Transform* scale_transform_;
+	};
 
 }  // namespace o3d_utils
 

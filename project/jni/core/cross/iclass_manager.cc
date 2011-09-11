@@ -34,7 +34,7 @@
 
 namespace o3d {
 
-const InterfaceId IClassManager::kInterfaceId =
-    InterfaceTraits<IClassManager>::kInterfaceId;
+	const InterfaceId IClassManager::kInterfaceId =
+	    InterfaceTraits<IClassManager>::kInterfaceId;
 
 }  // namespace o3d

@@ -18,7 +18,7 @@
 
 namespace o3d {
 
-const InterfaceId PickingContext::kInterfaceId =
-      InterfaceTraits<PickingContext>::kInterfaceId;
+	const InterfaceId PickingContext::kInterfaceId =
+	    InterfaceTraits<PickingContext>::kInterfaceId;
 
 }  // namespace o3d

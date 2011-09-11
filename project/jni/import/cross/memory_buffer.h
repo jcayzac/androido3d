@@ -57,22 +57,22 @@
 
 template <class T>
 class MemoryBuffer {
- public:
-  MemoryBuffer() {};
-  explicit MemoryBuffer(size_t num_elems) : vector_(num_elems, 0) { }
+public:
+	MemoryBuffer() {};
+	explicit MemoryBuffer(size_t num_elems) : vector_(num_elems, 0) { }
 
-  void Allocate(size_t num_elems) { AllocateClear(num_elems); }
-  void AllocateClear(size_t num_elems) { vector_.assign(num_elems, 0); }
-  void Deallocate() { vector_.clear(); }
-  void Clear() { AllocateClear(vector_.size()); }  // sets to all zero values
-  void Resize(size_t n) { vector_.resize(n); }
-  size_t GetLength() { return vector_.size(); }
-  operator T *() { return &vector_[0]; }
+	void Allocate(size_t num_elems) { AllocateClear(num_elems); }
+	void AllocateClear(size_t num_elems) { vector_.assign(num_elems, 0); }
+	void Deallocate() { vector_.clear(); }
+	void Clear() { AllocateClear(vector_.size()); }  // sets to all zero values
+	void Resize(size_t n) { vector_.resize(n); }
+	size_t GetLength() { return vector_.size(); }
+	operator T* () { return &vector_[0]; }
 
- private:
-  std::vector<T> vector_;
+private:
+	std::vector<T> vector_;
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(MemoryBuffer);
+	O3D_DISALLOW_COPY_AND_ASSIGN(MemoryBuffer);
 };
 
 #endif  // O3D_IMPORT_CROSS_MEMORY_BUFFER_H_

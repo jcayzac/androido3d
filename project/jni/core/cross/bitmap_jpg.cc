@@ -61,212 +61,199 @@ namespace {
 //
 // NB: don't add any virtual methods to this class as we depend on
 // the initial memory layout of this object matching a jpeg_source_mgr
-class JPEGMemoryReader : public jpeg_source_mgr {
- public:
-  JPEGMemoryReader(j_decompress_ptr cinfo,
-                   const uint8_t *jpeg_data,
-                   size_t jpeg_data_length) {
-    // Store a pointer to ourselves that we'll get in the callbacks
-    if (cinfo->src == NULL) {
-      cinfo->src = (struct jpeg_source_mgr *)this;
-    }
+	class JPEGMemoryReader : public jpeg_source_mgr {
+	public:
+		JPEGMemoryReader(j_decompress_ptr cinfo,
+		                 const uint8_t* jpeg_data,
+		                 size_t jpeg_data_length) {
+			// Store a pointer to ourselves that we'll get in the callbacks
+			if(cinfo->src == NULL) {
+				cinfo->src = (struct jpeg_source_mgr*)this;
+			}
 
-    // Setup our custom function callbacks
-    init_source = InitSource;
-    fill_input_buffer = FillInputBuffer;
-    skip_input_data = SkipInputData;
-    resync_to_restart = jpeg_resync_to_restart; // default method from libjpeg
-    term_source = TermSource;
+			// Setup our custom function callbacks
+			init_source = InitSource;
+			fill_input_buffer = FillInputBuffer;
+			skip_input_data = SkipInputData;
+			resync_to_restart = jpeg_resync_to_restart; // default method from libjpeg
+			term_source = TermSource;
+			bytes_in_buffer = jpeg_data_length;
+			uint8_t* p = const_cast<uint8_t*>(jpeg_data);
+			next_input_byte = reinterpret_cast<JOCTET*>(p);
+		}
 
-    bytes_in_buffer = jpeg_data_length;
+	private:
+		// Callback functions, most of them do nothing
+		METHODDEF(void) InitSource(j_decompress_ptr cinfo) {};  // nop
 
-    uint8_t *p = const_cast<uint8_t*>(jpeg_data);
-    next_input_byte = reinterpret_cast<JOCTET*>(p);
-  }
+		METHODDEF(boolean) FillInputBuffer(j_decompress_ptr cinfo) {
+			// Should not be called because we already have all the data
+			ERREXIT(cinfo, JERR_INPUT_EOF);
+			return TRUE;
+		}
 
- private:
-  // Callback functions, most of them do nothing
-  METHODDEF(void) InitSource(j_decompress_ptr cinfo) {};  // nop
+		// Here's the one which essentially "reads" from the memory buffer
+		METHODDEF(void) SkipInputData(j_decompress_ptr cinfo, long num_bytes) {
+			JPEGMemoryReader* This = (JPEGMemoryReader*)cinfo->src;
+			int i = This->bytes_in_buffer - num_bytes;
 
-  METHODDEF(boolean) FillInputBuffer(j_decompress_ptr cinfo) {
-    // Should not be called because we already have all the data
-    ERREXIT(cinfo, JERR_INPUT_EOF);
-    return TRUE;
-  }
+			if(i < 0) i = 0;
 
-  // Here's the one which essentially "reads" from the memory buffer
-  METHODDEF(void) SkipInputData(j_decompress_ptr cinfo, long num_bytes) {
-    JPEGMemoryReader *This = (JPEGMemoryReader*)cinfo->src;
+			This->bytes_in_buffer = i;
+			This->next_input_byte += num_bytes;
+		}
 
-    int i = This->bytes_in_buffer - num_bytes;
-    if (i < 0) i = 0;
-    This->bytes_in_buffer = i;
-    This->next_input_byte += num_bytes;
-  }
-
-  METHODDEF(void) TermSource(j_decompress_ptr cinfo) {};  // nop
-};
+		METHODDEF(void) TermSource(j_decompress_ptr cinfo) {};  // nop
+	};
 }  // namespace
 
 namespace o3d {
 
-struct my_error_mgr {
-  struct jpeg_error_mgr pub;  // "public" fields
-  jmp_buf setjmp_buffer;      // for return to caller
-};
+	struct my_error_mgr {
+		struct jpeg_error_mgr pub;  // "public" fields
+		jmp_buf setjmp_buffer;      // for return to caller
+	};
 
-typedef struct my_error_mgr* my_error_ptr;
+	typedef struct my_error_mgr* my_error_ptr;
 
-METHODDEF(void) my_error_exit(j_common_ptr cinfo) {
-  // return control to the original error handler.
-  my_error_ptr myerr = reinterpret_cast<my_error_ptr>(cinfo->err);
-  std::longjmp(myerr->setjmp_buffer, 1);
-}
+	METHODDEF(void) my_error_exit(j_common_ptr cinfo) {
+		// return control to the original error handler.
+		my_error_ptr myerr = reinterpret_cast<my_error_ptr>(cinfo->err);
+		std::longjmp(myerr->setjmp_buffer, 1);
+	}
 
 // Loads the raw RGB bitmap data from a compressed JPEG stream and converts
 // the result to 24- or 32-bit bitmap data.
-bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
-                                MemoryReadStream *stream,
-                                const std::string &filename,
-                                BitmapRefArray* bitmaps) {
-  // Workspace for libjpeg decompression.
-  struct jpeg_decompress_struct cinfo;
-  // create our custom error handler.
-  struct my_error_mgr jerr;
-  JSAMPARRAY buffer;  // Output buffer - a row of pixels.
-  int row_stride;     // Physical row width in output buffer.
+	bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
+	                                MemoryReadStream* stream,
+	                                const std::string& filename,
+	                                BitmapRefArray* bitmaps) {
+		// Workspace for libjpeg decompression.
+		struct jpeg_decompress_struct cinfo;
+		// create our custom error handler.
+		struct my_error_mgr jerr;
+		JSAMPARRAY buffer;  // Output buffer - a row of pixels.
+		int row_stride;     // Physical row width in output buffer.
+		// Step 1: allocate and initialize JPEG decompression object
+		// We set up the normal JPEG error routines, then override error_exit.
+		cinfo.err = jpeg_std_error(&jerr.pub);
+		jerr.pub.error_exit = my_error_exit;
+		// NOTE: The following smart pointer needs to be declared before the
+		// setjmp so that it is properly destroyed if we jump back.
+		::o3d::base::scoped_array<uint8_t> image_data;
 
+		// Establish the setjmp return context for my_error_exit to use.
+		if(setjmp(jerr.setjmp_buffer)) {
+			// If control is returned here, an error occurred inside libjpeg.
+			// Log the error message.
+			char buffer[JMSG_LENGTH_MAX];
+			(*cinfo.err->format_message)(reinterpret_cast<j_common_ptr>(&cinfo),
+			                             buffer);
+			O3D_LOG(ERROR) << "JPEG load error: " << buffer;
+			// Clean up.
+			jpeg_destroy_decompress(&cinfo);
+			return false;
+		}
 
-  // Step 1: allocate and initialize JPEG decompression object
+		// Initialize the JPEG decompression object.
+		jpeg_create_decompress(&cinfo);
+		// Creating a JPEGMemoryReader instance modifies some state in |cinfo|
+		// in such a way to read JPEG data from memory buffer |jpeg_data| of
+		// length |jpeg_data_length|
+		size_t jpeg_data_length = stream->GetTotalStreamLength();
+		const uint8_t* jpeg_data = stream->GetDirectMemoryPointer();
+		JPEGMemoryReader(&cinfo, jpeg_data, jpeg_data_length);
+		// Step 3: read the JPEG header and allocate storage
+		jpeg_read_header(&cinfo, TRUE);
+		// Set the Bitmap member variables from the jpeg_decompress_struct fields.
+		unsigned int width = cinfo.image_width;
+		unsigned int height = cinfo.image_height;
 
-  // We set up the normal JPEG error routines, then override error_exit.
-  cinfo.err = jpeg_std_error(&jerr.pub);
-  jerr.pub.error_exit = my_error_exit;
+		if(!image::CheckImageDimensions(width, height)) {
+			O3D_LOG(ERROR) << "Failed to load " << filename
+			               << ": dimensions are too large (" << width
+			               << ", " << height << ").";
+			// Use the jpeg error system to clean up and exit.
+			ERREXIT(&cinfo, JERR_QUANT_COMPONENTS);
+		}
 
-  // NOTE: The following smart pointer needs to be declared before the
-  // setjmp so that it is properly destroyed if we jump back.
-  ::o3d::base::scoped_array<uint8_t> image_data;
+		if(cinfo.num_components != 3) {
+			O3D_LOG(ERROR) << "JPEG load error: Bad number of pixel channels ("
+			               << cinfo.num_components
+			               << ") in file \"" << filename << "\"";
+			// Use the jpeg error system to clean up and exit.
+			ERREXIT(&cinfo, JERR_QUANT_COMPONENTS);
+		}
 
-  // Establish the setjmp return context for my_error_exit to use.
-  if (setjmp(jerr.setjmp_buffer)) {
-    // If control is returned here, an error occurred inside libjpeg.
-    // Log the error message.
-    char buffer[JMSG_LENGTH_MAX];
-    (*cinfo.err->format_message) (reinterpret_cast<j_common_ptr>(&cinfo),
-                                  buffer);
-    O3D_LOG(ERROR) << "JPEG load error: " << buffer;
-    // Clean up.
-    jpeg_destroy_decompress(&cinfo);
-    return false;
-  }
+		unsigned int image_components = 4;
+		Texture::Format format = Texture::XRGB8;
+		// Allocate storage for the pixels. Bitmap requires we allocate enough
+		// memory for all mips even if we don't use them.
+		size_t image_size = Bitmap::ComputeMaxSize(width, height, format);
+		image_data.reset(new uint8_t[image_size]);
 
-  // Initialize the JPEG decompression object.
-  jpeg_create_decompress(&cinfo);
+		if(image_data.get() == NULL) {
+			O3D_LOG(ERROR) << "JPEG memory allocation error \"" << filename << "\"";
+			// Invoke the longjmp() error handler.
+			ERREXIT(&cinfo, JERR_OUT_OF_MEMORY);
+		}
 
-  // Creating a JPEGMemoryReader instance modifies some state in |cinfo|
-  // in such a way to read JPEG data from memory buffer |jpeg_data| of
-  // length |jpeg_data_length|
-  size_t jpeg_data_length = stream->GetTotalStreamLength();
-  const uint8_t *jpeg_data = stream->GetDirectMemoryPointer();
-  JPEGMemoryReader(&cinfo, jpeg_data, jpeg_data_length);
+		// Step 4: set parameters for decompression
+		// Use the default decompression settings.
+		// Step 5: Start decompressor
+		jpeg_start_decompress(&cinfo);
+		// These should be equal because we don't use scaling.
+		// TODO: use libjpeg scaling for NPOT->POT ?
+		O3D_ASSERT(width == cinfo.output_width);
+		O3D_ASSERT(height == cinfo.output_height);
+		// Create an output work buffer of the right size.
+		row_stride = cinfo.output_width * cinfo.output_components;
+		// Make a one-row-high sample array, using the JPEG library memory manager.
+		// This buffer will be deallocated when decompression is finished.
+		buffer = (*cinfo.mem->alloc_sarray)(reinterpret_cast<j_common_ptr>(&cinfo),
+		                                    JPOOL_IMAGE,
+		                                    row_stride,
+		                                    1);
 
-  // Step 3: read the JPEG header and allocate storage
-  jpeg_read_header(&cinfo, TRUE);
+		// Step 6: while (scan lines remain to be read)
+		//           jpeg_read_scanlines(...);
 
-  // Set the Bitmap member variables from the jpeg_decompress_struct fields.
-  unsigned int width = cinfo.image_width;
-  unsigned int height = cinfo.image_height;
-  if (!image::CheckImageDimensions(width, height)) {
-    O3D_LOG(ERROR) << "Failed to load " << filename
-                << ": dimensions are too large (" << width
-                << ", " << height << ").";
-    // Use the jpeg error system to clean up and exit.
-    ERREXIT(&cinfo, JERR_QUANT_COMPONENTS);
-  }
+		// Use the library's state variable cinfo.output_scanline as the
+		// loop counter, so that we don't have to keep track ourselves.
+		while(cinfo.output_scanline < height) {
+			// Initialise the buffer write location.
+			uint8_t* image_write_ptr = image_data.get() +
+			                           cinfo.output_scanline * width * image_components;
+			// jpeg_read_scanlines() expects an array of pointers to scanlines.
+			// Here we ask for only one scanline to be read into "buffer".
+			jpeg_read_scanlines(&cinfo, buffer, 1);
+			// output_scanline is the numbe of scanlines that have been emitted.
+			O3D_ASSERT(cinfo.output_scanline <= height);
 
-  if (cinfo.num_components != 3) {
-    O3D_LOG(ERROR) << "JPEG load error: Bad number of pixel channels ("
-                << cinfo.num_components
-                << ") in file \"" << filename << "\"";
-    // Use the jpeg error system to clean up and exit.
-    ERREXIT(&cinfo, JERR_QUANT_COMPONENTS);
-  }
-  unsigned int image_components = 4;
-  Texture::Format format = Texture::XRGB8;
-  // Allocate storage for the pixels. Bitmap requires we allocate enough
-  // memory for all mips even if we don't use them.
-  size_t image_size = Bitmap::ComputeMaxSize(width, height, format);
-  image_data.reset(new uint8_t[image_size]);
-  if (image_data.get() == NULL) {
-    O3D_LOG(ERROR) << "JPEG memory allocation error \"" << filename << "\"";
-    // Invoke the longjmp() error handler.
-    ERREXIT(&cinfo, JERR_OUT_OF_MEMORY);
-  }
+			// copy the scanline to its final destination
+			for(unsigned int i = 0; i < width; ++i) {
+				// RGB -> BGRX
+				image_write_ptr[i * image_components + 0] =
+				    buffer[0][i * cinfo.output_components + 2];
+				image_write_ptr[i * image_components + 1] =
+				    buffer[0][i * cinfo.output_components + 1];
+				image_write_ptr[i * image_components + 2] =
+				    buffer[0][i * cinfo.output_components + 0];
+				image_write_ptr[i * image_components + 3] = 0xff;
+			}
+		}
 
-  // Step 4: set parameters for decompression
-  // Use the default decompression settings.
-
-  // Step 5: Start decompressor
-  jpeg_start_decompress(&cinfo);
-  // These should be equal because we don't use scaling.
-  // TODO: use libjpeg scaling for NPOT->POT ?
-  O3D_ASSERT(width == cinfo.output_width);
-  O3D_ASSERT(height == cinfo.output_height);
-
-  // Create an output work buffer of the right size.
-  row_stride = cinfo.output_width * cinfo.output_components;
-
-  // Make a one-row-high sample array, using the JPEG library memory manager.
-  // This buffer will be deallocated when decompression is finished.
-  buffer = (*cinfo.mem->alloc_sarray)( reinterpret_cast<j_common_ptr>(&cinfo),
-                                       JPOOL_IMAGE,
-                                       row_stride,
-                                       1);
-
-  // Step 6: while (scan lines remain to be read)
-  //           jpeg_read_scanlines(...);
-
-  // Use the library's state variable cinfo.output_scanline as the
-  // loop counter, so that we don't have to keep track ourselves.
-  while (cinfo.output_scanline < height) {
-    // Initialise the buffer write location.
-    uint8_t *image_write_ptr = image_data.get() +
-         cinfo.output_scanline * width * image_components;
-
-    // jpeg_read_scanlines() expects an array of pointers to scanlines.
-    // Here we ask for only one scanline to be read into "buffer".
-    jpeg_read_scanlines(&cinfo, buffer, 1);
-
-    // output_scanline is the numbe of scanlines that have been emitted.
-    O3D_ASSERT(cinfo.output_scanline <= height);
-
-    // copy the scanline to its final destination
-    for (unsigned int i = 0; i < width; ++i) {
-      // RGB -> BGRX
-      image_write_ptr[i * image_components + 0] =
-          buffer[0][i * cinfo.output_components + 2];
-      image_write_ptr[i * image_components + 1] =
-          buffer[0][i * cinfo.output_components + 1];
-      image_write_ptr[i * image_components + 2] =
-          buffer[0][i * cinfo.output_components + 0];
-      image_write_ptr[i * image_components + 3] = 0xff;
-    }
-  }
-
-  // Step 7: Finish decompression.
-  jpeg_finish_decompress(&cinfo);
-
-  // Step 8: Release JPEG decompression object nd free workspace.
-  jpeg_destroy_decompress(&cinfo);
-
-  // Check for jpeg decompression warnings.
-  O3D_LOG(WARNING) << "JPEG decompression warnings: " << jerr.pub.num_warnings;
-
-  // Success.
-  Bitmap::Ref bitmap(new Bitmap(service_locator));
-  bitmap->SetContents(format, 1, width, height, IMAGE, &image_data);
-  bitmaps->push_back(bitmap);
-  return true;
-}
+		// Step 7: Finish decompression.
+		jpeg_finish_decompress(&cinfo);
+		// Step 8: Release JPEG decompression object nd free workspace.
+		jpeg_destroy_decompress(&cinfo);
+		// Check for jpeg decompression warnings.
+		O3D_LOG(WARNING) << "JPEG decompression warnings: " << jerr.pub.num_warnings;
+		// Success.
+		Bitmap::Ref bitmap(new Bitmap(service_locator));
+		bitmap->SetContents(format, 1, width, height, IMAGE, &image_data);
+		bitmaps->push_back(bitmap);
+		return true;
+	}
 
 }  // namespace o3d

@@ -38,70 +38,70 @@
 #include "base/cross/config.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
 // Classifies cubic curves into specific types.
-class CubicClassifier {
- public:
-  // The types of cubic curves.
-  enum CurveType {
-    kSerpentine,
-    kCusp,
-    kLoop,
-    kQuadratic,
-    kLine,
-    kPoint
-  };
+		class CubicClassifier {
+		public:
+			// The types of cubic curves.
+			enum CurveType {
+				kSerpentine,
+				kCusp,
+				kLoop,
+				kQuadratic,
+				kLine,
+				kPoint
+			};
 
-  // The result of the classifier.
-  class Result {
-   public:
-    Result(CurveType curve_type,
-           float d1, float d2, float d3)
-        : curve_type_(curve_type),
-          d1_(d1),
-          d2_(d2),
-          d3_(d3) {
-    }
+			// The result of the classifier.
+			class Result {
+			public:
+				Result(CurveType curve_type,
+				       float d1, float d2, float d3)
+					: curve_type_(curve_type),
+					  d1_(d1),
+					  d2_(d2),
+					  d3_(d3) {
+				}
 
-    CurveType curve_type() const {
-      return curve_type_;
-    }
+				CurveType curve_type() const {
+					return curve_type_;
+				}
 
-    float d1() const {
-      return d1_;
-    }
+				float d1() const {
+					return d1_;
+				}
 
-    float d2() const {
-      return d2_;
-    }
+				float d2() const {
+					return d2_;
+				}
 
-    float d3() const {
-      return d3_;
-    }
+				float d3() const {
+					return d3_;
+				}
 
-   private:
-    CurveType curve_type_;
-    float d1_;
-    float d2_;
-    float d3_;
-  };
+			private:
+				CurveType curve_type_;
+				float d1_;
+				float d2_;
+				float d3_;
+			};
 
-  // Classifies the given cubic bezier curve starting at (b0x, b0y),
-  // ending at (b3x, b3y), and affected by control points (b1x, b1y)
-  // and (b2x, b2y).
-  static Result Classify(float b0x, float b0y,
-                         float b1x, float b1y,
-                         float b2x, float b2y,
-                         float b3x, float b3y);
+			// Classifies the given cubic bezier curve starting at (b0x, b0y),
+			// ending at (b3x, b3y), and affected by control points (b1x, b1y)
+			// and (b2x, b2y).
+			static Result Classify(float b0x, float b0y,
+			                       float b1x, float b1y,
+			                       float b2x, float b2y,
+			                       float b3x, float b3y);
 
- private:
-  // This class does not need to be instantiated.
-  CubicClassifier() {}
-  O3D_DISALLOW_COPY_AND_ASSIGN(CubicClassifier);
-};
+		private:
+			// This class does not need to be instantiated.
+			CubicClassifier() {}
+			O3D_DISALLOW_COPY_AND_ASSIGN(CubicClassifier);
+		};
 
-}  // namespace gpu2d
+	}  // namespace gpu2d
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GPU2D_CUBIC_CLASSIFIER_H_

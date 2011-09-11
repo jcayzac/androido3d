@@ -35,37 +35,35 @@
 
 namespace o3d {
 
-const InterfaceId SemanticManager::kInterfaceId =
-    InterfaceTraits<SemanticManager>::kInterfaceId;
+	const InterfaceId SemanticManager::kInterfaceId =
+	    InterfaceTraits<SemanticManager>::kInterfaceId;
 
-SemanticManager::SemanticManager(ServiceLocator* service_locator)
-    : service_(service_locator, this) {
-  // Create an object to hold one of each type of sas param.
-  sas_param_object_ = ParamObject::Ref(new ParamObject(service_locator));
-  sas_param_object_->set_name(O3D_STRING_CONSTANT("sasParamObject"));
-
-  // Initializes the static map between SAS parameter names and the
-  // corresponding StandardParamMatrix4 type and adds one of each SAS
-  // param type of the sas_param_object_ by class name.
+	SemanticManager::SemanticManager(ServiceLocator* service_locator)
+		: service_(service_locator, this) {
+		// Create an object to hold one of each type of sas param.
+		sas_param_object_ = ParamObject::Ref(new ParamObject(service_locator));
+		sas_param_object_->set_name(O3D_STRING_CONSTANT("sasParamObject"));
+		// Initializes the static map between SAS parameter names and the
+		// corresponding StandardParamMatrix4 type and adds one of each SAS
+		// param type of the sas_param_object_ by class name.
 #undef O3D_STANDARD_ANNOTATION_ENTRY
 #define O3D_STANDARD_ANNOTATION_ENTRY(enum_name, class_name)              \
   sas_map_[#class_name] = class_name ## ParamMatrix4::GetApparentClass(); \
   sas_param_object_->CreateParamByClass(                                  \
       class_name ## ParamMatrix4::GetApparentClass()->name(),             \
       class_name ## ParamMatrix4::GetApparentClass());
+		// Create the standard annotations (this uses the above ENTRY macro).
+		O3D_STANDARD_ANNOTATIONS;
+	}
 
-  // Create the standard annotations (this uses the above ENTRY macro).
-  O3D_STANDARD_ANNOTATIONS;
-}
-
-SemanticManager::~SemanticManager() {
-  sas_param_object_.Reset();
-}
+	SemanticManager::~SemanticManager() {
+		sas_param_object_.Reset();
+	}
 
 // Looks up an SAS transform semantic by name, and returns the Semantic enum.
-const ObjectBase::Class* SemanticManager::LookupSemantic(
-    const std::string& semantic) const {
-  SasMap::const_iterator iter = sas_map_.find(semantic);
-  return (iter != sas_map_.end()) ? iter->second : NULL;
-}
+	const ObjectBase::Class* SemanticManager::LookupSemantic(
+	    const std::string& semantic) const {
+		SasMap::const_iterator iter = sas_map_.find(semantic);
+		return (iter != sas_map_.end()) ? iter->second : NULL;
+	}
 }  // namespace o3d

@@ -43,43 +43,44 @@ using std::string;
 
 namespace o3d {
 
-ColladaZipArchive::ColladaZipArchive(const std::string &zip_filename,
-                                     int *result)
-  : ZipArchive(zip_filename, result) {
-  if (result && (*result == 0)) {
-    O3D_LOG(INFO) << "ColladaZipArchive(\"" << zip_filename << "\")";
-    // look through the archive and locate the first file with a .dae extension
-    vector<ZipFileInfo> infolist;
-    GetInformationList(&infolist);
+	ColladaZipArchive::ColladaZipArchive(const std::string& zip_filename,
+	                                     int* result)
+		: ZipArchive(zip_filename, result) {
+		if(result && (*result == 0)) {
+			O3D_LOG(INFO) << "ColladaZipArchive(\"" << zip_filename << "\")";
+			// look through the archive and locate the first file with a .dae extension
+			vector<ZipFileInfo> infolist;
+			GetInformationList(&infolist);
+			bool dae_found = false;
 
-    bool dae_found = false;
-    for (vector<ZipFileInfo>::size_type i = 0; i < infolist.size(); ++i) {
-      const char *name = infolist[i].name.c_str();
-      O3D_LOG(INFO) << "Found file <" << zip_filename << ">/" << name;
-      int length = strlen(name);
+			for(vector<ZipFileInfo>::size_type i = 0; i < infolist.size(); ++i) {
+				const char* name = infolist[i].name.c_str();
+				O3D_LOG(INFO) << "Found file <" << zip_filename << ">/" << name;
+				int length = strlen(name);
 
-      if (length > 4) {
-        const char *suffix = name + length - 4;
-        if (!base::strcasecmp(suffix, ".dae")) {
-          dae_pathname_ = name;
-          dae_directory_ = dae_pathname_;
-          RemoveLastPathComponent(&dae_directory_);
-          dae_found = true;
-          break;
-        }
-      }
-    }
+				if(length > 4) {
+					const char* suffix = name + length - 4;
 
-    if (!dae_found && result) {
-      O3D_LOG(ERROR) << "Can't find any DAE file in archive";
-      *result = -1;
-    }
-  }
-}
+					if(!base::strcasecmp(suffix, ".dae")) {
+						dae_pathname_ = name;
+						dae_directory_ = dae_pathname_;
+						RemoveLastPathComponent(&dae_directory_);
+						dae_found = true;
+						break;
+					}
+				}
+			}
+
+			if(!dae_found && result) {
+				O3D_LOG(ERROR) << "Can't find any DAE file in archive";
+				*result = -1;
+			}
+		}
+	}
 
 // Convert paths relative to the collada file to archive paths
-char  *ColladaZipArchive::GetColladaAssetData(const string &filename,
-                                              size_t *size) {
-  return GetRelativeFileData(filename, dae_directory_, size);
-}
+	char*  ColladaZipArchive::GetColladaAssetData(const string& filename,
+	        size_t* size) {
+		return GetRelativeFileData(filename, dae_directory_, size);
+	}
 }  // end namespace o3d

@@ -39,127 +39,143 @@
 
 namespace o3d {
 
-void EventManager::ProcessQueue() {
-  // Process up to one event per frame.
-  // If we've removed all callbacks by clearing event_callbacks_, we're shutting
-  // down, so we can't process any late-added events.
-  if (valid_ && !event_queue_.empty()) {
+	void EventManager::ProcessQueue() {
+		// Process up to one event per frame.
+		// If we've removed all callbacks by clearing event_callbacks_, we're shutting
+		// down, so we can't process any late-added events.
+		if(valid_ && !event_queue_.empty()) {
 #ifndef NDEBUG
-    O3D_ASSERT(!processing_event_queue_);
-    processing_event_queue_ = true;
+			O3D_ASSERT(!processing_event_queue_);
+			processing_event_queue_ = true;
 #endif
-    Event event = event_queue_.front();
-
-    // Pop the event before invoking the callback; the callback might invoke
-    // Client::CleanUp, which empties the event queue. This can happen in Chrome
-    // if it invokes the unload handler when control enters JavaScript.
-    event_queue_.pop_front();
-
-    event_callbacks_[event.type()].Run(event);
+			Event event = event_queue_.front();
+			// Pop the event before invoking the callback; the callback might invoke
+			// Client::CleanUp, which empties the event queue. This can happen in Chrome
+			// if it invokes the unload handler when control enters JavaScript.
+			event_queue_.pop_front();
+			event_callbacks_[event.type()].Run(event);
 #ifndef NDEBUG
-    processing_event_queue_ = false;
+			processing_event_queue_ = false;
 #endif
-  }
-}
+		}
+	}
 
-void EventManager::SetEventCallback(Event::Type type,
-                                    EventCallback* event_callback) {
-  O3D_ASSERT(Event::ValidType(type));
-  if (valid_)
-    event_callbacks_[type].Set(event_callback);
-}
+	void EventManager::SetEventCallback(Event::Type type,
+	                                    EventCallback* event_callback) {
+		O3D_ASSERT(Event::ValidType(type));
 
-void EventManager::ClearEventCallback(Event::Type type) {
-  O3D_ASSERT(Event::ValidType(type));
-  if (valid_)
-    event_callbacks_[type].Clear();
-}
+		if(valid_)
+			event_callbacks_[type].Set(event_callback);
+	}
 
-void EventManager::AddEventToQueue(const Event& event) {
-  // If we're shutting down or there's no callback registered to handle
-  // this event type, we drop it.
-  // NOTE:If we have a callback registered for the click event then we allow
-  // MOUSEDOWN and MOUSEUP events through.
-  if (valid_ && (event_callbacks_[event.type()].IsSet() ||
-                 (event_callbacks_[Event::TYPE_CLICK].IsSet() &&
-                  (event.type() == Event::TYPE_MOUSEDOWN ||
-                   event.type() == Event::TYPE_MOUSEUP)))) {
-    if (!event_queue_.empty()) {
-      switch (event.type()) {
-        case Event::TYPE_MOUSEMOVE:
-          if (event_queue_.back().type() == Event::TYPE_MOUSEMOVE) {
-            // Just keep the last MOUSEMOVE; there's no need to queue up lots
-            // of them.
-            event_queue_.back() = event;
-            return;
-          }
-          break;
-        case Event::TYPE_KEYPRESS:
-          // If we're backed up with keydowns and keypresses [which alternate
-          // on key repeat], just throw away the new ones.  Throwing them away
-          // one at a time could lead to aliased repeat patterns in which we
-          // throw away more keydowns than keypresses, so we have to detect the
-          // pair together and throw them both away.  This means that we won't
-          // start chucking stuff until there are at least 4 events backed up [3
-          // in the queue plus the new one], but that'll keep us from getting
-          // more than a few frames behind.
-          if (event_queue_.size() >= 3) {
-            EventQueue::reverse_iterator iter = event_queue_.rbegin();
-            const Event& event3 = *iter;
-            if (event3.type() != Event::TYPE_KEYDOWN) {
-              break;
-            }
-            const Event& event2 = *++iter;
-            if (event2 != event) {
-              break;
-            }
-            const Event& event1 = *++iter;
-            if (event1 != event3) {
-              break;
-            }
-            event_queue_.pop_back();  // Throw away the keydown.
-            return;  // Throw away the keypress.
-          }
-          break;
-        default:
-          break;
-      }
-    }
-    if (event.type() == Event::TYPE_MOUSEDOWN) {
-      if (event.in_plugin()) {
-        mousedown_in_plugin_ = true;
-      } else {
-        mousedown_in_plugin_ = false;
-        return;  // Why did we even get this event?
-      }
-    }
+	void EventManager::ClearEventCallback(Event::Type type) {
+		O3D_ASSERT(Event::ValidType(type));
 
-    if (event_callbacks_[event.type()].IsSet())
-      event_queue_.push_back(event);
+		if(valid_)
+			event_callbacks_[type].Clear();
+	}
 
-    if (event.type() == Event::TYPE_MOUSEUP) {
-      if (mousedown_in_plugin_ && event.in_plugin()) {
-        Event temp = event;
-        temp.set_type(Event::TYPE_CLICK);
-        event_queue_.push_back(temp);
-        if (temp.button() == Event::BUTTON_RIGHT) {
-          temp.set_type(Event::TYPE_CONTEXTMENU);
-          temp.clear_modifier_state();
-          temp.clear_button();
-          event_queue_.push_back(temp);
-        }
-      }
-      mousedown_in_plugin_ = false;
-    }
-  }
-}
+	void EventManager::AddEventToQueue(const Event& event) {
+		// If we're shutting down or there's no callback registered to handle
+		// this event type, we drop it.
+		// NOTE:If we have a callback registered for the click event then we allow
+		// MOUSEDOWN and MOUSEUP events through.
+		if(valid_ && (event_callbacks_[event.type()].IsSet() ||
+		              (event_callbacks_[Event::TYPE_CLICK].IsSet() &&
+		               (event.type() == Event::TYPE_MOUSEDOWN ||
+		                event.type() == Event::TYPE_MOUSEUP)))) {
+			if(!event_queue_.empty()) {
+				switch(event.type()) {
+				case Event::TYPE_MOUSEMOVE:
 
-void EventManager::ClearAll() {
-  valid_ = false;
-  for (unsigned int i = 0; i < o3d_arraysize(event_callbacks_); ++i) {
-    event_callbacks_[i].Clear();
-  }
-  event_queue_.clear();
-}
+					if(event_queue_.back().type() == Event::TYPE_MOUSEMOVE) {
+						// Just keep the last MOUSEMOVE; there's no need to queue up lots
+						// of them.
+						event_queue_.back() = event;
+						return;
+					}
+
+					break;
+				case Event::TYPE_KEYPRESS:
+
+					// If we're backed up with keydowns and keypresses [which alternate
+					// on key repeat], just throw away the new ones.  Throwing them away
+					// one at a time could lead to aliased repeat patterns in which we
+					// throw away more keydowns than keypresses, so we have to detect the
+					// pair together and throw them both away.  This means that we won't
+					// start chucking stuff until there are at least 4 events backed up [3
+					// in the queue plus the new one], but that'll keep us from getting
+					// more than a few frames behind.
+					if(event_queue_.size() >= 3) {
+						EventQueue::reverse_iterator iter = event_queue_.rbegin();
+						const Event& event3 = *iter;
+
+						if(event3.type() != Event::TYPE_KEYDOWN) {
+							break;
+						}
+
+						const Event& event2 = *++iter;
+
+						if(event2 != event) {
+							break;
+						}
+
+						const Event& event1 = *++iter;
+
+						if(event1 != event3) {
+							break;
+						}
+
+						event_queue_.pop_back();  // Throw away the keydown.
+						return;  // Throw away the keypress.
+					}
+
+					break;
+				default:
+					break;
+				}
+			}
+
+			if(event.type() == Event::TYPE_MOUSEDOWN) {
+				if(event.in_plugin()) {
+					mousedown_in_plugin_ = true;
+				}
+				else {
+					mousedown_in_plugin_ = false;
+					return;  // Why did we even get this event?
+				}
+			}
+
+			if(event_callbacks_[event.type()].IsSet())
+				event_queue_.push_back(event);
+
+			if(event.type() == Event::TYPE_MOUSEUP) {
+				if(mousedown_in_plugin_ && event.in_plugin()) {
+					Event temp = event;
+					temp.set_type(Event::TYPE_CLICK);
+					event_queue_.push_back(temp);
+
+					if(temp.button() == Event::BUTTON_RIGHT) {
+						temp.set_type(Event::TYPE_CONTEXTMENU);
+						temp.clear_modifier_state();
+						temp.clear_button();
+						event_queue_.push_back(temp);
+					}
+				}
+
+				mousedown_in_plugin_ = false;
+			}
+		}
+	}
+
+	void EventManager::ClearAll() {
+		valid_ = false;
+
+		for(unsigned int i = 0; i < o3d_arraysize(event_callbacks_); ++i) {
+			event_callbacks_[i].Clear();
+		}
+
+		event_queue_.clear();
+	}
 
 }  // namespace o3d

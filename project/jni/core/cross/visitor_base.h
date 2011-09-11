@@ -43,112 +43,119 @@
 namespace o3d {
 
 // Interface implemented by all visitor classes.
-class IVisitor {
- public:
-  IVisitor() {
-  }
+	class IVisitor {
+	public:
+		IVisitor() {
+		}
 
-  virtual ~IVisitor() {
-  }
+		virtual ~IVisitor() {
+		}
 
-  // Calls the appropriate visitor function enabled for the runtime
-  // type of visited object.
-  virtual void Accept(ObjectBase* visited) = 0;
+		// Calls the appropriate visitor function enabled for the runtime
+		// type of visited object.
+		virtual void Accept(ObjectBase* visited) = 0;
 
-  // Returns whether a visitor function has been registered for the
-  // given class.
-  virtual bool IsHandled(const ObjectBase::Class* clazz) = 0;
+		// Returns whether a visitor function has been registered for the
+		// given class.
+		virtual bool IsHandled(const ObjectBase::Class* clazz) = 0;
 
- private:
-  O3D_DISALLOW_COPY_AND_ASSIGN(IVisitor);
-};
+	private:
+		O3D_DISALLOW_COPY_AND_ASSIGN(IVisitor);
+	};
 
 // Immediate base class of all visitor classes. The type of the derived
 // class must be specified as the Visitor template parameter. Used like:
 //
 // class MyVisitor : public VisitorBase<MyVisitor> {
 // }
-template <typename Visitor>
-class VisitorBase : public IVisitor {
-  struct ForwarderBase {
-    virtual void Forward(VisitorBase<Visitor>* visitor,
-                         ObjectBase* visited) = 0;
-    virtual ~ForwarderBase() {
-    }
-  };
+	template <typename Visitor>
+	class VisitorBase : public IVisitor {
+		struct ForwarderBase {
+			virtual void Forward(VisitorBase<Visitor>* visitor,
+			                     ObjectBase* visited) = 0;
+			virtual ~ForwarderBase() {
+			}
+		};
 
-  template <typename VisitedClass>
-  struct Forwarder : ForwarderBase {
-    explicit Forwarder(void (Visitor::*function)(VisitedClass* visited))
-        : function_(function) {
-    }
-    virtual void Forward(VisitorBase<Visitor>* visitor,
-                         ObjectBase* visited) {
-      (static_cast<Visitor*>(visitor)->*function_)(
-          static_cast<VisitedClass*>(visited));
-    }
-    void (Visitor::*function_)(VisitedClass* visited);
-  };
+		template <typename VisitedClass>
+		struct Forwarder : ForwarderBase {
+			explicit Forwarder(void (Visitor::*function)(VisitedClass* visited))
+				: function_(function) {
+			}
+			virtual void Forward(VisitorBase<Visitor>* visitor,
+			                     ObjectBase* visited) {
+				(static_cast<Visitor*>(visitor)->*function_)(
+				    static_cast<VisitedClass*>(visited));
+			}
+			void (Visitor::*function_)(VisitedClass* visited);
+		};
 
-  typedef typename std::map<const ObjectBase::Class*, ForwarderBase*>
-      ForwarderMap;
+		typedef typename std::map<const ObjectBase::Class*, ForwarderBase*>
+		ForwarderMap;
 
- public:
-  VisitorBase() {
-  }
+	public:
+		VisitorBase() {
+		}
 
-  virtual ~VisitorBase() {
-    for (typename ForwarderMap::iterator it = forwarders_.begin();
-         it != forwarders_.end(); ++it) {
-      delete it->second;
-    }
-  }
+		virtual ~VisitorBase() {
+			for(typename ForwarderMap::iterator it = forwarders_.begin();
+			        it != forwarders_.end(); ++it) {
+				delete it->second;
+			}
+		}
 
-  // Enables the given function to be called for class VisitedClass.
-  template <typename VisitedClass>
-  void Enable(void (Visitor::*function)(VisitedClass* visited)) {
-    forwarders_.insert(typename ForwarderMap::value_type(
-        VisitedClass::GetApparentClass(),
-        new Forwarder<VisitedClass>(function)));
-  }
+		// Enables the given function to be called for class VisitedClass.
+		template <typename VisitedClass>
+		void Enable(void (Visitor::*function)(VisitedClass* visited)) {
+			forwarders_.insert(typename ForwarderMap::value_type(
+			                       VisitedClass::GetApparentClass(),
+			                       new Forwarder<VisitedClass>(function)));
+		}
 
-  // Calls the appropriate visitor function enabled for the runtime
-  // type of visited object.
-  virtual void Accept(ObjectBase* visited) {
-    if (visited == NULL)
-      return;
+		// Calls the appropriate visitor function enabled for the runtime
+		// type of visited object.
+		virtual void Accept(ObjectBase* visited) {
+			if(visited == NULL)
+				return;
 
-    const ObjectBase::Class* current_class = visited->GetClass();
-    typename ForwarderMap::iterator it;
-    while (current_class != NULL) {
-      it = forwarders_.find(current_class);
-      if (it != forwarders_.end()) {
-        it->second->Forward(this, visited);
-        break;
-      }
-      current_class = current_class->parent();
-    }
-  }
+			const ObjectBase::Class* current_class = visited->GetClass();
+			typename ForwarderMap::iterator it;
 
-  // Returns whether a visitor function has been registered for the
-  // given class.
-  virtual bool IsHandled(const ObjectBase::Class* clazz) {
-    const ObjectBase::Class* current_class = clazz;
-    typename ForwarderMap::iterator it;
-    while (current_class != NULL) {
-      it = forwarders_.find(current_class);
-      if (it != forwarders_.end()) {
-        return true;
-      }
-      current_class = current_class->parent();
-    }
-    return false;
-  }
+			while(current_class != NULL) {
+				it = forwarders_.find(current_class);
 
- private:
-  ForwarderMap forwarders_;
-  O3D_DISALLOW_COPY_AND_ASSIGN(VisitorBase<Visitor>);
-};
+				if(it != forwarders_.end()) {
+					it->second->Forward(this, visited);
+					break;
+				}
+
+				current_class = current_class->parent();
+			}
+		}
+
+		// Returns whether a visitor function has been registered for the
+		// given class.
+		virtual bool IsHandled(const ObjectBase::Class* clazz) {
+			const ObjectBase::Class* current_class = clazz;
+			typename ForwarderMap::iterator it;
+
+			while(current_class != NULL) {
+				it = forwarders_.find(current_class);
+
+				if(it != forwarders_.end()) {
+					return true;
+				}
+
+				current_class = current_class->parent();
+			}
+
+			return false;
+		}
+
+	private:
+		ForwarderMap forwarders_;
+		O3D_DISALLOW_COPY_AND_ASSIGN(VisitorBase<Visitor>);
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_VISITOR_BASE_H_

@@ -40,11 +40,11 @@
 
 namespace o3d {
 
-/**
- * Checks to see if all libraries needed by the renderer are installed, and does
- * any platform- and renderer-specific initialization needed to to that check.
- */
-bool RendererInstallCheck(std::string *error);
+	/**
+	 * Checks to see if all libraries needed by the renderer are installed, and does
+	 * any platform- and renderer-specific initialization needed to to that check.
+	 */
+	bool RendererInstallCheck(std::string* error);
 
 }  // o3d
 

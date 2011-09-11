@@ -44,168 +44,168 @@
 namespace o3d {
 
 // Class for storing and accessing two consecutive floats.
-class Float2 {
- public:
-  // Default constructor does not initialize the data in any way.
-  Float2() {}
+	class Float2 {
+	public:
+		// Default constructor does not initialize the data in any way.
+		Float2() {}
 
-  // Creates a Float2 out of two floats
-  Float2(float v0, float v1) {
-    data_[0] = v0;
-    data_[1] = v1;
-  }
+		// Creates a Float2 out of two floats
+		Float2(float v0, float v1) {
+			data_[0] = v0;
+			data_[1] = v1;
+		}
 
-  Float2(const Float2& v) { CopyFrom(v); }
+		Float2(const Float2& v) { CopyFrom(v); }
 
-  float operator[](int index) const { return data_[index]; }
-  float& operator[](int index) { return data_[index]; }
+		float operator[](int index) const { return data_[index]; }
+		float& operator[](int index) { return data_[index]; }
 
-  // Returns a pointer to the start of the internal data storage.
-  const float* GetFloatArray() const { return &data_[0]; }
+		// Returns a pointer to the start of the internal data storage.
+		const float* GetFloatArray() const { return &data_[0]; }
 
-  Float2& operator= (const Float2& v) {
-    CopyFrom(v);
-    return *this;
-  }
+		Float2& operator= (const Float2& v) {
+			CopyFrom(v);
+			return *this;
+		}
 
-  float getX() const { return data_[0]; }
-  void setX(float v) { data_[0] = v; }
-  float getY() const { return data_[1]; }
-  void setY(float v) { data_[1] = v; }
+		float getX() const { return data_[0]; }
+		void setX(float v) { data_[0] = v; }
+		float getY() const { return data_[1]; }
+		void setY(float v) { data_[1] = v; }
 
- private:
-  // Copies the values from another Float2.
-  void CopyFrom(const Float2& v) {
-    data_[0] = v[0];
-    data_[1] = v[1];
-  }
-  // Data storage.
-  float data_[2];
-};
+	private:
+		// Copies the values from another Float2.
+		void CopyFrom(const Float2& v) {
+			data_[0] = v[0];
+			data_[1] = v[1];
+		}
+		// Data storage.
+		float data_[2];
+	};
 
 // Class for storing and accessing three consecutive floats.
-class Float3 {
- public:
-  // Default constructor does not initialize the data in any way
-  Float3() {}
+	class Float3 {
+	public:
+		// Default constructor does not initialize the data in any way
+		Float3() {}
 
-  // Creates a Float3 out of three floats
-  Float3(float v0, float v1, float v2) {
-    data_[0] = v0;
-    data_[1] = v1;
-    data_[2] = v2;
-  }
+		// Creates a Float3 out of three floats
+		Float3(float v0, float v1, float v2) {
+			data_[0] = v0;
+			data_[1] = v1;
+			data_[2] = v2;
+		}
 
-  Float3(const Float3& v) { CopyFrom(v); }
-  explicit Float3(const Vector3& v) {
-    data_[0] = v.getX();
-    data_[1] = v.getY();
-    data_[2] = v.getZ();
-  }
-  explicit Float3(const Point3& v) {
-    data_[0] = v.getX();
-    data_[1] = v.getY();
-    data_[2] = v.getZ();
-  }
+		Float3(const Float3& v) { CopyFrom(v); }
+		explicit Float3(const Vector3& v) {
+			data_[0] = v.getX();
+			data_[1] = v.getY();
+			data_[2] = v.getZ();
+		}
+		explicit Float3(const Point3& v) {
+			data_[0] = v.getX();
+			data_[1] = v.getY();
+			data_[2] = v.getZ();
+		}
 
-  float operator[](int index) const { return data_[index]; }
-  float& operator[](int index) { return data_[index]; }
+		float operator[](int index) const { return data_[index]; }
+		float& operator[](int index) { return data_[index]; }
 
-  // Returns a pointer to the start of the internal data storage.
-  const float* GetFloatArray() const { return &data_[0]; }
+		// Returns a pointer to the start of the internal data storage.
+		const float* GetFloatArray() const { return &data_[0]; }
 
-  Float3& operator= (const Float3& v) {
-    CopyFrom(v);
-    return *this;
-  }
+		Float3& operator= (const Float3& v) {
+			CopyFrom(v);
+			return *this;
+		}
 
-  float getX() const { return data_[0]; }
-  void setX(float v) { data_[0] = v; }
-  float getY() const { return data_[1]; }
-  void setY(float v) { data_[1] = v; }
-  float getZ() const { return data_[2]; }
-  void setZ(float v) { data_[2] = v; }
+		float getX() const { return data_[0]; }
+		void setX(float v) { data_[0] = v; }
+		float getY() const { return data_[1]; }
+		void setY(float v) { data_[1] = v; }
+		float getZ() const { return data_[2]; }
+		void setZ(float v) { data_[2] = v; }
 
- private:
-  // Copies the values from another Float2.
-  void CopyFrom(const Float3& v) {
-    data_[0] = v[0];
-    data_[1] = v[1];
-    data_[2] = v[2];
-  }
+	private:
+		// Copies the values from another Float2.
+		void CopyFrom(const Float3& v) {
+			data_[0] = v[0];
+			data_[1] = v[1];
+			data_[2] = v[2];
+		}
 
-  // Data storage.
-  float data_[3];
-};
+		// Data storage.
+		float data_[3];
+	};
 
-inline Vector3 Float3ToVector3(const Float3& v) {
-  return Vector3(v.getX(), v.getY(), v.getZ());
-}
+	inline Vector3 Float3ToVector3(const Float3& v) {
+		return Vector3(v.getX(), v.getY(), v.getZ());
+	}
 
-inline Point3 Float3ToPoint3(const Float3& v) {
-  return Point3(v.getX(), v.getY(), v.getZ());
-}
+	inline Point3 Float3ToPoint3(const Float3& v) {
+		return Point3(v.getX(), v.getY(), v.getZ());
+	}
 
 // Class for storing and accessing four consecutive floats.
-class Float4 {
- public:
-  // Default constructor does not initialize the data in any way
-  Float4() {}
+	class Float4 {
+	public:
+		// Default constructor does not initialize the data in any way
+		Float4() {}
 
-  // Creates a Float4 out of four floats
-  Float4(float v0, float v1, float v2, float v3) {
-    data_[0] = v0;
-    data_[1] = v1;
-    data_[2] = v2;
-    data_[3] = v3;
-  }
+		// Creates a Float4 out of four floats
+		Float4(float v0, float v1, float v2, float v3) {
+			data_[0] = v0;
+			data_[1] = v1;
+			data_[2] = v2;
+			data_[3] = v3;
+		}
 
-  Float4(const Float4& v) { CopyFrom(v); }
-  explicit Float4(const Vector4& v) {
-    data_[0] = v.getX();
-    data_[1] = v.getY();
-    data_[2] = v.getZ();
-    data_[3] = v.getW();
-  }
-  explicit Float4(const Quaternion& v) {
-    data_[0] = v.getX();
-    data_[1] = v.getY();
-    data_[2] = v.getZ();
-    data_[3] = v.getW();
-  }
+		Float4(const Float4& v) { CopyFrom(v); }
+		explicit Float4(const Vector4& v) {
+			data_[0] = v.getX();
+			data_[1] = v.getY();
+			data_[2] = v.getZ();
+			data_[3] = v.getW();
+		}
+		explicit Float4(const Quaternion& v) {
+			data_[0] = v.getX();
+			data_[1] = v.getY();
+			data_[2] = v.getZ();
+			data_[3] = v.getW();
+		}
 
-  float operator[](int index) const { return data_[index]; }
-  float& operator[](int index) { return data_[index]; }
+		float operator[](int index) const { return data_[index]; }
+		float& operator[](int index) { return data_[index]; }
 
-  // Returns a pointer to the start of the internal data storage.
-  const float* GetFloatArray() const { return &data_[0]; }
+		// Returns a pointer to the start of the internal data storage.
+		const float* GetFloatArray() const { return &data_[0]; }
 
-  Float4& operator= (const Float4& v) {
-    CopyFrom(v);
-    return *this;
-  }
+		Float4& operator= (const Float4& v) {
+			CopyFrom(v);
+			return *this;
+		}
 
-  float getX() const { return data_[0]; }
-  void setX(float v) { data_[0] = v; }
-  float getY() const { return data_[1]; }
-  void setY(float v) { data_[1] = v; }
-  float getZ() const { return data_[2]; }
-  void setZ(float v) { data_[2] = v; }
-  float getW() const { return data_[3]; }
-  void setW(float v) { data_[3] = v; }
+		float getX() const { return data_[0]; }
+		void setX(float v) { data_[0] = v; }
+		float getY() const { return data_[1]; }
+		void setY(float v) { data_[1] = v; }
+		float getZ() const { return data_[2]; }
+		void setZ(float v) { data_[2] = v; }
+		float getW() const { return data_[3]; }
+		void setW(float v) { data_[3] = v; }
 
- private:
-  // Copies the values from another Float2.
-  void CopyFrom(const Float4& v) {
-    data_[0] = v[0];
-    data_[1] = v[1];
-    data_[2] = v[2];
-    data_[3] = v[3];
-  }
+	private:
+		// Copies the values from another Float2.
+		void CopyFrom(const Float4& v) {
+			data_[0] = v[0];
+			data_[1] = v[1];
+			data_[2] = v[2];
+			data_[3] = v[3];
+		}
 
-  // Data storage.
-  float data_[4];
-};
+		// Data storage.
+		float data_[4];
+	};
 
 }  // namespace o3d
 

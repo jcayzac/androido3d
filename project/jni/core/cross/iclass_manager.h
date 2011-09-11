@@ -40,119 +40,119 @@
 
 namespace o3d {
 
-class ServiceLocator;
+	class ServiceLocator;
 
 // A pointer to a function that creates an object derived from NamedObject.
-typedef ObjectBase::Ref (*ObjectCreateFunc)(ServiceLocator* service_locator);
+	typedef ObjectBase::Ref(*ObjectCreateFunc)(ServiceLocator* service_locator);
 
 // Maintains a collection of Class objects. Allows Classes to be retreived
 // by name and objects of those Classes to be created.
-class IClassManager {
- public:
-  static const InterfaceId kInterfaceId;
+	class IClassManager {
+	public:
+		static const InterfaceId kInterfaceId;
 
-  IClassManager() {}
-  virtual ~IClassManager() {}
+		IClassManager() {}
+		virtual ~IClassManager() {}
 
-  // Registers a new Object creation function by string so that CreateObject can
-  // create this new type.
-  // Paramters:
-  //   class_type: Class of type as provided by ObjectBase::GetClass.
-  //   function: A function that creates an object of that type.
-  virtual void AddClass(const ObjectBase::Class* class_type,
-                        ObjectCreateFunc function) = 0;
+		// Registers a new Object creation function by string so that CreateObject can
+		// create this new type.
+		// Paramters:
+		//   class_type: Class of type as provided by ObjectBase::GetClass.
+		//   function: A function that creates an object of that type.
+		virtual void AddClass(const ObjectBase::Class* class_type,
+		                      ObjectCreateFunc function) = 0;
 
-  // A typesafe version of AddClass. It guarantees that the creator and
-  // class match. (Seems like this would be better as a macro since there would
-  // be no code generation).
-  template <typename T>
-  void AddTypedClass() {
-    AddClass(T::GetApparentClass(), T::Create);
-  }
+		// A typesafe version of AddClass. It guarantees that the creator and
+		// class match. (Seems like this would be better as a macro since there would
+		// be no code generation).
+		template <typename T>
+		void AddTypedClass() {
+			AddClass(T::GetApparentClass(), T::Create);
+		}
 
-  // Removes a registered class.
-  // Paramters:
-  //   class_type: Class of type as provided by ObjectBase::GetClass.
-  virtual void RemoveClass(const ObjectBase::Class* class_type) = 0;
+		// Removes a registered class.
+		// Paramters:
+		//   class_type: Class of type as provided by ObjectBase::GetClass.
+		virtual void RemoveClass(const ObjectBase::Class* class_type) = 0;
 
-  // A typesafe version of RemoveClass.
-  template <typename T>
-  void RemoveTypedClass() {
-    RemoveClass(T::GetApparentClass());
-  }
+		// A typesafe version of RemoveClass.
+		template <typename T>
+		void RemoveTypedClass() {
+			RemoveClass(T::GetApparentClass());
+		}
 
-  // Returns the ObjectBase::Class for a particular class name. It only works
-  // for classes that have been registered through AddClass.
-  // Parameters:
-  //   class_name: name of the class to look for.
-  // Returns:
-  //   ObjectBase::Class* for the given class name or NULL if there is no match.
-  virtual const ObjectBase::Class* GetClassByClassName(
-      const std::string& class_name) const = 0;
+		// Returns the ObjectBase::Class for a particular class name. It only works
+		// for classes that have been registered through AddClass.
+		// Parameters:
+		//   class_name: name of the class to look for.
+		// Returns:
+		//   ObjectBase::Class* for the given class name or NULL if there is no match.
+		virtual const ObjectBase::Class* GetClassByClassName(
+		    const std::string& class_name) const = 0;
 
-  // Returns true if class_name is or is derived from base_class_type. It only
-  // works for classes that have been registered through AddClass.
-  // Parameters:
-  //   derived_class_name: Class name of derived class.
-  //   base_class: Class of type to check for.
-  // Returns:
-  //   true if derived_class_name is or is derived from base_class.
-  virtual bool ClassNameIsAClass(
-      const std::string& derived_class_name,
-      const ObjectBase::Class* base_class) const = 0;
+		// Returns true if class_name is or is derived from base_class_type. It only
+		// works for classes that have been registered through AddClass.
+		// Parameters:
+		//   derived_class_name: Class name of derived class.
+		//   base_class: Class of type to check for.
+		// Returns:
+		//   true if derived_class_name is or is derived from base_class.
+		virtual bool ClassNameIsAClass(
+		    const std::string& derived_class_name,
+		    const ObjectBase::Class* base_class) const = 0;
 
-  // Creates an Object by Class. This is an internal function. Do not use
-  // directly.
-  // Parameters:
-  //   object_class: ObjectBase::Class* to type of class to create.
-  // Returns:
-  //   ObjectBase::Ref to created object.
-  virtual ObjectBase::Ref CreateObjectByClass(
-      const ObjectBase::Class* object_class) = 0;
+		// Creates an Object by Class. This is an internal function. Do not use
+		// directly.
+		// Parameters:
+		//   object_class: ObjectBase::Class* to type of class to create.
+		// Returns:
+		//   ObjectBase::Ref to created object.
+		virtual ObjectBase::Ref CreateObjectByClass(
+		    const ObjectBase::Class* object_class) = 0;
 
-  // Creates a Object based on the type. This is a type safe version of
-  // CreateObjectByClass for C++.
-  // Returns:
-  //  pointer to new object if successful.
-  template<typename T>
-  typename T::Ref Create() {
-    return typename T::Ref(down_cast<T*>(
-        CreateObjectByClass(T::GetApparentClass()).Get()));
-  }
+		// Creates a Object based on the type. This is a type safe version of
+		// CreateObjectByClass for C++.
+		// Returns:
+		//  pointer to new object if successful.
+		template<typename T>
+		typename T::Ref Create() {
+			return typename T::Ref(down_cast<T*>(
+			                           CreateObjectByClass(T::GetApparentClass()).Get()));
+		}
 
-  // Creates an Object by Class name. This is an internal function. Do not use
-  // directly.
-  // Parameters:
-  //   type_name: Name of the Class to create.
-  // Returns:
-  //   ObjectBase::Ref to created object.
-  virtual ObjectBase::Ref CreateObject(const std::string& type_name) = 0;
+		// Creates an Object by Class name. This is an internal function. Do not use
+		// directly.
+		// Parameters:
+		//   type_name: Name of the Class to create.
+		// Returns:
+		//   ObjectBase::Ref to created object.
+		virtual ObjectBase::Ref CreateObject(const std::string& type_name) = 0;
 
-  // Get all the classes registered in the class manager.
-  virtual std::vector<const ObjectBase::Class*>
-      GetAllClasses() const = 0;
+		// Get all the classes registered in the class manager.
+		virtual std::vector<const ObjectBase::Class*>
+		GetAllClasses() const = 0;
 
-  // This class registers a class with a class manager and removes it on
-  // destruction.
-  template <typename T>
-  class Register {
-   public:
-    explicit Register(ServiceLocator* service_locator)
-        : class_manager_(service_locator->GetService<IClassManager>()) {
-      class_manager_->AddTypedClass<T>();
-    }
-    ~Register() {
-      class_manager_->RemoveTypedClass<T>();
-    }
+		// This class registers a class with a class manager and removes it on
+		// destruction.
+		template <typename T>
+		class Register {
+		public:
+			explicit Register(ServiceLocator* service_locator)
+				: class_manager_(service_locator->GetService<IClassManager>()) {
+				class_manager_->AddTypedClass<T>();
+			}
+			~Register() {
+				class_manager_->RemoveTypedClass<T>();
+			}
 
-   private:
-    IClassManager* class_manager_;
-    O3D_DISALLOW_COPY_AND_ASSIGN(Register);
-  };
+		private:
+			IClassManager* class_manager_;
+			O3D_DISALLOW_COPY_AND_ASSIGN(Register);
+		};
 
- private:
-  O3D_DISALLOW_COPY_AND_ASSIGN(IClassManager);
-};
+	private:
+		O3D_DISALLOW_COPY_AND_ASSIGN(IClassManager);
+	};
 
 }  // namespace o3d
 

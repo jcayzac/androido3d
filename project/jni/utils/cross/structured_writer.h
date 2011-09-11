@@ -44,60 +44,60 @@ namespace o3d {
 // Interface of classes that can write structured data consisting of
 // a hierarchy of objects (with named properties) and arrays of typed
 // values.
-class StructuredWriter {
- public:
-  StructuredWriter() {}
-  virtual ~StructuredWriter() {}
+	class StructuredWriter {
+	public:
+		StructuredWriter() {}
+		virtual ~StructuredWriter() {}
 
-  // Opens an object block. An object block contains property / value
-  // pairs.
-  virtual void OpenObject() = 0;
+		// Opens an object block. An object block contains property / value
+		// pairs.
+		virtual void OpenObject() = 0;
 
-  // Closes an object block.
-  virtual void CloseObject() = 0;
+		// Closes an object block.
+		virtual void CloseObject() = 0;
 
-  // Opens an array block. An array block contains zero or more values.
-  virtual void OpenArray() = 0;
+		// Opens an array block. An array block contains zero or more values.
+		virtual void OpenArray() = 0;
 
-  // Closes an array block.
-  virtual void CloseArray() = 0;
+		// Closes an array block.
+		virtual void CloseArray() = 0;
 
-  // Hints to the writer that it should not add additional formatting
-  // to make the output more readable. These can be nested.
-  virtual void BeginCompacting() = 0;
+		// Hints to the writer that it should not add additional formatting
+		// to make the output more readable. These can be nested.
+		virtual void BeginCompacting() = 0;
 
-  // Ends the hint that additional formatting is not necessary.
-  virtual void EndCompacting() = 0;
+		// Ends the hint that additional formatting is not necessary.
+		virtual void EndCompacting() = 0;
 
-  // Writes the name of a property. This should be immediately by a
-  // value.
-  virtual void WritePropertyName(const std::string& name) = 0;
+		// Writes the name of a property. This should be immediately by a
+		// value.
+		virtual void WritePropertyName(const std::string& name) = 0;
 
-  // Writes a boolean value.
-  virtual void WriteBool(bool value) = 0;
+		// Writes a boolean value.
+		virtual void WriteBool(bool value) = 0;
 
-  // Writes an integer value.
-  virtual void WriteInt(int value) = 0;
+		// Writes an integer value.
+		virtual void WriteInt(int value) = 0;
 
-  // Writes an unsigned integer value.
-  virtual void WriteUnsignedInt(unsigned int value) = 0;
+		// Writes an unsigned integer value.
+		virtual void WriteUnsignedInt(unsigned int value) = 0;
 
-  // Writes a float value.
-  virtual void WriteFloat(float value) = 0;
+		// Writes a float value.
+		virtual void WriteFloat(float value) = 0;
 
-  // Writes a string value.
-  virtual void WriteString(const std::string& value) = 0;
+		// Writes a string value.
+		virtual void WriteString(const std::string& value) = 0;
 
-  // Writes a null value.
-  virtual void WriteNull() = 0;
+		// Writes a null value.
+		virtual void WriteNull() = 0;
 
-  // Flushes any unwritten content and closes the writer. No further
-  // writes are allowed.
-  virtual void Close() {}
+		// Flushes any unwritten content and closes the writer. No further
+		// writes are allowed.
+		virtual void Close() {}
 
- private:
-  O3D_DISALLOW_COPY_AND_ASSIGN(StructuredWriter);
-};
+	private:
+		O3D_DISALLOW_COPY_AND_ASSIGN(StructuredWriter);
+	};
 }  // namespace o3d
 
 #endif  // O3D_UTILS_CROSS_STRUCTURED_WRITER_H_

@@ -36,28 +36,31 @@
 #include "base/rand_util.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
-int32_t GenerateSeed() {
-  // A seed of 1 has the special behavior of resetting the random
-  // number generator. Assume that if we call this routine that we
-  // don't want this behavior.
-  int seed;
-  do {
-    seed = base::RandInt(0, 2 << 15);
-  } while (seed <= 1);
-  return seed;
-}
+		int32_t GenerateSeed() {
+			// A seed of 1 has the special behavior of resetting the random
+			// number generator. Assume that if we call this routine that we
+			// don't want this behavior.
+			int seed;
 
-void InitRandom(const int32_t seed) {
-  srand(seed);
-}
+			do {
+				seed = base::RandInt(0, 2 << 15);
+			}
+			while(seed <= 1);
 
-int32_t NextRandom(const int32_t max_val) {
-  // rand_r is not available on Windows
-  return rand() % max_val;  // NOLINT
-}
+			return seed;
+		}
 
-}  // namespace gpu2d
+		void InitRandom(const int32_t seed) {
+			srand(seed);
+		}
+
+		int32_t NextRandom(const int32_t max_val) {
+			// rand_r is not available on Windows
+			return rand() % max_val;  // NOLINT
+		}
+
+	}  // namespace gpu2d
 }  // namespace o3d
 

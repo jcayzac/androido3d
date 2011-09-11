@@ -45,32 +45,32 @@
 
 namespace o3d {
 
-class ColladaZipArchive : public ZipArchive {
- public:
-  ColladaZipArchive(const std::string &zip_filename, int *result);
+	class ColladaZipArchive : public ZipArchive {
+	public:
+		ColladaZipArchive(const std::string& zip_filename, int* result);
 
-  // |filename| is taken to be relative to the directory containing the
-  // first collada file found in the archive.  It may contain relative path
-  // elements ("../").  These are the types of file references to images
-  // contained in the collada file.
-  //
-  // Extracts a single file and returns a pointer to the file's content.
-  // Returns NULL if |filename| doesn't match any in the archive
-  // or an error occurs.  The caller must call free() on the returned pointer
-  //
-  virtual char  *GetColladaAssetData(const std::string &filename,
-                                     size_t *size);
+		// |filename| is taken to be relative to the directory containing the
+		// first collada file found in the archive.  It may contain relative path
+		// elements ("../").  These are the types of file references to images
+		// contained in the collada file.
+		//
+		// Extracts a single file and returns a pointer to the file's content.
+		// Returns NULL if |filename| doesn't match any in the archive
+		// or an error occurs.  The caller must call free() on the returned pointer
+		//
+		virtual char*  GetColladaAssetData(const std::string& filename,
+		                                   size_t* size);
 
-  const std::string& GetColladaPath() const { return dae_pathname_; }
-  const std::string& GetColladaDirectory() const { return dae_directory_; }
+		const std::string& GetColladaPath() const { return dae_pathname_; }
+		const std::string& GetColladaDirectory() const { return dae_directory_; }
 
- protected:
-  std::string dae_pathname_;
-  std::string dae_directory_;
+	protected:
+		std::string dae_pathname_;
+		std::string dae_directory_;
 
- private:
-  O3D_DISALLOW_COPY_AND_ASSIGN(ColladaZipArchive);
-};
+	private:
+		O3D_DISALLOW_COPY_AND_ASSIGN(ColladaZipArchive);
+	};
 }  // end namespace o3d
 
 #endif  // O3D_IMPORT_CROSS_COLLADA_ZIP_ARCHIVE_H_

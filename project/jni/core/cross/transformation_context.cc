@@ -34,7 +34,7 @@
 
 namespace o3d {
 
-const InterfaceId TransformationContext::kInterfaceId =
-      InterfaceTraits<TransformationContext>::kInterfaceId;
+	const InterfaceId TransformationContext::kInterfaceId =
+	    InterfaceTraits<TransformationContext>::kInterfaceId;
 
 }  // namespace o3d

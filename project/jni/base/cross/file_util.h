@@ -15,14 +15,14 @@ namespace file_util {
 
 // Convert provided relative path into an absolute path.  Returns false on
 // error. On POSIX, this function fails if the path does not exist.
-bool AbsolutePath(FilePath* path);
+	bool AbsolutePath(FilePath* path);
 
 // Returns true if the given path exists on the local filesystem,
 // false otherwise.
-bool PathExists(const FilePath& path);
+	bool PathExists(const FilePath& path);
 
 // Gets the current working directory for the process.
-bool GetCurrentDirectory(FilePath* path);
+	bool GetCurrentDirectory(FilePath* path);
 
 }  // namespace file_util
 

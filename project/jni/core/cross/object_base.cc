@@ -39,55 +39,60 @@
 
 namespace o3d {
 
-ObjectBase::Class ObjectBase::class_ = {
-  O3D_STRING_CONSTANT("ObjectBase"), NULL
-};
+	ObjectBase::Class ObjectBase::class_ = {
+		O3D_STRING_CONSTANT("ObjectBase"), NULL
+	};
 
-const char* ObjectBase::Class::unqualified_name() const {
-  if (strncmp(
-      name_,
-      O3D_NAMESPACE O3D_NAMESPACE_SEPARATOR,
-      sizeof(O3D_NAMESPACE) + sizeof(O3D_NAMESPACE_SEPARATOR) - 2) == 0) {
-    return name_ + sizeof(O3D_NAMESPACE) + sizeof(O3D_NAMESPACE_SEPARATOR) - 2;
-  }
-  return name_;
-}
+	const char* ObjectBase::Class::unqualified_name() const {
+		if(strncmp(
+		            name_,
+		            O3D_NAMESPACE O3D_NAMESPACE_SEPARATOR,
+		            sizeof(O3D_NAMESPACE) + sizeof(O3D_NAMESPACE_SEPARATOR) - 2) == 0) {
+			return name_ + sizeof(O3D_NAMESPACE) + sizeof(O3D_NAMESPACE_SEPARATOR) - 2;
+		}
 
-ObjectBase::ObjectBase(ServiceLocator *service_locator)
-    : id_(IdManager::CreateId()),
-      service_locator_(service_locator) {
-  // Upon object construction, register this object with the object manager
-  // to allow for central lookup.
-  ObjectManager* object_manager = service_locator_->GetService<ObjectManager>();
-  if (object_manager) {
-    object_manager->RegisterObject(this);
-  }
-}
+		return name_;
+	}
 
-ObjectBase::~ObjectBase() {
-  // Upon destruction, unregister this object from the owning client.
-  ObjectManager* object_manager = service_locator_->GetService<ObjectManager>();
-  if (object_manager) {
-    object_manager->UnregisterObject(this);
-  }
-}
+	ObjectBase::ObjectBase(ServiceLocator* service_locator)
+		: id_(IdManager::CreateId()),
+		  service_locator_(service_locator) {
+		// Upon object construction, register this object with the object manager
+		// to allow for central lookup.
+		ObjectManager* object_manager = service_locator_->GetService<ObjectManager>();
 
-bool ObjectBase::ClassIsA(const Class *derived, const Class *base) {
-  // find base in the hierarchy of derived
-  for (; derived; derived = derived->parent()) {
-    if (derived == base) return true;
-  }
-  return false;
-}
+		if(object_manager) {
+			object_manager->RegisterObject(this);
+		}
+	}
 
-bool ObjectBase::ClassIsAClassName(const Class *derived, const std::string& name) {
-  // find base in the hierarchy of derived
-  for (; derived; derived = derived->parent()) {
-    if (name.compare(derived->name()) == 0) {
-      return true;
-    }
-  }
-  return false;
-}
+	ObjectBase::~ObjectBase() {
+		// Upon destruction, unregister this object from the owning client.
+		ObjectManager* object_manager = service_locator_->GetService<ObjectManager>();
+
+		if(object_manager) {
+			object_manager->UnregisterObject(this);
+		}
+	}
+
+	bool ObjectBase::ClassIsA(const Class* derived, const Class* base) {
+		// find base in the hierarchy of derived
+		for(; derived; derived = derived->parent()) {
+			if(derived == base) return true;
+		}
+
+		return false;
+	}
+
+	bool ObjectBase::ClassIsAClassName(const Class* derived, const std::string& name) {
+		// find base in the hierarchy of derived
+		for(; derived; derived = derived->parent()) {
+			if(name.compare(derived->name()) == 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 }  // namespace o3d

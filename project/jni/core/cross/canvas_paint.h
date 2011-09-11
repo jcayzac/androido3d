@@ -43,224 +43,228 @@
 
 namespace o3d {
 
-class Float4;
+	class Float4;
 
 // Class containing the metrics describing properties of a font used by the
 // paint object.
-class CanvasFontMetrics {
- public:
-  float top() const { return top_; }
-  void set_top(float top) { top_ = top; }
-  float ascent() const { return ascent_; }
-  void set_ascent(float ascent) { ascent_ = ascent; }
-  float descent() const { return descent_; }
-  void set_descent(float descent) { descent_ = descent; }
-  float bottom() const { return bottom_; }
-  void set_bottom(float bottom) { bottom_ = bottom; }
-  float leading() const { return leading_; }
-  void set_leading(float leading) { leading_ = leading; }
+	class CanvasFontMetrics {
+	public:
+		float top() const { return top_; }
+		void set_top(float top) { top_ = top; }
+		float ascent() const { return ascent_; }
+		void set_ascent(float ascent) { ascent_ = ascent; }
+		float descent() const { return descent_; }
+		void set_descent(float descent) { descent_ = descent; }
+		float bottom() const { return bottom_; }
+		void set_bottom(float bottom) { bottom_ = bottom; }
+		float leading() const { return leading_; }
+		void set_leading(float leading) { leading_ = leading; }
 
- private:
-  // The greatest distance above the baseline for any glyph (will be <= 0)
-  float top_;
-  // The recommended distance above the baseline (will be <= 0)
-  float ascent_;
-  // The recommended distance below the baseline (will be >= 0)
-  float descent_;
-  // The greatest distance below the baseline for any glyph (will be >= 0)
-  float bottom_;
-  // The recommended distance to add between lines of text (will be >= 0)
-  float leading_;
-};
+	private:
+		// The greatest distance above the baseline for any glyph (will be <= 0)
+		float top_;
+		// The recommended distance above the baseline (will be <= 0)
+		float ascent_;
+		// The recommended distance below the baseline (will be >= 0)
+		float descent_;
+		// The greatest distance below the baseline for any glyph (will be >= 0)
+		float bottom_;
+		// The recommended distance to add between lines of text (will be >= 0)
+		float leading_;
+	};
 
 
 // The Paint class is used for specifying how to draw to
 // a canvas
-class CanvasPaint : public ParamObject {
- public:
-  enum Style {
-    NORMAL,
-    BOLD,
-    ITALIC,
-    BOLD_ITALIC
-  };
+	class CanvasPaint : public ParamObject {
+	public:
+		enum Style {
+			NORMAL,
+			BOLD,
+			ITALIC,
+			BOLD_ITALIC
+		};
 
-  enum TextAlign {
-    LEFT,
-    CENTER,
-    RIGHT
-  };
+		enum TextAlign {
+			LEFT,
+			CENTER,
+			RIGHT
+		};
 
-  typedef SmartPointer<CanvasPaint> Ref;
+		typedef SmartPointer<CanvasPaint> Ref;
 
-  virtual ~CanvasPaint();
+		virtual ~CanvasPaint();
 
-  // Returns the color used for the drawing operations using this paint.
-  Float4 color() { return color_; }
+		// Returns the color used for the drawing operations using this paint.
+		Float4 color() { return color_; }
 
-  // Sets the color.
-  void set_color(const Float4& color) {
-    color_ = color;
-    needs_update_ = true;
-  }
+		// Sets the color.
+		void set_color(const Float4& color) {
+			color_ = color;
+			needs_update_ = true;
+		}
 
-  // Sets the color and radius of an outline around the text.  Setting the
-  // radius to 0 cancels the outline effect.
-  // Parameters:
-  //   radius: The radius of the outline effect in pixels.
-  //   color: The color used for outlining (in RGBA)
-  void SetOutline(float radius, const Float4& color) {
-    outline_radius_ = radius;
-    outline_color_ = color;
-    if (outline_radius_ != 0)
-      shadow_radius_ = 0;
-    needs_update_ = true;
-  }
+		// Sets the color and radius of an outline around the text.  Setting the
+		// radius to 0 cancels the outline effect.
+		// Parameters:
+		//   radius: The radius of the outline effect in pixels.
+		//   color: The color used for outlining (in RGBA)
+		void SetOutline(float radius, const Float4& color) {
+			outline_radius_ = radius;
+			outline_color_ = color;
 
-  // Sets a shadow effect around text.  Setting the radius to 0 cancels the
-  // shadow effect.
-  // Parameters:
-  //   radius: The radius of shadow effect in pixels
-  //   offset_x: The offset of the shadow in the x coordinate.
-  //   offset_y: The offset of the shadow in the y coordinate.
-  //   color: The color used for the shadow (in RGBA)
-  void SetShadow(float radius,
-                 float offset_x,
-                 float offset_y,
-                 const Float4& color) {
-    shadow_radius_ = radius;
-    shadow_offset_x_ = offset_x;
-    shadow_offset_y_ = offset_y;
-    shadow_color_ = color;
-    if (shadow_radius_ != 0) {
-      outline_radius_ = 0;
-    }
-    needs_update_ = true;
-  }
+			if(outline_radius_ != 0)
+				shadow_radius_ = 0;
 
-  // Returns the font metrics for the current font being used by the paint.
-  CanvasFontMetrics GetFontMetrics();
+			needs_update_ = true;
+		}
 
-  // Returns the bounds of the given text string when rendered with this paint.
-  // The bounds are returned as a Float4 containing [left, top, right, bottom]
-  // values relative to (0, 0).
-  Float4 MeasureText(const std::string& text);
+		// Sets a shadow effect around text.  Setting the radius to 0 cancels the
+		// shadow effect.
+		// Parameters:
+		//   radius: The radius of shadow effect in pixels
+		//   offset_x: The offset of the shadow in the x coordinate.
+		//   offset_y: The offset of the shadow in the y coordinate.
+		//   color: The color used for the shadow (in RGBA)
+		void SetShadow(float radius,
+		               float offset_x,
+		               float offset_y,
+		               const Float4& color) {
+			shadow_radius_ = radius;
+			shadow_offset_x_ = offset_x;
+			shadow_offset_y_ = offset_y;
+			shadow_color_ = color;
 
-  // Sets the size of the font used for text drawing.
-  // Parameters:
-  //   text_size: The size of the text
-  void set_text_size(float text_size) {
-    text_size_ = text_size;
-    needs_update_ = true;
-  }
+			if(shadow_radius_ != 0) {
+				outline_radius_ = 0;
+			}
 
-  // Returns the current font size used for drawing text.
-  float text_size() { return text_size_; }
+			needs_update_ = true;
+		}
 
-  // Sets the typeface of the font used for rendering text.
-  // Parameters:
-  //   font: typeface to use.
-  void set_text_typeface(const std::string& typeface) {
-    text_typeface_ = typeface;
-    needs_update_ = true;
-  }
+		// Returns the font metrics for the current font being used by the paint.
+		CanvasFontMetrics GetFontMetrics();
 
-  // Returns the typeface used for text drawing.
-  std::string text_typeface() {
-    return text_typeface_;
-  }
+		// Returns the bounds of the given text string when rendered with this paint.
+		// The bounds are returned as a Float4 containing [left, top, right, bottom]
+		// values relative to (0, 0).
+		Float4 MeasureText(const std::string& text);
 
-  // Sets the style parameter for the text (e.g. italic, bold, etc)
-  void set_text_style(Style style) {
-    text_style_ = style;
-    needs_update_ = true;
-  }
+		// Sets the size of the font used for text drawing.
+		// Parameters:
+		//   text_size: The size of the text
+		void set_text_size(float text_size) {
+			text_size_ = text_size;
+			needs_update_ = true;
+		}
 
-  // Returns the style used for drawing text.
-  Style text_style() {
-    return text_style_;
-  }
+		// Returns the current font size used for drawing text.
+		float text_size() { return text_size_; }
 
-  // Sets the pointer to the CanvasShader object used by this paint.  The
-  // CanvasShader specifies in detail how paint gets applied (e.g. with a
-  // linear gradient, etc)
-  void set_shader(CanvasShader* shader) {
-    shader_ = CanvasShader::Ref(shader);
-    needs_update_ = true;
-  }
+		// Sets the typeface of the font used for rendering text.
+		// Parameters:
+		//   font: typeface to use.
+		void set_text_typeface(const std::string& typeface) {
+			text_typeface_ = typeface;
+			needs_update_ = true;
+		}
 
-  // Returns the current shader used by the paint.
-  CanvasShader* shader() {
-    return shader_.Get();
-  }
+		// Returns the typeface used for text drawing.
+		std::string text_typeface() {
+			return text_typeface_;
+		}
 
-  // Sets the alignment mode for renderered text.  This is the setting that's
-  // used by the canvas text drawing methods.
-  void set_text_align(TextAlign text_align) {
-    text_align_ = text_align;
-    needs_update_ = true;
-  }
+		// Sets the style parameter for the text (e.g. italic, bold, etc)
+		void set_text_style(Style style) {
+			text_style_ = style;
+			needs_update_ = true;
+		}
 
-  // Returns the text alingment setting.
-  TextAlign text_align() { return text_align_; }
+		// Returns the style used for drawing text.
+		Style text_style() {
+			return text_style_;
+		}
 
- protected:
-  explicit CanvasPaint(ServiceLocator* service_locator);
+		// Sets the pointer to the CanvasShader object used by this paint.  The
+		// CanvasShader specifies in detail how paint gets applied (e.g. with a
+		// linear gradient, etc)
+		void set_shader(CanvasShader* shader) {
+			shader_ = CanvasShader::Ref(shader);
+			needs_update_ = true;
+		}
 
- private:
-  friend class Canvas;
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		// Returns the current shader used by the paint.
+		CanvasShader* shader() {
+			return shader_.Get();
+		}
 
-  // Updates the internal skia paint object using the current parameter values.
-  void UpdateNativePaint();
+		// Sets the alignment mode for renderered text.  This is the setting that's
+		// used by the canvas text drawing methods.
+		void set_text_align(TextAlign text_align) {
+			text_align_ = text_align;
+			needs_update_ = true;
+		}
 
-  const SkPaint& GetNativePaint() {
-    UpdateNativePaint();
-    return sk_paint_;
-  }
+		// Returns the text alingment setting.
+		TextAlign text_align() { return text_align_; }
 
-  // CanvasShader object used by this paint.
-  CanvasShader::Ref shader_;
+	protected:
+		explicit CanvasPaint(ServiceLocator* service_locator);
 
-  // Skia paint object.
-  SkPaint sk_paint_;
+	private:
+		friend class Canvas;
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  // This flag is set to true when one of the paint parameters is changed.  When
-  // the GetNativePaint() method is called, if this flag is set it will force
-  // a rebuild of the native SkPaint object.
-  bool needs_update_;
+		// Updates the internal skia paint object using the current parameter values.
+		void UpdateNativePaint();
 
-  // Alignment mode used for drawing text.
-  TextAlign text_align_;
+		const SkPaint& GetNativePaint() {
+			UpdateNativePaint();
+			return sk_paint_;
+		}
 
-  // Color used for text and drawing operations (RGBA)
-  Float4 color_;
+		// CanvasShader object used by this paint.
+		CanvasShader::Ref shader_;
 
-  // Size of font used for drawing text.
-  float text_size_;
+		// Skia paint object.
+		SkPaint sk_paint_;
 
-  // Typeface of font used for text drawing.
-  std::string text_typeface_;
+		// This flag is set to true when one of the paint parameters is changed.  When
+		// the GetNativePaint() method is called, if this flag is set it will force
+		// a rebuild of the native SkPaint object.
+		bool needs_update_;
 
-  // Style of text used for rendering (e.g. bold, italic, etc)
-  Style text_style_;
+		// Alignment mode used for drawing text.
+		TextAlign text_align_;
 
-  // Radius (in pixels) of outline around text
-  float outline_radius_;
+		// Color used for text and drawing operations (RGBA)
+		Float4 color_;
 
-  // Color used for outlining text.
-  Float4 outline_color_;
+		// Size of font used for drawing text.
+		float text_size_;
 
-  // Parameters for shadow effect around text.
-  float shadow_radius_;
-  float shadow_offset_x_;
-  float shadow_offset_y_;
-  Float4 shadow_color_;
+		// Typeface of font used for text drawing.
+		std::string text_typeface_;
 
-  O3D_DECL_CLASS(CanvasPaint, ParamObject)
-  O3D_DISALLOW_COPY_AND_ASSIGN(CanvasPaint);
-};
+		// Style of text used for rendering (e.g. bold, italic, etc)
+		Style text_style_;
+
+		// Radius (in pixels) of outline around text
+		float outline_radius_;
+
+		// Color used for outlining text.
+		Float4 outline_color_;
+
+		// Parameters for shadow effect around text.
+		float shadow_radius_;
+		float shadow_offset_x_;
+		float shadow_offset_y_;
+		Float4 shadow_color_;
+
+		O3D_DECL_CLASS(CanvasPaint, ParamObject)
+		O3D_DISALLOW_COPY_AND_ASSIGN(CanvasPaint);
+	};
 
 
 }  // namespace o3d

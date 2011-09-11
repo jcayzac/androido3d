@@ -44,26 +44,26 @@
 
 namespace o3d {
 
-const char* DrawContext::kViewParamName =
-    O3D_STRING_CONSTANT("view");
-const char* DrawContext::kProjectionParamName =
-    O3D_STRING_CONSTANT("projection");
+	const char* DrawContext::kViewParamName =
+	    O3D_STRING_CONSTANT("view");
+	const char* DrawContext::kProjectionParamName =
+	    O3D_STRING_CONSTANT("projection");
 
-O3D_DEFN_CLASS(DrawContext, ParamObject);
-O3D_DEFN_CLASS(ParamDrawContext, RefParamBase);
+	O3D_DEFN_CLASS(DrawContext, ParamObject);
+	O3D_DEFN_CLASS(ParamDrawContext, RefParamBase);
 
-DrawContext::DrawContext(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      weak_pointer_manager_(this) {
-  RegisterParamRef(kViewParamName, &view_param_);
-  RegisterParamRef(kProjectionParamName, &projection_param_);
-}
+	DrawContext::DrawContext(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  weak_pointer_manager_(this) {
+		RegisterParamRef(kViewParamName, &view_param_);
+		RegisterParamRef(kProjectionParamName, &projection_param_);
+	}
 
-ObjectBase::Ref DrawContext::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new DrawContext(service_locator));
-}
+	ObjectBase::Ref DrawContext::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new DrawContext(service_locator));
+	}
 
-ObjectBase::Ref ParamDrawContext::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new ParamDrawContext(service_locator, false, false));
-}
+	ObjectBase::Ref ParamDrawContext::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new ParamDrawContext(service_locator, false, false));
+	}
 }  // namespace o3d

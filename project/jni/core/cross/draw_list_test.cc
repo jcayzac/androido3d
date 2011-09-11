@@ -42,41 +42,41 @@
 
 namespace o3d {
 
-class DrawListTest : public testing::Test {
- protected:
+	class DrawListTest : public testing::Test {
+	protected:
 
-  DrawListTest()
-      : object_manager_(g_service_locator) {}
+		DrawListTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
+	private:
 
-  ServiceDependency<ObjectManager> object_manager_;
-  DrawListManager* draw_list_manager_;
-  TransformationContext* transformation_context_;
-  Pack* pack_;
-};
+		ServiceDependency<ObjectManager> object_manager_;
+		DrawListManager* draw_list_manager_;
+		TransformationContext* transformation_context_;
+		Pack* pack_;
+	};
 
-void DrawListTest::SetUp() {
-  draw_list_manager_ = new DrawListManager(g_service_locator);
-  transformation_context_ = new TransformationContext(g_service_locator);
-  pack_ = object_manager_->CreatePack();
-}
+	void DrawListTest::SetUp() {
+		draw_list_manager_ = new DrawListManager(g_service_locator);
+		transformation_context_ = new TransformationContext(g_service_locator);
+		pack_ = object_manager_->CreatePack();
+	}
 
-void DrawListTest::TearDown() {
-  pack_->Destroy();
-  delete transformation_context_;
-  delete draw_list_manager_;
-}
+	void DrawListTest::TearDown() {
+		pack_->Destroy();
+		delete transformation_context_;
+		delete draw_list_manager_;
+	}
 
-TEST_F(DrawListTest, Basic) {
-  DrawList* draw_list = pack()->Create<DrawList>();
-  // Check that draw_list got created.
-  EXPECT_TRUE(draw_list != NULL);
-}
+	TEST_F(DrawListTest, Basic) {
+		DrawList* draw_list = pack()->Create<DrawList>();
+		// Check that draw_list got created.
+		EXPECT_TRUE(draw_list != NULL);
+	}
 
 }  // namespace o3d

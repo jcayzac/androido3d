@@ -37,88 +37,86 @@
 
 namespace o3d {
 
-class DataURLTest : public testing::Test {
-};
+	class DataURLTest : public testing::Test {
+	};
 
-TEST_F(DataURLTest, kEmptyDataURL) {
-  EXPECT_STREQ("data:,", dataurl::kEmptyDataURL);
-}
+	TEST_F(DataURLTest, kEmptyDataURL) {
+		EXPECT_STREQ("data:,", dataurl::kEmptyDataURL);
+	}
 
-TEST_F(DataURLTest, ToDataURL) {
-  EXPECT_STREQ("data:a/b;base64,YWJj",
-               dataurl::ToDataURL("a/b", "abc", 3).c_str());
-  EXPECT_STREQ("data:de/ej;base64,YWIAYw==",
-               dataurl::ToDataURL("de/ej", "ab\0c", 4).c_str());
-}
+	TEST_F(DataURLTest, ToDataURL) {
+		EXPECT_STREQ("data:a/b;base64,YWJj",
+		             dataurl::ToDataURL("a/b", "abc", 3).c_str());
+		EXPECT_STREQ("data:de/ej;base64,YWIAYw==",
+		             dataurl::ToDataURL("de/ej", "ab\0c", 4).c_str());
+	}
 
-TEST_F(DataURLTest, FromDataURL) {
-  std::string data_url("data:a/b;base64,YWJj");
-  ::o3d::base::scoped_array<uint8_t> output;
-  size_t output_length;
-  std::string error_string;
+	TEST_F(DataURLTest, FromDataURL) {
+		std::string data_url("data:a/b;base64,YWJj");
+		::o3d::base::scoped_array<uint8_t> output;
+		size_t output_length;
+		std::string error_string;
+		EXPECT_TRUE(dataurl::FromDataURL(data_url,
+		                                 &output,
+		                                 &output_length,
+		                                 &error_string));
+		EXPECT_EQ(3u, output_length);
+		EXPECT_EQ(0, memcmp("abc", output.get(), 3));
+	}
 
-  EXPECT_TRUE(dataurl::FromDataURL(data_url,
-                                    &output,
-                                    &output_length,
-                                    &error_string));
-  EXPECT_EQ(3u, output_length);
-  EXPECT_EQ(0, memcmp("abc", output.get(), 3));
-}
-
-TEST_F(DataURLTest, FromDataURLFormatErrors) {
-  ::o3d::base::scoped_array<uint8_t> output;
-  size_t output_length;
-  std::string error_string("");
-  // Not long enough
-  EXPECT_FALSE(dataurl::FromDataURL("",
-                                    &output,
-                                    &output_length,
-                                    &error_string));
-  EXPECT_LT(0u, error_string.size());
-  // Does not start with "data:"
-  error_string = "";
-  EXPECT_FALSE(dataurl::FromDataURL("aaaaaaaaaaaaaaaa",
-                                    &output,
-                                    &output_length,
-                                    &error_string));
-  EXPECT_LT(0u, error_string.size());
-  // Must contain base64
-  error_string = "";
-  EXPECT_FALSE(dataurl::FromDataURL("data:aaaaaaaaaaa",
-                                    &output,
-                                    &output_length,
-                                    &error_string));
-  EXPECT_LT(0u, error_string.size());
-  // Must contain data.
-  error_string = "";
-  EXPECT_FALSE(dataurl::FromDataURL("data:aa;base64,",
-                                    &output,
-                                    &output_length,
-                                    &error_string));
-  EXPECT_LT(0u, error_string.size());
-
-  // Bad character in data.
-  error_string = "";
-  EXPECT_FALSE(dataurl::FromDataURL("data:;base64,@",
-                                    &output,
-                                    &output_length,
-                                    &error_string));
-  EXPECT_LT(0u, error_string.size());
-  // Padding error in data.
-  error_string = "";
-  EXPECT_FALSE(dataurl::FromDataURL("data:;base64,Y",
-                                    &output,
-                                    &output_length,
-                                    &error_string));
-  EXPECT_LT(0u, error_string.size());
-  // Correct.
-  error_string = "";
-  EXPECT_TRUE(dataurl::FromDataURL("data:;base64,YWJj",
-                                    &output,
-                                    &output_length,
-                                    &error_string));
-  EXPECT_EQ(0u, error_string.size());
-}
+	TEST_F(DataURLTest, FromDataURLFormatErrors) {
+		::o3d::base::scoped_array<uint8_t> output;
+		size_t output_length;
+		std::string error_string("");
+		// Not long enough
+		EXPECT_FALSE(dataurl::FromDataURL("",
+		                                  &output,
+		                                  &output_length,
+		                                  &error_string));
+		EXPECT_LT(0u, error_string.size());
+		// Does not start with "data:"
+		error_string = "";
+		EXPECT_FALSE(dataurl::FromDataURL("aaaaaaaaaaaaaaaa",
+		                                  &output,
+		                                  &output_length,
+		                                  &error_string));
+		EXPECT_LT(0u, error_string.size());
+		// Must contain base64
+		error_string = "";
+		EXPECT_FALSE(dataurl::FromDataURL("data:aaaaaaaaaaa",
+		                                  &output,
+		                                  &output_length,
+		                                  &error_string));
+		EXPECT_LT(0u, error_string.size());
+		// Must contain data.
+		error_string = "";
+		EXPECT_FALSE(dataurl::FromDataURL("data:aa;base64,",
+		                                  &output,
+		                                  &output_length,
+		                                  &error_string));
+		EXPECT_LT(0u, error_string.size());
+		// Bad character in data.
+		error_string = "";
+		EXPECT_FALSE(dataurl::FromDataURL("data:;base64,@",
+		                                  &output,
+		                                  &output_length,
+		                                  &error_string));
+		EXPECT_LT(0u, error_string.size());
+		// Padding error in data.
+		error_string = "";
+		EXPECT_FALSE(dataurl::FromDataURL("data:;base64,Y",
+		                                  &output,
+		                                  &output_length,
+		                                  &error_string));
+		EXPECT_LT(0u, error_string.size());
+		// Correct.
+		error_string = "";
+		EXPECT_TRUE(dataurl::FromDataURL("data:;base64,YWJj",
+		                                 &output,
+		                                 &output_length,
+		                                 &error_string));
+		EXPECT_EQ(0u, error_string.size());
+	}
 
 }  // namespace o3d
 

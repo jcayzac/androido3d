@@ -37,131 +37,122 @@ namespace o3d {
 
 // A simple testing helper class that tracks the number of live instances of
 // itself.
-class InstanceCount : public RefCounted {
- public:
-  // Use construction & destruction to inc/dec a static instance counter.
-  InstanceCount() { ++instance_count_; }
-  ~InstanceCount() { --instance_count_; }
+	class InstanceCount : public RefCounted {
+	public:
+		// Use construction & destruction to inc/dec a static instance counter.
+		InstanceCount() { ++instance_count_; }
+		~InstanceCount() { --instance_count_; }
 
-  static int instance_count() {
-    return instance_count_;
-  }
+		static int instance_count() {
+			return instance_count_;
+		}
 
- private:
-  static int instance_count_;
-};
+	private:
+		static int instance_count_;
+	};
 
-int InstanceCount::instance_count_ = 0;
+	int InstanceCount::instance_count_ = 0;
 
 // Test case for the smart pointer class
-class SmartPtrTest : public testing::Test {
-};
+	class SmartPtrTest : public testing::Test {
+	};
 
-TEST_F(SmartPtrTest, Construct) {
-  SmartPointer<InstanceCount> smart_ptr;
-  ASSERT_TRUE(smart_ptr.Get() == NULL);
-  ASSERT_TRUE(static_cast<InstanceCount*>(smart_ptr) == NULL);
-}
+	TEST_F(SmartPtrTest, Construct) {
+		SmartPointer<InstanceCount> smart_ptr;
+		ASSERT_TRUE(smart_ptr.Get() == NULL);
+		ASSERT_TRUE(static_cast<InstanceCount*>(smart_ptr) == NULL);
+	}
 
 // Test the behaviour of a single smart pointer without aliasing.
-TEST_F(SmartPtrTest, SingleReference) {
-  InstanceCount* raw_pointer = new InstanceCount();
-  SmartPointer<InstanceCount> smart_ptr(raw_pointer);
-
-  // Validate that a single instance was created, and that the pointer
-  // points to the correct instance.
-  EXPECT_TRUE(smart_ptr.Get() == raw_pointer);
-  EXPECT_TRUE(static_cast<InstanceCount*>(smart_ptr) == raw_pointer);
-  EXPECT_EQ(InstanceCount::instance_count(), 1);
-
-  // Validate the release mechanism when the ref-count reaches 0.
-  smart_ptr.Reset();
-  EXPECT_EQ(InstanceCount::instance_count(), 0);
-  EXPECT_TRUE(smart_ptr.Get() == NULL);
-  EXPECT_TRUE(static_cast<InstanceCount*>(smart_ptr) == NULL);
-}
+	TEST_F(SmartPtrTest, SingleReference) {
+		InstanceCount* raw_pointer = new InstanceCount();
+		SmartPointer<InstanceCount> smart_ptr(raw_pointer);
+		// Validate that a single instance was created, and that the pointer
+		// points to the correct instance.
+		EXPECT_TRUE(smart_ptr.Get() == raw_pointer);
+		EXPECT_TRUE(static_cast<InstanceCount*>(smart_ptr) == raw_pointer);
+		EXPECT_EQ(InstanceCount::instance_count(), 1);
+		// Validate the release mechanism when the ref-count reaches 0.
+		smart_ptr.Reset();
+		EXPECT_EQ(InstanceCount::instance_count(), 0);
+		EXPECT_TRUE(smart_ptr.Get() == NULL);
+		EXPECT_TRUE(static_cast<InstanceCount*>(smart_ptr) == NULL);
+	}
 
 // Validate the behaviour of multiple smart pointers aliasing each other.
-TEST_F(SmartPtrTest, MultipleReferences) {
-  SmartPointer<InstanceCount> smart_ptr(new InstanceCount());
-  SmartPointer<InstanceCount> second_ref(smart_ptr);
-  InstanceCount* raw_ptr = smart_ptr.Get();
-
-  // Validate that only a single instance was created.
-  EXPECT_EQ(InstanceCount::instance_count(), 1);
-  EXPECT_TRUE(smart_ptr.Get() == second_ref.Get());
-
-  // Ensure that removal of a single reference does not destroy the instance.
-  smart_ptr.Reset();
-  EXPECT_TRUE(smart_ptr.Get() == NULL);
-  EXPECT_TRUE(second_ref.Get() == raw_ptr);
-  EXPECT_EQ(InstanceCount::instance_count(), 1);
-
-  // Validate the behaviour of the removal of the last reference.
-  second_ref.Reset();
-  EXPECT_TRUE(second_ref.Get() ==  NULL);
-  EXPECT_EQ(InstanceCount::instance_count(), 0);
-}
+	TEST_F(SmartPtrTest, MultipleReferences) {
+		SmartPointer<InstanceCount> smart_ptr(new InstanceCount());
+		SmartPointer<InstanceCount> second_ref(smart_ptr);
+		InstanceCount* raw_ptr = smart_ptr.Get();
+		// Validate that only a single instance was created.
+		EXPECT_EQ(InstanceCount::instance_count(), 1);
+		EXPECT_TRUE(smart_ptr.Get() == second_ref.Get());
+		// Ensure that removal of a single reference does not destroy the instance.
+		smart_ptr.Reset();
+		EXPECT_TRUE(smart_ptr.Get() == NULL);
+		EXPECT_TRUE(second_ref.Get() == raw_ptr);
+		EXPECT_EQ(InstanceCount::instance_count(), 1);
+		// Validate the behaviour of the removal of the last reference.
+		second_ref.Reset();
+		EXPECT_TRUE(second_ref.Get() ==  NULL);
+		EXPECT_EQ(InstanceCount::instance_count(), 0);
+	}
 
 // Validate the relase behaviour of the smart pointer assignment operator.
-TEST_F(SmartPtrTest, AssignmentRelease) {
-  SmartPointer<InstanceCount> smart_ptr1(new InstanceCount());
-  SmartPointer<InstanceCount> smart_ptr2(new InstanceCount());
-  InstanceCount *raw_ptr1 = smart_ptr1.Get();
-  EXPECT_TRUE(raw_ptr1 != NULL);
-  InstanceCount *raw_ptr2 = smart_ptr2.Get();
-  EXPECT_TRUE(raw_ptr2 != NULL);
-
-  // Validate that assignment destroys the previous instance.
-  smart_ptr2 = smart_ptr1;
-  EXPECT_EQ(InstanceCount::instance_count(), 1);
-  EXPECT_TRUE(smart_ptr2.Get() == smart_ptr1.Get());
-
-  // Validate that assignment of one of the ptrs to NULL does not delete
-  // the instance.
-  smart_ptr2 = SmartPointer<InstanceCount>(NULL);
-  EXPECT_EQ(InstanceCount::instance_count(), 1);
-
-  // Assignment of the last instance to NULL should delete the instance.
-  smart_ptr1 = smart_ptr2;
-  EXPECT_EQ(InstanceCount::instance_count(), 0);
-}
+	TEST_F(SmartPtrTest, AssignmentRelease) {
+		SmartPointer<InstanceCount> smart_ptr1(new InstanceCount());
+		SmartPointer<InstanceCount> smart_ptr2(new InstanceCount());
+		InstanceCount* raw_ptr1 = smart_ptr1.Get();
+		EXPECT_TRUE(raw_ptr1 != NULL);
+		InstanceCount* raw_ptr2 = smart_ptr2.Get();
+		EXPECT_TRUE(raw_ptr2 != NULL);
+		// Validate that assignment destroys the previous instance.
+		smart_ptr2 = smart_ptr1;
+		EXPECT_EQ(InstanceCount::instance_count(), 1);
+		EXPECT_TRUE(smart_ptr2.Get() == smart_ptr1.Get());
+		// Validate that assignment of one of the ptrs to NULL does not delete
+		// the instance.
+		smart_ptr2 = SmartPointer<InstanceCount>(NULL);
+		EXPECT_EQ(InstanceCount::instance_count(), 1);
+		// Assignment of the last instance to NULL should delete the instance.
+		smart_ptr1 = smart_ptr2;
+		EXPECT_EQ(InstanceCount::instance_count(), 0);
+	}
 
 // Validate the behaviour of self-assignment edge-case.
-TEST_F(SmartPtrTest, SelfAssignment) {
-  SmartPointer<InstanceCount> smart_ptr1(new InstanceCount());
-  smart_ptr1 = smart_ptr1;
-  EXPECT_EQ(InstanceCount::instance_count(), 1);
-}
+	TEST_F(SmartPtrTest, SelfAssignment) {
+		SmartPointer<InstanceCount> smart_ptr1(new InstanceCount());
+		smart_ptr1 = smart_ptr1;
+		EXPECT_EQ(InstanceCount::instance_count(), 1);
+	}
 
-TEST_F(SmartPtrTest, EqualityTest) {
-  SmartPointer<InstanceCount> smart_ptr1(new InstanceCount());
-  SmartPointer<InstanceCount> smart_ptr2(smart_ptr1);
-  EXPECT_TRUE(smart_ptr1 == smart_ptr2);
-}
+	TEST_F(SmartPtrTest, EqualityTest) {
+		SmartPointer<InstanceCount> smart_ptr1(new InstanceCount());
+		SmartPointer<InstanceCount> smart_ptr2(smart_ptr1);
+		EXPECT_TRUE(smart_ptr1 == smart_ptr2);
+	}
 
 // A testing helper class that exposes the add-ref and release methods of the
 // RefCounted class.
-class RefCountedHelper : public RefCounted {
- public:
-  using RefCounted::AddRef;
-  using RefCounted::Release;
-};
+	class RefCountedHelper : public RefCounted {
+	public:
+		using RefCounted::AddRef;
+		using RefCounted::Release;
+	};
 
-class RefCountedTest : public testing::Test {
-};
+	class RefCountedTest : public testing::Test {
+	};
 
 // Validate the behaviour of the reference-counting mechanism.
-TEST_F(RefCountedTest, Basic) {
-  RefCountedHelper instance;
-  instance.AddRef();
-  EXPECT_EQ(instance.Release(), 0);
-
-  instance.AddRef();
-  instance.AddRef();
-  instance.AddRef();
-  instance.AddRef();
-  EXPECT_EQ(instance.Release(), 3);
-}
+	TEST_F(RefCountedTest, Basic) {
+		RefCountedHelper instance;
+		instance.AddRef();
+		EXPECT_EQ(instance.Release(), 0);
+		instance.AddRef();
+		instance.AddRef();
+		instance.AddRef();
+		instance.AddRef();
+		EXPECT_EQ(instance.Release(), 3);
+	}
 
 }  // namespace o3d

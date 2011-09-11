@@ -41,59 +41,59 @@ namespace o3d {
 
 // Records the last reported error. Allows a callback to be invoked when an
 // error is reported.
-class IErrorStatus {
- public:
-  static const InterfaceId kInterfaceId;
+	class IErrorStatus {
+	public:
+		static const InterfaceId kInterfaceId;
 
-  typedef Callback1<const std::string&> ErrorCallback;
+		typedef Callback1<const std::string&> ErrorCallback;
 
-  virtual ~IErrorStatus() {}
+		virtual ~IErrorStatus() {}
 
-  // Sets the error callback. NOTE: The client takes ownership of the
-  // ErrorCallback you pass in. It will be deleted if you call SetErrorCallback
-  // a second time or if you call ClearErrorCallback.
-  //
-  // Parameters:
-  //   error_callback: ErrorCallback to call each time the client gets
-  //       an error.
-  virtual void SetErrorCallback(ErrorCallback* error_callback) = 0;
+		// Sets the error callback. NOTE: The client takes ownership of the
+		// ErrorCallback you pass in. It will be deleted if you call SetErrorCallback
+		// a second time or if you call ClearErrorCallback.
+		//
+		// Parameters:
+		//   error_callback: ErrorCallback to call each time the client gets
+		//       an error.
+		virtual void SetErrorCallback(ErrorCallback* error_callback) = 0;
 
-  // Clears the Error callback NOTE: The client takes own ership of the
-  // ErrorCallback you pass in to SetErrorCallback. It will be deleted if you
-  // call SetErrorCallback a second time or if you call ClearErrorCallback.
-  virtual void ClearErrorCallback() = 0;
+		// Clears the Error callback NOTE: The client takes own ership of the
+		// ErrorCallback you pass in to SetErrorCallback. It will be deleted if you
+		// call SetErrorCallback a second time or if you call ClearErrorCallback.
+		virtual void ClearErrorCallback() = 0;
 
-  // Sets the last error. This is pretty much only called by ErrorStreamManager.
-  virtual void SetLastError(const std::string& error) = 0;
+		// Sets the last error. This is pretty much only called by ErrorStreamManager.
+		virtual void SetLastError(const std::string& error) = 0;
 
 #ifndef NDEBUG
-  // For debug builds, we display where in the code the error came from.
-  virtual void SetLastError(const std::string& error, const char *file,
-      int line) = 0;
+		// For debug builds, we display where in the code the error came from.
+		virtual void SetLastError(const std::string& error, const char* file,
+		                          int line) = 0;
 #endif
 
-  // Gets the last reported error.
-  virtual const std::string& GetLastError() const = 0;
+		// Gets the last reported error.
+		virtual const std::string& GetLastError() const = 0;
 
-  // Clears the stored last error.
-  virtual void ClearLastError() = 0;
+		// Clears the stored last error.
+		virtual void ClearLastError() = 0;
 
-  // File logging is only ever done in a debug build, but can be turned off
-  // there at will.
-  virtual void SetFileLoggingActive(bool should_log) = 0;
-  virtual bool IsFileLoggingActive() const = 0;
+		// File logging is only ever done in a debug build, but can be turned off
+		// there at will.
+		virtual void SetFileLoggingActive(bool should_log) = 0;
+		virtual bool IsFileLoggingActive() const = 0;
 
- protected:
-  // Exchanges a new callback with the current callback, returing the old
-  // one.
-  // Parameters:
-  //   callback: ErrorCallback to exchange.
-  virtual ErrorCallback* Exchange(ErrorCallback* callback) = 0;
+	protected:
+		// Exchanges a new callback with the current callback, returing the old
+		// one.
+		// Parameters:
+		//   callback: ErrorCallback to exchange.
+		virtual ErrorCallback* Exchange(ErrorCallback* callback) = 0;
 
- private:
-  friend class ErrorCollector;
-  friend class ErrorSuppressor;
-};
+	private:
+		friend class ErrorCollector;
+		friend class ErrorSuppressor;
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_IERROR_STATUS_H_

@@ -73,211 +73,205 @@
 
 namespace o3d {
 
-ClassManager::ClassManager(ServiceLocator* service_locator)
-    : service_locator_(service_locator),
-      service_(service_locator_, this) {
-  // Params
-  AddTypedClass<ParamBoolean>();
-  AddTypedClass<ParamBoundingBox>();
-  AddTypedClass<ParamDrawContext>();
-  AddTypedClass<ParamDrawList>();
-  AddTypedClass<ParamEffect>();
-  AddTypedClass<ParamFloat>();
-  AddTypedClass<ParamFloat2>();
-  AddTypedClass<ParamFloat3>();
-  AddTypedClass<ParamFloat4>();
-  AddTypedClass<ParamFunction>();
-  AddTypedClass<ParamInteger>();
-  AddTypedClass<ParamMaterial>();
-  AddTypedClass<ParamMatrix4>();
-  AddTypedClass<ParamParamArray>();
-  AddTypedClass<ParamRenderSurface>();
-  AddTypedClass<ParamRenderDepthStencilSurface>();
-  AddTypedClass<ParamSampler>();
-  AddTypedClass<ParamSkin>();
-  AddTypedClass<ParamState>();
-  AddTypedClass<ParamStreamBank>();
-  AddTypedClass<ParamString>();
-  AddTypedClass<ParamTexture>();
-  AddTypedClass<ParamTransform>();
-
-  // Param operations.
-  AddTypedClass<Matrix4AxisRotation>();
-  AddTypedClass<Matrix4Composition>();
-  AddTypedClass<Matrix4Scale>();
-  AddTypedClass<Matrix4Translation>();
-  AddTypedClass<ParamOp2FloatsToFloat2>();
-  AddTypedClass<ParamOp3FloatsToFloat3>();
-  AddTypedClass<ParamOp4FloatsToFloat4>();
-  AddTypedClass<ParamOp16FloatsToMatrix4>();
-  AddTypedClass<TRSToMatrix4>();
-
-  // SAS Params
-  AddTypedClass<WorldParamMatrix4>();
-  AddTypedClass<WorldInverseParamMatrix4>();
-  AddTypedClass<WorldTransposeParamMatrix4>();
-  AddTypedClass<WorldInverseTransposeParamMatrix4>();
-
-  AddTypedClass<ViewParamMatrix4>();
-  AddTypedClass<ViewInverseParamMatrix4>();
-  AddTypedClass<ViewTransposeParamMatrix4>();
-  AddTypedClass<ViewInverseTransposeParamMatrix4>();
-
-  AddTypedClass<ProjectionParamMatrix4>();
-  AddTypedClass<ProjectionInverseParamMatrix4>();
-  AddTypedClass<ProjectionTransposeParamMatrix4>();
-  AddTypedClass<ProjectionInverseTransposeParamMatrix4>();
-
-  AddTypedClass<WorldViewParamMatrix4>();
-  AddTypedClass<WorldViewInverseParamMatrix4>();
-  AddTypedClass<WorldViewTransposeParamMatrix4>();
-  AddTypedClass<WorldViewInverseTransposeParamMatrix4>();
-
-  AddTypedClass<ViewProjectionParamMatrix4>();
-  AddTypedClass<ViewProjectionInverseParamMatrix4>();
-  AddTypedClass<ViewProjectionTransposeParamMatrix4>();
-  AddTypedClass<ViewProjectionInverseTransposeParamMatrix4>();
-
-  AddTypedClass<WorldViewProjectionParamMatrix4>();
-  AddTypedClass<WorldViewProjectionInverseParamMatrix4>();
-  AddTypedClass<WorldViewProjectionTransposeParamMatrix4>();
-  AddTypedClass<WorldViewProjectionInverseTransposeParamMatrix4>();
-
-  AddTypedClass<BillboardParamMatrix4>();
-  AddTypedClass<BillboardTransposeParamMatrix4>();
-
-  // Other Objects.
-  AddTypedClass<Bitmap>();
+	ClassManager::ClassManager(ServiceLocator* service_locator)
+		: service_locator_(service_locator),
+		  service_(service_locator_, this) {
+		// Params
+		AddTypedClass<ParamBoolean>();
+		AddTypedClass<ParamBoundingBox>();
+		AddTypedClass<ParamDrawContext>();
+		AddTypedClass<ParamDrawList>();
+		AddTypedClass<ParamEffect>();
+		AddTypedClass<ParamFloat>();
+		AddTypedClass<ParamFloat2>();
+		AddTypedClass<ParamFloat3>();
+		AddTypedClass<ParamFloat4>();
+		AddTypedClass<ParamFunction>();
+		AddTypedClass<ParamInteger>();
+		AddTypedClass<ParamMaterial>();
+		AddTypedClass<ParamMatrix4>();
+		AddTypedClass<ParamParamArray>();
+		AddTypedClass<ParamRenderSurface>();
+		AddTypedClass<ParamRenderDepthStencilSurface>();
+		AddTypedClass<ParamSampler>();
+		AddTypedClass<ParamSkin>();
+		AddTypedClass<ParamState>();
+		AddTypedClass<ParamStreamBank>();
+		AddTypedClass<ParamString>();
+		AddTypedClass<ParamTexture>();
+		AddTypedClass<ParamTransform>();
+		// Param operations.
+		AddTypedClass<Matrix4AxisRotation>();
+		AddTypedClass<Matrix4Composition>();
+		AddTypedClass<Matrix4Scale>();
+		AddTypedClass<Matrix4Translation>();
+		AddTypedClass<ParamOp2FloatsToFloat2>();
+		AddTypedClass<ParamOp3FloatsToFloat3>();
+		AddTypedClass<ParamOp4FloatsToFloat4>();
+		AddTypedClass<ParamOp16FloatsToMatrix4>();
+		AddTypedClass<TRSToMatrix4>();
+		// SAS Params
+		AddTypedClass<WorldParamMatrix4>();
+		AddTypedClass<WorldInverseParamMatrix4>();
+		AddTypedClass<WorldTransposeParamMatrix4>();
+		AddTypedClass<WorldInverseTransposeParamMatrix4>();
+		AddTypedClass<ViewParamMatrix4>();
+		AddTypedClass<ViewInverseParamMatrix4>();
+		AddTypedClass<ViewTransposeParamMatrix4>();
+		AddTypedClass<ViewInverseTransposeParamMatrix4>();
+		AddTypedClass<ProjectionParamMatrix4>();
+		AddTypedClass<ProjectionInverseParamMatrix4>();
+		AddTypedClass<ProjectionTransposeParamMatrix4>();
+		AddTypedClass<ProjectionInverseTransposeParamMatrix4>();
+		AddTypedClass<WorldViewParamMatrix4>();
+		AddTypedClass<WorldViewInverseParamMatrix4>();
+		AddTypedClass<WorldViewTransposeParamMatrix4>();
+		AddTypedClass<WorldViewInverseTransposeParamMatrix4>();
+		AddTypedClass<ViewProjectionParamMatrix4>();
+		AddTypedClass<ViewProjectionInverseParamMatrix4>();
+		AddTypedClass<ViewProjectionTransposeParamMatrix4>();
+		AddTypedClass<ViewProjectionInverseTransposeParamMatrix4>();
+		AddTypedClass<WorldViewProjectionParamMatrix4>();
+		AddTypedClass<WorldViewProjectionInverseParamMatrix4>();
+		AddTypedClass<WorldViewProjectionTransposeParamMatrix4>();
+		AddTypedClass<WorldViewProjectionInverseTransposeParamMatrix4>();
+		AddTypedClass<BillboardParamMatrix4>();
+		AddTypedClass<BillboardTransposeParamMatrix4>();
+		// Other Objects.
+		AddTypedClass<Bitmap>();
 #if !defined(O3D_NO_CANVAS)
-  AddTypedClass<Canvas>();
-  AddTypedClass<CanvasLinearGradient>();
-  AddTypedClass<CanvasPaint>();
+		AddTypedClass<Canvas>();
+		AddTypedClass<CanvasLinearGradient>();
+		AddTypedClass<CanvasPaint>();
 #endif
-  AddTypedClass<ClearBuffer>();
-  AddTypedClass<Counter>();
-  AddTypedClass<Curve>();
-  AddTypedClass<DrawContext>();
-  AddTypedClass<DrawElement>();
-  AddTypedClass<DrawList>();
-  AddTypedClass<DrawPass>();
-  AddTypedClass<Effect>();
-  AddTypedClass<FunctionEval>();
-  AddTypedClass<IndexBuffer>();
-  AddTypedClass<Material>();
-  AddTypedClass<ParamArray>();
-  AddTypedClass<ParamObject>();
-  AddTypedClass<Primitive>();
+		AddTypedClass<ClearBuffer>();
+		AddTypedClass<Counter>();
+		AddTypedClass<Curve>();
+		AddTypedClass<DrawContext>();
+		AddTypedClass<DrawElement>();
+		AddTypedClass<DrawList>();
+		AddTypedClass<DrawPass>();
+		AddTypedClass<Effect>();
+		AddTypedClass<FunctionEval>();
+		AddTypedClass<IndexBuffer>();
+		AddTypedClass<Material>();
+		AddTypedClass<ParamArray>();
+		AddTypedClass<ParamObject>();
+		AddTypedClass<Primitive>();
 #if !defined(O3D_NO_GPU2D)
-  AddTypedClass<ProcessedPath>();
+		AddTypedClass<ProcessedPath>();
 #endif
-  AddTypedClass<RenderFrameCounter>();
-  AddTypedClass<RenderNode>();
-  AddTypedClass<RenderSurfaceSet>();
-  AddTypedClass<Sampler>();
-  AddTypedClass<SecondCounter>();
-  AddTypedClass<Shape>();
-  AddTypedClass<Skin>();
-  AddTypedClass<SkinEval>();
-  AddTypedClass<SourceBuffer>();
-  AddTypedClass<State>();
-  AddTypedClass<StateSet>();
-  AddTypedClass<StreamBank>();
-  AddTypedClass<Texture2D>();
-  AddTypedClass<TextureCUBE>();
-  AddTypedClass<TickCounter>();
-  AddTypedClass<Transform>();
-  AddTypedClass<TreeTraversal>();
-  AddTypedClass<VertexBuffer>();
-  AddTypedClass<Viewport>();
-}
+		AddTypedClass<RenderFrameCounter>();
+		AddTypedClass<RenderNode>();
+		AddTypedClass<RenderSurfaceSet>();
+		AddTypedClass<Sampler>();
+		AddTypedClass<SecondCounter>();
+		AddTypedClass<Shape>();
+		AddTypedClass<Skin>();
+		AddTypedClass<SkinEval>();
+		AddTypedClass<SourceBuffer>();
+		AddTypedClass<State>();
+		AddTypedClass<StateSet>();
+		AddTypedClass<StreamBank>();
+		AddTypedClass<Texture2D>();
+		AddTypedClass<TextureCUBE>();
+		AddTypedClass<TickCounter>();
+		AddTypedClass<Transform>();
+		AddTypedClass<TreeTraversal>();
+		AddTypedClass<VertexBuffer>();
+		AddTypedClass<Viewport>();
+	}
 
-void ClassManager::AddClass(const ObjectBase::Class* object_class,
-                            ObjectCreateFunc function) {
-  O3D_ASSERT(object_class_info_name_map_.find(object_class->name()) ==
-              object_class_info_name_map_.end())
-      << "attempt to register duplicate class name";
-  object_class_info_name_map_.insert(
-      std::make_pair(object_class->name(),
-                     ObjectClassInfo(object_class, function)));
-  O3D_ASSERT(object_creator_class_map_.find(object_class) ==
-              object_creator_class_map_.end())
-      << "attempt to register duplicate class";
-  object_creator_class_map_.insert(std::make_pair(object_class,
-                                                  function));
-}
+	void ClassManager::AddClass(const ObjectBase::Class* object_class,
+	                            ObjectCreateFunc function) {
+		O3D_ASSERT(object_class_info_name_map_.find(object_class->name()) ==
+		           object_class_info_name_map_.end())
+		        << "attempt to register duplicate class name";
+		object_class_info_name_map_.insert(
+		    std::make_pair(object_class->name(),
+		                   ObjectClassInfo(object_class, function)));
+		O3D_ASSERT(object_creator_class_map_.find(object_class) ==
+		           object_creator_class_map_.end())
+		        << "attempt to register duplicate class";
+		object_creator_class_map_.insert(std::make_pair(object_class,
+		                                 function));
+	}
 
-void ClassManager::RemoveClass(const ObjectBase::Class* object_class) {
-  ObjectClassInfoNameMap::size_type ii = object_class_info_name_map_.erase(
-      object_class->name());
-  O3D_ASSERT(ii == 1) << "attempt to unregister non-existant class name";
-  ObjectCreatorClassMap::size_type jj = object_creator_class_map_.erase(
-      object_class);
-  O3D_ASSERT(jj == 1) << "attempt to unregister non-existant class";
-}
+	void ClassManager::RemoveClass(const ObjectBase::Class* object_class) {
+		ObjectClassInfoNameMap::size_type ii = object_class_info_name_map_.erase(
+		        object_class->name());
+		O3D_ASSERT(ii == 1) << "attempt to unregister non-existant class name";
+		ObjectCreatorClassMap::size_type jj = object_creator_class_map_.erase(
+		        object_class);
+		O3D_ASSERT(jj == 1) << "attempt to unregister non-existant class";
+	}
 
-const ObjectBase::Class* ClassManager::GetClassByClassName(
-    const std::string& class_name) const {
-  ObjectClassInfoNameMap::const_iterator iter =
-      object_class_info_name_map_.find(class_name);
+	const ObjectBase::Class* ClassManager::GetClassByClassName(
+	    const std::string& class_name) const {
+		ObjectClassInfoNameMap::const_iterator iter =
+		    object_class_info_name_map_.find(class_name);
 
-  if (iter == object_class_info_name_map_.end()) {
-    // Try adding the o3d namespace prefix
-    std::string prefixed_class_name(O3D_STRING_CONSTANT("") + class_name);
-    iter = object_class_info_name_map_.find(prefixed_class_name);
-  }
+		if(iter == object_class_info_name_map_.end()) {
+			// Try adding the o3d namespace prefix
+			std::string prefixed_class_name(O3D_STRING_CONSTANT("") + class_name);
+			iter = object_class_info_name_map_.find(prefixed_class_name);
+		}
 
-  return (iter != object_class_info_name_map_.end()) ?
-      iter->second.class_type() : NULL;
-}
+		return (iter != object_class_info_name_map_.end()) ?
+		       iter->second.class_type() : NULL;
+	}
 
-bool ClassManager::ClassNameIsAClass(
-    const std::string& derived_class_name,
-    const ObjectBase::Class* base_class) const {
-  const ObjectBase::Class* derived_class = GetClassByClassName(
-      derived_class_name);
-  return derived_class && ObjectBase::ClassIsA(derived_class, base_class);
-}
+	bool ClassManager::ClassNameIsAClass(
+	    const std::string& derived_class_name,
+	    const ObjectBase::Class* base_class) const {
+		const ObjectBase::Class* derived_class = GetClassByClassName(
+		            derived_class_name);
+		return derived_class && ObjectBase::ClassIsA(derived_class, base_class);
+	}
 
 // Factory method to create a new object by class name.
 
-ObjectBase::Ref ClassManager::CreateObject(const std::string& type_name) {
-  ObjectClassInfoNameMap::const_iterator iter =
-      object_class_info_name_map_.find(type_name);
-  if (iter == object_class_info_name_map_.end()) {
-    // Try adding the o3d namespace prefix
-    std::string prefixed_type_name(O3D_STRING_CONSTANT("") + type_name);
-    iter = object_class_info_name_map_.find(prefixed_type_name);
-  }
+	ObjectBase::Ref ClassManager::CreateObject(const std::string& type_name) {
+		ObjectClassInfoNameMap::const_iterator iter =
+		    object_class_info_name_map_.find(type_name);
 
-  if (iter != object_class_info_name_map_.end()) {
-    return ObjectBase::Ref(iter->second.creation_func()(service_locator_));
-  }
+		if(iter == object_class_info_name_map_.end()) {
+			// Try adding the o3d namespace prefix
+			std::string prefixed_type_name(O3D_STRING_CONSTANT("") + type_name);
+			iter = object_class_info_name_map_.find(prefixed_type_name);
+		}
 
-  return ObjectBase::Ref();
-}
+		if(iter != object_class_info_name_map_.end()) {
+			return ObjectBase::Ref(iter->second.creation_func()(service_locator_));
+		}
+
+		return ObjectBase::Ref();
+	}
 
 // Factory method to create a new object by class.
 
-ObjectBase::Ref ClassManager::CreateObjectByClass(
-    const ObjectBase::Class* object_class) {
-  ObjectCreatorClassMap::const_iterator iter =
-      object_creator_class_map_.find(object_class);
+	ObjectBase::Ref ClassManager::CreateObjectByClass(
+	    const ObjectBase::Class* object_class) {
+		ObjectCreatorClassMap::const_iterator iter =
+		    object_creator_class_map_.find(object_class);
 
-  if (iter != object_creator_class_map_.end()) {
-    return ObjectBase::Ref(iter->second(service_locator_));
-  }
+		if(iter != object_creator_class_map_.end()) {
+			return ObjectBase::Ref(iter->second(service_locator_));
+		}
 
-  return ObjectBase::Ref();
-}
+		return ObjectBase::Ref();
+	}
 
-std::vector<const ObjectBase::Class*> ClassManager::GetAllClasses() const {
-  std::vector<const ObjectBase::Class*> classes;
-  for (ObjectClassInfoNameMap::const_iterator it =
-           object_class_info_name_map_.begin();
-       it != object_class_info_name_map_.end(); ++it) {
-    classes.push_back(it->second.class_type());
-  }
-  return classes;
-}
+	std::vector<const ObjectBase::Class*> ClassManager::GetAllClasses() const {
+		std::vector<const ObjectBase::Class*> classes;
+
+		for(ObjectClassInfoNameMap::const_iterator it =
+		            object_class_info_name_map_.begin();
+		        it != object_class_info_name_map_.end(); ++it) {
+			classes.push_back(it->second.class_type());
+		}
+
+		return classes;
+	}
 
 }  // namespace o3d

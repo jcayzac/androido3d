@@ -29,91 +29,91 @@
 
 // OS detection
 #if defined(__APPLE__)
-  #include <TargetConditionals.h>
-  #if defined(TARGET_OS_IPHONE)
-    #define OS_IPHONE 1
-    #if defined(TARGET_IPHONE_SIMULATOR)
-      #define SIMULATOR 1
-    #endif
-  #else
-    #define OS_MACOSX 1
-  #endif
-#elif defined(__ANDROID__)
-  //#define OS_LINUX 1
-  #define OS_ANDROID 1
-  #if !defined(__arm__)
-    #define SIMULATOR 1
-  #endif
-#elif defined(linux) || defined(__linux__)
-  #define OS_LINUX 1
-#elif defined(__FreeBSD__)
-  #define OS_FREEBSD 1
-#elif defined(__OpenBSD__)
-  #define OS_OPENBSD 1
-#elif defined(__CYGWIN__)
-  #define OS_CYGWIN 1
+#include <TargetConditionals.h>
+#if defined(TARGET_OS_IPHONE)
+#define OS_IPHONE 1
+#if defined(TARGET_IPHONE_SIMULATOR)
+#define SIMULATOR 1
+#endif
 #else
-  #error Unsupported platform
+#define OS_MACOSX 1
+#endif
+#elif defined(__ANDROID__)
+//#define OS_LINUX 1
+#define OS_ANDROID 1
+#if !defined(__arm__)
+#define SIMULATOR 1
+#endif
+#elif defined(linux) || defined(__linux__)
+#define OS_LINUX 1
+#elif defined(__FreeBSD__)
+#define OS_FREEBSD 1
+#elif defined(__OpenBSD__)
+#define OS_OPENBSD 1
+#elif defined(__CYGWIN__)
+#define OS_CYGWIN 1
+#else
+#error Unsupported platform
 #endif
 
 // OS family
 #if defined(OS_MACOSX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
-  #define OS_BSD 1
+#define OS_BSD 1
 #endif
 #if defined(OS_BSD) || defined(OS_LINUX) || defined(OS_CYGWIN) || defined(OS_ANDROID)
-  #define OS_POSIX 1
+#define OS_POSIX 1
 #endif
 
 // Features
 #if defined(__GNUC__)
-  #if defined(__GXX_RTTI)
-    #define HAVE_RTTI 1
-  #endif
+#if defined(__GXX_RTTI)
+#define HAVE_RTTI 1
+#endif
 #endif
 
 // Attributes
 #if defined(__GNUC__)
-  #define O3D_ALLOW_UNUSED_RESULT   __attribute__((unused))
-  #define O3D_WARN_UNUSED_RESULT    __attribute__((warn_unused_result))
-  #define O3D_PRINTF_FORMAT(f, a)   __attribute__((format(printf, f, a)))
-  #define O3D_DEPRECATED            __attribute__((deprecated))
-  #define O3D_ALWAYS_INLINE         __attribute__((always_inline))
-  #define O3D_FLATTEN               __attribute__((flatten))
-  #define O3D_WARN_IF_USED(x)       __attribute__((warning(x)))
-  #define O3D_CHECK_NULL_ARGS(x...) __attribute__((nonnull(x)))
-  #define O3D_NORETURN              __attribute__((noreturn))
-  #define O3D_PURE                  __attribute__((pure))
-  #define O3D_HOT                   __attribute__((hot))
-  #define O3D_COLD                  __attribute__((cold))
-  #define O3D_PACKED                __attribute__((packed))
+#define O3D_ALLOW_UNUSED_RESULT   __attribute__((unused))
+#define O3D_WARN_UNUSED_RESULT    __attribute__((warn_unused_result))
+#define O3D_PRINTF_FORMAT(f, a)   __attribute__((format(printf, f, a)))
+#define O3D_DEPRECATED            __attribute__((deprecated))
+#define O3D_ALWAYS_INLINE         __attribute__((always_inline))
+#define O3D_FLATTEN               __attribute__((flatten))
+#define O3D_WARN_IF_USED(x)       __attribute__((warning(x)))
+#define O3D_CHECK_NULL_ARGS(x...) __attribute__((nonnull(x)))
+#define O3D_NORETURN              __attribute__((noreturn))
+#define O3D_PURE                  __attribute__((pure))
+#define O3D_HOT                   __attribute__((hot))
+#define O3D_COLD                  __attribute__((cold))
+#define O3D_PACKED                __attribute__((packed))
 #elif defined(__ARM_CC)
-  #define O3D_ALLOW_UNUSED_RESULT   __attribute__((unused))
-  #define O3D_WARN_UNUSED_RESULT
-  #define O3D_PRINTF_FORMAT(x, y)
-  #define O3D_DEPRECATED            __attribute__((deprecated))
-  #define O3D_ALWAYS_INLINE         __attribute__((always_inline))
-  #define O3D_FLATTEN
-  #define O3D_WARN_IF_USED(x)
-  #define O3D_CHECK_NULL_ARGS(x...) __attribute__((nonnull(x)))
-  #define O3D_NORETURN              __attribute__((noreturn))
-  #define O3D_PURE                  __attribute__((pure))
-  #define O3D_HOT
-  #define O3D_COLD
-  #define O3D_PACKED                __attribute__((packed))
+#define O3D_ALLOW_UNUSED_RESULT   __attribute__((unused))
+#define O3D_WARN_UNUSED_RESULT
+#define O3D_PRINTF_FORMAT(x, y)
+#define O3D_DEPRECATED            __attribute__((deprecated))
+#define O3D_ALWAYS_INLINE         __attribute__((always_inline))
+#define O3D_FLATTEN
+#define O3D_WARN_IF_USED(x)
+#define O3D_CHECK_NULL_ARGS(x...) __attribute__((nonnull(x)))
+#define O3D_NORETURN              __attribute__((noreturn))
+#define O3D_PURE                  __attribute__((pure))
+#define O3D_HOT
+#define O3D_COLD
+#define O3D_PACKED                __attribute__((packed))
 #else
-  #define O3D_ALLOW_UNUSED_RESULT
-  #define O3D_WARN_UNUSED_RESULT
-  #define O3D_PRINTF_FORMAT(x, y)
-  #define O3D_DEPRECATED
-  #define O3D_ALWAYS_INLINE
-  #define O3D_FLATTEN
-  #define O3D_WARN_IF_USED(x)
-  #define O3D_CHECK_NULL_ARGS(x...)
-  #define O3D_NORETURN
-  #define O3D_PURE
-  #define O3D_HOT
-  #define O3D_COLD
-  #define O3D_PACKED
+#define O3D_ALLOW_UNUSED_RESULT
+#define O3D_WARN_UNUSED_RESULT
+#define O3D_PRINTF_FORMAT(x, y)
+#define O3D_DEPRECATED
+#define O3D_ALWAYS_INLINE
+#define O3D_FLATTEN
+#define O3D_WARN_IF_USED(x)
+#define O3D_CHECK_NULL_ARGS(x...)
+#define O3D_NORETURN
+#define O3D_PURE
+#define O3D_HOT
+#define O3D_COLD
+#define O3D_PACKED
 #endif
 
 #if defined(__cplusplus)
@@ -122,9 +122,9 @@
 
 // C99's 'restrict' keyword is not part of std C++
 #if defined(__GNUC__) || defined(__ARM_CC)
-  #define restrict __restrict__
+#define restrict __restrict__
 #else
-  #define restrict
+#define restrict
 #endif
 
 // A macro to disallow the copy constructor and operator= functions
@@ -148,10 +148,10 @@
 // Note that the function doesn't need an implementation, as we only
 // use its type.
 namespace o3d {
-namespace base {
-  template <typename T, size_t N>
-  char (&ArraySizeHelper(T (&array)[N]))[N];
-}
+	namespace base {
+		template <typename T, size_t N>
+		char(&ArraySizeHelper(T(&array)[N]))[N];
+	}
 }
 
 #define o3d_arraysize(array) (sizeof(o3d::base::ArraySizeHelper(array)))
@@ -215,10 +215,10 @@ namespace o3d {
 // implicit_cast would have been part of the C++ standard library,
 // but the proposal was submitted too late.  It will probably make
 // its way into the language in the future.
-template<typename To, typename From>
-inline To implicit_cast(From const &f) {
-  return f;
-}
+	template<typename To, typename From>
+	inline To implicit_cast(From const& f) {
+		return f;
+	}
 
 // When you upcast (that is, cast a pointer from type Foo to type
 // SuperclassOfFoo), it's fine to use implicit_cast<>, since upcasts
@@ -234,47 +234,47 @@ inline To implicit_cast(From const &f) {
 //
 // Use it like this: down_cast<T*>(foo);
 
-template<typename To, typename From>
-inline To down_cast(From* f) {  // Defined as From* so we only accept pointers.
-  // Ensures that To is a sub-type of From *.  This test is here only
-  // for compile-time type checking, and has no overhead in an
-  // optimized build at run-time, as it will be optimized away
-  // completely.
-  if (false) {
-    implicit_cast<From*, To>(0);
-  }
+	template<typename To, typename From>
+	inline To down_cast(From* f) {  // Defined as From* so we only accept pointers.
+		// Ensures that To is a sub-type of From *.  This test is here only
+		// for compile-time type checking, and has no overhead in an
+		// optimized build at run-time, as it will be optimized away
+		// completely.
+		if(false) {
+			implicit_cast<From*, To>(0);
+		}
 
-  return static_cast<To>(f);
-}
+		return static_cast<To>(f);
+	}
 
 // Return true if target is little endian
-static inline O3D_ALWAYS_INLINE bool is_little_endian() throw() {
-  union {
-    uint32_t b32;
-    uint8_t  b8[4];
-  };
-  b32 = 0xdeadbabe;
-  return b8[0]==0xbe;
-}
+	static inline O3D_ALWAYS_INLINE bool is_little_endian() throw() {
+		union {
+			uint32_t b32;
+			uint8_t  b8[4];
+		};
+		b32 = 0xdeadbabe;
+		return b8[0] == 0xbe;
+	}
 
 // Functions to switch endianness
 #if defined(__GNUC__) || defined(__ARM_CC)
-static inline O3D_ALWAYS_INLINE uint32_t switch_endianness32(uint32_t x) throw() {
-  return __builtin_bswap32(x);
-}
-static inline O3D_ALWAYS_INLINE uint16_t switch_endianness16(uint16_t x) throw() {
-  return __builtin_bswap32(x<<16);
-}
+	static inline O3D_ALWAYS_INLINE uint32_t switch_endianness32(uint32_t x) throw() {
+		return __builtin_bswap32(x);
+	}
+	static inline O3D_ALWAYS_INLINE uint16_t switch_endianness16(uint16_t x) throw() {
+		return __builtin_bswap32(x << 16);
+	}
 #else
 // TODO: Test this with non-gcc compilers
-static inline O3D_ALWAYS_INLINE uint16_t switch_endianness16(uint16_t x) throw() {
-  return ((x&0xff)<<8)|(x>>8)
-}
-static inline O3D_ALWAYS_INLINE uint32_t switch_endianness32(uint32_t x) throw() {
-  uint16_t hi(switch_endianness16(x&0xffff));
-  uint16_t lo(switch_endianness16(x>>16));
-  return lo|(hi<<16);
-}
+	static inline O3D_ALWAYS_INLINE uint16_t switch_endianness16(uint16_t x) throw() {
+		return ((x & 0xff) << 8) | (x >> 8)
+	}
+	static inline O3D_ALWAYS_INLINE uint32_t switch_endianness32(uint32_t x) throw() {
+		uint16_t hi(switch_endianness16(x & 0xffff));
+		uint16_t lo(switch_endianness16(x >> 16));
+		return lo | (hi << 16);
+	}
 #endif
 
 } // namespace o3d

@@ -44,181 +44,181 @@ namespace o3d {
 
 // RenderSurfaceBase is the base class for RenderSurface and
 // RenderDepthStencilSurface.
-class RenderSurfaceBase : public ParamObject {
- public:
-  typedef SmartPointer<RenderSurfaceBase> Ref;
+	class RenderSurfaceBase : public ParamObject {
+	public:
+		typedef SmartPointer<RenderSurfaceBase> Ref;
 
-  RenderSurfaceBase(ServiceLocator *service_locator,
-                    int width,
-                    int height);
+		RenderSurfaceBase(ServiceLocator* service_locator,
+		                  int width,
+		                  int height);
 
-  // Names of the RenderSurface Params.
-  static const char *kWidthParamName;
-  static const char *kHeightParamName;
+		// Names of the RenderSurface Params.
+		static const char* kWidthParamName;
+		static const char* kHeightParamName;
 
-  // Returns the width of the surface, in pixels.
-  // Note that this is a read-only parameter.
-  int width() const {
-    return width_param_->value();
-  }
+		// Returns the width of the surface, in pixels.
+		// Note that this is a read-only parameter.
+		int width() const {
+			return width_param_->value();
+		}
 
-  // Returns the height of the surface, in pixels.
-  // Note that this is a read-only parameter.
-  int height() const {
-    return height_param_->value();
-  }
+		// Returns the height of the surface, in pixels.
+		// Note that this is a read-only parameter.
+		int height() const {
+			return height_param_->value();
+		}
 
-  // Set the clip size, the area of the render target that is actually
-  // rendered to.
-  // NOTE: This function is not meant to be called by anything except the
-  //    o3d Client. It is used for rendering screenshots and for windowless
-  //    mode.
-  void SetClipSize(int clip_width, int clip_height) {
-    O3D_ASSERT(clip_width <= width());
-    O3D_ASSERT(clip_height <= height());
-    clip_width_ = clip_width;
-    clip_height_ = clip_height;
-  }
+		// Set the clip size, the area of the render target that is actually
+		// rendered to.
+		// NOTE: This function is not meant to be called by anything except the
+		//    o3d Client. It is used for rendering screenshots and for windowless
+		//    mode.
+		void SetClipSize(int clip_width, int clip_height) {
+			O3D_ASSERT(clip_width <= width());
+			O3D_ASSERT(clip_height <= height());
+			clip_width_ = clip_width;
+			clip_height_ = clip_height;
+		}
 
-  // Returns the used width of the render target. Used for setting the viewport.
-  int clip_width() const {
-    return clip_width_;
-  }
+		// Returns the used width of the render target. Used for setting the viewport.
+		int clip_width() const {
+			return clip_width_;
+		}
 
-  // Returns the used height of the render target. Used for setting the
-  // viewport.
-  int clip_height() const {
-    return clip_height_;
-  }
+		// Returns the used height of the render target. Used for setting the
+		// viewport.
+		int clip_height() const {
+			return clip_height_;
+		}
 
- private:
-  // The width of the surface, in pixels.
-  ParamInteger::Ref width_param_;
+	private:
+		// The width of the surface, in pixels.
+		ParamInteger::Ref width_param_;
 
-  // The height of the surface, in pixels.
-  ParamInteger::Ref height_param_;
+		// The height of the surface, in pixels.
+		ParamInteger::Ref height_param_;
 
-  // The part of the render target that is actually used.
-  int clip_width_;
-  int clip_height_;
+		// The part of the render target that is actually used.
+		int clip_width_;
+		int clip_height_;
 
-  O3D_DECL_CLASS(RenderSurfaceBase, ParamObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceBase);
-};
+		O3D_DECL_CLASS(RenderSurfaceBase, ParamObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceBase);
+	};
 
 // A RenderSurface class encapsulates the notion of a renderable surface.
 // When used in conjunction with a RenderSurfaceSet node in the render graph,
 // the API allows for rendering of primitives to the given surface.
 // RenderSurface objects are not constructable through the Pack API, they may
 // only be accessed through the texture GetRenderSurface(...) interfaces.
-class RenderSurface : public RenderSurfaceBase {
- public:
-  typedef SmartPointer<RenderSurface> Ref;
-  typedef WeakPointer<RenderSurface> WeakPointerType;
+	class RenderSurface : public RenderSurfaceBase {
+	public:
+		typedef SmartPointer<RenderSurface> Ref;
+		typedef WeakPointer<RenderSurface> WeakPointerType;
 
-  RenderSurface(ServiceLocator *service_locator,
-                int width,
-                int height,
-                Texture *texture);
+		RenderSurface(ServiceLocator* service_locator,
+		              int width,
+		              int height,
+		              Texture* texture);
 
-  // Names of the RenderSurface Params.
-  static const char *kTextureParamName;
+		// Names of the RenderSurface Params.
+		static const char* kTextureParamName;
 
-  // Returns the texture object containing this render surface.
-  Texture* texture() const {
-    return texture_param_->value();
-  }
+		// Returns the texture object containing this render surface.
+		Texture* texture() const {
+			return texture_param_->value();
+		}
 
-  // Gets a weak pointer to us.
-  WeakPointerType GetWeakPointer() const {
-    return weak_pointer_manager_.GetWeakPointer();
-  }
+		// Gets a weak pointer to us.
+		WeakPointerType GetWeakPointer() const {
+			return weak_pointer_manager_.GetWeakPointer();
+		}
 
-  // Gets a copy of the contents of the render surface as a Bitmap.
-  // Only gets the clip_width/clip_height area.
-  Bitmap::Ref GetBitmap() const;
+		// Gets a copy of the contents of the render surface as a Bitmap.
+		// Only gets the clip_width/clip_height area.
+		Bitmap::Ref GetBitmap() const;
 
-  // Gets a copy of the contents of the render surface into the given
-  // Bitmap. Only gets the clip_width/clip_height area. Returns true
-  // if the bitmap was appropriately sized, false if not or if an
-  // error occurred.
-  bool GetIntoBitmap(Bitmap::Ref bitmap) const;
+		// Gets a copy of the contents of the render surface into the given
+		// Bitmap. Only gets the clip_width/clip_height area. Returns true
+		// if the bitmap was appropriately sized, false if not or if an
+		// error occurred.
+		bool GetIntoBitmap(Bitmap::Ref bitmap) const;
 
- protected:
-  // The platform specific part of GetIntoBitmap.
-  virtual bool PlatformSpecificGetIntoBitmap(
-      Bitmap::Ref bitmap) const = 0;
+	protected:
+		// The platform specific part of GetIntoBitmap.
+		virtual bool PlatformSpecificGetIntoBitmap(
+		    Bitmap::Ref bitmap) const = 0;
 
- private:
-  // Texture parameter of the texture in which this render surface is contained.
-  ParamTexture::Ref texture_param_;
+	private:
+		// Texture parameter of the texture in which this render surface is contained.
+		ParamTexture::Ref texture_param_;
 
-  // Manager for weak pointers to us.
-  WeakPointerType::WeakPointerManager weak_pointer_manager_;
+		// Manager for weak pointers to us.
+		WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
-  O3D_DECL_CLASS(RenderSurface, RenderSurfaceBase);
-  O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurface);
-};
+		O3D_DECL_CLASS(RenderSurface, RenderSurfaceBase);
+		O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurface);
+	};
 
 // A RenderDepthStencilSurface represents a depth stencil render target.
-class RenderDepthStencilSurface : public RenderSurfaceBase {
- public:
-  typedef SmartPointer<RenderDepthStencilSurface> Ref;
-  typedef WeakPointer<RenderDepthStencilSurface> WeakPointerType;
+	class RenderDepthStencilSurface : public RenderSurfaceBase {
+	public:
+		typedef SmartPointer<RenderDepthStencilSurface> Ref;
+		typedef WeakPointer<RenderDepthStencilSurface> WeakPointerType;
 
-  RenderDepthStencilSurface(ServiceLocator *service_locator,
-                            int width,
-                            int height);
+		RenderDepthStencilSurface(ServiceLocator* service_locator,
+		                          int width,
+		                          int height);
 
-  // Gets a weak pointer to us.
-  WeakPointerType GetWeakPointer() const {
-    return weak_pointer_manager_.GetWeakPointer();
-  }
+		// Gets a weak pointer to us.
+		WeakPointerType GetWeakPointer() const {
+			return weak_pointer_manager_.GetWeakPointer();
+		}
 
- private:
-  // Manager for weak pointers to us.
-  WeakPointerType::WeakPointerManager weak_pointer_manager_;
+	private:
+		// Manager for weak pointers to us.
+		WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
-  O3D_DECL_CLASS(RenderDepthStencilSurface, RenderSurfaceBase);
-  O3D_DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurface);
-};
+		O3D_DECL_CLASS(RenderDepthStencilSurface, RenderSurfaceBase);
+		O3D_DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurface);
+	};
 
-class ParamRenderSurface : public TypedRefParam<RenderSurface> {
- public:
-  typedef SmartPointer<ParamRenderSurface> Ref;
+	class ParamRenderSurface : public TypedRefParam<RenderSurface> {
+	public:
+		typedef SmartPointer<ParamRenderSurface> Ref;
 
-  ParamRenderSurface(ServiceLocator *service_locator,
-                     bool dynamic,
-                     bool read_only)
-      : TypedRefParam<RenderSurface>(service_locator, dynamic,
-                                     read_only) {}
+		ParamRenderSurface(ServiceLocator* service_locator,
+		                   bool dynamic,
+		                   bool read_only)
+			: TypedRefParam<RenderSurface>(service_locator, dynamic,
+			                               read_only) {}
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator *service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  O3D_DECL_CLASS(ParamRenderSurface, RefParamBase);
-  O3D_DISALLOW_COPY_AND_ASSIGN(ParamRenderSurface);
-};
+		O3D_DECL_CLASS(ParamRenderSurface, RefParamBase);
+		O3D_DISALLOW_COPY_AND_ASSIGN(ParamRenderSurface);
+	};
 
-class ParamRenderDepthStencilSurface
-    : public TypedRefParam<RenderDepthStencilSurface> {
- public:
-  typedef SmartPointer<ParamRenderDepthStencilSurface> Ref;
+	class ParamRenderDepthStencilSurface
+			: public TypedRefParam<RenderDepthStencilSurface> {
+	public:
+		typedef SmartPointer<ParamRenderDepthStencilSurface> Ref;
 
-  ParamRenderDepthStencilSurface(ServiceLocator *service_locator,
-                                 bool dynamic,
-                                 bool read_only)
-      : TypedRefParam<RenderDepthStencilSurface>(service_locator, dynamic,
-                                                 read_only) {}
+		ParamRenderDepthStencilSurface(ServiceLocator* service_locator,
+		                               bool dynamic,
+		                               bool read_only)
+			: TypedRefParam<RenderDepthStencilSurface>(service_locator, dynamic,
+			        read_only) {}
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator *service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  O3D_DECL_CLASS(ParamRenderDepthStencilSurface, RefParamBase);
-  O3D_DISALLOW_COPY_AND_ASSIGN(ParamRenderDepthStencilSurface);
-};
+		O3D_DECL_CLASS(ParamRenderDepthStencilSurface, RefParamBase);
+		O3D_DISALLOW_COPY_AND_ASSIGN(ParamRenderDepthStencilSurface);
+	};
 
 }  // namespace o3d
 

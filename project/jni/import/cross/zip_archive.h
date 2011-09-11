@@ -77,102 +77,102 @@
 
 // structure containing the unz_file_info information plus the file name
 struct ZipFileInfo {
-  ZipFileInfo();
-  ZipFileInfo(const ZipFileInfo& o);
-  ~ZipFileInfo();
-  ZipFileInfo& operator=(const ZipFileInfo& o);
-  struct LowLevelInfo;
-  LowLevelInfo* low_level_info;
-  std::string name;
+	ZipFileInfo();
+	ZipFileInfo(const ZipFileInfo& o);
+	~ZipFileInfo();
+	ZipFileInfo& operator=(const ZipFileInfo& o);
+	struct LowLevelInfo;
+	LowLevelInfo* low_level_info;
+	std::string name;
 };
 
 class ZipArchive {
- public:
-  // Returns UNZ_OK in |result| on success
-  ZipArchive(const std::string &zip_filename, int *result);
-  virtual ~ZipArchive();
+public:
+	// Returns UNZ_OK in |result| on success
+	ZipArchive(const std::string& zip_filename, int* result);
+	virtual ~ZipArchive();
 
-  // The returned filenames should adhere to the zip archive spec
-  // (UTF8 with '/' as the path separator)
-  // If the zip file is badly constructed then this assumption may be invalid.
-  // returns UNZ_OK on success
-  int  GetInformationList(std::vector<ZipFileInfo> *infolist);
+	// The returned filenames should adhere to the zip archive spec
+	// (UTF8 with '/' as the path separator)
+	// If the zip file is badly constructed then this assumption may be invalid.
+	// returns UNZ_OK on success
+	int  GetInformationList(std::vector<ZipFileInfo> *infolist);
 
-  // Returns information for |filename| in |*info|
-  // returns UNZ_OK if successful
-  virtual int GetFileInfo(const std::string &filename, ZipFileInfo *info);
+	// Returns information for |filename| in |*info|
+	// returns UNZ_OK if successful
+	virtual int GetFileInfo(const std::string& filename, ZipFileInfo* info);
 
-  // Extracts a single file and returns a pointer to the file's content.
-  // Returns NULL if |filename| doesn't match any in the archive
-  // or an error occurs.  The caller must call free() on the returned pointer
-  // the buffer allocated will actually be one byte greater then reported in
-  // |size|.  And this extra byte is set to zero.  This way the data may
-  // be interpreted as a string, and doesn't harm anything else.
-  //
-  virtual char  *GetFileData(const std::string &filename, size_t *size);
+	// Extracts a single file and returns a pointer to the file's content.
+	// Returns NULL if |filename| doesn't match any in the archive
+	// or an error occurs.  The caller must call free() on the returned pointer
+	// the buffer allocated will actually be one byte greater then reported in
+	// |size|.  And this extra byte is set to zero.  This way the data may
+	// be interpreted as a string, and doesn't harm anything else.
+	//
+	virtual char*  GetFileData(const std::string& filename, size_t* size);
 
-  // |relative_path| is taken to be relative to |root_path|
-  // It may contain relative path elements ("../")
-  //
-  // Extracts a single file and returns a pointer to the file's content.
-  // Returns NULL if |filename| doesn't match any in the archive
-  // or an error occurs.  The caller must call free() on the returned pointer
-  //
-  virtual char  *GetRelativeFileData(const std::string &relative_path,
-                                     const std::string &root_path,
-                                     size_t *size);
+	// |relative_path| is taken to be relative to |root_path|
+	// It may contain relative path elements ("../")
+	//
+	// Extracts a single file and returns a pointer to the file's content.
+	// Returns NULL if |filename| doesn't match any in the archive
+	// or an error occurs.  The caller must call free() on the returned pointer
+	//
+	virtual char*  GetRelativeFileData(const std::string& relative_path,
+	                                   const std::string& root_path,
+	                                   size_t* size);
 
-  // Extracts the entire archive to disk (relative to current working dir)
-  // returns UNZ_OK on success
-  int   Extract();
+	// Extracts the entire archive to disk (relative to current working dir)
+	// returns UNZ_OK on success
+	int   Extract();
 
-  // Extracts a single file to disk (relative to current working dir)
-  // returns UNZ_OK on success
-  int   ExtractOneFile(const std::string &filename,
-                       int opt_extract_without_path,
-                       int opt_overwrite,
-                       const char *password);
+	// Extracts a single file to disk (relative to current working dir)
+	// returns UNZ_OK on success
+	int   ExtractOneFile(const std::string& filename,
+	                     int opt_extract_without_path,
+	                     int opt_overwrite,
+	                     const char* password);
 
-  // Extracts |filename| from the archive, saves to a temp file, and sets
-  // the path to the temp file in |temp_filename|
-  // returns |true| on success
-  //
-  bool GetTempFileFromFile(const std::string &filename,
-                           std::string *temp_filename);
+	// Extracts |filename| from the archive, saves to a temp file, and sets
+	// the path to the temp file in |temp_filename|
+	// returns |true| on success
+	//
+	bool GetTempFileFromFile(const std::string& filename,
+	                         std::string* temp_filename);
 
-  // So we can delete the temp file we made
-  static void DeleteFile(const std::string &filename);
+	// So we can delete the temp file we made
+	static void DeleteFile(const std::string& filename);
 
-  // Tests the given file to see if it is a zip file.
-  // (Added by Google)
-  static bool IsZipFile(const std::string& filename);
+	// Tests the given file to see if it is a zip file.
+	// (Added by Google)
+	static bool IsZipFile(const std::string& filename);
 
- protected:
-  int   MyMkDir(const char *dirname);
+protected:
+	int   MyMkDir(const char* dirname);
 
-  int   MakeDir(const char *newdir);
+	int   MakeDir(const char* newdir);
 
-  int   ExtractCurrentFile(const int *popt_extract_without_path,
-                           int *popt_overwrite,
-                           const char *password);
+	int   ExtractCurrentFile(const int* popt_extract_without_path,
+	                         int* popt_overwrite,
+	                         const char* password);
 
-  int   DoExtract(int opt_extract_without_path,
-                  int opt_overwrite,
-                  const char *password);
+	int   DoExtract(int opt_extract_without_path,
+	                int opt_overwrite,
+	                const char* password);
 
-  void  RemoveLastPathComponent(std::string *string);
+	void  RemoveLastPathComponent(std::string* string);
 
-  void  ConvertRelativeToAbsolutePath(std::string *path,
-                                      const std::string &root_path);
+	void  ConvertRelativeToAbsolutePath(std::string* path,
+	                                    const std::string& root_path);
 
-  void GetActualFilename(const std::string &filename,
-                         std::string *actual_filename);
+	void GetActualFilename(const std::string& filename,
+	                       std::string* actual_filename);
 
-  struct PrivateStruct;
-  PrivateStruct* private_;
+	struct PrivateStruct;
+	PrivateStruct* private_;
 
 private:
- O3D_DISALLOW_COPY_AND_ASSIGN(ZipArchive);
+	O3D_DISALLOW_COPY_AND_ASSIGN(ZipArchive);
 };
 
 #endif  // O3D_IMPORT_CROSS_ZIP_ARCHIVE_H_

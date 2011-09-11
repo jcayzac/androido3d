@@ -36,10 +36,10 @@
 
 namespace o3d {
 
-RenderContext::RenderContext(Renderer* renderer)
-    : render_list_(NULL),
-      renderer_(renderer) {
-}
+	RenderContext::RenderContext(Renderer* renderer)
+		: render_list_(NULL),
+		  renderer_(renderer) {
+	}
 
 }  // namespace o3d
 

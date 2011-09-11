@@ -38,8 +38,8 @@
 
 namespace o3d {
 
-bool SemanticNameToSemantic(
-    const std::string& name, Stream::Semantic* semantic, int* semantic_index);
+	bool SemanticNameToSemantic(
+	    const std::string& name, Stream::Semantic* semantic, int* semantic_index);
 
 }  // namespace o3d
 

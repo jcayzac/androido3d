@@ -46,62 +46,62 @@ namespace o3d {
 
 // Features is a class that represents features requested by the user
 // for the O3D.
-class Features {
- public:
-  static const InterfaceId kInterfaceId;
+	class Features {
+	public:
+		static const InterfaceId kInterfaceId;
 
-  explicit Features(ServiceLocator* service_locator);
+		explicit Features(ServiceLocator* service_locator);
 
-  // Initalizes the Features with the user requested features.
-  // Parameters:
-  //   requested_features: A comma separate string of features.
-  void Init(const std::string& requested_features);
+		// Initalizes the Features with the user requested features.
+		// Parameters:
+		//   requested_features: A comma separate string of features.
+		void Init(const std::string& requested_features);
 
-  bool floating_point_textures() const {
-    return floating_point_textures_;
-  }
+		bool floating_point_textures() const {
+			return floating_point_textures_;
+		}
 
-  bool large_geometry() const {
-    return large_geometry_;
-  }
+		bool large_geometry() const {
+			return large_geometry_;
+		}
 
-  bool windowless() const {
-    return windowless_;
-  }
+		bool windowless() const {
+			return windowless_;
+		}
 
-  bool not_anti_aliased() const {
-    return not_anti_aliased_;
-  }
+		bool not_anti_aliased() const {
+			return not_anti_aliased_;
+		}
 
-  bool flip_textures() const {
-    return flip_textures_;
-  }
+		bool flip_textures() const {
+			return flip_textures_;
+		}
 
-  // This can be used to force the renderer to fail for testing.
-  Renderer::InitStatus init_status() const {
-    return init_status_;
-  }
+		// This can be used to force the renderer to fail for testing.
+		Renderer::InitStatus init_status() const {
+			return init_status_;
+		}
 
- private:
-  // Parses the features strings.
-  // Parameters:
-  //   features: vector of feature strings.
-  //   version_pass: True = only check for APIVersion, false = check everything
-  //       but APIVersion.
-  void ParseFeatures(const std::vector<std::string>& features,
-                     bool version_pass);
+	private:
+		// Parses the features strings.
+		// Parameters:
+		//   features: vector of feature strings.
+		//   version_pass: True = only check for APIVersion, false = check everything
+		//       but APIVersion.
+		void ParseFeatures(const std::vector<std::string>& features,
+		                   bool version_pass);
 
-  ServiceImplementation<Features> service_;
+		ServiceImplementation<Features> service_;
 
-  bool floating_point_textures_;
-  bool large_geometry_;
-  bool windowless_;
-  bool not_anti_aliased_;
-  bool flip_textures_;
-  Renderer::InitStatus init_status_;
+		bool floating_point_textures_;
+		bool large_geometry_;
+		bool windowless_;
+		bool not_anti_aliased_;
+		bool flip_textures_;
+		Renderer::InitStatus init_status_;
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(Features);
-};
+		O3D_DISALLOW_COPY_AND_ASSIGN(Features);
+	};
 
 }  // namespace o3d
 

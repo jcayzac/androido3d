@@ -37,7 +37,7 @@
 #include "base/cross/config.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
 // A cache of the processed triangle mesh for a given path. Because
 // these might be expensive to allocate (using malloc/free
@@ -47,73 +47,73 @@ namespace gpu2d {
 // the interior region of the mesh.
 // #define O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
 
-class PathCache {
- public:
-  PathCache() {
-  }
+		class PathCache {
+		public:
+			PathCache() {
+			}
 
-  // The number of vertices in the mesh.
-  unsigned int num_vertices() const;
+			// The number of vertices in the mesh.
+			unsigned int num_vertices() const;
 
-  // Get the base pointer to the vertex information. There are two
-  // coordinates per vertex. This pointer is valid until the cache is
-  // cleared or another vertex is added. Returns NULL if there are no
-  // vertices in the mesh.
-  const float* vertices() const;
+			// Get the base pointer to the vertex information. There are two
+			// coordinates per vertex. This pointer is valid until the cache is
+			// cleared or another vertex is added. Returns NULL if there are no
+			// vertices in the mesh.
+			const float* vertices() const;
 
-  // Get the base pointer to the texture coordinate information. There
-  // are three coordinates per vertex. This pointer is valid until the
-  // cache is cleared or another vertex is added. Returns NULL if
-  // there are no vertices in the mesh.
-  const float* texcoords() const;
+			// Get the base pointer to the texture coordinate information. There
+			// are three coordinates per vertex. This pointer is valid until the
+			// cache is cleared or another vertex is added. Returns NULL if
+			// there are no vertices in the mesh.
+			const float* texcoords() const;
 
-  // Adds a vertex's information to the cache. The first two arguments
-  // are the x and y coordinates of the vertex on the plane; the last
-  // three arguments are the cubic texture coordinates associated with
-  // this vertex.
-  void AddVertex(float x, float y,
-                 float k, float l, float m);
+			// Adds a vertex's information to the cache. The first two arguments
+			// are the x and y coordinates of the vertex on the plane; the last
+			// three arguments are the cubic texture coordinates associated with
+			// this vertex.
+			void AddVertex(float x, float y,
+			               float k, float l, float m);
 
-  // The number of interior vertices.
-  unsigned int num_interior_vertices() const;
-  // Base pointer to the interior vertices; two coordinates per
-  // vertex, which can be drawn as GL_TRIANGLES. Returns NULL if there
-  // are no interior vertices in the mesh.
-  const float* interior_vertices() const;
-  // Adds an interior vertex to the cache.
-  void AddInteriorVertex(float x, float y);
+			// The number of interior vertices.
+			unsigned int num_interior_vertices() const;
+			// Base pointer to the interior vertices; two coordinates per
+			// vertex, which can be drawn as GL_TRIANGLES. Returns NULL if there
+			// are no interior vertices in the mesh.
+			const float* interior_vertices() const;
+			// Adds an interior vertex to the cache.
+			void AddInteriorVertex(float x, float y);
 
-  // Clears all of the stored vertex information in this cache.
-  void Clear();
-
-#ifdef O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
-  // The number of interior edge vertices
-  unsigned int num_interior_edge_vertices() const;
-  // Base pointer to the interior vertices; two coordinates per
-  // vertex, which can be drawn as GL_LINES. Returns NULL if there are
-  // no interior edge vertices in the mesh.
-  const float* interior_edge_vertices() const;
-  void AddInteriorEdgeVertex(float x, float y);
-#endif  // O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
-
- private:
-  // The two-dimensional vertices of the triangle mesh.
-  std::vector<float> vertices_;
-
-  // The three-dimensional cubic texture coordinates.
-  std::vector<float> texcoords_;
-
-  std::vector<float> interior_vertices_;
+			// Clears all of the stored vertex information in this cache.
+			void Clear();
 
 #ifdef O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
-  // The following is only for debugging
-  std::vector<float> interior_edge_vertices_;
+			// The number of interior edge vertices
+			unsigned int num_interior_edge_vertices() const;
+			// Base pointer to the interior vertices; two coordinates per
+			// vertex, which can be drawn as GL_LINES. Returns NULL if there are
+			// no interior edge vertices in the mesh.
+			const float* interior_edge_vertices() const;
+			void AddInteriorEdgeVertex(float x, float y);
 #endif  // O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(PathCache);
-};
+		private:
+			// The two-dimensional vertices of the triangle mesh.
+			std::vector<float> vertices_;
 
-}  // namespace gpu2d
+			// The three-dimensional cubic texture coordinates.
+			std::vector<float> texcoords_;
+
+			std::vector<float> interior_vertices_;
+
+#ifdef O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
+			// The following is only for debugging
+			std::vector<float> interior_edge_vertices_;
+#endif  // O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
+
+			O3D_DISALLOW_COPY_AND_ASSIGN(PathCache);
+		};
+
+	}  // namespace gpu2d
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GPU2D_PATH_CACHE_H_

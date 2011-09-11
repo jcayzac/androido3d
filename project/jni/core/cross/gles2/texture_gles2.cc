@@ -45,11 +45,11 @@
 
 namespace o3d {
 
-namespace {
+	namespace {
 
-Texture::RGBASwizzleIndices g_gl_abgr32f_swizzle_indices = {0, 1, 2, 3};
+		Texture::RGBASwizzleIndices g_gl_abgr32f_swizzle_indices = {0, 1, 2, 3};
 
-}  // anonymous namespace.
+	}  // anonymous namespace.
 
 // Converts an O3D texture format to a GLES2 texture format.
 // Input is 'format'.
@@ -62,967 +62,1033 @@ Texture::RGBASwizzleIndices g_gl_abgr32f_swizzle_indices = {0, 1, 2, 3};
 // The internal format is returned in internal_format.
 // The format is the return value of the function.
 // The type is returned in data_type.
-static GLenum GLFormatFromO3DFormat(Texture::Format format,
-                                    GLenum *internal_format,
-                                    GLenum *data_type) {
-  switch (format) {
-    case Texture::XRGB8: {
+	static GLenum GLFormatFromO3DFormat(Texture::Format format,
+	                                    GLenum* internal_format,
+	                                    GLenum* data_type) {
+		switch(format) {
+		case Texture::XRGB8: {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-      *internal_format = GL_RGB;
+				*internal_format = GL_RGB;
 #elif TARGET_OS_IPHONE
-	  *internal_format = GL_RGBA;
+				*internal_format = GL_RGBA;
 #else
-      // On GLES, the internal_format must match format.
-      *internal_format = GL_BGRA;
+				// On GLES, the internal_format must match format.
+				*internal_format = GL_BGRA;
 #endif
-      *data_type = GL_UNSIGNED_BYTE;
-      return GL_BGRA;
-    }
-    case Texture::ARGB8: {
+				*data_type = GL_UNSIGNED_BYTE;
+				return GL_BGRA;
+			}
+		case Texture::ARGB8: {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-      *internal_format = GL_RGBA;
+				*internal_format = GL_RGBA;
 #elif TARGET_OS_IPHONE
-	  *internal_format = GL_RGBA;
+				*internal_format = GL_RGBA;
 #else
-      *internal_format = GL_BGRA;
+				*internal_format = GL_BGRA;
 #endif
-      *data_type = GL_UNSIGNED_BYTE;
-      return GL_BGRA;
-    }
-    case Texture::RGBX8: {
-      *internal_format = GL_RGBA;
-      *data_type = GL_UNSIGNED_BYTE;
-      return GL_RGBA;
-    }
-    case Texture::RGBA8: {
-      *internal_format = GL_RGBA;
-      *data_type = GL_UNSIGNED_BYTE;
-      return GL_RGBA;
-    }
-    case Texture::ABGR16F: {
+				*data_type = GL_UNSIGNED_BYTE;
+				return GL_BGRA;
+			}
+		case Texture::RGBX8: {
+				*internal_format = GL_RGBA;
+				*data_type = GL_UNSIGNED_BYTE;
+				return GL_RGBA;
+			}
+		case Texture::RGBA8: {
+				*internal_format = GL_RGBA;
+				*data_type = GL_UNSIGNED_BYTE;
+				return GL_RGBA;
+			}
+		case Texture::ABGR16F: {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-      *internal_format = GL_RGBA16F_ARB;
+				*internal_format = GL_RGBA16F_ARB;
 #else
-      *internal_format = GL_RGBA;
+				*internal_format = GL_RGBA;
 #endif
-      *data_type = GL_HALF_FLOAT_ARB;
-      return GL_RGBA;
-    }
-    case Texture::R32F: {
+				*data_type = GL_HALF_FLOAT_ARB;
+				return GL_RGBA;
+			}
+		case Texture::R32F: {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-      *internal_format = GL_LUMINANCE32F_ARB;
+				*internal_format = GL_LUMINANCE32F_ARB;
 #else
-      *internal_format = GL_LUMINANCE;
+				*internal_format = GL_LUMINANCE;
 #endif
-      *data_type = GL_FLOAT;
-      return GL_LUMINANCE;
-    }
-    case Texture::ABGR32F: {
+				*data_type = GL_FLOAT;
+				return GL_LUMINANCE;
+			}
+		case Texture::ABGR32F: {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-      *internal_format = GL_RGBA32F_ARB;
+				*internal_format = GL_RGBA32F_ARB;
 #else
-      *internal_format = GL_BGRA;
+				*internal_format = GL_BGRA;
 #endif
-      *data_type = GL_FLOAT;
-      return GL_BGRA;
-    }
+				*data_type = GL_FLOAT;
+				return GL_BGRA;
+			}
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-    case Texture::DXT1: {
-      if (GL_EXT_texture_compression_s3tc) {
-        *internal_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-        *data_type = 0;
-        return 0;
-      } else {
-        // TODO(o3d): we need to convert DXT1 -> RGBA8 but keep around the
-        // pixels so that we can read them back (we won't try to convert back
-        // to DXTC).
-        O3D_LOG(ERROR) << "DXT1 compressed textures not supported yet.";
-        *internal_format = 0;
-        *data_type = GL_BYTE;
-        return 0;
-      }
-    }
-    case Texture::DXT3: {
-      if (GL_EXT_texture_compression_s3tc) {
-        *internal_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-        *data_type = 0;
-        return 0;
-      } else {
-        // TODO(o3d): we need to convert DXT3 -> RGBA8 but keep around the
-        // pixels so that we can read them back (we won't try to convert back
-        // to DXTC).
-        O3D_LOG(ERROR) << "DXT3 compressed textures not supported yet.";
-        *internal_format = 0;
-        *data_type = GL_BYTE;
-        return 0;
-      }
-    }
-    case Texture::DXT5: {
-      if (GL_EXT_texture_compression_s3tc) {
-        *internal_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-        *data_type = 0;
-        return 0;
-      } else {
-        // TODO(o3d): we need to convert DXT3 -> RGBA8 but keep around the
-        // pixels so that we can read them back (we won't try to convert back
-        // to DXTC).
-        O3D_LOG(ERROR) << "DXT5 compressed textures not supported yet.";
-        *internal_format = 0;
-        *data_type = GL_BYTE;
-        return 0;
-      }
-    }
+		case Texture::DXT1: {
+				if(GL_EXT_texture_compression_s3tc) {
+					*internal_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+					*data_type = 0;
+					return 0;
+				}
+				else {
+					// TODO(o3d): we need to convert DXT1 -> RGBA8 but keep around the
+					// pixels so that we can read them back (we won't try to convert back
+					// to DXTC).
+					O3D_LOG(ERROR) << "DXT1 compressed textures not supported yet.";
+					*internal_format = 0;
+					*data_type = GL_BYTE;
+					return 0;
+				}
+			}
+		case Texture::DXT3: {
+				if(GL_EXT_texture_compression_s3tc) {
+					*internal_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+					*data_type = 0;
+					return 0;
+				}
+				else {
+					// TODO(o3d): we need to convert DXT3 -> RGBA8 but keep around the
+					// pixels so that we can read them back (we won't try to convert back
+					// to DXTC).
+					O3D_LOG(ERROR) << "DXT3 compressed textures not supported yet.";
+					*internal_format = 0;
+					*data_type = GL_BYTE;
+					return 0;
+				}
+			}
+		case Texture::DXT5: {
+				if(GL_EXT_texture_compression_s3tc) {
+					*internal_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+					*data_type = 0;
+					return 0;
+				}
+				else {
+					// TODO(o3d): we need to convert DXT3 -> RGBA8 but keep around the
+					// pixels so that we can read them back (we won't try to convert back
+					// to DXTC).
+					O3D_LOG(ERROR) << "DXT5 compressed textures not supported yet.";
+					*internal_format = 0;
+					*data_type = GL_BYTE;
+					return 0;
+				}
+			}
 #else
-    case Texture::DXT1:
-    case Texture::DXT3:
-    case Texture::DXT5:
-      O3D_NOTIMPLEMENTED() << "DXT textures";
-      *internal_format = 0;
-      *data_type = GL_BYTE;
-      return 0;
+		case Texture::DXT1:
+		case Texture::DXT3:
+		case Texture::DXT5:
+			O3D_NOTIMPLEMENTED() << "DXT textures";
+			*internal_format = 0;
+			*data_type = GL_BYTE;
+			return 0;
 #endif
-    case Texture::UNKNOWN_FORMAT:
-      break;
-  }
-  // failed to find a matching format
-  O3D_LOG(ERROR) << "Unrecognized Texture format type.";
-  *internal_format = 0;
-  *data_type = 0;
-  return 0;
-}
+		case Texture::UNKNOWN_FORMAT:
+			break;
+		}
+
+		// failed to find a matching format
+		O3D_LOG(ERROR) << "Unrecognized Texture format type.";
+		*internal_format = 0;
+		*data_type = 0;
+		return 0;
+	}
 
 // Updates a GLES2 image from a bitmap, rescaling if necessary.
-static bool UpdateGLImageFromBitmap(GLenum target,
-                                    unsigned int level,
-                                    TextureCUBE::CubeFace face,
-                                    const Bitmap &bitmap,
-                                    bool resize_to_pot) {
-  O3D_ASSERT(bitmap.image_data());
-  unsigned int mip_width = std::max(1U, bitmap.width() >> level);
-  unsigned int mip_height = std::max(1U, bitmap.height() >> level);
-  const uint8_t *mip_data = bitmap.GetMipData(level);
-  size_t mip_size =
-      image::ComputeBufferSize(mip_width, mip_height, bitmap.format());
-  ::o3d::base::scoped_array<uint8_t> temp_data;
-  if (resize_to_pot) {
-    O3D_ASSERT(!Texture::IsCompressedFormat(bitmap.format()));
-    unsigned int pot_width =
-        std::max(1U, image::ComputePOTSize(bitmap.width()) >> level);
-    unsigned int pot_height =
-        std::max(1U, image::ComputePOTSize(bitmap.height()) >> level);
-    size_t pot_size = image::ComputeBufferSize(pot_width, pot_height,
-                                               bitmap.format());
-    temp_data.reset(new uint8_t[pot_size]);
-    image::Scale(mip_width, mip_height, bitmap.format(), mip_data,
-                 pot_width, pot_height, temp_data.get(),
-                 image::ComputePitch(bitmap.format(), pot_width));
-    mip_width = pot_width;
-    mip_height = pot_height;
-    mip_size = pot_size;
-    mip_data = temp_data.get();
-  }
-  GLenum gl_internal_format = 0;
-  GLenum gl_data_type = 0;
-  GLenum gl_format = GLFormatFromO3DFormat(bitmap.format(), &gl_internal_format,
-                                           &gl_data_type);
-  if (gl_format) {
-    glTexSubImage2D(target, level, 0, 0, mip_width, mip_height,
-                    gl_format, gl_data_type, mip_data);
-  } else {
+	static bool UpdateGLImageFromBitmap(GLenum target,
+	                                    unsigned int level,
+	                                    TextureCUBE::CubeFace face,
+	                                    const Bitmap& bitmap,
+	                                    bool resize_to_pot) {
+		O3D_ASSERT(bitmap.image_data());
+		unsigned int mip_width = std::max(1U, bitmap.width() >> level);
+		unsigned int mip_height = std::max(1U, bitmap.height() >> level);
+		const uint8_t* mip_data = bitmap.GetMipData(level);
+		size_t mip_size =
+		    image::ComputeBufferSize(mip_width, mip_height, bitmap.format());
+		::o3d::base::scoped_array<uint8_t> temp_data;
+
+		if(resize_to_pot) {
+			O3D_ASSERT(!Texture::IsCompressedFormat(bitmap.format()));
+			unsigned int pot_width =
+			    std::max(1U, image::ComputePOTSize(bitmap.width()) >> level);
+			unsigned int pot_height =
+			    std::max(1U, image::ComputePOTSize(bitmap.height()) >> level);
+			size_t pot_size = image::ComputeBufferSize(pot_width, pot_height,
+			                  bitmap.format());
+			temp_data.reset(new uint8_t[pot_size]);
+			image::Scale(mip_width, mip_height, bitmap.format(), mip_data,
+			             pot_width, pot_height, temp_data.get(),
+			             image::ComputePitch(bitmap.format(), pot_width));
+			mip_width = pot_width;
+			mip_height = pot_height;
+			mip_size = pot_size;
+			mip_data = temp_data.get();
+		}
+
+		GLenum gl_internal_format = 0;
+		GLenum gl_data_type = 0;
+		GLenum gl_format = GLFormatFromO3DFormat(bitmap.format(), &gl_internal_format,
+		                   &gl_data_type);
+
+		if(gl_format) {
+			glTexSubImage2D(target, level, 0, 0, mip_width, mip_height,
+			                gl_format, gl_data_type, mip_data);
+		}
+		else {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-    glCompressedTexSubImage2D(target, level, 0, 0, mip_width, mip_height,
-                              gl_internal_format, mip_size, mip_data);
+			glCompressedTexSubImage2D(target, level, 0, 0, mip_width, mip_height,
+			                          gl_internal_format, mip_size, mip_data);
 #else
-    O3D_NOTIMPLEMENTED() << "DXT textures";
+			O3D_NOTIMPLEMENTED() << "DXT textures";
 #endif
-  }
-  return glGetError() == GL_NO_ERROR;
-}
+		}
+
+		return glGetError() == GL_NO_ERROR;
+	}
 
 // Creates the array of GLES2 images for a particular face and upload the pixel
 // data from the bitmap.
-static bool CreateGLImages(GLenum target,
-                           GLenum internal_format,
-                           GLenum gl_format,
-                           GLenum type,
-                           TextureCUBE::CubeFace face,
-                           Texture::Format format,
-                           int levels,
-                           int width,
-                           int height,
-                           bool resize_to_pot) {
-  unsigned int mip_width = width;
-  unsigned int mip_height = height;
-  if (resize_to_pot) {
-    mip_width = image::ComputePOTSize(mip_width);
-    mip_height = image::ComputePOTSize(mip_height);
-  }
-  // glCompressedTexImage2D does't accept NULL as a parameter, so we need
-  // to pass in some data. If we can pass in the original pixel data, we'll
-  // do that, otherwise we'll pass an empty buffer. In that case, prepare it
-  // here once for all.
-  ::o3d::base::scoped_array<uint8_t> temp_data;
-  size_t size = image::ComputeBufferSize(mip_width, mip_height, format);
-  temp_data.reset(new uint8_t[size]);
-  memset(temp_data.get(), 0, size);
+	static bool CreateGLImages(GLenum target,
+	                           GLenum internal_format,
+	                           GLenum gl_format,
+	                           GLenum type,
+	                           TextureCUBE::CubeFace face,
+	                           Texture::Format format,
+	                           int levels,
+	                           int width,
+	                           int height,
+	                           bool resize_to_pot) {
+		unsigned int mip_width = width;
+		unsigned int mip_height = height;
 
+		if(resize_to_pot) {
+			mip_width = image::ComputePOTSize(mip_width);
+			mip_height = image::ComputePOTSize(mip_height);
+		}
+
+		// glCompressedTexImage2D does't accept NULL as a parameter, so we need
+		// to pass in some data. If we can pass in the original pixel data, we'll
+		// do that, otherwise we'll pass an empty buffer. In that case, prepare it
+		// here once for all.
+		::o3d::base::scoped_array<uint8_t> temp_data;
+		size_t size = image::ComputeBufferSize(mip_width, mip_height, format);
+		temp_data.reset(new uint8_t[size]);
+		memset(temp_data.get(), 0, size);
 #if GL_APPLE_texture_max_level
-  glTexParameteri(target, GL_TEXTURE_MAX_LEVEL_APPLE, levels - 1);
+		glTexParameteri(target, GL_TEXTURE_MAX_LEVEL_APPLE, levels - 1);
 #endif
 
-  for (int i = 0; i < levels; ++i) {
-    if (gl_format) {
-      glTexImage2D(target, i, internal_format, mip_width, mip_height,
-                   0, gl_format, type, temp_data.get());
-		GLenum err = glGetError();
-      if (err != GL_NO_ERROR) {
-        O3D_LOG(ERROR) << "glTexImage2D failed with error code " << err;
-        return false;
-      }
-    } else {
+		for(int i = 0; i < levels; ++i) {
+			if(gl_format) {
+				glTexImage2D(target, i, internal_format, mip_width, mip_height,
+				             0, gl_format, type, temp_data.get());
+				GLenum err = glGetError();
+
+				if(err != GL_NO_ERROR) {
+					O3D_LOG(ERROR) << "glTexImage2D failed with error code " << err;
+					return false;
+				}
+			}
+			else {
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-      size_t mip_size = image::ComputeBufferSize(mip_width, mip_height, format);
-      glCompressedTexImage2DARB(target, i, internal_format, mip_width,
-                                mip_height, 0, mip_size, temp_data.get());
-      if (glGetError() != GL_NO_ERROR) {
-        O3D_LOG(ERROR) << "glCompressedTexImage2D failed";
-        return false;
-      }
-#else
-      O3D_NOTIMPLEMENTED() << "DXT textures";
-      return false;
-#endif
-    }
-    mip_width = std::max(1U, mip_width >> 1);
-    mip_height = std::max(1U, mip_height >> 1);
-  }
-  return true;
-}
+				size_t mip_size = image::ComputeBufferSize(mip_width, mip_height, format);
+				glCompressedTexImage2DARB(target, i, internal_format, mip_width,
+				                          mip_height, 0, mip_size, temp_data.get());
 
-static void SetDefaultTextureParameters(GLenum target) {
-  glTexParameteri(target,
-                  GL_TEXTURE_MIN_FILTER,
-                  GL_NEAREST_MIPMAP_LINEAR);
-  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
-}
+				if(glGetError() != GL_NO_ERROR) {
+					O3D_LOG(ERROR) << "glCompressedTexImage2D failed";
+					return false;
+				}
+
+#else
+				O3D_NOTIMPLEMENTED() << "DXT textures";
+				return false;
+#endif
+			}
+
+			mip_width = std::max(1U, mip_width >> 1);
+			mip_height = std::max(1U, mip_height >> 1);
+		}
+
+		return true;
+	}
+
+	static void SetDefaultTextureParameters(GLenum target) {
+		glTexParameteri(target,
+		                GL_TEXTURE_MIN_FILTER,
+		                GL_NEAREST_MIPMAP_LINEAR);
+		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
 
 // Texture2DGLES2 --------------------------------------------------------------
 
 // Constructs a 2D texture object from an existing OpenGLES2 2D texture.
 // NOTE: the Texture2DGLES2 now owns the GLES2 texture and will destroy it on
 // exit.
-Texture2DGLES2::Texture2DGLES2(ServiceLocator* service_locator,
-                               GLint texture,
-                               Texture::Format format,
-                               int levels,
-                               int width,
-                               int height,
-                               bool resize_to_pot,
-                               bool enable_render_surfaces)
-    : Texture2D(service_locator,
-                width,
-                height,
-                format,
-                levels,
-                enable_render_surfaces),
-      resize_to_pot_(resize_to_pot),
-      renderer_(static_cast<RendererGLES2*>(
-          service_locator->GetService<Renderer>())),
-      gl_texture_(texture),
-      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))),
-      has_levels_(0),
-      locked_levels_(0) {
-  O3D_LOG(INFO) << "Texture2DGLES2 Construct from GLint";
-  O3D_ASSERT(format != Texture::UNKNOWN_FORMAT);
-}
+	Texture2DGLES2::Texture2DGLES2(ServiceLocator* service_locator,
+	                               GLint texture,
+	                               Texture::Format format,
+	                               int levels,
+	                               int width,
+	                               int height,
+	                               bool resize_to_pot,
+	                               bool enable_render_surfaces)
+		: Texture2D(service_locator,
+		            width,
+		            height,
+		            format,
+		            levels,
+		            enable_render_surfaces),
+		resize_to_pot_(resize_to_pot),
+		renderer_(static_cast<RendererGLES2*>(
+		              service_locator->GetService<Renderer>())),
+		gl_texture_(texture),
+		backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))),
+		has_levels_(0),
+		locked_levels_(0) {
+		O3D_LOG(INFO) << "Texture2DGLES2 Construct from GLint";
+		O3D_ASSERT(format != Texture::UNKNOWN_FORMAT);
+	}
 
 // Creates a new texture object from scratch.
-Texture2DGLES2* Texture2DGLES2::Create(ServiceLocator* service_locator,
-                                       Texture::Format format,
-                                       int levels,
-                                       int width,
-                                       int height,
-                                       bool enable_render_surfaces) {
-  O3D_LOG(INFO) << "Texture2DGLES2 Create";
-  O3D_ASSERT(format != Texture::UNKNOWN_FORMAT);
-  RendererGLES2 *renderer = static_cast<RendererGLES2 *>(
-      service_locator->GetService<Renderer>());
-  renderer->MakeCurrentLazy();
-  GLenum gl_internal_format = 0;
-  GLenum gl_data_type = 0;
-  GLenum gl_format = GLFormatFromO3DFormat(format,
-                                           &gl_internal_format,
-                                           &gl_data_type);
-  if (gl_internal_format == 0) {
-    O3D_LOG(ERROR) << "Unsupported format in Texture2DGLES2::Create.";
-    return NULL;
-  }
+	Texture2DGLES2* Texture2DGLES2::Create(ServiceLocator* service_locator,
+	                                       Texture::Format format,
+	                                       int levels,
+	                                       int width,
+	                                       int height,
+	                                       bool enable_render_surfaces) {
+		O3D_LOG(INFO) << "Texture2DGLES2 Create";
+		O3D_ASSERT(format != Texture::UNKNOWN_FORMAT);
+		RendererGLES2* renderer = static_cast<RendererGLES2*>(
+		                              service_locator->GetService<Renderer>());
+		renderer->MakeCurrentLazy();
+		GLenum gl_internal_format = 0;
+		GLenum gl_data_type = 0;
+		GLenum gl_format = GLFormatFromO3DFormat(format,
+		                   &gl_internal_format,
+		                   &gl_data_type);
 
-  bool resize_to_pot = !renderer->supports_npot() &&
-                       !image::IsPOT(width, height);
+		if(gl_internal_format == 0) {
+			O3D_LOG(ERROR) << "Unsupported format in Texture2DGLES2::Create.";
+			return NULL;
+		}
 
-  // Creates the OpenGLES2 texture object, with all the required mip levels.
-  GLuint gl_texture = 0;
-  glGenTextures(1, &gl_texture);
-  glBindTexture(GL_TEXTURE_2D, gl_texture);
+		bool resize_to_pot = !renderer->supports_npot() &&
+		                     !image::IsPOT(width, height);
+		// Creates the OpenGLES2 texture object, with all the required mip levels.
+		GLuint gl_texture = 0;
+		glGenTextures(1, &gl_texture);
+		glBindTexture(GL_TEXTURE_2D, gl_texture);
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL,
-                  levels - 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL,
+		                levels - 1);
 #else
-  // On GLES2, we can't specify GL_TEXTURE_MAX_LEVEL, so we either allocate
-  // only the base image, and clamp the min filter, or we allocate all of them.
-  if (levels > 1) {
-    levels = image::ComputeMipMapCount(width, height);
-  }
+
+		// On GLES2, we can't specify GL_TEXTURE_MAX_LEVEL, so we either allocate
+		// only the base image, and clamp the min filter, or we allocate all of them.
+		if(levels > 1) {
+			levels = image::ComputeMipMapCount(width, height);
+		}
+
 #endif
 
-  if (!CreateGLImages(GL_TEXTURE_2D, gl_internal_format, gl_format,
-                      gl_data_type, TextureCUBE::FACE_POSITIVE_X,
-                      format, levels, width, height, resize_to_pot)) {
-    O3D_LOG(ERROR) << "Failed to create texture images.";
-    glDeleteTextures(1, &gl_texture);
-    return NULL;
-  }
-  SetDefaultTextureParameters(GL_TEXTURE_2D);
+		if(!CreateGLImages(GL_TEXTURE_2D, gl_internal_format, gl_format,
+		                   gl_data_type, TextureCUBE::FACE_POSITIVE_X,
+		                   format, levels, width, height, resize_to_pot)) {
+			O3D_LOG(ERROR) << "Failed to create texture images.";
+			glDeleteTextures(1, &gl_texture);
+			return NULL;
+		}
 
-  Texture2DGLES2 *texture = new Texture2DGLES2(service_locator,
-                                               gl_texture,
-                                               format,
-                                               levels,
-                                               width,
-                                               height,
-                                               resize_to_pot,
-                                               enable_render_surfaces);
+		SetDefaultTextureParameters(GL_TEXTURE_2D);
+		Texture2DGLES2* texture = new Texture2DGLES2(service_locator,
+		        gl_texture,
+		        format,
+		        levels,
+		        width,
+		        height,
+		        resize_to_pot,
+		        enable_render_surfaces);
+		// If the hardware does not support npot textures, allocate a 0-initialized
+		// mip-chain here for use during Texture2DGLES2::Lock.
+#ifndef O3D_GLES2_MUST_SHADOW_TEXTURES
 
-  // If the hardware does not support npot textures, allocate a 0-initialized
-  // mip-chain here for use during Texture2DGLES2::Lock.
-  #ifndef O3D_GLES2_MUST_SHADOW_TEXTURES
-  if (resize_to_pot)
-  #endif
-  {
-    texture->backing_bitmap_->Allocate(format, width, height, levels,
-                                       Bitmap::IMAGE);
-    texture->has_levels_ = (1 << levels) - 1;
-  }
-  CHECK_GL_ERROR();
-  return texture;
-}
+		if(resize_to_pot)
+#endif
+		{
+			texture->backing_bitmap_->Allocate(format, width, height, levels,
+			                                   Bitmap::IMAGE);
+			texture->has_levels_ = (1 << levels) - 1;
+		}
 
-void Texture2DGLES2::UpdateBackedMipLevel(unsigned int level) {
-  O3D_ASSERT(static_cast<int>(level) < levels());
-  O3D_ASSERT(backing_bitmap_->image_data());
-  O3D_ASSERT(backing_bitmap_->width() == static_cast<unsigned int>(width()));
-  O3D_ASSERT(backing_bitmap_->height() == static_cast<unsigned int>(height()));
-  O3D_ASSERT(backing_bitmap_->format() == format());
-  renderer_->MakeCurrentLazy();
-  glBindTexture(GL_TEXTURE_2D, gl_texture_);
-  UpdateGLImageFromBitmap(GL_TEXTURE_2D, level, TextureCUBE::FACE_POSITIVE_X,
-                          *backing_bitmap_.Get(), resize_to_pot_);
-}
+		CHECK_GL_ERROR();
+		return texture;
+	}
 
-Texture2DGLES2::~Texture2DGLES2() {
-  O3D_LOG(INFO) << "Texture2DGLES2 Destruct";
-  if (gl_texture_) {
-    renderer_->MakeCurrentLazy();
-    glDeleteTextures(1, &gl_texture_);
-    gl_texture_ = 0;
-  }
-  CHECK_GL_ERROR();
-}
+	void Texture2DGLES2::UpdateBackedMipLevel(unsigned int level) {
+		O3D_ASSERT(static_cast<int>(level) < levels());
+		O3D_ASSERT(backing_bitmap_->image_data());
+		O3D_ASSERT(backing_bitmap_->width() == static_cast<unsigned int>(width()));
+		O3D_ASSERT(backing_bitmap_->height() == static_cast<unsigned int>(height()));
+		O3D_ASSERT(backing_bitmap_->format() == format());
+		renderer_->MakeCurrentLazy();
+		glBindTexture(GL_TEXTURE_2D, gl_texture_);
+		UpdateGLImageFromBitmap(GL_TEXTURE_2D, level, TextureCUBE::FACE_POSITIVE_X,
+		                        *backing_bitmap_.Get(), resize_to_pot_);
+	}
 
-void Texture2DGLES2::SetRect(int level,
-                             unsigned dst_left,
-                             unsigned dst_top,
-                             unsigned src_width,
-                             unsigned src_height,
-                             const void* src_data,
-                             int src_pitch) {
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to SetRect on non-existent level " << level
-        << " on Texture \"" << name() << "\"";
-    return;
-  }
-  if (render_surfaces_enabled()) {
-    O3D_ERROR(service_locator())
-        << "Attempting to SetRect a render-target texture: " << name();
-    return;
-  }
+	Texture2DGLES2::~Texture2DGLES2() {
+		O3D_LOG(INFO) << "Texture2DGLES2 Destruct";
 
-  unsigned mip_width = image::ComputeMipDimension(level, width());
-  unsigned mip_height = image::ComputeMipDimension(level, height());
+		if(gl_texture_) {
+			renderer_->MakeCurrentLazy();
+			glDeleteTextures(1, &gl_texture_);
+			gl_texture_ = 0;
+		}
 
-  if (dst_left + src_width > mip_width ||
-      dst_top + src_height > mip_height) {
-    O3D_ERROR(service_locator())
-        << "SetRect(" << level << ", " << dst_left << ", " << dst_top << ", "
-        << src_width << ", " << src_height << ") out of range for texture << \""
-        << name() << "\"";
-    return;
-  }
+		CHECK_GL_ERROR();
+	}
 
-  bool entire_rect = dst_left == 0 && dst_top == 0 &&
-                     src_width == mip_width && src_height == mip_height;
-  bool compressed = IsCompressed();
+	void Texture2DGLES2::SetRect(int level,
+	                             unsigned dst_left,
+	                             unsigned dst_top,
+	                             unsigned src_width,
+	                             unsigned src_height,
+	                             const void* src_data,
+	                             int src_pitch) {
+		if(level >= levels() || level < 0) {
+			O3D_ERROR(service_locator())
+			        << "Trying to SetRect on non-existent level " << level
+			        << " on Texture \"" << name() << "\"";
+			return;
+		}
 
-  if (compressed && !entire_rect) {
-    O3D_ERROR(service_locator())
-        << "SetRect must be full rectangle for compressed textures";
-    return;
-  }
+		if(render_surfaces_enabled()) {
+			O3D_ERROR(service_locator())
+			        << "Attempting to SetRect a render-target texture: " << name();
+			return;
+		}
 
-  #ifdef O3D_GLES2_MUST_SHADOW_TEXTURES
-  if (!compressed) {
-    // TODO(gman): must shadow compressed textures as well.
-  #else
-  if (resize_to_pot_) {
-  #endif
-    O3D_ASSERT(backing_bitmap_->image_data());
-    O3D_ASSERT(!compressed);
-    // We need to update the backing mipmap and then use that to update the
-    // texture.
-    backing_bitmap_->SetRect(
-        level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
-    UpdateBackedMipLevel(level);
-  } else {
-    renderer_->MakeCurrentLazy();
-    glBindTexture(GL_TEXTURE_2D, gl_texture_);
-    GLenum gl_internal_format = 0;
-    GLenum gl_data_type = 0;
-    GLenum gl_format = GLFormatFromO3DFormat(format(), &gl_internal_format,
-                                             &gl_data_type);
-    if (gl_format) {
-      if (src_pitch == image::ComputePitch(format(), src_width)) {
-        glTexSubImage2D(GL_TEXTURE_2D, level,
-                        dst_left, dst_top,
-                        src_width, src_height,
-                        gl_format,
-                        gl_data_type,
-                        src_data);
-      } else {
-        int limit = src_height;
-        for (int yy = 0; yy < limit; ++yy) {
-          glTexSubImage2D(GL_TEXTURE_2D, level,
-                          dst_left, dst_top + yy,
-                          src_width, 1,
-                          gl_format,
-                          gl_data_type,
-                          src_data);
-          src_data = AddPointerOffset<const void*>(src_data, src_pitch);
-        }
-      }
-    } else {
-      glCompressedTexSubImage2D(
-          GL_TEXTURE_2D, level, 0, 0, src_width, src_height,
-          gl_internal_format,
-          image::ComputeMipChainSize(src_width, src_height, format(), 1),
-          src_data);
-    }
-  }
-}
+		unsigned mip_width = image::ComputeMipDimension(level, width());
+		unsigned mip_height = image::ComputeMipDimension(level, height());
+
+		if(dst_left + src_width > mip_width ||
+		        dst_top + src_height > mip_height) {
+			O3D_ERROR(service_locator())
+			        << "SetRect(" << level << ", " << dst_left << ", " << dst_top << ", "
+			        << src_width << ", " << src_height << ") out of range for texture << \""
+			        << name() << "\"";
+			return;
+		}
+
+		bool entire_rect = dst_left == 0 && dst_top == 0 &&
+		                   src_width == mip_width && src_height == mip_height;
+		bool compressed = IsCompressed();
+
+		if(compressed && !entire_rect) {
+			O3D_ERROR(service_locator())
+			        << "SetRect must be full rectangle for compressed textures";
+			return;
+		}
+
+#ifdef O3D_GLES2_MUST_SHADOW_TEXTURES
+
+		if(!compressed) {
+			// TODO(gman): must shadow compressed textures as well.
+#else
+		if(resize_to_pot_) {
+#endif
+			O3D_ASSERT(backing_bitmap_->image_data());
+			O3D_ASSERT(!compressed);
+			// We need to update the backing mipmap and then use that to update the
+			// texture.
+			backing_bitmap_->SetRect(
+			    level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
+			UpdateBackedMipLevel(level);
+		}
+		else {
+			renderer_->MakeCurrentLazy();
+			glBindTexture(GL_TEXTURE_2D, gl_texture_);
+			GLenum gl_internal_format = 0;
+			GLenum gl_data_type = 0;
+			GLenum gl_format = GLFormatFromO3DFormat(format(), &gl_internal_format,
+			                   &gl_data_type);
+
+			if(gl_format) {
+				if(src_pitch == image::ComputePitch(format(), src_width)) {
+					glTexSubImage2D(GL_TEXTURE_2D, level,
+					                dst_left, dst_top,
+					                src_width, src_height,
+					                gl_format,
+					                gl_data_type,
+					                src_data);
+				}
+				else {
+					int limit = src_height;
+
+					for(int yy = 0; yy < limit; ++yy) {
+						glTexSubImage2D(GL_TEXTURE_2D, level,
+						                dst_left, dst_top + yy,
+						                src_width, 1,
+						                gl_format,
+						                gl_data_type,
+						                src_data);
+						src_data = AddPointerOffset<const void*>(src_data, src_pitch);
+					}
+				}
+			}
+			else {
+				glCompressedTexSubImage2D(
+				    GL_TEXTURE_2D, level, 0, 0, src_width, src_height,
+				    gl_internal_format,
+				    image::ComputeMipChainSize(src_width, src_height, format(), 1),
+				    src_data);
+			}
+		}
+	}
 
 // Locks the given mipmap level of this texture for loading from main memory,
 // and returns a pointer to the buffer.
-bool Texture2DGLES2::PlatformSpecificLock(
-    int level, void** data, int* pitch, Texture::AccessMode mode) {
-  O3D_LOG(INFO) << "Texture2DGLES2 Lock";
-  O3D_ASSERT(data);
-  O3D_ASSERT(pitch);
-  O3D_ASSERT(level >= 0);
-  O3D_ASSERT(level < levels());
-  renderer_->MakeCurrentLazy();
-  if (!backing_bitmap_->image_data()) {
-    O3D_ASSERT(has_levels_ == 0u);
-    backing_bitmap_->Allocate(format(), width(), height(), levels(),
-                              Bitmap::IMAGE);
-  }
-  *data = backing_bitmap_->GetMipData(level);
-  unsigned int mip_width = image::ComputeMipDimension(level, width());
-  if (!IsCompressed()) {
-    *pitch = image::ComputePitch(format(), mip_width);
-  } else {
-    unsigned blocks_across = (mip_width + 3) / 4;
-    unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
-    unsigned bytes_per_row = bytes_per_block * blocks_across;
-    *pitch = bytes_per_row;
-  }
-  if (mode != kWriteOnly && !HasLevel(level)) {
-    O3D_ASSERT(!resize_to_pot_);
+	bool Texture2DGLES2::PlatformSpecificLock(
+	    int level, void** data, int* pitch, Texture::AccessMode mode) {
+		O3D_LOG(INFO) << "Texture2DGLES2 Lock";
+		O3D_ASSERT(data);
+		O3D_ASSERT(pitch);
+		O3D_ASSERT(level >= 0);
+		O3D_ASSERT(level < levels());
+		renderer_->MakeCurrentLazy();
+
+		if(!backing_bitmap_->image_data()) {
+			O3D_ASSERT(has_levels_ == 0u);
+			backing_bitmap_->Allocate(format(), width(), height(), levels(),
+			                          Bitmap::IMAGE);
+		}
+
+		*data = backing_bitmap_->GetMipData(level);
+		unsigned int mip_width = image::ComputeMipDimension(level, width());
+
+		if(!IsCompressed()) {
+			*pitch = image::ComputePitch(format(), mip_width);
+		}
+		else {
+			unsigned blocks_across = (mip_width + 3) / 4;
+			unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
+			unsigned bytes_per_row = bytes_per_block * blocks_across;
+			*pitch = bytes_per_row;
+		}
+
+		if(mode != kWriteOnly && !HasLevel(level)) {
+			O3D_ASSERT(!resize_to_pot_);
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-    GLenum gl_internal_format = 0;
-    GLenum gl_data_type = 0;
-    GLenum gl_format = GLFormatFromO3DFormat(format(),
-                                             &gl_internal_format,
-                                             &gl_data_type);
-    glBindTexture(GL_TEXTURE_2D, gl_texture_);
-    glGetTexImage(GL_TEXTURE_2D, level, gl_format, gl_data_type, *data);
+			GLenum gl_internal_format = 0;
+			GLenum gl_data_type = 0;
+			GLenum gl_format = GLFormatFromO3DFormat(format(),
+			                   &gl_internal_format,
+			                   &gl_data_type);
+			glBindTexture(GL_TEXTURE_2D, gl_texture_);
+			glGetTexImage(GL_TEXTURE_2D, level, gl_format, gl_data_type, *data);
 #else
-    O3D_NOTIMPLEMENTED() << "Texture read back";
+			O3D_NOTIMPLEMENTED() << "Texture read back";
 #endif
-    has_levels_ |= 1 << level;
-  }
-  locked_levels_ |= 1 << level;
-  CHECK_GL_ERROR();
-  return true;
-}
+			has_levels_ |= 1 << level;
+		}
+
+		locked_levels_ |= 1 << level;
+		CHECK_GL_ERROR();
+		return true;
+	}
 
 // Unlocks the given mipmap level of this texture, uploading the main memory
 // data buffer to GLES2.
-bool Texture2DGLES2::PlatformSpecificUnlock(int level) {
-  O3D_LOG(INFO) << "Texture2DGLES2 Unlock";
-  O3D_ASSERT(level >= 0);
-  O3D_ASSERT(level < levels());
-  if (LockedMode(level) != kReadOnly) {
-    renderer_->MakeCurrentLazy();
-    UpdateBackedMipLevel(level);
-  }
-  locked_levels_ &= ~(1 << level);
-  if (!resize_to_pot_ && (locked_levels_ == 0)) {
-    #ifndef O3D_GLES2_MUST_SHADOW_TEXTURES
-    backing_bitmap_->FreeData();
-    #endif
-    has_levels_ = 0;
-  }
-  CHECK_GL_ERROR();
-  return true;
-}
+	bool Texture2DGLES2::PlatformSpecificUnlock(int level) {
+		O3D_LOG(INFO) << "Texture2DGLES2 Unlock";
+		O3D_ASSERT(level >= 0);
+		O3D_ASSERT(level < levels());
 
-RenderSurface::Ref Texture2DGLES2::PlatformSpecificGetRenderSurface(
-    int mip_level) {
-  O3D_ASSERT(mip_level < levels());
-  if (!render_surfaces_enabled()) {
-    O3D_ERROR(service_locator())
-        << "Attempting to get RenderSurface from non-render-surface-enabled"
-        << " Texture: " << name();
-    return RenderSurface::Ref(NULL);
-  }
+		if(LockedMode(level) != kReadOnly) {
+			renderer_->MakeCurrentLazy();
+			UpdateBackedMipLevel(level);
+		}
 
-  if (mip_level >= levels() || mip_level < 0) {
-    O3D_ERROR(service_locator())
-        << "Attempting to access non-existent mip_level " << mip_level
-        << " in render-target texture \"" << name() << "\".";
-    return RenderSurface::Ref(NULL);
-  }
+		locked_levels_ &= ~(1 << level);
 
-  return RenderSurface::Ref(new RenderSurfaceGLES2(
-      service_locator(),
-      width()>> mip_level,
-      height() >> mip_level,
-      0,
-      mip_level,
-      this));
-}
+		if(!resize_to_pot_ && (locked_levels_ == 0)) {
+#ifndef O3D_GLES2_MUST_SHADOW_TEXTURES
+			backing_bitmap_->FreeData();
+#endif
+			has_levels_ = 0;
+		}
 
-const Texture::RGBASwizzleIndices& Texture2DGLES2::GetABGR32FSwizzleIndices() {
-  return g_gl_abgr32f_swizzle_indices;
-}
+		CHECK_GL_ERROR();
+		return true;
+	}
 
-bool Texture2DGLES2::OnContextRestored() {
-  renderer_->MakeCurrentLazy();
-  glGenTextures(1, &gl_texture_);
-  glBindTexture(GL_TEXTURE_2D, gl_texture_);
-  GLenum gl_internal_format = 0;
-  GLenum gl_data_type = 0;
-  GLenum gl_format = GLFormatFromO3DFormat(format(),
-                                           &gl_internal_format,
-                                           &gl_data_type);
-  bool resize_to_pot = !renderer_->supports_npot() &&
-                       !image::IsPOT(width(), height());
-  if (!CreateGLImages(GL_TEXTURE_2D, gl_internal_format, gl_format,
-                      gl_data_type, TextureCUBE::FACE_POSITIVE_X,
-                      format(), levels(), width(), height(), resize_to_pot)) {
-    O3D_LOG(ERROR) << "Failed to create texture images.";
-    glDeleteTextures(1, &gl_texture_);
-    return false;
-  }
+	RenderSurface::Ref Texture2DGLES2::PlatformSpecificGetRenderSurface(
+	    int mip_level) {
+		O3D_ASSERT(mip_level < levels());
 
-  for (int level = 0; level < levels(); ++level) {
-    UpdateBackedMipLevel(level);
-  }
-  SetDefaultTextureParameters(GL_TEXTURE_2D);
-  return true;
-}
+		if(!render_surfaces_enabled()) {
+			O3D_ERROR(service_locator())
+			        << "Attempting to get RenderSurface from non-render-surface-enabled"
+			        << " Texture: " << name();
+			return RenderSurface::Ref(NULL);
+		}
+
+		if(mip_level >= levels() || mip_level < 0) {
+			O3D_ERROR(service_locator())
+			        << "Attempting to access non-existent mip_level " << mip_level
+			        << " in render-target texture \"" << name() << "\".";
+			return RenderSurface::Ref(NULL);
+		}
+
+		return RenderSurface::Ref(new RenderSurfaceGLES2(
+		                              service_locator(),
+		                              width() >> mip_level,
+		                              height() >> mip_level,
+		                              0,
+		                              mip_level,
+		                              this));
+	}
+
+	const Texture::RGBASwizzleIndices& Texture2DGLES2::GetABGR32FSwizzleIndices() {
+		return g_gl_abgr32f_swizzle_indices;
+	}
+
+	bool Texture2DGLES2::OnContextRestored() {
+		renderer_->MakeCurrentLazy();
+		glGenTextures(1, &gl_texture_);
+		glBindTexture(GL_TEXTURE_2D, gl_texture_);
+		GLenum gl_internal_format = 0;
+		GLenum gl_data_type = 0;
+		GLenum gl_format = GLFormatFromO3DFormat(format(),
+		                   &gl_internal_format,
+		                   &gl_data_type);
+		bool resize_to_pot = !renderer_->supports_npot() &&
+		                     !image::IsPOT(width(), height());
+
+		if(!CreateGLImages(GL_TEXTURE_2D, gl_internal_format, gl_format,
+		                   gl_data_type, TextureCUBE::FACE_POSITIVE_X,
+		                   format(), levels(), width(), height(), resize_to_pot)) {
+			O3D_LOG(ERROR) << "Failed to create texture images.";
+			glDeleteTextures(1, &gl_texture_);
+			return false;
+		}
+
+		for(int level = 0; level < levels(); ++level) {
+			UpdateBackedMipLevel(level);
+		}
+
+		SetDefaultTextureParameters(GL_TEXTURE_2D);
+		return true;
+	}
 
 // TextureCUBEGLES2 ------------------------------------------------------------
 
 // Creates a texture from a pre-existing GLES2 texture object.
-TextureCUBEGLES2::TextureCUBEGLES2(ServiceLocator* service_locator,
-                                   GLint texture,
-                                   Texture::Format format,
-                                   int levels,
-                                   int edge_length,
-                                   bool resize_to_pot,
-                                   bool enable_render_surfaces)
-    : TextureCUBE(service_locator,
-                  edge_length,
-                  format,
-                  levels,
-                  enable_render_surfaces),
-      resize_to_pot_(resize_to_pot),
-      renderer_(static_cast<RendererGLES2*>(
-          service_locator->GetService<Renderer>())),
-      gl_texture_(texture) {
-  O3D_LOG(INFO) << "TextureCUBEGLES2 Construct";
-  for (int ii = 0; ii < static_cast<int>(NUMBER_OF_FACES); ++ii) {
-    backing_bitmaps_[ii] = Bitmap::Ref(new Bitmap(service_locator));
-    has_levels_[ii] = 0;
-    locked_levels_[ii] = 0;
-  }
-}
+	TextureCUBEGLES2::TextureCUBEGLES2(ServiceLocator* service_locator,
+	                                   GLint texture,
+	                                   Texture::Format format,
+	                                   int levels,
+	                                   int edge_length,
+	                                   bool resize_to_pot,
+	                                   bool enable_render_surfaces)
+		: TextureCUBE(service_locator,
+		              edge_length,
+		              format,
+		              levels,
+		              enable_render_surfaces),
+		resize_to_pot_(resize_to_pot),
+		renderer_(static_cast<RendererGLES2*>(
+		              service_locator->GetService<Renderer>())),
+		gl_texture_(texture) {
+		O3D_LOG(INFO) << "TextureCUBEGLES2 Construct";
 
-TextureCUBEGLES2::~TextureCUBEGLES2() {
-  O3D_LOG(INFO) << "TextureCUBEGLES2 Destruct";
-  if (gl_texture_) {
-    renderer_->MakeCurrentLazy();
-    glDeleteTextures(1, &gl_texture_);
-    gl_texture_ = 0;
-  }
-  CHECK_GL_ERROR();
-}
+		for(int ii = 0; ii < static_cast<int>(NUMBER_OF_FACES); ++ii) {
+			backing_bitmaps_[ii] = Bitmap::Ref(new Bitmap(service_locator));
+			has_levels_[ii] = 0;
+			locked_levels_[ii] = 0;
+		}
+	}
 
-static const int kCubemapFaceList[] = {
-  GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-  GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-  GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-  GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-  GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-  GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-};
+	TextureCUBEGLES2::~TextureCUBEGLES2() {
+		O3D_LOG(INFO) << "TextureCUBEGLES2 Destruct";
+
+		if(gl_texture_) {
+			renderer_->MakeCurrentLazy();
+			glDeleteTextures(1, &gl_texture_);
+			gl_texture_ = 0;
+		}
+
+		CHECK_GL_ERROR();
+	}
+
+	static const int kCubemapFaceList[] = {
+		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+	};
 
 // Create a new Cube texture from scratch.
-TextureCUBEGLES2* TextureCUBEGLES2::Create(ServiceLocator* service_locator,
-                                           Texture::Format format,
-                                           int levels,
-                                           int edge_length,
-                                           bool enable_render_surfaces) {
-  O3D_LOG(INFO) << "TextureCUBEGLES2 Create";
-  CHECK_GL_ERROR();
-  RendererGLES2 *renderer = static_cast<RendererGLES2 *>(
-      service_locator->GetService<Renderer>());
-  renderer->MakeCurrentLazy();
+	TextureCUBEGLES2* TextureCUBEGLES2::Create(ServiceLocator* service_locator,
+	        Texture::Format format,
+	        int levels,
+	        int edge_length,
+	        bool enable_render_surfaces) {
+		O3D_LOG(INFO) << "TextureCUBEGLES2 Create";
+		CHECK_GL_ERROR();
+		RendererGLES2* renderer = static_cast<RendererGLES2*>(
+		                              service_locator->GetService<Renderer>());
+		renderer->MakeCurrentLazy();
+		bool resize_to_pot = !renderer->supports_npot() &&
+		                     !image::IsPOT(edge_length, edge_length);
+		// Get gl formats
+		GLenum gl_internal_format = 0;
+		GLenum gl_data_type = 0;
+		GLenum gl_format = GLFormatFromO3DFormat(format,
+		                   &gl_internal_format,
+		                   &gl_data_type);
 
-  bool resize_to_pot = !renderer->supports_npot() &&
-                       !image::IsPOT(edge_length, edge_length);
+		if(gl_internal_format == 0) {
+			O3D_LOG(ERROR) << "Unsupported format in TextureCUBEGLES2::Create.";
+			return NULL;
+		}
 
-  // Get gl formats
-  GLenum gl_internal_format = 0;
-  GLenum gl_data_type = 0;
-  GLenum gl_format = GLFormatFromO3DFormat(format,
-                                           &gl_internal_format,
-                                           &gl_data_type);
-  if (gl_internal_format == 0) {
-    O3D_LOG(ERROR) << "Unsupported format in TextureCUBEGLES2::Create.";
-    return NULL;
-  }
-
-  // Creates the OpenGLES2 texture object, with all the required mip levels.
-  GLuint gl_texture = 0;
-  glGenTextures(1, &gl_texture);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture);
+		// Creates the OpenGLES2 texture object, with all the required mip levels.
+		GLuint gl_texture = 0;
+		glGenTextures(1, &gl_texture);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture);
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL,
-                  levels - 1);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL,
+		                levels - 1);
 #else
-  // On GLES2, we can't specify GL_TEXTURE_MAX_LEVEL, so we either allocate
-  // only the base image, and clamp the min filter, or we allocate all of them.
-  if (levels > 1) {
-    levels = image::ComputeMipMapCount(edge_length, edge_length);
-  }
+
+		// On GLES2, we can't specify GL_TEXTURE_MAX_LEVEL, so we either allocate
+		// only the base image, and clamp the min filter, or we allocate all of them.
+		if(levels > 1) {
+			levels = image::ComputeMipMapCount(edge_length, edge_length);
+		}
+
 #endif
 
-  for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
-    CreateGLImages(kCubemapFaceList[face], gl_internal_format,
-                   gl_format, gl_data_type,
-                   static_cast<CubeFace>(face),
-                   format, levels, edge_length, edge_length,
-                   resize_to_pot);
-  }
-  SetDefaultTextureParameters(GL_TEXTURE_CUBE_MAP);
+		for(int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
+			CreateGLImages(kCubemapFaceList[face], gl_internal_format,
+			               gl_format, gl_data_type,
+			               static_cast<CubeFace>(face),
+			               format, levels, edge_length, edge_length,
+			               resize_to_pot);
+		}
 
-  // Create a new texture object, which initializes the base Texture class
-  // from the Bitmap information.
-  TextureCUBEGLES2* texture = new TextureCUBEGLES2(service_locator,
-                                                   gl_texture,
-                                                   format,
-                                                   levels,
-                                                   edge_length,
-                                                   resize_to_pot,
-                                                   enable_render_surfaces);
-  // If the hardware does not support npot textures, allocate a 0-initialized
-  // mip-chain here for use during TextureCUBEGLES2::Lock.
-  #ifndef O3D_GLES2_MUST_SHADOW_TEXTURES
-  if (resize_to_pot)
-  #endif
-  {
-    for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
-      texture->backing_bitmaps_[face]->Allocate(
-          format, edge_length, edge_length, levels, Bitmap::IMAGE);
-      texture->has_levels_[face] = (1 << levels) - 1;
-    }
-  }
-  CHECK_GL_ERROR();
-  O3D_LOG(INFO) << "Created cube map texture (GLuint=" << gl_texture << ")";
-  return texture;
-}
+		SetDefaultTextureParameters(GL_TEXTURE_CUBE_MAP);
+		// Create a new texture object, which initializes the base Texture class
+		// from the Bitmap information.
+		TextureCUBEGLES2* texture = new TextureCUBEGLES2(service_locator,
+		        gl_texture,
+		        format,
+		        levels,
+		        edge_length,
+		        resize_to_pot,
+		        enable_render_surfaces);
+		// If the hardware does not support npot textures, allocate a 0-initialized
+		// mip-chain here for use during TextureCUBEGLES2::Lock.
+#ifndef O3D_GLES2_MUST_SHADOW_TEXTURES
 
-void TextureCUBEGLES2::UpdateBackedMipLevel(unsigned int level,
-                                            TextureCUBE::CubeFace face) {
-  Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
-  O3D_ASSERT(static_cast<int>(level) < levels());
-  O3D_ASSERT(backing_bitmap->image_data());
-  O3D_ASSERT(backing_bitmap->width() == static_cast<unsigned int>(edge_length()));
-  O3D_ASSERT(backing_bitmap->height() == static_cast<unsigned int>(edge_length()));
-  O3D_ASSERT(backing_bitmap->format() == format());
-  renderer_->MakeCurrentLazy();
-  glBindTexture(GL_TEXTURE_2D, gl_texture_);
-  UpdateGLImageFromBitmap(kCubemapFaceList[face], level, face,
-                          *backing_bitmap,
-                          resize_to_pot_);
-}
+		if(resize_to_pot)
+#endif
+		{
+			for(int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
+				texture->backing_bitmaps_[face]->Allocate(
+				    format, edge_length, edge_length, levels, Bitmap::IMAGE);
+				texture->has_levels_[face] = (1 << levels) - 1;
+			}
+		}
 
-RenderSurface::Ref TextureCUBEGLES2::PlatformSpecificGetRenderSurface(
-    TextureCUBE::CubeFace face,
-    int mip_level) {
-  O3D_ASSERT(mip_level < levels());
-  if (!render_surfaces_enabled()) {
-    O3D_ERROR(service_locator())
-        << "Attempting to get RenderSurface from non-render-surface-enabled"
-        << " Texture: " << name();
-    return RenderSurface::Ref(NULL);
-  }
+		CHECK_GL_ERROR();
+		O3D_LOG(INFO) << "Created cube map texture (GLuint=" << gl_texture << ")";
+		return texture;
+	}
 
-  if (mip_level >= levels() || mip_level < 0) {
-    O3D_ERROR(service_locator())
-        << "Attempting to access non-existent mip_level " << mip_level
-        << " in render-target texture \"" << name() << "\".";
-    return RenderSurface::Ref(NULL);
-  }
+	void TextureCUBEGLES2::UpdateBackedMipLevel(unsigned int level,
+	        TextureCUBE::CubeFace face) {
+		Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
+		O3D_ASSERT(static_cast<int>(level) < levels());
+		O3D_ASSERT(backing_bitmap->image_data());
+		O3D_ASSERT(backing_bitmap->width() == static_cast<unsigned int>(edge_length()));
+		O3D_ASSERT(backing_bitmap->height() == static_cast<unsigned int>(edge_length()));
+		O3D_ASSERT(backing_bitmap->format() == format());
+		renderer_->MakeCurrentLazy();
+		glBindTexture(GL_TEXTURE_2D, gl_texture_);
+		UpdateGLImageFromBitmap(kCubemapFaceList[face], level, face,
+		                        *backing_bitmap,
+		                        resize_to_pot_);
+	}
 
-  return RenderSurface::Ref(new RenderSurfaceGLES2(
-      service_locator(),
-      edge_length() >> mip_level,
-      edge_length() >> mip_level,
-      kCubemapFaceList[face],
-      mip_level,
-      this));
-}
+	RenderSurface::Ref TextureCUBEGLES2::PlatformSpecificGetRenderSurface(
+	    TextureCUBE::CubeFace face,
+	    int mip_level) {
+		O3D_ASSERT(mip_level < levels());
 
-void TextureCUBEGLES2::SetRect(TextureCUBE::CubeFace face,
-                               int level,
-                               unsigned dst_left,
-                               unsigned dst_top,
-                               unsigned src_width,
-                               unsigned src_height,
-                               const void* src_data,
-                               int src_pitch) {
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to SetRect non-existent level " << level
-        << " on Texture \"" << name() << "\"";
-    return;
-  }
-  if (render_surfaces_enabled()) {
-    O3D_ERROR(service_locator())
-        << "Attempting to SetRect a render-target texture: " << name();
-    return;
-  }
+		if(!render_surfaces_enabled()) {
+			O3D_ERROR(service_locator())
+			        << "Attempting to get RenderSurface from non-render-surface-enabled"
+			        << " Texture: " << name();
+			return RenderSurface::Ref(NULL);
+		}
 
-  unsigned mip_width = image::ComputeMipDimension(level, edge_length());
-  unsigned mip_height = mip_width;
+		if(mip_level >= levels() || mip_level < 0) {
+			O3D_ERROR(service_locator())
+			        << "Attempting to access non-existent mip_level " << mip_level
+			        << " in render-target texture \"" << name() << "\".";
+			return RenderSurface::Ref(NULL);
+		}
 
-  if (dst_left + src_width > mip_width ||
-      dst_top + src_height > mip_height) {
-    O3D_ERROR(service_locator())
-        << "SetRect(" << level << ", " << dst_left << ", " << dst_top << ", "
-        << src_width << ", " << src_height << ") out of range for texture << \""
-        << name() << "\"";
-    return;
-  }
+		return RenderSurface::Ref(new RenderSurfaceGLES2(
+		                              service_locator(),
+		                              edge_length() >> mip_level,
+		                              edge_length() >> mip_level,
+		                              kCubemapFaceList[face],
+		                              mip_level,
+		                              this));
+	}
 
-  bool entire_rect = dst_left == 0 && dst_top == 0 &&
-                     src_width == mip_width && src_height == mip_height;
-  bool compressed = IsCompressed();
+	void TextureCUBEGLES2::SetRect(TextureCUBE::CubeFace face,
+	                               int level,
+	                               unsigned dst_left,
+	                               unsigned dst_top,
+	                               unsigned src_width,
+	                               unsigned src_height,
+	                               const void* src_data,
+	                               int src_pitch) {
+		if(level >= levels() || level < 0) {
+			O3D_ERROR(service_locator())
+			        << "Trying to SetRect non-existent level " << level
+			        << " on Texture \"" << name() << "\"";
+			return;
+		}
 
-  if (compressed && !entire_rect) {
-    O3D_ERROR(service_locator())
-        << "SetRect must be full rectangle for compressed textures";
-    return;
-  }
+		if(render_surfaces_enabled()) {
+			O3D_ERROR(service_locator())
+			        << "Attempting to SetRect a render-target texture: " << name();
+			return;
+		}
 
-  #ifdef O3D_GLES2_MUST_SHADOW_TEXTURES
-  if (!compressed) {
-    // TODO(gman): Must back compressed textures.
-  #else
-  if (resize_to_pot_) {
-  #endif
-    Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
-    O3D_ASSERT(backing_bitmap->image_data());
-    O3D_ASSERT(!compressed);
-    // We need to update the backing mipmap and then use that to update the
-    // texture.
-    backing_bitmap->SetRect(
-        level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
-    UpdateBackedMipLevel(level, face);
-  } else {
-    // TODO(gman): Should this bind be using a FACE id?
-    renderer_->MakeCurrentLazy();
-    glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture_);
-    GLenum gl_internal_format = 0;
-    GLenum gl_data_type = 0;
-    GLenum gl_format = GLFormatFromO3DFormat(format(), &gl_internal_format,
-                                             &gl_data_type);
-    int gl_face = kCubemapFaceList[face];
-    if (gl_format) {
-      if (src_pitch == image::ComputePitch(format(), src_width)) {
-        glTexSubImage2D(gl_face, level,
-                        dst_left, dst_top,
-                        src_width, src_height,
-                        gl_format,
-                        gl_data_type,
-                        src_data);
-      } else {
-        int limit = src_height;
-        for (int yy = 0; yy < limit; ++yy) {
-          glTexSubImage2D(gl_face, level,
-                          dst_left, dst_top + yy,
-                          src_width, 1,
-                          gl_format,
-                          gl_data_type,
-                          src_data);
-          src_data = AddPointerOffset<const void*>(src_data, src_pitch);
-        }
-      }
-    } else {
-      glCompressedTexSubImage2D(
-          gl_face, level, 0, 0, src_width, src_height,
-          gl_internal_format,
-          image::ComputeMipChainSize(src_width, src_height, format(), 1),
-          src_data);
-    }
-  }
-}
+		unsigned mip_width = image::ComputeMipDimension(level, edge_length());
+		unsigned mip_height = mip_width;
+
+		if(dst_left + src_width > mip_width ||
+		        dst_top + src_height > mip_height) {
+			O3D_ERROR(service_locator())
+			        << "SetRect(" << level << ", " << dst_left << ", " << dst_top << ", "
+			        << src_width << ", " << src_height << ") out of range for texture << \""
+			        << name() << "\"";
+			return;
+		}
+
+		bool entire_rect = dst_left == 0 && dst_top == 0 &&
+		                   src_width == mip_width && src_height == mip_height;
+		bool compressed = IsCompressed();
+
+		if(compressed && !entire_rect) {
+			O3D_ERROR(service_locator())
+			        << "SetRect must be full rectangle for compressed textures";
+			return;
+		}
+
+#ifdef O3D_GLES2_MUST_SHADOW_TEXTURES
+
+		if(!compressed) {
+			// TODO(gman): Must back compressed textures.
+#else
+		if(resize_to_pot_) {
+#endif
+			Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
+			O3D_ASSERT(backing_bitmap->image_data());
+			O3D_ASSERT(!compressed);
+			// We need to update the backing mipmap and then use that to update the
+			// texture.
+			backing_bitmap->SetRect(
+			    level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
+			UpdateBackedMipLevel(level, face);
+		}
+		else {
+			// TODO(gman): Should this bind be using a FACE id?
+			renderer_->MakeCurrentLazy();
+			glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture_);
+			GLenum gl_internal_format = 0;
+			GLenum gl_data_type = 0;
+			GLenum gl_format = GLFormatFromO3DFormat(format(), &gl_internal_format,
+			                   &gl_data_type);
+			int gl_face = kCubemapFaceList[face];
+
+			if(gl_format) {
+				if(src_pitch == image::ComputePitch(format(), src_width)) {
+					glTexSubImage2D(gl_face, level,
+					                dst_left, dst_top,
+					                src_width, src_height,
+					                gl_format,
+					                gl_data_type,
+					                src_data);
+				}
+				else {
+					int limit = src_height;
+
+					for(int yy = 0; yy < limit; ++yy) {
+						glTexSubImage2D(gl_face, level,
+						                dst_left, dst_top + yy,
+						                src_width, 1,
+						                gl_format,
+						                gl_data_type,
+						                src_data);
+						src_data = AddPointerOffset<const void*>(src_data, src_pitch);
+					}
+				}
+			}
+			else {
+				glCompressedTexSubImage2D(
+				    gl_face, level, 0, 0, src_width, src_height,
+				    gl_internal_format,
+				    image::ComputeMipChainSize(src_width, src_height, format(), 1),
+				    src_data);
+			}
+		}
+	}
 
 // Locks the given face and mipmap level of this texture for loading from
 // main memory, and returns a pointer to the buffer.
-bool TextureCUBEGLES2::PlatformSpecificLock(
-    CubeFace face, int level, void** data, int* pitch,
-    Texture::AccessMode mode) {
-  O3D_LOG(INFO) << "TextureCUBEGLES2 Lock";
-  O3D_ASSERT(level >= 0);
-  O3D_ASSERT(level < levels());
-  renderer_->MakeCurrentLazy();
-  Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
-  if (!backing_bitmap->image_data()) {
-    for (int i = 0; i < static_cast<int>(NUMBER_OF_FACES); ++i) {
-      O3D_ASSERT(has_levels_[i] == 0u);
-    }
-    backing_bitmap->Allocate(format(), edge_length(), edge_length(), levels(),
-                             Bitmap::IMAGE);
-  }
-  *data = backing_bitmap->GetMipData(level);
-  unsigned int mip_width = image::ComputeMipDimension(level, edge_length());
-  if (!IsCompressed()) {
-    *pitch = image::ComputePitch(format(), mip_width);
-  } else {
-    unsigned blocks_across = (mip_width + 3) / 4;
-    unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
-    unsigned bytes_per_row = bytes_per_block * blocks_across;
-    *pitch = bytes_per_row;
-  }
-  if (mode != kWriteOnly && !HasLevel(face, level)) {
-    // TODO(o3d): add some API so we don't have to copy back the data if we
-    // will rewrite it all.
-    O3D_ASSERT(!resize_to_pot_);
+	bool TextureCUBEGLES2::PlatformSpecificLock(
+	    CubeFace face, int level, void** data, int* pitch,
+	    Texture::AccessMode mode) {
+		O3D_LOG(INFO) << "TextureCUBEGLES2 Lock";
+		O3D_ASSERT(level >= 0);
+		O3D_ASSERT(level < levels());
+		renderer_->MakeCurrentLazy();
+		Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
+
+		if(!backing_bitmap->image_data()) {
+			for(int i = 0; i < static_cast<int>(NUMBER_OF_FACES); ++i) {
+				O3D_ASSERT(has_levels_[i] == 0u);
+			}
+
+			backing_bitmap->Allocate(format(), edge_length(), edge_length(), levels(),
+			                         Bitmap::IMAGE);
+		}
+
+		*data = backing_bitmap->GetMipData(level);
+		unsigned int mip_width = image::ComputeMipDimension(level, edge_length());
+
+		if(!IsCompressed()) {
+			*pitch = image::ComputePitch(format(), mip_width);
+		}
+		else {
+			unsigned blocks_across = (mip_width + 3) / 4;
+			unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
+			unsigned bytes_per_row = bytes_per_block * blocks_across;
+			*pitch = bytes_per_row;
+		}
+
+		if(mode != kWriteOnly && !HasLevel(face, level)) {
+			// TODO(o3d): add some API so we don't have to copy back the data if we
+			// will rewrite it all.
+			O3D_ASSERT(!resize_to_pot_);
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-    GLenum gl_internal_format = 0;
-    GLenum gl_data_type = 0;
-    GLenum gl_format = GLFormatFromO3DFormat(format(),
-                                             &gl_internal_format,
-                                             &gl_data_type);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture_);
-    GLenum gl_target = kCubemapFaceList[face];
-    glGetTexImage(gl_target, level, gl_format, gl_data_type, *data);
+			GLenum gl_internal_format = 0;
+			GLenum gl_data_type = 0;
+			GLenum gl_format = GLFormatFromO3DFormat(format(),
+			                   &gl_internal_format,
+			                   &gl_data_type);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture_);
+			GLenum gl_target = kCubemapFaceList[face];
+			glGetTexImage(gl_target, level, gl_format, gl_data_type, *data);
 #else
-    O3D_NOTIMPLEMENTED() << "Texture read back";
+			O3D_NOTIMPLEMENTED() << "Texture read back";
 #endif
-    has_levels_[face] |= 1 << level;
-  }
-  CHECK_GL_ERROR();
+			has_levels_[face] |= 1 << level;
+		}
 
-  locked_levels_[face] |= 1 << level;
-
-  return false;
-}
+		CHECK_GL_ERROR();
+		locked_levels_[face] |= 1 << level;
+		return false;
+	}
 
 // Unlocks the given face and mipmap level of this texture.
-bool TextureCUBEGLES2::PlatformSpecificUnlock(CubeFace face, int level) {
-  O3D_LOG(INFO) << "TextureCUBEGLES2 Unlock";
-  O3D_ASSERT(level >= 0);
-  O3D_ASSERT(level < levels());
-  if (LockedMode(face, level) != kReadOnly) {
-    renderer_->MakeCurrentLazy();
-    UpdateBackedMipLevel(level, face);
-  }
-  locked_levels_[face] &= ~(1 << level);
+	bool TextureCUBEGLES2::PlatformSpecificUnlock(CubeFace face, int level) {
+		O3D_LOG(INFO) << "TextureCUBEGLES2 Unlock";
+		O3D_ASSERT(level >= 0);
+		O3D_ASSERT(level < levels());
 
-  if (!resize_to_pot_) {
-    // See if we can throw away the backing bitmap.
-    bool has_locked_level = false;
-    for (int i = 0; i < static_cast<int>(NUMBER_OF_FACES); ++i) {
-      if (locked_levels_[i]) {
-        has_locked_level = true;
-        break;
-      }
-    }
-    if (!has_locked_level) {
-      #ifndef O3D_GLES2_MUST_SHADOW_TEXTURES
-      Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
-      backing_bitmap->FreeData();
-      #endif
-      for (int i = 0; i < static_cast<int>(NUMBER_OF_FACES); ++i) {
-        has_levels_[i] = 0;
-      }
-    }
-  }
-  CHECK_GL_ERROR();
-  return false;
-}
+		if(LockedMode(face, level) != kReadOnly) {
+			renderer_->MakeCurrentLazy();
+			UpdateBackedMipLevel(level, face);
+		}
 
-bool TextureCUBEGLES2::OnContextRestored() {
-  renderer_->MakeCurrentLazy();
-  glGenTextures(1, &gl_texture_);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture_);
+		locked_levels_[face] &= ~(1 << level);
 
-  GLenum gl_internal_format = 0;
-  GLenum gl_data_type = 0;
-  GLenum gl_format = GLFormatFromO3DFormat(format(),
-                                           &gl_internal_format,
-                                           &gl_data_type);
-  bool resize_to_pot = !renderer_->supports_npot() &&
-                       !image::IsPOT(edge_length(), edge_length());
+		if(!resize_to_pot_) {
+			// See if we can throw away the backing bitmap.
+			bool has_locked_level = false;
 
-  for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
-    CreateGLImages(kCubemapFaceList[face], gl_internal_format,
-                   gl_format, gl_data_type,
-                   static_cast<CubeFace>(face),
-                   format(), levels(), edge_length(), edge_length(),
-                   resize_to_pot);
-  }
+			for(int i = 0; i < static_cast<int>(NUMBER_OF_FACES); ++i) {
+				if(locked_levels_[i]) {
+					has_locked_level = true;
+					break;
+				}
+			}
 
-  for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
-    for (int level = 0; level < levels(); ++level) {
-      UpdateBackedMipLevel(level, static_cast<CubeFace>(face));
-    }
-  }
-  SetDefaultTextureParameters(GL_TEXTURE_CUBE_MAP);
-  return true;
-}
+			if(!has_locked_level) {
+#ifndef O3D_GLES2_MUST_SHADOW_TEXTURES
+				Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
+				backing_bitmap->FreeData();
+#endif
 
-const Texture::RGBASwizzleIndices&
-    TextureCUBEGLES2::GetABGR32FSwizzleIndices() {
-  return g_gl_abgr32f_swizzle_indices;
-}
+				for(int i = 0; i < static_cast<int>(NUMBER_OF_FACES); ++i) {
+					has_levels_[i] = 0;
+				}
+			}
+		}
+
+		CHECK_GL_ERROR();
+		return false;
+	}
+
+	bool TextureCUBEGLES2::OnContextRestored() {
+		renderer_->MakeCurrentLazy();
+		glGenTextures(1, &gl_texture_);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture_);
+		GLenum gl_internal_format = 0;
+		GLenum gl_data_type = 0;
+		GLenum gl_format = GLFormatFromO3DFormat(format(),
+		                   &gl_internal_format,
+		                   &gl_data_type);
+		bool resize_to_pot = !renderer_->supports_npot() &&
+		                     !image::IsPOT(edge_length(), edge_length());
+
+		for(int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
+			CreateGLImages(kCubemapFaceList[face], gl_internal_format,
+			               gl_format, gl_data_type,
+			               static_cast<CubeFace>(face),
+			               format(), levels(), edge_length(), edge_length(),
+			               resize_to_pot);
+		}
+
+		for(int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
+			for(int level = 0; level < levels(); ++level) {
+				UpdateBackedMipLevel(level, static_cast<CubeFace>(face));
+			}
+		}
+
+		SetDefaultTextureParameters(GL_TEXTURE_CUBE_MAP);
+		return true;
+	}
+
+	const Texture::RGBASwizzleIndices&
+	TextureCUBEGLES2::GetABGR32FSwizzleIndices() {
+		return g_gl_abgr32f_swizzle_indices;
+	}
 
 }  // namespace o3d

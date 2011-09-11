@@ -39,43 +39,43 @@
 
 namespace o3d {
 
-class Matrix4CompositionTest : public testing::Test {
- protected:
-  Matrix4CompositionTest()
-      : object_manager_(g_service_locator),
-        pack_(NULL),
-        composition_(NULL) {
-  }
+	class Matrix4CompositionTest : public testing::Test {
+	protected:
+		Matrix4CompositionTest()
+			: object_manager_(g_service_locator),
+			  pack_(NULL),
+			  composition_(NULL) {
+		}
 
-  virtual void SetUp() {
-    pack_ = object_manager_->CreatePack();
-    composition_ = pack_->Create<Matrix4Composition>();
-  }
+		virtual void SetUp() {
+			pack_ = object_manager_->CreatePack();
+			composition_ = pack_->Create<Matrix4Composition>();
+		}
 
-  virtual void TearDown() {
-    pack_->Destroy();
-  }
+		virtual void TearDown() {
+			pack_->Destroy();
+		}
 
- protected:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack* pack_;
-  Matrix4Composition* composition_;
-};
+	protected:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+		Matrix4Composition* composition_;
+	};
 
-TEST_F(Matrix4CompositionTest, OutputsInputMatrixIfNoParent) {
-  Matrix4 input = Matrix4::scale(Vector3(2, 3, 4));
-  composition_->set_local_matrix(input);
-  Matrix4 output_matrix = composition_->output_matrix();
-  ASSERT_NEAR(0.0f, FrobeniusNorm(input - output_matrix), 0.001f);
-}
+	TEST_F(Matrix4CompositionTest, OutputsInputMatrixIfNoParent) {
+		Matrix4 input = Matrix4::scale(Vector3(2, 3, 4));
+		composition_->set_local_matrix(input);
+		Matrix4 output_matrix = composition_->output_matrix();
+		ASSERT_NEAR(0.0f, FrobeniusNorm(input - output_matrix), 0.001f);
+	}
 
-TEST_F(Matrix4CompositionTest, ComposesInputMatrixWithParentMatrix) {
-  Matrix4 input = Matrix4::scale(Vector3(2, 3, 4));
-  composition_->set_local_matrix(input);
-  Matrix4 parent = Matrix4::scale(Vector3(3, 4, 5));
-  composition_->set_input_matrix(parent);
-  Matrix4 output_matrix = composition_->output_matrix();
-  Matrix4 expected = Matrix4::scale(Vector3(6, 12, 20));
-  ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
-}
+	TEST_F(Matrix4CompositionTest, ComposesInputMatrixWithParentMatrix) {
+		Matrix4 input = Matrix4::scale(Vector3(2, 3, 4));
+		composition_->set_local_matrix(input);
+		Matrix4 parent = Matrix4::scale(Vector3(3, 4, 5));
+		composition_->set_input_matrix(parent);
+		Matrix4 output_matrix = composition_->output_matrix();
+		Matrix4 expected = Matrix4::scale(Vector3(6, 12, 20));
+		ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
+	}
 }  // namespace o3d

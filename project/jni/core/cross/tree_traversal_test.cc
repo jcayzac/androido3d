@@ -42,58 +42,55 @@
 
 namespace o3d {
 
-class TreeTraversalTest : public testing::Test {
- protected:
-  TreeTraversalTest()
-      : object_manager_(g_service_locator) {}
+	class TreeTraversalTest : public testing::Test {
+	protected:
+		TreeTraversalTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-  TransformationContext* transformation_context_;
-  DrawListManager* draw_list_manager_;
-  Pack *pack_;
-};
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+		TransformationContext* transformation_context_;
+		DrawListManager* draw_list_manager_;
+		Pack* pack_;
+	};
 
-void TreeTraversalTest::SetUp() {
-  transformation_context_ = new TransformationContext(g_service_locator);
-  draw_list_manager_ = new DrawListManager(g_service_locator);
-  pack_ = object_manager_->CreatePack();
-}
+	void TreeTraversalTest::SetUp() {
+		transformation_context_ = new TransformationContext(g_service_locator);
+		draw_list_manager_ = new DrawListManager(g_service_locator);
+		pack_ = object_manager_->CreatePack();
+	}
 
-void TreeTraversalTest::TearDown() {
-  pack_->Destroy();
-  delete draw_list_manager_;
-  delete transformation_context_;
-}
+	void TreeTraversalTest::TearDown() {
+		pack_->Destroy();
+		delete draw_list_manager_;
+		delete transformation_context_;
+	}
 
-TEST_F(TreeTraversalTest, Basic) {
-  TreeTraversal* tree_traversal = pack()->Create<TreeTraversal>();
-  // Check that tree_traversal got created.
-  ASSERT_TRUE(tree_traversal != NULL);
-
-  DrawList* draw_list1 = pack()->Create<DrawList>();
-  DrawList* draw_list2 = pack()->Create<DrawList>();
-  DrawList* draw_list3 = pack()->Create<DrawList>();
-  DrawContext* draw_context = pack()->Create<DrawContext>();
-  ASSERT_TRUE(draw_list1 != NULL);
-  ASSERT_TRUE(draw_list2 != NULL);
-  ASSERT_TRUE(draw_list3 != NULL);
-  ASSERT_TRUE(draw_context != NULL);
-
-  // Check that we can add and remove them
-  tree_traversal->RegisterDrawList(draw_list1, draw_context, true);
-  tree_traversal->RegisterDrawList(draw_list2, draw_context, true);
-
-  EXPECT_FALSE(tree_traversal->UnregisterDrawList(draw_list3));
-  EXPECT_TRUE(tree_traversal->UnregisterDrawList(draw_list1));
-  EXPECT_FALSE(tree_traversal->UnregisterDrawList(draw_list1));
-  EXPECT_TRUE(tree_traversal->UnregisterDrawList(draw_list2));
-  EXPECT_FALSE(tree_traversal->UnregisterDrawList(draw_list3));
-}
+	TEST_F(TreeTraversalTest, Basic) {
+		TreeTraversal* tree_traversal = pack()->Create<TreeTraversal>();
+		// Check that tree_traversal got created.
+		ASSERT_TRUE(tree_traversal != NULL);
+		DrawList* draw_list1 = pack()->Create<DrawList>();
+		DrawList* draw_list2 = pack()->Create<DrawList>();
+		DrawList* draw_list3 = pack()->Create<DrawList>();
+		DrawContext* draw_context = pack()->Create<DrawContext>();
+		ASSERT_TRUE(draw_list1 != NULL);
+		ASSERT_TRUE(draw_list2 != NULL);
+		ASSERT_TRUE(draw_list3 != NULL);
+		ASSERT_TRUE(draw_context != NULL);
+		// Check that we can add and remove them
+		tree_traversal->RegisterDrawList(draw_list1, draw_context, true);
+		tree_traversal->RegisterDrawList(draw_list2, draw_context, true);
+		EXPECT_FALSE(tree_traversal->UnregisterDrawList(draw_list3));
+		EXPECT_TRUE(tree_traversal->UnregisterDrawList(draw_list1));
+		EXPECT_FALSE(tree_traversal->UnregisterDrawList(draw_list1));
+		EXPECT_TRUE(tree_traversal->UnregisterDrawList(draw_list2));
+		EXPECT_FALSE(tree_traversal->UnregisterDrawList(draw_list3));
+	}
 
 }  // namespace o3d

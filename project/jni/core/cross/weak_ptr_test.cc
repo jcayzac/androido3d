@@ -35,135 +35,124 @@
 
 namespace o3d {
 
-namespace {
+	namespace {
 
 // A simple testing helper class that tracks the number of live instances of
 // itself.
-class InstanceCount : public RefCounted {
- public:
-  typedef SmartPointer<InstanceCount> Ref;
-  typedef WeakPointer<InstanceCount> WeakPointerType;
+		class InstanceCount : public RefCounted {
+		public:
+			typedef SmartPointer<InstanceCount> Ref;
+			typedef WeakPointer<InstanceCount> WeakPointerType;
 
-  // Use construction & destruction to inc/dec a static instance counter.
-  InstanceCount() : weak_pointer_manager_(this) {
-    ++instance_count_;
-  }
+			// Use construction & destruction to inc/dec a static instance counter.
+			InstanceCount() : weak_pointer_manager_(this) {
+				++instance_count_;
+			}
 
-  ~InstanceCount() {
-    --instance_count_;
-  }
+			~InstanceCount() {
+				--instance_count_;
+			}
 
-  // Gets a weak pointer to us.
-  WeakPointerType GetWeakPointer() const {
-    return weak_pointer_manager_.GetWeakPointer();
-  }
+			// Gets a weak pointer to us.
+			WeakPointerType GetWeakPointer() const {
+				return weak_pointer_manager_.GetWeakPointer();
+			}
 
-  static int instance_count() {
-    return instance_count_;
-  }
+			static int instance_count() {
+				return instance_count_;
+			}
 
- private:
-  // Manager for weak pointers to us.
-  WeakPointerType::WeakPointerManager weak_pointer_manager_;
+		private:
+			// Manager for weak pointers to us.
+			WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
-  static int instance_count_;
-};
+			static int instance_count_;
+		};
 
-int InstanceCount::instance_count_ = 0;
+		int InstanceCount::instance_count_ = 0;
 
-}  // anonymous namespace.
+	}  // anonymous namespace.
 
 // Test case for the Weak pointer class
-class WeakPtrTest : public testing::Test {
-};
+	class WeakPtrTest : public testing::Test {
+	};
 
-TEST_F(WeakPtrTest, Construct) {
-  WeakPointer<InstanceCount> weak_ptr;
-  ASSERT_TRUE(weak_ptr.Get() == NULL);
-}
+	TEST_F(WeakPtrTest, Construct) {
+		WeakPointer<InstanceCount> weak_ptr;
+		ASSERT_TRUE(weak_ptr.Get() == NULL);
+	}
 
 // Test the behaviour of a single weak pointer.
-TEST_F(WeakPtrTest, SingleReference) {
-  InstanceCount* raw_pointer = new InstanceCount();
-  WeakPointer<InstanceCount> weak_ptr(raw_pointer->GetWeakPointer());
-
-  // Validate that a single instance was created, and that the pointer
-  // points to the correct instance.
-  EXPECT_TRUE(weak_ptr.Get() == raw_pointer);
-  EXPECT_EQ(InstanceCount::instance_count(), 1);
-
-  // Validate we can release it and the weak pointer goes to NULL.
-  delete raw_pointer;
-  EXPECT_EQ(InstanceCount::instance_count(), 0);
-  EXPECT_TRUE(weak_ptr.Get() == NULL);
-}
+	TEST_F(WeakPtrTest, SingleReference) {
+		InstanceCount* raw_pointer = new InstanceCount();
+		WeakPointer<InstanceCount> weak_ptr(raw_pointer->GetWeakPointer());
+		// Validate that a single instance was created, and that the pointer
+		// points to the correct instance.
+		EXPECT_TRUE(weak_ptr.Get() == raw_pointer);
+		EXPECT_EQ(InstanceCount::instance_count(), 1);
+		// Validate we can release it and the weak pointer goes to NULL.
+		delete raw_pointer;
+		EXPECT_EQ(InstanceCount::instance_count(), 0);
+		EXPECT_TRUE(weak_ptr.Get() == NULL);
+	}
 
 // Validate the behaviour of multiple weak pointers.
-TEST_F(WeakPtrTest, MultipleReferences) {
-  InstanceCount* raw_ptr = new InstanceCount();
-  WeakPointer<InstanceCount> weak_ptr1(raw_ptr->GetWeakPointer());
-  WeakPointer<InstanceCount> weak_ptr2(raw_ptr->GetWeakPointer());
-
-  // Validate that only a single instance was created.
-  EXPECT_EQ(InstanceCount::instance_count(), 1);
-  EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
-  EXPECT_TRUE(weak_ptr1.Get() == weak_ptr2.Get());
-
-  // Check that if we delete the object both weak pointers go NULL.
-  delete raw_ptr;
-  EXPECT_TRUE(weak_ptr1.Get() == NULL);
-  EXPECT_TRUE(weak_ptr2.Get() == NULL);
-  EXPECT_EQ(InstanceCount::instance_count(), 0);
-}
+	TEST_F(WeakPtrTest, MultipleReferences) {
+		InstanceCount* raw_ptr = new InstanceCount();
+		WeakPointer<InstanceCount> weak_ptr1(raw_ptr->GetWeakPointer());
+		WeakPointer<InstanceCount> weak_ptr2(raw_ptr->GetWeakPointer());
+		// Validate that only a single instance was created.
+		EXPECT_EQ(InstanceCount::instance_count(), 1);
+		EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
+		EXPECT_TRUE(weak_ptr1.Get() == weak_ptr2.Get());
+		// Check that if we delete the object both weak pointers go NULL.
+		delete raw_ptr;
+		EXPECT_TRUE(weak_ptr1.Get() == NULL);
+		EXPECT_TRUE(weak_ptr2.Get() == NULL);
+		EXPECT_EQ(InstanceCount::instance_count(), 0);
+	}
 
 // Check that assignment works..
-TEST_F(WeakPtrTest, Assignment) {
-  InstanceCount* raw_ptr = new InstanceCount();
-  WeakPointer<InstanceCount> weak_ptr1;
-  WeakPointer<InstanceCount> weak_ptr2;
-
-  EXPECT_TRUE(weak_ptr1.Get() == NULL);
-  EXPECT_TRUE(weak_ptr2.Get() == NULL);
-  weak_ptr1 = raw_ptr->GetWeakPointer();
-  weak_ptr2 = weak_ptr1;
-
-  EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
-  EXPECT_TRUE(weak_ptr1.Get() == weak_ptr2.Get());
-
-  // Check that if we delete the object both weak pointers go NULL.
-  delete raw_ptr;
-  EXPECT_TRUE(weak_ptr1.Get() == NULL);
-  EXPECT_TRUE(weak_ptr2.Get() == NULL);
-  EXPECT_EQ(InstanceCount::instance_count(), 0);
-}
+	TEST_F(WeakPtrTest, Assignment) {
+		InstanceCount* raw_ptr = new InstanceCount();
+		WeakPointer<InstanceCount> weak_ptr1;
+		WeakPointer<InstanceCount> weak_ptr2;
+		EXPECT_TRUE(weak_ptr1.Get() == NULL);
+		EXPECT_TRUE(weak_ptr2.Get() == NULL);
+		weak_ptr1 = raw_ptr->GetWeakPointer();
+		weak_ptr2 = weak_ptr1;
+		EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
+		EXPECT_TRUE(weak_ptr1.Get() == weak_ptr2.Get());
+		// Check that if we delete the object both weak pointers go NULL.
+		delete raw_ptr;
+		EXPECT_TRUE(weak_ptr1.Get() == NULL);
+		EXPECT_TRUE(weak_ptr2.Get() == NULL);
+		EXPECT_EQ(InstanceCount::instance_count(), 0);
+	}
 
 // Validate the behaviour of self-assignment edge-case.
-TEST_F(WeakPtrTest, SelfAssignment) {
-  InstanceCount* raw_ptr = new InstanceCount();
-  WeakPointer<InstanceCount> weak_ptr1(raw_ptr->GetWeakPointer());
+	TEST_F(WeakPtrTest, SelfAssignment) {
+		InstanceCount* raw_ptr = new InstanceCount();
+		WeakPointer<InstanceCount> weak_ptr1(raw_ptr->GetWeakPointer());
+		EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
+		weak_ptr1 = weak_ptr1;
+		EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
+		delete raw_ptr;
+		EXPECT_TRUE(weak_ptr1.Get() == NULL);
+	}
 
-  EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
-  weak_ptr1 = weak_ptr1;
-  EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
-  delete raw_ptr;
-  EXPECT_TRUE(weak_ptr1.Get() == NULL);
-}
-
-TEST_F(WeakPtrTest, EqualityTest) {
-  InstanceCount* raw_ptr = new InstanceCount();
-  WeakPointer<InstanceCount> weak_ptr1(raw_ptr->GetWeakPointer());
-  WeakPointer<InstanceCount> weak_ptr2(raw_ptr->GetWeakPointer());
-
-  // Validate that only a single instance was created.
-  EXPECT_EQ(InstanceCount::instance_count(), 1);
-  EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
-  EXPECT_TRUE(weak_ptr1.Get() == weak_ptr2.Get());
-
-  EXPECT_TRUE(weak_ptr1 == weak_ptr2);
-
-  // Check that if we delete the object both weak pointers go NULL.
-  delete raw_ptr;
-  EXPECT_TRUE(weak_ptr1 == weak_ptr2);
-}
+	TEST_F(WeakPtrTest, EqualityTest) {
+		InstanceCount* raw_ptr = new InstanceCount();
+		WeakPointer<InstanceCount> weak_ptr1(raw_ptr->GetWeakPointer());
+		WeakPointer<InstanceCount> weak_ptr2(raw_ptr->GetWeakPointer());
+		// Validate that only a single instance was created.
+		EXPECT_EQ(InstanceCount::instance_count(), 1);
+		EXPECT_TRUE(weak_ptr1.Get() == raw_ptr);
+		EXPECT_TRUE(weak_ptr1.Get() == weak_ptr2.Get());
+		EXPECT_TRUE(weak_ptr1 == weak_ptr2);
+		// Check that if we delete the object both weak pointers go NULL.
+		delete raw_ptr;
+		EXPECT_TRUE(weak_ptr1 == weak_ptr2);
+	}
 
 }  // namespace o3d

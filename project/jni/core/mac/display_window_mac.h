@@ -40,33 +40,33 @@
 
 namespace o3d {
 
-/**
- * The DisplayWindowMac class is a platform-specific representation of
- * a platform's display window.  This implements the Macintosh OS X
- * subclass of the DisplayWindow.
- */
+	/**
+	 * The DisplayWindowMac class is a platform-specific representation of
+	 * a platform's display window.  This implements the Macintosh OS X
+	 * subclass of the DisplayWindow.
+	 */
 
-class DisplayWindowMac : public DisplayWindow {
- public:
-  DisplayWindowMac() : agl_context_(NULL), cgl_context_(NULL) {}
-  virtual ~DisplayWindowMac() {}
+	class DisplayWindowMac : public DisplayWindow {
+	public:
+		DisplayWindowMac() : agl_context_(NULL), cgl_context_(NULL) {}
+		virtual ~DisplayWindowMac() {}
 
-  AGLContext agl_context() const { return agl_context_; }
-  CGLContextObj cgl_context() const { return cgl_context_; }
+		AGLContext agl_context() const { return agl_context_; }
+		CGLContextObj cgl_context() const { return cgl_context_; }
 
-  void set_agl_context(const AGLContext& agl_context) {
-    agl_context_ = agl_context;
-  }
+		void set_agl_context(const AGLContext& agl_context) {
+			agl_context_ = agl_context;
+		}
 
-  void set_cgl_context(const CGLContextObj& cgl_context) {
-    cgl_context_ = cgl_context;
-  }
- private:
-  AGLContext agl_context_;
-  CGLContextObj cgl_context_;
+		void set_cgl_context(const CGLContextObj& cgl_context) {
+			cgl_context_ = cgl_context;
+		}
+	private:
+		AGLContext agl_context_;
+		CGLContextObj cgl_context_;
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(DisplayWindowMac);
-};
+		O3D_DISALLOW_COPY_AND_ASSIGN(DisplayWindowMac);
+	};
 }  // end namespace o3d
 
 #endif  // O3D_CORE_MAC_DISPLAY_WINDOW_MAC_H_

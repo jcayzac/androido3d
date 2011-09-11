@@ -43,51 +43,46 @@
 
 namespace o3d {
 
-class ShapeTest : public testing::Test {
- protected:
+	class ShapeTest : public testing::Test {
+	protected:
 
-  ShapeTest()
-      : object_manager_(g_service_locator) {}
+		ShapeTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack *pack_;
-};
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+	};
 
-void ShapeTest::SetUp() {
-  pack_ = object_manager_->CreatePack();
-}
+	void ShapeTest::SetUp() {
+		pack_ = object_manager_->CreatePack();
+	}
 
-void ShapeTest::TearDown() {
-  pack_->Destroy();
-}
+	void ShapeTest::TearDown() {
+		pack_->Destroy();
+	}
 
-TEST_F(ShapeTest, ElementsAccessorShouldReturnAllElements) {
-  Shape* shape = pack_->Create<Shape>();
+	TEST_F(ShapeTest, ElementsAccessorShouldReturnAllElements) {
+		Shape* shape = pack_->Create<Shape>();
+		Element* element = pack_->Create<Primitive>();
+		shape->AddElement(element);
+		ElementArray elements = shape->GetElements();
+		EXPECT_EQ(1U, elements.size());
+		EXPECT_EQ(element, elements[0]);
+	}
 
-  Element* element = pack_->Create<Primitive>();
-  shape->AddElement(element);
-  ElementArray elements = shape->GetElements();
-
-  EXPECT_EQ(1U, elements.size());
-  EXPECT_EQ(element, elements[0]);
-}
-
-TEST_F(ShapeTest, ElementsAccessorShouldReplaceAllElements) {
-  Shape* shape = pack_->Create<Shape>();
-
-  Element* element1 = pack_->Create<Primitive>();
-  shape->AddElement(element1);
-
-  Element* element2 = pack_->Create<Primitive>();
-  ElementArray elements;
-  elements.push_back(element2);
-  shape->SetElements(elements);
-  elements = shape->GetElements();
-
-  EXPECT_EQ(1U, elements.size());
-  EXPECT_EQ(element2, elements[0]);
-}
+	TEST_F(ShapeTest, ElementsAccessorShouldReplaceAllElements) {
+		Shape* shape = pack_->Create<Shape>();
+		Element* element1 = pack_->Create<Primitive>();
+		shape->AddElement(element1);
+		Element* element2 = pack_->Create<Primitive>();
+		ElementArray elements;
+		elements.push_back(element2);
+		shape->SetElements(elements);
+		elements = shape->GetElements();
+		EXPECT_EQ(1U, elements.size());
+		EXPECT_EQ(element2, elements[0]);
+	}
 }  // namespace o3d

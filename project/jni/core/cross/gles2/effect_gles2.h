@@ -44,120 +44,120 @@
 
 namespace o3d {
 
-class DrawElementGLES2;
-class ParamCacheGLES2;
-class ParamObject;
-class Param;
-class ParamTexture;
-class RendererGLES2;
-class SemanticManager;
+	class DrawElementGLES2;
+	class ParamCacheGLES2;
+	class ParamObject;
+	class Param;
+	class ParamTexture;
+	class RendererGLES2;
+	class SemanticManager;
 
 // TODO(gman): Replace.
-typedef GLuint GLES2Parameter;
-	
-class GLProgramParam : public RefCounted {
-public:
-	typedef SmartPointer<GLProgramParam> Ref;
-	
-	GLProgramParam(GLint location, GLenum type, GLsizei size) :
-		location_(location), type_(type), size_(size) { }
-	~GLProgramParam() { }
-	GLint location() { return location_; }
-	GLenum type() { return type_; }
-	GLsizei size() { return size_; }
-private:
-	GLint location_;
-	GLenum type_;
-	GLsizei size_;
-};
+	typedef GLuint GLES2Parameter;
 
-typedef std::map<std::string, GLProgramParam::Ref> GLProgramParameterMap;
-	
+	class GLProgramParam : public RefCounted {
+	public:
+		typedef SmartPointer<GLProgramParam> Ref;
+
+		GLProgramParam(GLint location, GLenum type, GLsizei size) :
+			location_(location), type_(type), size_(size) { }
+		~GLProgramParam() { }
+		GLint location() { return location_; }
+		GLenum type() { return type_; }
+		GLsizei size() { return size_; }
+	private:
+		GLint location_;
+		GLenum type_;
+		GLsizei size_;
+	};
+
+	typedef std::map<std::string, GLProgramParam::Ref> GLProgramParameterMap;
+
 
 // A class to set an effect parameter from an O3D parameter.
-class EffectParamHandlerGLES2 : public RefCounted {
- public:
-  typedef SmartPointer<EffectParamHandlerGLES2> Ref;
-  virtual ~EffectParamHandlerGLES2() { }
+	class EffectParamHandlerGLES2 : public RefCounted {
+	public:
+		typedef SmartPointer<EffectParamHandlerGLES2> Ref;
+		virtual ~EffectParamHandlerGLES2() { }
 
-  // Sets a GLES2 Effect Parameter by an O3D Param.
-  virtual void SetEffectParam(
-      RendererGLES2* renderer, GLES2Parameter param) = 0;
+		// Sets a GLES2 Effect Parameter by an O3D Param.
+		virtual void SetEffectParam(
+		    RendererGLES2* renderer, GLES2Parameter param) = 0;
 
-  // Resets a GLES2 Effect parameter to default (currently only unbinds textures
-  // contained in Sampler params).
-  virtual void ResetEffectParam(
-      RendererGLES2* renderer, GLES2Parameter param) {}
-};
+		// Resets a GLES2 Effect parameter to default (currently only unbinds textures
+		// contained in Sampler params).
+		virtual void ResetEffectParam(
+		    RendererGLES2* renderer, GLES2Parameter param) {}
+	};
 
 // EffectGLES2 is an implementation of the Effect object for OpenGLES2.  It
 // provides the API for setting the vertex and framgent shaders for the
 // Effect using the Cg Runtime.  Currently the two shaders can either be
 // provided separately as shader code or together in an FX file.
-class EffectGLES2 : public Effect {
- public:
-  explicit EffectGLES2(ServiceLocator* service_locator);
-  virtual ~EffectGLES2();
+	class EffectGLES2 : public Effect {
+	public:
+		explicit EffectGLES2(ServiceLocator* service_locator);
+		virtual ~EffectGLES2();
 
-  // Reads the vertex and fragment shaders from string in the FX format.
-  // It returns true if the shaders were successfully compiled.
-  virtual bool LoadFromFXString(const std::string& effect);
+		// Reads the vertex and fragment shaders from string in the FX format.
+		// It returns true if the shaders were successfully compiled.
+		virtual bool LoadFromFXString(const std::string& effect);
 
-  // Binds the shaders to the device and sets up all the shader parameters using
-  // the values from the matching Param's of the param_object.
-  void PrepareForDraw(ParamCacheGLES2* param_cache_gl);
+		// Binds the shaders to the device and sets up all the shader parameters using
+		// the values from the matching Param's of the param_object.
+		void PrepareForDraw(ParamCacheGLES2* param_cache_gl);
 
-  // Removes any pipeline state-changes installed during a draw.
-  void PostDraw(ParamCacheGLES2* param_cache_gl);
+		// Removes any pipeline state-changes installed during a draw.
+		void PostDraw(ParamCacheGLES2* param_cache_gl);
 
-  // Gets info about the parameters this effect needs.
-  // Overriden from Effect.
-  virtual void GetParameterInfo(EffectParameterInfoArray* info_array);
+		// Gets info about the parameters this effect needs.
+		// Overriden from Effect.
+		virtual void GetParameterInfo(EffectParameterInfoArray* info_array);
 
-  // Gets info about the streams this effect needs.
-  // Overriden from Effect.
-  virtual void GetStreamInfo(
-      EffectStreamInfoArray* info_array);
+		// Gets info about the streams this effect needs.
+		// Overriden from Effect.
+		virtual void GetStreamInfo(
+		    EffectStreamInfoArray* info_array);
 
-  GLuint gl_program() { return gl_program_; }
-  int compile_count() { return compile_count_; }
+		GLuint gl_program() { return gl_program_; }
+		int compile_count() { return compile_count_; }
 
-  // Handler for a new context.
-  bool OnContextRestored();
-  const GLProgramParameterMap* GetUniformParamMapping() { return &shader_param_info_map_; }
+		// Handler for a new context.
+		bool OnContextRestored();
+		const GLProgramParameterMap* GetUniformParamMapping() { return &shader_param_info_map_; }
 
- private:
-  void CacheGLParamMapping();
-  // Loops through all the parameters in the ShapeDataGLES2 and updates the
-  // corresponding parameter EffectGLES2 object
-  void UpdateShaderUniformsFromEffect(ParamCacheGLES2* param_cache_gl);
-  // Undoes the effect of the above.  For now, this unbinds textures.
-  void ResetShaderUniforms(ParamCacheGLES2* param_cache_gl);
-  void GetShaderParamInfo(GLuint program,
-                          std::map<std::string, EffectParameterInfo>* info_map);
-  void GetVaryingVertexShaderParamInfo(
-      GLuint program,
-      std::vector<EffectStreamInfo>* info_array);
-  void ClearProgram();
-  GLuint LoadShader(GLenum type, const char* shader_src);
+	private:
+		void CacheGLParamMapping();
+		// Loops through all the parameters in the ShapeDataGLES2 and updates the
+		// corresponding parameter EffectGLES2 object
+		void UpdateShaderUniformsFromEffect(ParamCacheGLES2* param_cache_gl);
+		// Undoes the effect of the above.  For now, this unbinds textures.
+		void ResetShaderUniforms(ParamCacheGLES2* param_cache_gl);
+		void GetShaderParamInfo(GLuint program,
+		                        std::map<std::string, EffectParameterInfo>* info_map);
+		void GetVaryingVertexShaderParamInfo(
+		    GLuint program,
+		    std::vector<EffectStreamInfo>* info_array);
+		void ClearProgram();
+		GLuint LoadShader(GLenum type, const char* shader_src);
 
-  // TODO(o3d): remove these (OLD path for textures).
-  void SetTexturesFromEffect(ParamCacheGLES2* param_cache_gl);
-  void FillSamplerToTextureMap(const std::string &effect);
-  std::string GetTextureNameFromSamplerParamName(const std::string &sampler_name);
+		// TODO(o3d): remove these (OLD path for textures).
+		void SetTexturesFromEffect(ParamCacheGLES2* param_cache_gl);
+		void FillSamplerToTextureMap(const std::string& effect);
+		std::string GetTextureNameFromSamplerParamName(const std::string& sampler_name);
 
-  SemanticManager* semantic_manager_;
-  RendererGLES2* renderer_;
+		SemanticManager* semantic_manager_;
+		RendererGLES2* renderer_;
 
-  GLuint gl_program_;
-  int compile_count_;
+		GLuint gl_program_;
+		int compile_count_;
 
-  // Cache the shader parameter mapping so that GPU readback only happens once
-  GLProgramParameterMap shader_param_info_map_;
-	
-  // TODO(o3d): remove this (OLD path for textures).
-  std::map<std::string, std::string> sampler_to_texture_map_;
-};
+		// Cache the shader parameter mapping so that GPU readback only happens once
+		GLProgramParameterMap shader_param_info_map_;
+
+		// TODO(o3d): remove this (OLD path for textures).
+		std::map<std::string, std::string> sampler_to_texture_map_;
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_EFFECT_GLES2_H_

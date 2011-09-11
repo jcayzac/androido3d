@@ -39,43 +39,43 @@
 
 namespace o3d {
 
-class DrawList;
+	class DrawList;
 
-class DrawListManager {
- public:
-  static const InterfaceId kInterfaceId;
+	class DrawListManager {
+	public:
+		static const InterfaceId kInterfaceId;
 
-  explicit DrawListManager(ServiceLocator* service_locator);
+		explicit DrawListManager(ServiceLocator* service_locator);
 
-  // Gets the lowest numbered unused DrawList index and adds it to the list of
-  // used indices. These indices are used as an optimization at render time.
-  // Then it registers the DrawList in the client's DrawList DB.
-  // This is an internal function.
-  // Parameters:
-  //   draw_list: Pass list to register.
-  // Returns:
-  //   a global pass list index.
-  unsigned int RegisterDrawList(DrawList* draw_list);
+		// Gets the lowest numbered unused DrawList index and adds it to the list of
+		// used indices. These indices are used as an optimization at render time.
+		// Then it registers the DrawList in the client's DrawList DB.
+		// This is an internal function.
+		// Parameters:
+		//   draw_list: Pass list to register.
+		// Returns:
+		//   a global pass list index.
+		unsigned int RegisterDrawList(DrawList* draw_list);
 
-  // Removes the DrawList from the client's DrawList DB and frees its global
-  // pass index that is no longer being used.
-  // This is an internal function
-  // Parameters:
-  //   draw_list: Pass list to register.
-  void UnregisterDrawList(DrawList* draw_list);
+		// Removes the DrawList from the client's DrawList DB and frees its global
+		// pass index that is no longer being used.
+		// This is an internal function
+		// Parameters:
+		//   draw_list: Pass list to register.
+		void UnregisterDrawList(DrawList* draw_list);
 
-  // Clear all the pass lists so they don't hold pointers across frames.
-  void Reset();
+		// Clear all the pass lists so they don't hold pointers across frames.
+		void Reset();
 
- private:
-  ServiceImplementation<DrawListManager> service_;
+	private:
+		ServiceImplementation<DrawListManager> service_;
 
-  // Keep a map of DrawLists to indices for optimizaion and so we can clear them
-  // each frame. A raw pointer is safe because the constructor/destructor for
-  // DrawList keeps this array valid.
-  typedef std::map<unsigned int, DrawList*> DrawListIndexMap;
-  DrawListIndexMap draw_list_map_;
-};
+		// Keep a map of DrawLists to indices for optimizaion and so we can clear them
+		// each frame. A raw pointer is safe because the constructor/destructor for
+		// DrawList keeps this array valid.
+		typedef std::map<unsigned int, DrawList*> DrawListIndexMap;
+		DrawListIndexMap draw_list_map_;
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_DRAW_LIST_MANAGER_H_

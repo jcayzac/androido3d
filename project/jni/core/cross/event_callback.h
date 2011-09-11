@@ -40,8 +40,8 @@
 
 namespace o3d {
 
-typedef NonRecursiveCallback1Manager<const Event&> EventCallbackManager;
-typedef EventCallbackManager::CallbackType EventCallback;
+	typedef NonRecursiveCallback1Manager<const Event&> EventCallbackManager;
+	typedef EventCallbackManager::CallbackType EventCallback;
 
 }  // namespace o3d
 

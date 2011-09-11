@@ -44,37 +44,37 @@ namespace o3d {
 // VertexBuffer that needs to have its contents serialized and a
 // DestinationBuffer that only needs to know its structure but not its
 // contents.
-class DestinationBuffer : public VertexBuffer {
- public:
-  typedef SmartPointer<DestinationBuffer> Ref;
+	class DestinationBuffer : public VertexBuffer {
+	public:
+		typedef SmartPointer<DestinationBuffer> Ref;
 
-  ~DestinationBuffer();
+		~DestinationBuffer();
 
- protected:
-  // Overridden from Buffer.
-  virtual bool ConcreteAllocate(size_t size_in_bytes);
+	protected:
+		// Overridden from Buffer.
+		virtual bool ConcreteAllocate(size_t size_in_bytes);
 
-  // Overridden from Buffer.
-  virtual bool ConcreteLock(AccessMode access_mode, void **buffer_data);
+		// Overridden from Buffer.
+		virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
 
-  // Overridden from Buffer.
-  virtual bool ConcreteUnlock();
+		// Overridden from Buffer.
+		virtual bool ConcreteUnlock();
 
-  explicit DestinationBuffer(ServiceLocator* service_locator);
+		explicit DestinationBuffer(ServiceLocator* service_locator);
 
- protected:
-  // Frees the buffer if it exists.
-  void ConcreteFree();
+	protected:
+		// Frees the buffer if it exists.
+		void ConcreteFree();
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  ::o3d::base::scoped_array<char> buffer_;  // The actual data for this buffer.
+		::o3d::base::scoped_array<char> buffer_;  // The actual data for this buffer.
 
-  O3D_OBJECT_BASE_DECL_CLASS(DestinationBuffer, VertexBuffer);
-  O3D_DISALLOW_COPY_AND_ASSIGN(DestinationBuffer);
-};
+		O3D_OBJECT_BASE_DECL_CLASS(DestinationBuffer, VertexBuffer);
+		O3D_DISALLOW_COPY_AND_ASSIGN(DestinationBuffer);
+	};
 
 
 }  // namespace o3d

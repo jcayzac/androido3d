@@ -51,151 +51,167 @@
 
 namespace o3d {
 
-namespace {
+	namespace {
 
 // Converts from a Field datatype to a suitable GL type
-GLenum GLDataType(const Field& field) {
-  if (field.IsA(FloatField::GetApparentClass())) {
-    return GL_FLOAT;
-  } else if (field.IsA(UByteNField::GetApparentClass())) {
-    switch (field.num_components()) {
-      case 4:
-        return GL_UNSIGNED_BYTE;
-    }
-  }
-  O3D_LOG(ERROR) << "Unknown Stream DataType";
-  return GL_INVALID_ENUM;
-}
+		GLenum GLDataType(const Field& field) {
+			if(field.IsA(FloatField::GetApparentClass())) {
+				return GL_FLOAT;
+			}
+			else if(field.IsA(UByteNField::GetApparentClass())) {
+				switch(field.num_components()) {
+				case 4:
+					return GL_UNSIGNED_BYTE;
+				}
+			}
 
-}  // anonymous namespace
+			O3D_LOG(ERROR) << "Unknown Stream DataType";
+			return GL_INVALID_ENUM;
+		}
+
+	}  // anonymous namespace
 
 // Number of times to log a repeated event before giving up.
-const int kNumLoggedEvents = 5;
+	const int kNumLoggedEvents = 5;
 
 // StreamBankGL functions ------------------------------------------------------
 
-StreamBankGL::StreamBankGL(ServiceLocator* service_locator)
-    : StreamBank(service_locator) {
-  O3D_LOG(INFO) << "StreamBankGL Construct";
-}
+	StreamBankGL::StreamBankGL(ServiceLocator* service_locator)
+		: StreamBank(service_locator) {
+		O3D_LOG(INFO) << "StreamBankGL Construct";
+	}
 
-StreamBankGL::~StreamBankGL() {
-  O3D_LOG(INFO) << "StreamBankGL Destruct";
-}
+	StreamBankGL::~StreamBankGL() {
+		O3D_LOG(INFO) << "StreamBankGL Destruct";
+	}
 
-bool StreamBankGL::CheckForMissingVertexStreams(
-    ParamCacheGL::VaryingParameterMap& varying_map,
-    Stream::Semantic* missing_semantic,
-    int* missing_semantic_index) {
-  O3D_ASSERT(missing_semantic);
-  O3D_ASSERT(missing_semantic_index);
-  O3D_LOG(INFO) << "StreamBankGL InsertMissingVertexStreams";
-  // Match CG_VARYING parameters to Buffers with the matching semantics.
-  ParamCacheGL::VaryingParameterMap::iterator i;
-  for (i = varying_map.begin(); i != varying_map.end(); ++i) {
-    CGparameter cg_param = i->first;
-    const char* semantic_string = cgGetParameterSemantic(cg_param);
-    int attr = SemanticNameToGLVertexAttribute(semantic_string);
-    int index = 0;
-    Stream::Semantic semantic = GLVertexAttributeToStream(attr, &index);
-    int stream_index = FindVertexStream(semantic, index);
-    if (stream_index >= 0) {
-      // record the matched stream into the varying parameter map for later
-      // use by StreamBankGL::Draw().
-      i->second = stream_index;
-      O3D_LOG(INFO)
-          << "StreamBankGL Matched CG_PARAMETER \""
-          << cgGetParameterName(cg_param) << " : "
-          << semantic_string << "\" to stream "
-          << stream_index << " \""
-          << vertex_stream_params_.at(
-              stream_index)->stream().field().buffer()->name()
-          << "\"";
-    } else {
-      // no matching stream was found.
-      *missing_semantic = semantic;
-      *missing_semantic_index = index;
-      return false;
-    }
-  }
-  CHECK_GL_ERROR();
-  return true;
-}
+	bool StreamBankGL::CheckForMissingVertexStreams(
+	    ParamCacheGL::VaryingParameterMap& varying_map,
+	    Stream::Semantic* missing_semantic,
+	    int* missing_semantic_index) {
+		O3D_ASSERT(missing_semantic);
+		O3D_ASSERT(missing_semantic_index);
+		O3D_LOG(INFO) << "StreamBankGL InsertMissingVertexStreams";
+		// Match CG_VARYING parameters to Buffers with the matching semantics.
+		ParamCacheGL::VaryingParameterMap::iterator i;
 
-bool StreamBankGL::BindStreamsForRendering(
-    const ParamCacheGL::VaryingParameterMap& varying_map,
-    unsigned int* max_vertices) {
-  *max_vertices = UINT_MAX;
-  // Loop over varying params setting up the streams.
-  ParamCacheGL::VaryingParameterMap::const_iterator i;
-  for (i = varying_map.begin(); i != varying_map.end(); ++i) {
-    const Stream& stream = vertex_stream_params_.at(i->second)->stream();
-    const Field& field = stream.field();
-    GLenum type = GLDataType(field);
-    if (type == GL_INVALID_ENUM) {
-      // TODO: support other kinds of buffers.
-      O3D_ERROR(service_locator())
-          << "unsupported field of type '" << field.GetClassName()
-          << "' on StreamBank '" << name() << "'";
-      return false;
-    }
-    VertexBufferGL *vbuffer = down_cast<VertexBufferGL*>(field.buffer());
-    if (!vbuffer) {
-      O3D_ERROR(service_locator())
-          << "stream has no buffer in StreamBank '" << name() << "'";
-      return false;
-    }
-    // TODO support all data types and packings here. Currently it
-    // only supports GL_FLOAT buffers, but buffers of GL_HALF and GL_INT are
-    // also possible as streamed parameter inputs.
-    GLint element_count = field.num_components();
-    if (element_count > 4) {
-      element_count = 0;
-      O3D_LOG_FIRST_N(ERROR, kNumLoggedEvents)
-          << "Unable to find stream for CGparameter: "
-          << cgGetParameterName(i->first);
-    }
+		for(i = varying_map.begin(); i != varying_map.end(); ++i) {
+			CGparameter cg_param = i->first;
+			const char* semantic_string = cgGetParameterSemantic(cg_param);
+			int attr = SemanticNameToGLVertexAttribute(semantic_string);
+			int index = 0;
+			Stream::Semantic semantic = GLVertexAttributeToStream(attr, &index);
+			int stream_index = FindVertexStream(semantic, index);
 
-    // In the num_elements = 1 case we want to do the D3D stride = 0 thing.
-    // but see below.
-    if (vbuffer->num_elements() == 1) {
-      // TODO: passing a stride of 0 has a different meaning in GL
-      // (compute a stride as if it was packed) than in DX (re-use the vertex
-      // over and over again). The equivalent of the DX behavior is by
-      // disabling the vertex array, and setting a constant value. Currently,
-      // this just avoids de-referencing outside of the vertex buffer, but it
-      // doesn't set the proper value: we'd need to map the buffer, get the
-      // value, and unmap it (slow !!). A better solution is to disallow 0
-      // stride at the API level, and instead maybe provide a way to pss a
-      // constant value - but the DX version relies on being able to pass a 0
-      // stride, so the whole thing needs a bit of rewrite.
-      cgGLDisableClientState(i->first);
-    } else {
-      glBindBufferARB(GL_ARRAY_BUFFER, vbuffer->gl_buffer());
-      cgGLSetParameterPointer(i->first,
-                              element_count,
-                              GLDataType(field),
-                              vbuffer->stride(),
-                              BUFFER_OFFSET(field.offset()));
-      cgGLEnableClientState(i->first);
-      *max_vertices = std::min(*max_vertices, stream.GetMaxVertices());
-    }
-  }
-  return true;
-}
+			if(stream_index >= 0) {
+				// record the matched stream into the varying parameter map for later
+				// use by StreamBankGL::Draw().
+				i->second = stream_index;
+				O3D_LOG(INFO)
+				        << "StreamBankGL Matched CG_PARAMETER \""
+				        << cgGetParameterName(cg_param) << " : "
+				        << semantic_string << "\" to stream "
+				        << stream_index << " \""
+				        << vertex_stream_params_.at(
+				            stream_index)->stream().field().buffer()->name()
+				        << "\"";
+			}
+			else {
+				// no matching stream was found.
+				*missing_semantic = semantic;
+				*missing_semantic_index = index;
+				return false;
+			}
+		}
+
+		CHECK_GL_ERROR();
+		return true;
+	}
+
+	bool StreamBankGL::BindStreamsForRendering(
+	    const ParamCacheGL::VaryingParameterMap& varying_map,
+	    unsigned int* max_vertices) {
+		*max_vertices = UINT_MAX;
+		// Loop over varying params setting up the streams.
+		ParamCacheGL::VaryingParameterMap::const_iterator i;
+
+		for(i = varying_map.begin(); i != varying_map.end(); ++i) {
+			const Stream& stream = vertex_stream_params_.at(i->second)->stream();
+			const Field& field = stream.field();
+			GLenum type = GLDataType(field);
+
+			if(type == GL_INVALID_ENUM) {
+				// TODO: support other kinds of buffers.
+				O3D_ERROR(service_locator())
+				        << "unsupported field of type '" << field.GetClassName()
+				        << "' on StreamBank '" << name() << "'";
+				return false;
+			}
+
+			VertexBufferGL* vbuffer = down_cast<VertexBufferGL*>(field.buffer());
+
+			if(!vbuffer) {
+				O3D_ERROR(service_locator())
+				        << "stream has no buffer in StreamBank '" << name() << "'";
+				return false;
+			}
+
+			// TODO support all data types and packings here. Currently it
+			// only supports GL_FLOAT buffers, but buffers of GL_HALF and GL_INT are
+			// also possible as streamed parameter inputs.
+			GLint element_count = field.num_components();
+
+			if(element_count > 4) {
+				element_count = 0;
+				O3D_LOG_FIRST_N(ERROR, kNumLoggedEvents)
+				        << "Unable to find stream for CGparameter: "
+				        << cgGetParameterName(i->first);
+			}
+
+			// In the num_elements = 1 case we want to do the D3D stride = 0 thing.
+			// but see below.
+			if(vbuffer->num_elements() == 1) {
+				// TODO: passing a stride of 0 has a different meaning in GL
+				// (compute a stride as if it was packed) than in DX (re-use the vertex
+				// over and over again). The equivalent of the DX behavior is by
+				// disabling the vertex array, and setting a constant value. Currently,
+				// this just avoids de-referencing outside of the vertex buffer, but it
+				// doesn't set the proper value: we'd need to map the buffer, get the
+				// value, and unmap it (slow !!). A better solution is to disallow 0
+				// stride at the API level, and instead maybe provide a way to pss a
+				// constant value - but the DX version relies on being able to pass a 0
+				// stride, so the whole thing needs a bit of rewrite.
+				cgGLDisableClientState(i->first);
+			}
+			else {
+				glBindBufferARB(GL_ARRAY_BUFFER, vbuffer->gl_buffer());
+				cgGLSetParameterPointer(i->first,
+				                        element_count,
+				                        GLDataType(field),
+				                        vbuffer->stride(),
+				                        BUFFER_OFFSET(field.offset()));
+				cgGLEnableClientState(i->first);
+				*max_vertices = std::min(*max_vertices, stream.GetMaxVertices());
+			}
+		}
+
+		return true;
+	}
 
 // private member functions ----------------------------------------------------
 
 // Searches the array of streams and returns the index of the stream that
 // matches the semantic and index pair. if no match was found, return "-1"
-int StreamBankGL::FindVertexStream(Stream::Semantic semantic, int index) {
-  for (unsigned ii = 0; ii < vertex_stream_params_.size(); ++ii) {
-    const Stream& stream = vertex_stream_params_[ii]->stream();
-    if (stream.semantic() == semantic && stream.semantic_index() == index) {
-      return static_cast<int>(ii);
-    }
-  }
-  return -1;
-}
+	int StreamBankGL::FindVertexStream(Stream::Semantic semantic, int index) {
+		for(unsigned ii = 0; ii < vertex_stream_params_.size(); ++ii) {
+			const Stream& stream = vertex_stream_params_[ii]->stream();
+
+			if(stream.semantic() == semantic && stream.semantic_index() == index) {
+				return static_cast<int>(ii);
+			}
+		}
+
+		return -1;
+	}
 
 }  // namespace o3d

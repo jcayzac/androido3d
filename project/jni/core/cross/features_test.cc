@@ -38,241 +38,204 @@
 
 namespace o3d {
 
-class FeaturesTest : public testing::Test {
- public:
-  ServiceLocator* service_locator() {
-    return service_locator_;
-  }
+	class FeaturesTest : public testing::Test {
+	public:
+		ServiceLocator* service_locator() {
+			return service_locator_;
+		}
 
- protected:
-  FeaturesTest() { }
+	protected:
+		FeaturesTest() { }
 
-  virtual void SetUp() {
-    // We need to create a new SerivceLocator because the global one
-    // already has a global Features object registered on it.
-    service_locator_ = new ServiceLocator;
-  }
+		virtual void SetUp() {
+			// We need to create a new SerivceLocator because the global one
+			// already has a global Features object registered on it.
+			service_locator_ = new ServiceLocator;
+		}
 
-  virtual void TearDown() {
-    delete service_locator_;
-  }
+		virtual void TearDown() {
+			delete service_locator_;
+		}
 
-  ServiceLocator* service_locator_;
-};
+		ServiceLocator* service_locator_;
+	};
 
-TEST_F(FeaturesTest, Basic) {
-  Features* features = new Features(service_locator());
+	TEST_F(FeaturesTest, Basic) {
+		Features* features = new Features(service_locator());
+		// Check that the features start off correctly.
+		//
+		// NOTE: For backward compatibility floating_point_textures and
+		//     large_geometry default to true.  o3djs.util.makeClients before 0.1.35.0
+		//     does not set the o3d_features plugin parameters and therefore
+		//     Features::Init is not called.  o3djs,util.makeClients after and
+		//     including 0.1.35.0 do set o3d_features and therefore Init is called
+		//     which sets those to false to start.
+		//
+		// NOTE: pre 0.1.40.0 flip_textures defaults to true. After it defaults to
+		//     false.
+		EXPECT_TRUE(features->floating_point_textures());
+		EXPECT_TRUE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-  // Check that the features start off correctly.
-  //
-  // NOTE: For backward compatibility floating_point_textures and
-  //     large_geometry default to true.  o3djs.util.makeClients before 0.1.35.0
-  //     does not set the o3d_features plugin parameters and therefore
-  //     Features::Init is not called.  o3djs,util.makeClients after and
-  //     including 0.1.35.0 do set o3d_features and therefore Init is called
-  //     which sets those to false to start.
-  //
-  // NOTE: pre 0.1.40.0 flip_textures defaults to true. After it defaults to
-  //     false.
+	TEST_F(FeaturesTest, Empty) {
+		Features* features = new Features(service_locator());
+		features->Init("");
+		// Check that the features start off as false.
+		EXPECT_FALSE(features->floating_point_textures());
+		EXPECT_FALSE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-  EXPECT_TRUE(features->floating_point_textures());
-  EXPECT_TRUE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+	TEST_F(FeaturesTest, APIVersion0_1_38_0) {
+		Features* features = new Features(service_locator());
+		features->Init("APIVersion=0.1.38.0");
+		// Check that the features start off as false.
+		EXPECT_FALSE(features->floating_point_textures());
+		EXPECT_FALSE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-  delete features;
-}
+	TEST_F(FeaturesTest, APIVersion0_1_40_0) {
+		Features* features = new Features(service_locator());
+		features->Init("APIVersion=0.1.40.0");
+		// Check that the features start off as false.
+		EXPECT_FALSE(features->floating_point_textures());
+		EXPECT_FALSE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_FALSE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-TEST_F(FeaturesTest, Empty) {
-  Features* features = new Features(service_locator());
+	TEST_F(FeaturesTest, FloatingPointTextures) {
+		Features* features = new Features(service_locator());
+		features->Init("FloatingPointTextures");
+		EXPECT_TRUE(features->floating_point_textures());
+		EXPECT_FALSE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-  features->Init("");
+	TEST_F(FeaturesTest, LargeGeometry) {
+		Features* features = new Features(service_locator());
+		features->Init("LargeGeometry");
+		EXPECT_FALSE(features->floating_point_textures());
+		EXPECT_TRUE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-  // Check that the features start off as false.
-  EXPECT_FALSE(features->floating_point_textures());
-  EXPECT_FALSE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+	TEST_F(FeaturesTest, Windowless) {
+		Features* features = new Features(service_locator());
+		features->Init("Windowless");
+		EXPECT_FALSE(features->floating_point_textures());
+		EXPECT_FALSE(features->large_geometry());
+		EXPECT_TRUE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-  delete features;
-}
+	TEST_F(FeaturesTest, NotAntiAliased) {
+		Features* features = new Features(service_locator());
+		features->Init("NotAntiAliased");
+		EXPECT_FALSE(features->floating_point_textures());
+		EXPECT_FALSE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_TRUE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-TEST_F(FeaturesTest, APIVersion0_1_38_0) {
-  Features* features = new Features(service_locator());
+	TEST_F(FeaturesTest, FlipTextures) {
+		Features* features = new Features(service_locator());
+		features->Init("FlipTextures,APIVersion=0.1.40.0");
+		EXPECT_FALSE(features->floating_point_textures());
+		EXPECT_FALSE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-  features->Init("APIVersion=0.1.38.0");
+	TEST_F(FeaturesTest, InitStatus) {
+		static Renderer::InitStatus statuses[] = {
+			Renderer::OUT_OF_RESOURCES,
+			Renderer::GPU_NOT_UP_TO_SPEC,
+			Renderer::INITIALIZATION_ERROR,
+		};
 
-  // Check that the features start off as false.
-  EXPECT_FALSE(features->floating_point_textures());
-  EXPECT_FALSE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		for(unsigned ii = 0; ii < o3d_arraysize(statuses); ++ii) {
+			Features* features = new Features(service_locator());
+			std::string s(StringPrintf("InitStatus=%d", statuses[ii]));
+			features->Init(s);
+			EXPECT_FALSE(features->floating_point_textures());
+			EXPECT_FALSE(features->large_geometry());
+			EXPECT_FALSE(features->windowless());
+			EXPECT_FALSE(features->not_anti_aliased());
+			EXPECT_TRUE(features->flip_textures());
+			EXPECT_EQ(features->init_status(), statuses[ii]);
+			delete features;
+		}
+	}
 
-  delete features;
-}
+	TEST_F(FeaturesTest, BadInput) {
+		Features* features = new Features(service_locator());
+		features->Init(",abcd,,efe,FloatingPointT,");
+		EXPECT_FALSE(features->floating_point_textures());
+		EXPECT_FALSE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-TEST_F(FeaturesTest, APIVersion0_1_40_0) {
-  Features* features = new Features(service_locator());
+	TEST_F(FeaturesTest, MultipleFeatures) {
+		Features* features = new Features(service_locator());
+		features->Init("FloatingPointTextures,Windowless");
+		EXPECT_TRUE(features->floating_point_textures());
+		EXPECT_FALSE(features->large_geometry());
+		EXPECT_TRUE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
-  features->Init("APIVersion=0.1.40.0");
-
-  // Check that the features start off as false.
-  EXPECT_FALSE(features->floating_point_textures());
-  EXPECT_FALSE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_FALSE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
-
-  delete features;
-}
-
-TEST_F(FeaturesTest, FloatingPointTextures) {
-  Features* features = new Features(service_locator());
-
-  features->Init("FloatingPointTextures");
-
-  EXPECT_TRUE(features->floating_point_textures());
-  EXPECT_FALSE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
-
-  delete features;
-}
-
-TEST_F(FeaturesTest, LargeGeometry) {
-  Features* features = new Features(service_locator());
-
-  features->Init("LargeGeometry");
-
-  EXPECT_FALSE(features->floating_point_textures());
-  EXPECT_TRUE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
-
-  delete features;
-}
-
-TEST_F(FeaturesTest, Windowless) {
-  Features* features = new Features(service_locator());
-
-  features->Init("Windowless");
-
-  EXPECT_FALSE(features->floating_point_textures());
-  EXPECT_FALSE(features->large_geometry());
-  EXPECT_TRUE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
-
-  delete features;
-}
-
-TEST_F(FeaturesTest, NotAntiAliased) {
-  Features* features = new Features(service_locator());
-
-  features->Init("NotAntiAliased");
-
-  EXPECT_FALSE(features->floating_point_textures());
-  EXPECT_FALSE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_TRUE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
-
-  delete features;
-}
-
-TEST_F(FeaturesTest, FlipTextures) {
-  Features* features = new Features(service_locator());
-
-  features->Init("FlipTextures,APIVersion=0.1.40.0");
-
-  EXPECT_FALSE(features->floating_point_textures());
-  EXPECT_FALSE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
-
-  delete features;
-}
-
-TEST_F(FeaturesTest, InitStatus) {
-  static Renderer::InitStatus statuses[] = {
-    Renderer::OUT_OF_RESOURCES,
-    Renderer::GPU_NOT_UP_TO_SPEC,
-    Renderer::INITIALIZATION_ERROR,
-  };
-  for (unsigned ii = 0; ii < o3d_arraysize(statuses); ++ii) {
-    Features* features = new Features(service_locator());
-    std::string s(StringPrintf("InitStatus=%d", statuses[ii]));
-    features->Init(s);
-
-    EXPECT_FALSE(features->floating_point_textures());
-    EXPECT_FALSE(features->large_geometry());
-    EXPECT_FALSE(features->windowless());
-    EXPECT_FALSE(features->not_anti_aliased());
-    EXPECT_TRUE(features->flip_textures());
-    EXPECT_EQ(features->init_status(), statuses[ii]);
-
-    delete features;
-  }
-}
-
-TEST_F(FeaturesTest, BadInput) {
-  Features* features = new Features(service_locator());
-
-  features->Init(",abcd,,efe,FloatingPointT,");
-
-  EXPECT_FALSE(features->floating_point_textures());
-  EXPECT_FALSE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
-
-  delete features;
-}
-
-TEST_F(FeaturesTest, MultipleFeatures) {
-  Features* features = new Features(service_locator());
-
-  features->Init("FloatingPointTextures,Windowless");
-
-  EXPECT_TRUE(features->floating_point_textures());
-  EXPECT_FALSE(features->large_geometry());
-  EXPECT_TRUE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
-
-  delete features;
-}
-
-TEST_F(FeaturesTest, MaxCapabilities) {
-  Features* features = new Features(service_locator());
-
-  features->Init("MaxCapabilities");
-
-  EXPECT_TRUE(features->floating_point_textures());
-  EXPECT_TRUE(features->large_geometry());
-  EXPECT_FALSE(features->windowless());
-  EXPECT_FALSE(features->not_anti_aliased());
-  EXPECT_TRUE(features->flip_textures());
-  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
-
-  delete features;
-}
+	TEST_F(FeaturesTest, MaxCapabilities) {
+		Features* features = new Features(service_locator());
+		features->Init("MaxCapabilities");
+		EXPECT_TRUE(features->floating_point_textures());
+		EXPECT_TRUE(features->large_geometry());
+		EXPECT_FALSE(features->windowless());
+		EXPECT_FALSE(features->not_anti_aliased());
+		EXPECT_TRUE(features->flip_textures());
+		EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+		delete features;
+	}
 
 }  // namespace o3d

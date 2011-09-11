@@ -36,35 +36,35 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Matrix4AxisRotation, ParamObject);
+	O3D_DEFN_CLASS(Matrix4AxisRotation, ParamObject);
 
-const char* Matrix4AxisRotation::kInputMatrixParamName =
-    O3D_STRING_CONSTANT("inputMatrix");
-const char* Matrix4AxisRotation::kAxisParamName =
-    O3D_STRING_CONSTANT("axis");
-const char* Matrix4AxisRotation::kAngleParamName =
-    O3D_STRING_CONSTANT("angle");
-const char* Matrix4AxisRotation::kOutputMatrixParamName =
-    O3D_STRING_CONSTANT("outputMatrix");
+	const char* Matrix4AxisRotation::kInputMatrixParamName =
+	    O3D_STRING_CONSTANT("inputMatrix");
+	const char* Matrix4AxisRotation::kAxisParamName =
+	    O3D_STRING_CONSTANT("axis");
+	const char* Matrix4AxisRotation::kAngleParamName =
+	    O3D_STRING_CONSTANT("angle");
+	const char* Matrix4AxisRotation::kOutputMatrixParamName =
+	    O3D_STRING_CONSTANT("outputMatrix");
 
-Matrix4AxisRotation::Matrix4AxisRotation(ServiceLocator* service_locator)
-    : ParamObject(service_locator) {
-  RegisterParamRef(kInputMatrixParamName, &input_matrix_param_);
-  RegisterParamRef(kAxisParamName, &axis_param_);
-  RegisterParamRef(kAngleParamName, &angle_param_);
-  SlaveParamMatrix4::RegisterParamRef(kOutputMatrixParamName,
-                                      &output_matrix_param_,
-                                      this);
-}
+	Matrix4AxisRotation::Matrix4AxisRotation(ServiceLocator* service_locator)
+		: ParamObject(service_locator) {
+		RegisterParamRef(kInputMatrixParamName, &input_matrix_param_);
+		RegisterParamRef(kAxisParamName, &axis_param_);
+		RegisterParamRef(kAngleParamName, &angle_param_);
+		SlaveParamMatrix4::RegisterParamRef(kOutputMatrixParamName,
+		                                    &output_matrix_param_,
+		                                    this);
+	}
 
-void Matrix4AxisRotation::UpdateOutputs() {
-  Matrix4 matrix = input_matrix() * Matrix4::rotation(
-      angle_param_->value(),
-      Float3ToVector3(axis_param_->value()));
-  output_matrix_param_->set_dynamic_value(matrix);
-}
+	void Matrix4AxisRotation::UpdateOutputs() {
+		Matrix4 matrix = input_matrix() * Matrix4::rotation(
+		                     angle_param_->value(),
+		                     Float3ToVector3(axis_param_->value()));
+		output_matrix_param_->set_dynamic_value(matrix);
+	}
 
-ObjectBase::Ref Matrix4AxisRotation::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new Matrix4AxisRotation(service_locator));
-}
+	ObjectBase::Ref Matrix4AxisRotation::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new Matrix4AxisRotation(service_locator));
+	}
 }  // namespace o3d

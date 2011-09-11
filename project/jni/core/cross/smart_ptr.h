@@ -42,131 +42,132 @@ namespace o3d {
 // The intrusive part of the reference counting mechanism.  All objects to
 // be used within the reference-counting system must inherit from RefCounted.
 // The class contains the reference count.
-class RefCounted {
-  template <class C>
-  friend class SmartPointer;
- protected:
-  RefCounted() : reference_count_(0) {
-  }
+	class RefCounted {
+		template <class C>
+		friend class SmartPointer;
+	protected:
+		RefCounted() : reference_count_(0) {
+		}
 
-  // Call when a new reference is made to the object.
-  void AddRef() const {
-    ++reference_count_;
-  }
+		// Call when a new reference is made to the object.
+		void AddRef() const {
+			++reference_count_;
+		}
 
-  // Call when a reference to the object is no longer needed.
-  int Release() const {
-    return --reference_count_;
-  }
+		// Call when a reference to the object is no longer needed.
+		int Release() const {
+			return --reference_count_;
+		}
 
- private:
-  mutable int reference_count_;
-  O3D_DISALLOW_COPY_AND_ASSIGN(RefCounted);
-};
+	private:
+		mutable int reference_count_;
+		O3D_DISALLOW_COPY_AND_ASSIGN(RefCounted);
+	};
 
 
 // Template wrapper class that controls the lifetime of heap-constructed
 // objects.
-template <class C>
-class SmartPointer {
- public:
-  typedef C* Pointer;
-  typedef C& Reference;
-  typedef C  ClassType;
+	template <class C>
+	class SmartPointer {
+	public:
+		typedef C* Pointer;
+		typedef C& Reference;
+		typedef C  ClassType;
 
-  // SmartPointer objects initialize to NULL on construction.
-  SmartPointer() : data_(NULL) {
-  }
+		// SmartPointer objects initialize to NULL on construction.
+		SmartPointer() : data_(NULL) {
+		}
 
-  // This copy constructor is not marked explicit on purpose, so that
-  // we can copy smart pointers implicitly.
-  SmartPointer(const SmartPointer<C>& pointer)  // NOLINT
-      : data_(pointer.Get()) {
-    AddRef();
-  }
+		// This copy constructor is not marked explicit on purpose, so that
+		// we can copy smart pointers implicitly.
+		SmartPointer(const SmartPointer<C>& pointer)  // NOLINT
+			: data_(pointer.Get()) {
+			AddRef();
+		}
 
-  explicit SmartPointer(Pointer data) : data_(data) {
-    AddRef();
-  }
+		explicit SmartPointer(Pointer data) : data_(data) {
+			AddRef();
+		}
 
-  ~SmartPointer() {
-    Release();
-  }
+		~SmartPointer() {
+			Release();
+		}
 
-  SmartPointer<C>& operator=(const SmartPointer<C>& rhs);
+		SmartPointer<C>& operator=(const SmartPointer<C>& rhs);
 
-  // Operators to return a reference and pointer to the data, respectively.
-  // Note that the constness of the operators obeys normal C++ pointer
-  // semantics:  If the pointer is const, the data is not const.
-  Reference operator*() const {
-    return *data_;
-  }
-  Pointer operator->() const {
-    return data_;
-  }
+		// Operators to return a reference and pointer to the data, respectively.
+		// Note that the constness of the operators obeys normal C++ pointer
+		// semantics:  If the pointer is const, the data is not const.
+		Reference operator*() const {
+			return *data_;
+		}
+		Pointer operator->() const {
+			return data_;
+		}
 
-  // Casting opertor needed by the plug-in generator code.
-  // TODO: Remove this method so that all conversions between smart-
-  // pointers and raw-pointers are explicit.
-  operator Pointer() const {
-    return data_;
-  }
+		// Casting opertor needed by the plug-in generator code.
+		// TODO: Remove this method so that all conversions between smart-
+		// pointers and raw-pointers are explicit.
+		operator Pointer() const {
+			return data_;
+		}
 
-  Pointer Get() const {
-    return data_;
-  }
+		Pointer Get() const {
+			return data_;
+		}
 
-  bool IsNull() const {
-    return data_ == NULL;
-  }
+		bool IsNull() const {
+			return data_ == NULL;
+		}
 
-  void Reset() {
-    *this = SmartPointer<C>(NULL);
-  }
+		void Reset() {
+			*this = SmartPointer<C>(NULL);
+		}
 
- private:
-  // Helper function to conditionally add a reference to the pointed-to-data.
-  void AddRef() {
-    if (data_) {
-      data_->AddRef();
-    }
-  }
+	private:
+		// Helper function to conditionally add a reference to the pointed-to-data.
+		void AddRef() {
+			if(data_) {
+				data_->AddRef();
+			}
+		}
 
-  // Helper function to decrement the reference count of the pointed-to-data.
-  // If the reference count is zero after the decrement, then the object is
-  // deleted, and the pointer assigned to NULL.
-  void Release();
+		// Helper function to decrement the reference count of the pointed-to-data.
+		// If the reference count is zero after the decrement, then the object is
+		// deleted, and the pointer assigned to NULL.
+		void Release();
 
-  Pointer data_;
-};
+		Pointer data_;
+	};
 
 // Provide a convenience equality test operator on SmartPointer objects.
-template <class C>
-inline bool operator==(const SmartPointer<C>& lhs, const SmartPointer<C>& rhs) {
-  return lhs.Get() == rhs.Get();
-}
+	template <class C>
+	inline bool operator==(const SmartPointer<C>& lhs, const SmartPointer<C>& rhs) {
+		return lhs.Get() == rhs.Get();
+	}
 
-template <class C>
-inline SmartPointer<C>& SmartPointer<C>::operator=(const SmartPointer<C>& rhs) {
-  if (this == &rhs) {
-    return *this;
-  }
+	template <class C>
+	inline SmartPointer<C>& SmartPointer<C>::operator=(const SmartPointer<C>& rhs) {
+		if(this == &rhs) {
+			return *this;
+		}
 
-  Release();
-  data_ = rhs.data_;
-  AddRef();
-  return *this;
-}
+		Release();
+		data_ = rhs.data_;
+		AddRef();
+		return *this;
+	}
 
-template <class C>
-void SmartPointer<C>::Release() {
-  if (data_) {
-    if (data_->Release() == 0) {
-      delete data_;
-    }
-    data_ = NULL;
-  }
-}
+	template <class C>
+	void SmartPointer<C>::Release() {
+		if(data_) {
+			if(data_->Release() == 0) {
+				delete data_;
+			}
+
+			data_ = NULL;
+		}
+	}
 
 }  // namespace o3d
 

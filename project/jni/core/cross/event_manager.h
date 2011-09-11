@@ -41,67 +41,67 @@
 
 namespace o3d {
 
-class Client;
+	class Client;
 
 //  This class manages the queue of events that need to get forwarded through to
 //  JavaScript handlers.  It deals with synthesizing any events that need
 //  synthesis in the same way across platforms, and does throttling on mousemove
 //  events.
-class EventManager {
- public:
+	class EventManager {
+	public:
 
-  explicit EventManager() :
-      mousedown_in_plugin_(false),
+		explicit EventManager() :
+			mousedown_in_plugin_(false),
 #ifndef NDEBUG
-      processing_event_queue_(false),
+			processing_event_queue_(false),
 #endif
-      valid_(true) { }
+			valid_(true) { }
 
-  // Do per-timer-tick queue processing.
-  void ProcessQueue();
+		// Do per-timer-tick queue processing.
+		void ProcessQueue();
 
-  // Sets the callback for a events of a supplied type.
-  // NOTE: The client takes ownership of the EventCallback you pass in. It will
-  // be deleted if you call SetEventCallback a second time for the same event
-  // type or if you call ClearEventCallback for that type.
-  //
-  // Parameters:
-  //   event_callback: EventCallback to call each time an event of the right
-  //                   type occurs.
-  //   type: Type of event this callback handles.
-  void SetEventCallback(Event::Type type, EventCallback* event_callback);
+		// Sets the callback for a events of a supplied type.
+		// NOTE: The client takes ownership of the EventCallback you pass in. It will
+		// be deleted if you call SetEventCallback a second time for the same event
+		// type or if you call ClearEventCallback for that type.
+		//
+		// Parameters:
+		//   event_callback: EventCallback to call each time an event of the right
+		//                   type occurs.
+		//   type: Type of event this callback handles.
+		void SetEventCallback(Event::Type type, EventCallback* event_callback);
 
-  // Clears the callback for events of a given type.
-  void ClearEventCallback(Event::Type type);
+		// Clears the callback for events of a given type.
+		void ClearEventCallback(Event::Type type);
 
-  // Automatically drops some mousemove events to throttle event bandwidth.
-  void AddEventToQueue(const Event& event);
+		// Automatically drops some mousemove events to throttle event bandwidth.
+		void AddEventToQueue(const Event& event);
 
-  // Deletes all callbacks and events.  May optionally be used before deletion,
-  // as it accomplishes what the destructor does, but is safe to use twice or
-  // not at all.  After this is called, no events will be processed, although
-  // all functions are still safe to call.
-  void ClearAll();
+		// Deletes all callbacks and events.  May optionally be used before deletion,
+		// as it accomplishes what the destructor does, but is safe to use twice or
+		// not at all.  After this is called, no events will be processed, although
+		// all functions are still safe to call.
+		void ClearAll();
 
- private:
-  // One EventCallbackManager for each type of event that we might have to pass
-  // through to the user.
-  EventCallbackManager event_callbacks_[Event::NUM_TYPES];
-  // Queue of events that have come in and need to get sent to the user's
-  // handler(s).  We throttle the rate at which events get handled by sending
-  // out a fixed number [currently one] per timer tick.  The ticks [and thus the
-  // events] still happen even if rendering on-demand.
-  EventQueue event_queue_;
-  bool mousedown_in_plugin_;
+	private:
+		// One EventCallbackManager for each type of event that we might have to pass
+		// through to the user.
+		EventCallbackManager event_callbacks_[Event::NUM_TYPES];
+		// Queue of events that have come in and need to get sent to the user's
+		// handler(s).  We throttle the rate at which events get handled by sending
+		// out a fixed number [currently one] per timer tick.  The ticks [and thus the
+		// events] still happen even if rendering on-demand.
+		EventQueue event_queue_;
+		bool mousedown_in_plugin_;
 
 #ifndef NDEBUG
-  // Test flag used to guarantee nonreentrance.
-  bool processing_event_queue_;
+		// Test flag used to guarantee nonreentrance.
+		bool processing_event_queue_;
 #endif
-  bool valid_;
+		bool valid_;
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(EventManager);
-};
+		O3D_DISALLOW_COPY_AND_ASSIGN(EventManager);
+	};
 
 }  // namespace o3d
 

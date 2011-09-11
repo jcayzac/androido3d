@@ -38,44 +38,45 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(DrawElement, ParamObject);
+	O3D_DEFN_CLASS(DrawElement, ParamObject);
 
-const char* DrawElement::kMaterialParamName =
-    O3D_STRING_CONSTANT("material");
+	const char* DrawElement::kMaterialParamName =
+	    O3D_STRING_CONSTANT("material");
 
-ObjectBase::Ref DrawElement::Create(ServiceLocator* service_locator) {
-  Renderer* renderer = service_locator->GetService<Renderer>();
-  if (NULL == renderer) {
-    O3D_ERROR(service_locator) << "No Render Device Available";
-    return ObjectBase::Ref();
-  }
+	ObjectBase::Ref DrawElement::Create(ServiceLocator* service_locator) {
+		Renderer* renderer = service_locator->GetService<Renderer>();
 
-  return ObjectBase::Ref(renderer->CreateDrawElement());
-}
+		if(NULL == renderer) {
+			O3D_ERROR(service_locator) << "No Render Device Available";
+			return ObjectBase::Ref();
+		}
 
-DrawElement::DrawElement(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      owner_(NULL) {
-  RegisterParamRef(kMaterialParamName, &material_param_ref_);
-}
+		return ObjectBase::Ref(renderer->CreateDrawElement());
+	}
 
-DrawElement::~DrawElement() {
-}
+	DrawElement::DrawElement(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  owner_(NULL) {
+		RegisterParamRef(kMaterialParamName, &material_param_ref_);
+	}
 
-void DrawElement::SetOwner(Element* new_owner) {
-  // Hold a ref to ourselves so we make sure we don't get deleted while
-  // as we remove ourself from our current owner.
-  DrawElement::Ref temp(this);
+	DrawElement::~DrawElement() {
+	}
 
-  if (owner_ != NULL) {
-    bool removed = owner_->RemoveDrawElement(this);
-    O3D_ASSERT(removed);
-  }
+	void DrawElement::SetOwner(Element* new_owner) {
+		// Hold a ref to ourselves so we make sure we don't get deleted while
+		// as we remove ourself from our current owner.
+		DrawElement::Ref temp(this);
 
-  owner_ = new_owner;
+		if(owner_ != NULL) {
+			bool removed = owner_->RemoveDrawElement(this);
+			O3D_ASSERT(removed);
+		}
 
-  if (new_owner) {
-    new_owner->AddDrawElement(this);
-  }
-}
+		owner_ = new_owner;
+
+		if(new_owner) {
+			new_owner->AddDrawElement(this);
+		}
+	}
 }  // namespace o3d

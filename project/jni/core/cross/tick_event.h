@@ -38,33 +38,33 @@
 namespace o3d {
 
 // This class is used to pass infomation to a registered ontick callback.
-class TickEvent {
- public:
-  TickEvent()
-      : elapsed_time_(0.0f) {
-  }
+	class TickEvent {
+	public:
+		TickEvent()
+			: elapsed_time_(0.0f) {
+		}
 
-  // Use this function to get elapsed time since the last tick event in
-  // seconds.
-  float elapsed_time() const;
+		// Use this function to get elapsed time since the last tick event in
+		// seconds.
+		float elapsed_time() const;
 
-  // The ticker will use this function to set the elapsed time. You should
-  // never call this function.
-  void set_elapsed_time(float time);
+		// The ticker will use this function to set the elapsed time. You should
+		// never call this function.
+		void set_elapsed_time(float time);
 
- private:
+	private:
 
-  // This is the elapsed time in seconds since the last tick event.
-  float elapsed_time_;
-};
+		// This is the elapsed time in seconds since the last tick event.
+		float elapsed_time_;
+	};
 
-inline void TickEvent::set_elapsed_time(float time) {
-  elapsed_time_ = time;
-}
+	inline void TickEvent::set_elapsed_time(float time) {
+		elapsed_time_ = time;
+	}
 
-inline float TickEvent::elapsed_time() const {
-  return elapsed_time_;
-}
+	inline float TickEvent::elapsed_time() const {
+		return elapsed_time_;
+	}
 
 }  // namespace o3d
 

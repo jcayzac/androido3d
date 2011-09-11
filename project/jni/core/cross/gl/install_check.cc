@@ -34,8 +34,8 @@
 
 namespace o3d {
 
-bool RendererInstallCheck(std::string *error) {
-  return true;
-}
+	bool RendererInstallCheck(std::string* error) {
+		return true;
+	}
 
 }  // o3d

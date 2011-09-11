@@ -38,137 +38,122 @@
 
 namespace o3d {
 
-class ClientInfoManagerTest : public testing::Test {
- public:
-  ServiceLocator* service_locator() {
-    return service_locator_;
-  }
+	class ClientInfoManagerTest : public testing::Test {
+	public:
+		ServiceLocator* service_locator() {
+			return service_locator_;
+		}
 
-  ObjectManager* object_manager() {
-    return object_manager_;
-  }
+		ObjectManager* object_manager() {
+			return object_manager_;
+		}
 
- protected:
-  ClientInfoManagerTest() { }
+	protected:
+		ClientInfoManagerTest() { }
 
-  virtual void SetUp() {
-    // We need to create a new SerivceLocator because the global one
-    // already has a global ClientInfoManager object registered on it.
-    service_locator_ = new ServiceLocator;
-    object_manager_ = new ObjectManager(service_locator_);
-  }
+		virtual void SetUp() {
+			// We need to create a new SerivceLocator because the global one
+			// already has a global ClientInfoManager object registered on it.
+			service_locator_ = new ServiceLocator;
+			object_manager_ = new ObjectManager(service_locator_);
+		}
 
-  virtual void TearDown() {
-    delete object_manager_;
-    delete service_locator_;
-  }
+		virtual void TearDown() {
+			delete object_manager_;
+			delete service_locator_;
+		}
 
-  ServiceLocator* service_locator_;
-  ObjectManager* object_manager_;
-};
+		ServiceLocator* service_locator_;
+		ObjectManager* object_manager_;
+	};
 
-TEST_F(ClientInfoManagerTest, Basic) {
-  ClientInfoManager* client_info_manager =
-      new ClientInfoManager(service_locator());
-  ASSERT_TRUE(client_info_manager != NULL);
+	TEST_F(ClientInfoManagerTest, Basic) {
+		ClientInfoManager* client_info_manager =
+		    new ClientInfoManager(service_locator());
+		ASSERT_TRUE(client_info_manager != NULL);
+		// Check that the client_info_manager start off correctly.
+		EXPECT_EQ(0, client_info_manager->client_info().texture_memory_used());
+		EXPECT_EQ(0, client_info_manager->client_info().buffer_memory_used());
+		EXPECT_EQ(0, client_info_manager->client_info().num_objects());
+		EXPECT_FALSE(client_info_manager->client_info().software_renderer());
+		EXPECT_FALSE(client_info_manager->client_info().non_power_of_two_textures());
+		int version[4] = { -1, -1, -1, -1 };
+		sscanf(client_info_manager->client_info().version().c_str(),
+		       "%d.%d.%d.%d", &version[0], &version[1], &version[2], &version[3]);
+		EXPECT_NE(-1, version[0]);
+		EXPECT_NE(-1, version[1]);
+		EXPECT_NE(-1, version[2]);
+		EXPECT_NE(-1, version[3]);
+		delete client_info_manager;
+	}
 
-  // Check that the client_info_manager start off correctly.
-  EXPECT_EQ(0, client_info_manager->client_info().texture_memory_used());
-  EXPECT_EQ(0, client_info_manager->client_info().buffer_memory_used());
-  EXPECT_EQ(0, client_info_manager->client_info().num_objects());
-  EXPECT_FALSE(client_info_manager->client_info().software_renderer());
-  EXPECT_FALSE(client_info_manager->client_info().non_power_of_two_textures());
+	TEST_F(ClientInfoManagerTest, AdjustTextureMemoryUsed) {
+		ClientInfoManager* client_info_manager =
+		    new ClientInfoManager(service_locator());
+		ASSERT_TRUE(client_info_manager != NULL);
+		client_info_manager->AdjustTextureMemoryUsed(10);
+		EXPECT_EQ(10, client_info_manager->client_info().texture_memory_used());
+		client_info_manager->AdjustTextureMemoryUsed(10);
+		EXPECT_EQ(20, client_info_manager->client_info().texture_memory_used());
+		client_info_manager->AdjustTextureMemoryUsed(-10);
+		EXPECT_EQ(10, client_info_manager->client_info().texture_memory_used());
+		client_info_manager->AdjustTextureMemoryUsed(-10);
+		EXPECT_EQ(0, client_info_manager->client_info().texture_memory_used());
+		delete client_info_manager;
+	}
 
-  int version[4] = { -1, -1, -1, -1 };
-  sscanf(client_info_manager->client_info().version().c_str(),
-         "%d.%d.%d.%d", &version[0], &version[1], &version[2], &version[3]);
-  EXPECT_NE(-1, version[0]);
-  EXPECT_NE(-1, version[1]);
-  EXPECT_NE(-1, version[2]);
-  EXPECT_NE(-1, version[3]);
+	TEST_F(ClientInfoManagerTest, AdjustBufferMemoryUsed) {
+		ClientInfoManager* client_info_manager =
+		    new ClientInfoManager(service_locator());
+		ASSERT_TRUE(client_info_manager != NULL);
+		client_info_manager->AdjustBufferMemoryUsed(10);
+		EXPECT_EQ(10, client_info_manager->client_info().buffer_memory_used());
+		client_info_manager->AdjustBufferMemoryUsed(10);
+		EXPECT_EQ(20, client_info_manager->client_info().buffer_memory_used());
+		client_info_manager->AdjustBufferMemoryUsed(-10);
+		EXPECT_EQ(10, client_info_manager->client_info().buffer_memory_used());
+		client_info_manager->AdjustBufferMemoryUsed(-10);
+		EXPECT_EQ(0, client_info_manager->client_info().buffer_memory_used());
+		delete client_info_manager;
+	}
 
-  delete client_info_manager;
-}
+	TEST_F(ClientInfoManagerTest, SetNumObjects) {
+		ClientInfoManager* client_info_manager =
+		    new ClientInfoManager(service_locator());
+		ASSERT_TRUE(client_info_manager != NULL);
+		ObjectBase* object_1 = new ObjectBase(service_locator());
+		ASSERT_TRUE(object_1 != NULL);
+		EXPECT_EQ(1, client_info_manager->client_info().num_objects());
+		ObjectBase* object_2 = new ObjectBase(service_locator());
+		ASSERT_TRUE(object_2 != NULL);
+		EXPECT_EQ(2, client_info_manager->client_info().num_objects());
+		delete object_1;
+		EXPECT_EQ(1, client_info_manager->client_info().num_objects());
+		delete object_2;
+		EXPECT_EQ(0, client_info_manager->client_info().num_objects());
+		delete client_info_manager;
+	}
 
-TEST_F(ClientInfoManagerTest, AdjustTextureMemoryUsed) {
-  ClientInfoManager* client_info_manager =
-      new ClientInfoManager(service_locator());
-  ASSERT_TRUE(client_info_manager != NULL);
+	TEST_F(ClientInfoManagerTest, SetSoftwareRenderer) {
+		ClientInfoManager* client_info_manager =
+		    new ClientInfoManager(service_locator());
+		ASSERT_TRUE(client_info_manager != NULL);
+		client_info_manager->SetSoftwareRenderer(true);
+		EXPECT_TRUE(client_info_manager->client_info().software_renderer());
+		client_info_manager->SetSoftwareRenderer(false);
+		EXPECT_FALSE(client_info_manager->client_info().software_renderer());
+		delete client_info_manager;
+	}
 
-  client_info_manager->AdjustTextureMemoryUsed(10);
-  EXPECT_EQ(10, client_info_manager->client_info().texture_memory_used());
-  client_info_manager->AdjustTextureMemoryUsed(10);
-  EXPECT_EQ(20, client_info_manager->client_info().texture_memory_used());
-  client_info_manager->AdjustTextureMemoryUsed(-10);
-  EXPECT_EQ(10, client_info_manager->client_info().texture_memory_used());
-  client_info_manager->AdjustTextureMemoryUsed(-10);
-  EXPECT_EQ(0, client_info_manager->client_info().texture_memory_used());
-
-  delete client_info_manager;
-}
-
-TEST_F(ClientInfoManagerTest, AdjustBufferMemoryUsed) {
-  ClientInfoManager* client_info_manager =
-      new ClientInfoManager(service_locator());
-  ASSERT_TRUE(client_info_manager != NULL);
-
-  client_info_manager->AdjustBufferMemoryUsed(10);
-  EXPECT_EQ(10, client_info_manager->client_info().buffer_memory_used());
-  client_info_manager->AdjustBufferMemoryUsed(10);
-  EXPECT_EQ(20, client_info_manager->client_info().buffer_memory_used());
-  client_info_manager->AdjustBufferMemoryUsed(-10);
-  EXPECT_EQ(10, client_info_manager->client_info().buffer_memory_used());
-  client_info_manager->AdjustBufferMemoryUsed(-10);
-  EXPECT_EQ(0, client_info_manager->client_info().buffer_memory_used());
-
-  delete client_info_manager;
-}
-
-TEST_F(ClientInfoManagerTest, SetNumObjects) {
-  ClientInfoManager* client_info_manager =
-      new ClientInfoManager(service_locator());
-  ASSERT_TRUE(client_info_manager != NULL);
-
-  ObjectBase* object_1 = new ObjectBase(service_locator());
-  ASSERT_TRUE(object_1 != NULL);
-  EXPECT_EQ(1, client_info_manager->client_info().num_objects());
-
-  ObjectBase* object_2 = new ObjectBase(service_locator());
-  ASSERT_TRUE(object_2 != NULL);
-  EXPECT_EQ(2, client_info_manager->client_info().num_objects());
-
-  delete object_1;
-  EXPECT_EQ(1, client_info_manager->client_info().num_objects());
-  delete object_2;
-  EXPECT_EQ(0, client_info_manager->client_info().num_objects());
-
-  delete client_info_manager;
-}
-
-TEST_F(ClientInfoManagerTest, SetSoftwareRenderer) {
-  ClientInfoManager* client_info_manager =
-      new ClientInfoManager(service_locator());
-  ASSERT_TRUE(client_info_manager != NULL);
-
-  client_info_manager->SetSoftwareRenderer(true);
-  EXPECT_TRUE(client_info_manager->client_info().software_renderer());
-  client_info_manager->SetSoftwareRenderer(false);
-  EXPECT_FALSE(client_info_manager->client_info().software_renderer());
-
-  delete client_info_manager;
-}
-
-TEST_F(ClientInfoManagerTest, SetNonPowerOfTwoTextures) {
-  ClientInfoManager* client_info_manager =
-      new ClientInfoManager(service_locator());
-  ASSERT_TRUE(client_info_manager != NULL);
-
-  client_info_manager->SetNonPowerOfTwoTextures(true);
-  EXPECT_TRUE(client_info_manager->client_info().non_power_of_two_textures());
-  client_info_manager->SetNonPowerOfTwoTextures(false);
-  EXPECT_FALSE(client_info_manager->client_info().non_power_of_two_textures());
-
-  delete client_info_manager;
-}
+	TEST_F(ClientInfoManagerTest, SetNonPowerOfTwoTextures) {
+		ClientInfoManager* client_info_manager =
+		    new ClientInfoManager(service_locator());
+		ASSERT_TRUE(client_info_manager != NULL);
+		client_info_manager->SetNonPowerOfTwoTextures(true);
+		EXPECT_TRUE(client_info_manager->client_info().non_power_of_two_textures());
+		client_info_manager->SetNonPowerOfTwoTextures(false);
+		EXPECT_FALSE(client_info_manager->client_info().non_power_of_two_textures());
+		delete client_info_manager;
+	}
 
 }  // namespace o3d

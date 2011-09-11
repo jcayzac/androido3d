@@ -42,142 +42,142 @@ namespace o3d {
 #define O3D_STANDARD_ANNOTATION_ENTRY(enum_name, class_name)  \
   O3D_DEFN_CLASS(class_name ## ParamMatrix4, ParamMatrix4);
 
-O3D_STANDARD_ANNOTATIONS;
+	O3D_STANDARD_ANNOTATIONS;
 
 
-template <>
-void StandardParamMatrix4<WORLD>::ComputeValue() {
-  set_read_only_value(transformation_context_->world());
-}
+	template <>
+	void StandardParamMatrix4<WORLD>::ComputeValue() {
+		set_read_only_value(transformation_context_->world());
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_INVERSE>::ComputeValue() {
-  set_read_only_value(inverse(transformation_context_->world()));
-}
+	template <>
+	void StandardParamMatrix4<WORLD_INVERSE>::ComputeValue() {
+		set_read_only_value(inverse(transformation_context_->world()));
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(transformation_context_->world()));
-}
+	template <>
+	void StandardParamMatrix4<WORLD_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(transformation_context_->world()));
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_INVERSE_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(inverse(transformation_context_->world())));
-}
+	template <>
+	void StandardParamMatrix4<WORLD_INVERSE_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(inverse(transformation_context_->world())));
+	}
 
-template <>
-void StandardParamMatrix4<VIEW>::ComputeValue() {
-  set_read_only_value(transformation_context_->view());
-}
+	template <>
+	void StandardParamMatrix4<VIEW>::ComputeValue() {
+		set_read_only_value(transformation_context_->view());
+	}
 
-template <>
-void StandardParamMatrix4<VIEW_INVERSE>::ComputeValue() {
-  set_read_only_value(inverse(transformation_context_->view()));
-}
+	template <>
+	void StandardParamMatrix4<VIEW_INVERSE>::ComputeValue() {
+		set_read_only_value(inverse(transformation_context_->view()));
+	}
 
-template <>
-void StandardParamMatrix4<VIEW_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(transformation_context_->view()));
-}
+	template <>
+	void StandardParamMatrix4<VIEW_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(transformation_context_->view()));
+	}
 
-template <>
-void StandardParamMatrix4<VIEW_INVERSE_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(inverse(transformation_context_->view())));
-}
+	template <>
+	void StandardParamMatrix4<VIEW_INVERSE_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(inverse(transformation_context_->view())));
+	}
 
-template <>
-void StandardParamMatrix4<PROJECTION>::ComputeValue() {
-  set_read_only_value(transformation_context_->projection());
-}
+	template <>
+	void StandardParamMatrix4<PROJECTION>::ComputeValue() {
+		set_read_only_value(transformation_context_->projection());
+	}
 
-template <>
-void StandardParamMatrix4<PROJECTION_INVERSE>::ComputeValue() {
-  set_read_only_value(inverse(transformation_context_->projection()));
-}
+	template <>
+	void StandardParamMatrix4<PROJECTION_INVERSE>::ComputeValue() {
+		set_read_only_value(inverse(transformation_context_->projection()));
+	}
 
-template <>
-void StandardParamMatrix4<PROJECTION_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(transformation_context_->projection()));
-}
+	template <>
+	void StandardParamMatrix4<PROJECTION_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(transformation_context_->projection()));
+	}
 
-template <>
-void StandardParamMatrix4<PROJECTION_INVERSE_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(
-      transpose(inverse(transformation_context_->projection())));
-}
+	template <>
+	void StandardParamMatrix4<PROJECTION_INVERSE_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(
+		    transpose(inverse(transformation_context_->projection())));
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_VIEW>::ComputeValue() {
-  set_read_only_value(transformation_context_->view() *
-      transformation_context_->world());
-}
+	template <>
+	void StandardParamMatrix4<WORLD_VIEW>::ComputeValue() {
+		set_read_only_value(transformation_context_->view() *
+		                    transformation_context_->world());
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_VIEW_INVERSE>::ComputeValue() {
-  set_read_only_value(inverse(transformation_context_->view() *
-      transformation_context_->world()));
-}
+	template <>
+	void StandardParamMatrix4<WORLD_VIEW_INVERSE>::ComputeValue() {
+		set_read_only_value(inverse(transformation_context_->view() *
+		                            transformation_context_->world()));
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_VIEW_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(transformation_context_->view() *
-      transformation_context_->world()));
-}
+	template <>
+	void StandardParamMatrix4<WORLD_VIEW_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(transformation_context_->view() *
+		                              transformation_context_->world()));
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_VIEW_INVERSE_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(inverse(transformation_context_->view() *
-      transformation_context_->world())));
-}
+	template <>
+	void StandardParamMatrix4<WORLD_VIEW_INVERSE_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(inverse(transformation_context_->view() *
+		                                      transformation_context_->world())));
+	}
 
-template <>
-void StandardParamMatrix4<VIEW_PROJECTION>::ComputeValue() {
-  set_read_only_value(transformation_context_->view_projection());
-}
+	template <>
+	void StandardParamMatrix4<VIEW_PROJECTION>::ComputeValue() {
+		set_read_only_value(transformation_context_->view_projection());
+	}
 
-template <>
-void StandardParamMatrix4<VIEW_PROJECTION_INVERSE>::ComputeValue() {
-  set_read_only_value(inverse(transformation_context_->view_projection()));
-}
+	template <>
+	void StandardParamMatrix4<VIEW_PROJECTION_INVERSE>::ComputeValue() {
+		set_read_only_value(inverse(transformation_context_->view_projection()));
+	}
 
-template <>
-void StandardParamMatrix4<VIEW_PROJECTION_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(transformation_context_->view_projection()));
-}
+	template <>
+	void StandardParamMatrix4<VIEW_PROJECTION_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(transformation_context_->view_projection()));
+	}
 
-template <>
-void StandardParamMatrix4<VIEW_PROJECTION_INVERSE_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(inverse(
-      transformation_context_->view_projection())));
-}
+	template <>
+	void StandardParamMatrix4<VIEW_PROJECTION_INVERSE_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(inverse(
+		                                  transformation_context_->view_projection())));
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_VIEW_PROJECTION>::ComputeValue() {
-  set_read_only_value(transformation_context_->world_view_projection());
-}
+	template <>
+	void StandardParamMatrix4<WORLD_VIEW_PROJECTION>::ComputeValue() {
+		set_read_only_value(transformation_context_->world_view_projection());
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_VIEW_PROJECTION_INVERSE>::ComputeValue() {
-  set_read_only_value(inverse(transformation_context_->
-      world_view_projection()));
-}
+	template <>
+	void StandardParamMatrix4<WORLD_VIEW_PROJECTION_INVERSE>::ComputeValue() {
+		set_read_only_value(inverse(transformation_context_->
+		                            world_view_projection()));
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_VIEW_PROJECTION_TRANSPOSE>::ComputeValue() {
-  set_read_only_value(transpose(
-      transformation_context_->world_view_projection()));
-}
+	template <>
+	void StandardParamMatrix4<WORLD_VIEW_PROJECTION_TRANSPOSE>::ComputeValue() {
+		set_read_only_value(transpose(
+		                        transformation_context_->world_view_projection()));
+	}
 
-template <>
-void StandardParamMatrix4<WORLD_VIEW_PROJECTION_INVERSE_TRANSPOSE>::
-    ComputeValue() {
-  set_read_only_value(transpose(inverse(
-      transformation_context_->world_view_projection())));
-}
+	template <>
+	void StandardParamMatrix4<WORLD_VIEW_PROJECTION_INVERSE_TRANSPOSE>::
+	ComputeValue() {
+		set_read_only_value(transpose(inverse(
+		                                  transformation_context_->world_view_projection())));
+	}
 
-template <>
-void StandardParamMatrix4<BILLBOARD>::
-    ComputeValue() {
+	template <>
+	void StandardParamMatrix4<BILLBOARD>::
+	ComputeValue() {
 		// Construct a billboard orthonormal basis:
 		// Z basis vector = normalize(camPos-objPos.xyz);
 		// X basis vector = normalize(cross(viewUp, Z basis));
@@ -185,19 +185,19 @@ void StandardParamMatrix4<BILLBOARD>::
 		o3d::Vector3 eye = -transformation_context_->view().getTranslation();
 		o3d::Vector3 Y(0.0f, 1.0f, 0.0f);
 		o3d::Matrix4 mat44 = o3d::Matrix4::identity();
-		o3d::Vector3 objToCamera = normalize( eye - transformation_context_->world().getTranslation() );
-		o3d::Vector3 X = normalize( cross(Y,objToCamera) );
+		o3d::Vector3 objToCamera = normalize(eye - transformation_context_->world().getTranslation());
+		o3d::Vector3 X = normalize(cross(Y, objToCamera));
 		o3d::Matrix3 mat;
-		mat.setCol( 0, X );
-		mat.setCol( 1, Y );
-		mat.setCol( 2, cross(X,Y) );
+		mat.setCol(0, X);
+		mat.setCol(1, Y);
+		mat.setCol(2, cross(X, Y));
 		mat44.setUpper3x3(mat);
 		set_read_only_value(mat44);
 	}
 
-template <>
-void StandardParamMatrix4<BILLBOARD_TRANSPOSE>::
-    ComputeValue() {
+	template <>
+	void StandardParamMatrix4<BILLBOARD_TRANSPOSE>::
+	ComputeValue() {
 		// Construct a billboard orthonormal basis:
 		// Z basis vector = normalize(camPos-objPos.xyz);
 		// X basis vector = normalize(cross(viewUp, Z basis));
@@ -205,14 +205,14 @@ void StandardParamMatrix4<BILLBOARD_TRANSPOSE>::
 		o3d::Vector3 eye = -transformation_context_->view().getTranslation();
 		o3d::Vector3 Y(0.0f, 1.0f, 0.0f);
 		o3d::Matrix4 mat44 = o3d::Matrix4::identity();
-		o3d::Vector3 objToCamera = normalize( eye - transformation_context_->world().getTranslation() );
-		o3d::Vector3 X = normalize( cross(Y,objToCamera) );
+		o3d::Vector3 objToCamera = normalize(eye - transformation_context_->world().getTranslation());
+		o3d::Vector3 X = normalize(cross(Y, objToCamera));
 		o3d::Matrix3 mat;
-		mat.setRow( 0, X );
-		mat.setRow( 1, Y );
-		mat.setRow( 2, cross(X,Y) );
+		mat.setRow(0, X);
+		mat.setRow(1, Y);
+		mat.setRow(2, cross(X, Y));
 		mat44.setUpper3x3(mat);
 		set_read_only_value(mat44);
 	}
-	
+
 }  // namespace o3d

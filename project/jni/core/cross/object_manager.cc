@@ -37,105 +37,113 @@
 
 namespace o3d {
 
-const InterfaceId ObjectManager::kInterfaceId =
-    InterfaceTraits<ObjectManager>::kInterfaceId;
+	const InterfaceId ObjectManager::kInterfaceId =
+	    InterfaceTraits<ObjectManager>::kInterfaceId;
 
-ObjectManager::ObjectManager(ServiceLocator* service_locator)
-    : service_locator_(service_locator),
-      service_(service_locator_, this) {
-}
+	ObjectManager::ObjectManager(ServiceLocator* service_locator)
+		: service_locator_(service_locator),
+		  service_(service_locator_, this) {
+	}
 
-ObjectManager::~ObjectManager() {
-  // Free all the packs.
-  pack_array_.clear();
+	ObjectManager::~ObjectManager() {
+		// Free all the packs.
+		pack_array_.clear();
+		O3D_ASSERT(object_map_.empty()) << "Client node leak.";
+	}
 
-  O3D_ASSERT(object_map_.empty()) << "Client node leak.";
-}
+	std::vector<ObjectBase*> ObjectManager::GetObjects(
+	    const std::string& name,
+	    const std::string& class_type_name) const {
+		ObjectBaseArray objects;
+		ObjectMap::const_iterator end(object_map_.end());
 
-std::vector<ObjectBase*> ObjectManager::GetObjects(
-    const std::string& name,
-    const std::string& class_type_name) const {
-  ObjectBaseArray objects;
-  ObjectMap::const_iterator end(object_map_.end());
-  for (ObjectMap::const_iterator iter(object_map_.begin());
-       iter != end;
-       ++iter) {
-    if (iter->second->IsAClassName(class_type_name) &&
-        iter->second->IsA(NamedObjectBase::GetApparentClass()) &&
-        down_cast<NamedObjectBase*>(iter->second)->name().compare(name) == 0) {
-      objects.push_back(iter->second);
-    }
-  }
-  return objects;
-}
+		for(ObjectMap::const_iterator iter(object_map_.begin());
+		        iter != end;
+		        ++iter) {
+			if(iter->second->IsAClassName(class_type_name) &&
+			        iter->second->IsA(NamedObjectBase::GetApparentClass()) &&
+			        down_cast<NamedObjectBase*>(iter->second)->name().compare(name) == 0) {
+				objects.push_back(iter->second);
+			}
+		}
 
-std::vector<ObjectBase*> ObjectManager::GetObjectsByClassName(
-    const std::string& class_type_name) const {
-  ObjectBaseArray objects;
-  ObjectMap::const_iterator end(object_map_.end());
-  for (ObjectMap::const_iterator iter(object_map_.begin());
-       iter != end;
-       ++iter) {
-    if (iter->second->IsAClassName(class_type_name)) {
-      objects.push_back(iter->second);
-    }
-  }
-  return objects;
-}
+		return objects;
+	}
 
-ObjectBase *ObjectManager::GetObjectBaseById(
-    Id id,
-    const ObjectBase::Class *type) const {
-  ObjectMap::const_iterator object_find(object_map_.find(id));
-  ObjectBase* object = NULL;
-  if (object_find != object_map_.end()) {
-    object = object_find->second;
-  }
+	std::vector<ObjectBase*> ObjectManager::GetObjectsByClassName(
+	    const std::string& class_type_name) const {
+		ObjectBaseArray objects;
+		ObjectMap::const_iterator end(object_map_.end());
 
-  if (object && !object->IsA(type)) {
-    object = NULL;
-  }
+		for(ObjectMap::const_iterator iter(object_map_.begin());
+		        iter != end;
+		        ++iter) {
+			if(iter->second->IsAClassName(class_type_name)) {
+				objects.push_back(iter->second);
+			}
+		}
 
-  return object;
-}
+		return objects;
+	}
 
-void ObjectManager::RegisterObject(ObjectBase *object) {
-  O3D_ASSERT(object_map_.find(object->id()) == object_map_.end())
-      << "attempt to register duplicate id in client";
-  object_map_.insert(std::make_pair(object->id(), object));
-}
+	ObjectBase* ObjectManager::GetObjectBaseById(
+	    Id id,
+	    const ObjectBase::Class* type) const {
+		ObjectMap::const_iterator object_find(object_map_.find(id));
+		ObjectBase* object = NULL;
 
-void ObjectManager::UnregisterObject(ObjectBase *object) {
-  ObjectMap::iterator object_find(object_map_.find(object->id()));
-  O3D_ASSERT(object_find != object_map_.end())
-      << "Unregistering an unknown object.";
+		if(object_find != object_map_.end()) {
+			object = object_find->second;
+		}
 
-  if (object_find != object_map_.end()) {
-    object_map_.erase(object_find);
-  }
-}
+		if(object && !object->IsA(type)) {
+			object = NULL;
+		}
 
-bool ObjectManager::DestroyPack(Pack* pack) {
-  PackRefArray::iterator iter = std::find(pack_array_.begin(),
-                                          pack_array_.end(),
-                                          pack);
-  O3D_ASSERT(iter != pack_array_.end()) << "Destruction of unknown pack.";
-  if (iter != pack_array_.end()) {
-    pack_array_.erase(iter);
-    return true;
-  }
-  return false;
-}
+		return object;
+	}
 
-Pack* ObjectManager::CreatePack() {
-  Pack::Ref pack(new Pack(service_locator_));
-  if (pack) {
-    pack_array_.push_back(pack);
-  }
-  return pack;
-}
+	void ObjectManager::RegisterObject(ObjectBase* object) {
+		O3D_ASSERT(object_map_.find(object->id()) == object_map_.end())
+		        << "attempt to register duplicate id in client";
+		object_map_.insert(std::make_pair(object->id(), object));
+	}
 
-void ObjectManager::DestroyAllPacks() {
-  pack_array_.clear();
-}
+	void ObjectManager::UnregisterObject(ObjectBase* object) {
+		ObjectMap::iterator object_find(object_map_.find(object->id()));
+		O3D_ASSERT(object_find != object_map_.end())
+		        << "Unregistering an unknown object.";
+
+		if(object_find != object_map_.end()) {
+			object_map_.erase(object_find);
+		}
+	}
+
+	bool ObjectManager::DestroyPack(Pack* pack) {
+		PackRefArray::iterator iter = std::find(pack_array_.begin(),
+		                                        pack_array_.end(),
+		                                        pack);
+		O3D_ASSERT(iter != pack_array_.end()) << "Destruction of unknown pack.";
+
+		if(iter != pack_array_.end()) {
+			pack_array_.erase(iter);
+			return true;
+		}
+
+		return false;
+	}
+
+	Pack* ObjectManager::CreatePack() {
+		Pack::Ref pack(new Pack(service_locator_));
+
+		if(pack) {
+			pack_array_.push_back(pack);
+		}
+
+		return pack;
+	}
+
+	void ObjectManager::DestroyAllPacks() {
+		pack_array_.clear();
+	}
 }  // namespace o3d

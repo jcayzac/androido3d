@@ -39,26 +39,26 @@
 
 namespace o3d {
 
-class RendererGL;
+	class RendererGL;
 
 // SamplerGL is an implementation of the Sampler object for GL.
-class SamplerGL : public Sampler {
- public:
-  explicit SamplerGL(ServiceLocator* service_locator);
-  virtual ~SamplerGL();
+	class SamplerGL : public Sampler {
+	public:
+		explicit SamplerGL(ServiceLocator* service_locator);
+		virtual ~SamplerGL();
 
-  // Sets the gl texture and sampler states.
-  void SetTextureAndStates(CGparameter cg_param);
+		// Sets the gl texture and sampler states.
+		void SetTextureAndStates(CGparameter cg_param);
 
-  // Unbinds the GL texture.
-  void ResetTexture(CGparameter cg_param);
+		// Unbinds the GL texture.
+		void ResetTexture(CGparameter cg_param);
 
- private:
+	private:
 
-  RendererGL* renderer_;
+		RendererGL* renderer_;
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(SamplerGL);
-};
+		O3D_DISALLOW_COPY_AND_ASSIGN(SamplerGL);
+	};
 }  // namespace o3d
 
 

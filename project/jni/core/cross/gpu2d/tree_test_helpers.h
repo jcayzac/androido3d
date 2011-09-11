@@ -40,20 +40,20 @@
 #include "base/cross/config.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
 // Generates a seed value to be passed to InitRandom().
-int32_t GenerateSeed();
+		int32_t GenerateSeed();
 
 // Initializes the pseudo-random number generator with a specific seed.
-void InitRandom(const int32_t seed);
+		void InitRandom(const int32_t seed);
 
 // Produces the next pseudo-random number in the sequence, in the
 // range from [0..max_val). Negative numbers are not allowed and will
 // produce undefined results.
-int32_t NextRandom(const int32_t max_val);
+		int32_t NextRandom(const int32_t max_val);
 
-}  // namespace gpu2d
+	}  // namespace gpu2d
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GPU2D_TREE_TEST_HELPERS_H_

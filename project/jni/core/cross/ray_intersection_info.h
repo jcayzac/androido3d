@@ -41,83 +41,83 @@ namespace o3d {
 
 //  A RayIntersectionInfo is used to return the results of ray intersection
 //  tests.
-class RayIntersectionInfo {
- public:
-  RayIntersectionInfo()
-      : valid_(false),
-        intersected_(false),
-        primitive_index_(-1) {
-  }
+	class RayIntersectionInfo {
+	public:
+		RayIntersectionInfo()
+			: valid_(false),
+			  intersected_(false),
+			  primitive_index_(-1) {
+		}
 
-  // Puts this info in the default, unset state.
-  void Reset() {
-    set_valid(false);
-    set_intersected(false);
-    set_primitive_index(-1);
-  }
+		// Puts this info in the default, unset state.
+		void Reset() {
+			set_valid(false);
+			set_intersected(false);
+			set_primitive_index(-1);
+		}
 
-  // True if this ray intersection info is valid. For example if you call
-  // element->IntersectRay on an element that has no vertex buffers the result
-  // will be invalid.
-  bool valid() const {
-    return valid_;
-  }
+		// True if this ray intersection info is valid. For example if you call
+		// element->IntersectRay on an element that has no vertex buffers the result
+		// will be invalid.
+		bool valid() const {
+			return valid_;
+		}
 
-  void set_valid(bool valid) {
-    valid_ = valid;
-  }
+		void set_valid(bool valid) {
+			valid_ = valid;
+		}
 
-  // True if this ray intersection intersected something.
-  bool intersected() const {
-    return intersected_;
-  }
+		// True if this ray intersection intersected something.
+		bool intersected() const {
+			return intersected_;
+		}
 
-  void set_intersected(bool intersected) {
-    intersected_ = intersected;
-  }
+		void set_intersected(bool intersected) {
+			intersected_ = intersected;
+		}
 
-  // The position the ray intersected something.
-  const Point3& position() const {
-    return position_;
-  }
+		// The position the ray intersected something.
+		const Point3& position() const {
+			return position_;
+		}
 
-  void set_position(const Point3& position) {
-    position_ = position;
-  }
+		void set_position(const Point3& position) {
+			position_ = position;
+		}
 
-  // The index of the primitive that was intersected.
-  int primitive_index() const {
-    return primitive_index_;
-  }
+		// The index of the primitive that was intersected.
+		int primitive_index() const {
+			return primitive_index_;
+		}
 
-  void set_primitive_index(int index) {
-    primitive_index_ = index;
-  }
+		void set_primitive_index(int index) {
+			primitive_index_ = index;
+		}
 
-  // Intersects a ray with a trianagle.
-  // Parameters:
-  //   start: position of start of ray in local space.
-  //   end: position of end of ray in local space.
-  //   vert0: first vertex of triangle.
-  //   vert1: second vertex of triangle.
-  //   vert2: third vertex of triangle.
-  //   intersectionPoint: pointer to Point3 to receive the position of
-  //       intersection.
-  // Returns:
-  //    true if triangle was intersected by ray.
-  static bool IntersectTriangle(const Point3& start,
-                                const Point3& end,
-                                const Point3& vert0,
-                                const Point3& vert1,
-                                const Point3& vert2,
-                                Point3* intersectionPoint);
+		// Intersects a ray with a trianagle.
+		// Parameters:
+		//   start: position of start of ray in local space.
+		//   end: position of end of ray in local space.
+		//   vert0: first vertex of triangle.
+		//   vert1: second vertex of triangle.
+		//   vert2: third vertex of triangle.
+		//   intersectionPoint: pointer to Point3 to receive the position of
+		//       intersection.
+		// Returns:
+		//    true if triangle was intersected by ray.
+		static bool IntersectTriangle(const Point3& start,
+		                              const Point3& end,
+		                              const Point3& vert0,
+		                              const Point3& vert1,
+		                              const Point3& vert2,
+		                              Point3* intersectionPoint);
 
- private:
-  bool valid_;
-  bool intersected_;
-  Point3 position_;
-  int primitive_index_;
-};
+	private:
+		bool valid_;
+		bool intersected_;
+		Point3 position_;
+		int primitive_index_;
+	};
 
 }  // namespace o3d
 

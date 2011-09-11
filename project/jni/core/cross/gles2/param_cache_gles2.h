@@ -42,54 +42,54 @@
 
 namespace o3d {
 
-class ParamTexture;
-class SemanticManager;
+	class ParamTexture;
+	class SemanticManager;
 
-class ParamCacheGLES2 : public ParamCache {
- public:
-  ParamCacheGLES2(SemanticManager* semantic_manager, Renderer* renderer);
+	class ParamCacheGLES2 : public ParamCache {
+	public:
+		ParamCacheGLES2(SemanticManager* semantic_manager, Renderer* renderer);
 
-  typedef std::map<GLES2Parameter, int> VaryingParameterMap;
-  typedef std::map<GLES2Parameter,
-    EffectParamHandlerGLES2::Ref> UniformParameterMap;
-  typedef std::map<GLES2Parameter, ParamTexture*> SamplerParameterMap;
+		typedef std::map<GLES2Parameter, int> VaryingParameterMap;
+		typedef std::map < GLES2Parameter,
+		        EffectParamHandlerGLES2::Ref > UniformParameterMap;
+		typedef std::map<GLES2Parameter, ParamTexture*> SamplerParameterMap;
 
-  // Overridden from ParamCache.
-  virtual void UpdateCache(Effect* effect,
-                           DrawElement* draw_element,
-                           Element* element,
-                           Material* material,
-                           ParamObject* override);
+		// Overridden from ParamCache.
+		virtual void UpdateCache(Effect* effect,
+		                         DrawElement* draw_element,
+		                         Element* element,
+		                         Material* material,
+		                         ParamObject* override);
 
-  VaryingParameterMap& varying_map() { return varying_map_; }
-  UniformParameterMap& uniform_map() { return uniform_map_; }
+		VaryingParameterMap& varying_map() { return varying_map_; }
+		UniformParameterMap& uniform_map() { return uniform_map_; }
 
- protected:
-  // Overridden from ParamCache
-  // Validates platform specific information about the effect.
-  virtual bool ValidateEffect(Effect* effect);
+	protected:
+		// Overridden from ParamCache
+		// Validates platform specific information about the effect.
+		virtual bool ValidateEffect(Effect* effect);
 
- private:
-  SemanticManager* semantic_manager_;
-  Renderer* renderer_;
+	private:
+		SemanticManager* semantic_manager_;
+		Renderer* renderer_;
 
-  // Used to track if the shader on the Effect has changed and
-  // therefore we need to rebuild our cache.
-  int last_compile_count_;
+		// Used to track if the shader on the Effect has changed and
+		// therefore we need to rebuild our cache.
+		int last_compile_count_;
 
-  // Search the leaf parameters of a GLSL program for parameters and add the
-  // parameters found to the parameter maps on the DrawElement.
-  void ScanGLEffectParameters(GLuint gl_program,
-                              ParamObject* draw_element,
-                              ParamObject* element,
-                              Material* material,
-                              ParamObject* override);
+		// Search the leaf parameters of a GLSL program for parameters and add the
+		// parameters found to the parameter maps on the DrawElement.
+		void ScanGLEffectParameters(GLuint gl_program,
+		                            ParamObject* draw_element,
+		                            ParamObject* element,
+		                            Material* material,
+		                            ParamObject* override);
 
-  // A map of varying GLES2Parameter to Stream index.
-  VaryingParameterMap varying_map_;
-  // A map of uniform GLES2Parameter to Param objects.
-  UniformParameterMap uniform_map_;
-};
+		// A map of varying GLES2Parameter to Stream index.
+		VaryingParameterMap varying_map_;
+		// A map of uniform GLES2Parameter to Param objects.
+		UniformParameterMap uniform_map_;
+	};
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_PARAM_CACHE_GLES2_H_

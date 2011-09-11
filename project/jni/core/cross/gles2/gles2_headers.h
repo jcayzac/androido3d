@@ -44,12 +44,12 @@
 #elif defined(GLES2_BACKEND_NATIVE_GLES2)
 
 #ifdef OS_IPHONE
-  #include <OpenGLES/ES2/gl.h>
-  #include <OpenGLES/ES2/glext.h>
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
 #else
-  #include <EGL/egl.h>
-  #include <GLES2/gl2.h>
-  #include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #endif
 
 #define glClearDepth glClearDepthf

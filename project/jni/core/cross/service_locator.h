@@ -42,20 +42,20 @@
 
 namespace o3d {
 
-template <typename Interface>
-class ServiceImplementation;
+	template <typename Interface>
+	class ServiceImplementation;
 
-template <typename Interface>
-class ServiceDependency;
+	template <typename Interface>
+	class ServiceDependency;
 
-class IServiceDependency {
-  friend class ServiceLocator;
- private:
-  virtual void Update(void* newService) = 0;
- public:
-  virtual ~IServiceDependency() = 0;
-};
-inline IServiceDependency::~IServiceDependency() { }
+	class IServiceDependency {
+		friend class ServiceLocator;
+	private:
+		virtual void Update(void* newService) = 0;
+	public:
+		virtual ~IServiceDependency() = 0;
+	};
+	inline IServiceDependency::~IServiceDependency() { }
 
 // A ServiceLocator tracks a number of services and connects them together
 // through their ServiceDependencies. When a service is constucted, one or
@@ -65,67 +65,69 @@ inline IServiceDependency::~IServiceDependency() { }
 // to other services. When these services become available, the dependencies
 // are updated to reference them. When these services are not available, the
 // dependencies report their reference as NULL.
-class ServiceLocator {
-  template <typename Interface>
-  friend class ServiceImplementation;
+	class ServiceLocator {
+		template <typename Interface>
+		friend class ServiceImplementation;
 
-  template <typename Interface>
-  friend class ServiceDependency;
+		template <typename Interface>
+		friend class ServiceDependency;
 
-  typedef std::list<IServiceDependency*> DependencyList;
-  typedef std::map<InterfaceId, DependencyList> DependencyMap;
-  typedef std::map<InterfaceId, void*> ServiceMap;
+		typedef std::list<IServiceDependency*> DependencyList;
+		typedef std::map<InterfaceId, DependencyList> DependencyMap;
+		typedef std::map<InterfaceId, void*> ServiceMap;
 
- public:
-  ServiceLocator() {}
+	public:
+		ServiceLocator() {}
 
-  // Returns whether a given service is available.
-  template <typename Interface>
-  bool IsAvailable() const {
-    ServiceMap::const_iterator it = services_.find(Interface::kInterfaceId);
-    return it != services_.end();
-  }
-  // Get a pointer to a service added to the service locator. Consider using a
-  // ServiceDependency instead.
-  template <typename Interface>
-  Interface* GetService() const {
-    ServiceMap::const_iterator it = services_.find(Interface::kInterfaceId);
-    if (it != services_.end()) {
-      return static_cast<Interface*>(it->second);
-    } else {
-      O3D_ASSERT(false);
-      return NULL;
-    }
-  }
+		// Returns whether a given service is available.
+		template <typename Interface>
+		bool IsAvailable() const {
+			ServiceMap::const_iterator it = services_.find(Interface::kInterfaceId);
+			return it != services_.end();
+		}
+		// Get a pointer to a service added to the service locator. Consider using a
+		// ServiceDependency instead.
+		template <typename Interface>
+		Interface* GetService() const {
+			ServiceMap::const_iterator it = services_.find(Interface::kInterfaceId);
 
- private:
-  // Add service to list of those available through the service locator
-  // For any services previously added that are dependent on this one, update
-  // their dependency pointer to point here. This cannot be invoked directly.
-  // Use ServiceImplementation class.
-  void AddService(InterfaceId interfaceId, void* service);
+			if(it != services_.end()) {
+				return static_cast<Interface*>(it->second);
+			}
+			else {
+				O3D_ASSERT(false);
+				return NULL;
+			}
+		}
 
-  // Remove an existing service from the service locator. Update any existing
-  // dependencies referencing this service to NULL. This cannot be invoked
-  // directly. Use ServiceImplementation class.
-  void RemoveService(InterfaceId interfaceId, void* service);
+	private:
+		// Add service to list of those available through the service locator
+		// For any services previously added that are dependent on this one, update
+		// their dependency pointer to point here. This cannot be invoked directly.
+		// Use ServiceImplementation class.
+		void AddService(InterfaceId interfaceId, void* service);
 
-  // Add a service dependency to the service locator. If the service has already
-  // been added then just modify the dependency parameter to reference the
-  // known service. Otherwise, set the dependency to NULL and add it to a list
-  // of those that will be resolved as soon as the necessary service is added.
-  // This cannot be invoked directly. Use ServiceDependency class.
-  void AddDependency(InterfaceId interfaceId, IServiceDependency* dependency);
+		// Remove an existing service from the service locator. Update any existing
+		// dependencies referencing this service to NULL. This cannot be invoked
+		// directly. Use ServiceImplementation class.
+		void RemoveService(InterfaceId interfaceId, void* service);
 
-  // Remove a service dependency from the service locator.
-  // This cannot be invoked directly. Use ServiceDependency class.
-  void RemoveDependency(InterfaceId interfaceId,
-                        IServiceDependency* dependency);
+		// Add a service dependency to the service locator. If the service has already
+		// been added then just modify the dependency parameter to reference the
+		// known service. Otherwise, set the dependency to NULL and add it to a list
+		// of those that will be resolved as soon as the necessary service is added.
+		// This cannot be invoked directly. Use ServiceDependency class.
+		void AddDependency(InterfaceId interfaceId, IServiceDependency* dependency);
 
-  DependencyMap dependencies_;
-  ServiceMap services_;
-  O3D_DISALLOW_COPY_AND_ASSIGN(ServiceLocator);
-};
+		// Remove a service dependency from the service locator.
+		// This cannot be invoked directly. Use ServiceDependency class.
+		void RemoveDependency(InterfaceId interfaceId,
+		                      IServiceDependency* dependency);
+
+		DependencyMap dependencies_;
+		ServiceMap services_;
+		O3D_DISALLOW_COPY_AND_ASSIGN(ServiceLocator);
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_SERVICE_LOCATOR_H_

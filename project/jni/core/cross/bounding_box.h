@@ -44,107 +44,107 @@
 
 namespace o3d {
 
-class RayIntersectionInfo;
+	class RayIntersectionInfo;
 
 // Defines a class that represents an Axis Aligned Bounding Box.
-class BoundingBox {
- public:
-  // Constructs an uninitialized BoundingBox marking it as non valid.
-  BoundingBox()  : valid_(false), min_extent_(0, 0, 0), max_extent_(0, 0, 0) { }
+	class BoundingBox {
+	public:
+		// Constructs an uninitialized BoundingBox marking it as non valid.
+		BoundingBox()  : valid_(false), min_extent_(0, 0, 0), max_extent_(0, 0, 0) { }
 
-  // Constructs a BoundingBox.
-  // Parameters:
-  //   min_extent: minimum corner of the box.
-  //   max_extent: maximum corner of the box.
-  BoundingBox(const Point3& min_extent, const Point3& max_extent)
-      : valid_(true),
-        min_extent_(Vectormath::Aos::minPerElem(min_extent, max_extent)),
-        max_extent_(Vectormath::Aos::maxPerElem(min_extent, max_extent)) {
-  }
+		// Constructs a BoundingBox.
+		// Parameters:
+		//   min_extent: minimum corner of the box.
+		//   max_extent: maximum corner of the box.
+		BoundingBox(const Point3& min_extent, const Point3& max_extent)
+			: valid_(true),
+			  min_extent_(Vectormath::Aos::minPerElem(min_extent, max_extent)),
+			  max_extent_(Vectormath::Aos::maxPerElem(min_extent, max_extent)) {
+		}
 
-  // True if this bounding box has been initialized.
-  // Returns:
-  //   true if this bounding box has been initialized.
-  bool valid() const {
-    return valid_;
-  }
+		// True if this bounding box has been initialized.
+		// Returns:
+		//   true if this bounding box has been initialized.
+		bool valid() const {
+			return valid_;
+		}
 
-  // The min extent of the box.
-  // Returns:
-  //   the min extent of the box. If the box is not valid the return value
-  //   is undefined.
-  const Point3& min_extent() const {
-    return min_extent_;
-  }
+		// The min extent of the box.
+		// Returns:
+		//   the min extent of the box. If the box is not valid the return value
+		//   is undefined.
+		const Point3& min_extent() const {
+			return min_extent_;
+		}
 
-  // The max extent of the box.
-  // Returns:
-  //   the max extent of the box. If the box is not valid the return value
-  //   is undefined.
-  const Point3& max_extent() const {
-    return max_extent_;
-  }
+		// The max extent of the box.
+		// Returns:
+		//   the max extent of the box. If the box is not valid the return value
+		//   is undefined.
+		const Point3& max_extent() const {
+			return max_extent_;
+		}
 
-  // Computing the bounding box of this box re-oriented by multiplying by a
-  // Matrix4.
-  // Paramaters:
-  //   matrix: Matrix4 to multiple by.
-  //   result: pointer to bounding box to store the result.
-  void Mul(const Matrix4& matrix, BoundingBox* result) const;
+		// Computing the bounding box of this box re-oriented by multiplying by a
+		// Matrix4.
+		// Paramaters:
+		//   matrix: Matrix4 to multiple by.
+		//   result: pointer to bounding box to store the result.
+		void Mul(const Matrix4& matrix, BoundingBox* result) const;
 
-  // Adds a bounding box to this box producing a bounding box that contains
-  // both. If one box is invalid the result is the other box. If both boxes are
-  // invalid the result will be an invalid box.
-  // Parameters:
-  //   box: bounding box to add to this box.
-  //   result: pointer to bounding box to store the result.
-  void Add(const BoundingBox& box, BoundingBox* result) const;
+		// Adds a bounding box to this box producing a bounding box that contains
+		// both. If one box is invalid the result is the other box. If both boxes are
+		// invalid the result will be an invalid box.
+		// Parameters:
+		//   box: bounding box to add to this box.
+		//   result: pointer to bounding box to store the result.
+		void Add(const BoundingBox& box, BoundingBox* result) const;
 
-  // Checks if a ray defined in same coordinate system as this box intersects
-  // this bounding box.
-  // Parameters:
-  //   start: position of start of ray in local space.
-  //   end: position of end of ray in local space.
-  //   result: RayIntersectionInfo structure to fill out with results. If
-  //       result->valid() is false then something was wrong like using this
-  //       function with an uninitialized bounding box. If result->intersected()
-  //       is true then the ray intersected the box and result->position() is
-  //       the exact point of intersection.
-  void IntersectRay(const Point3& start,
-                    const Point3& end,
-                    RayIntersectionInfo* result) const;
+		// Checks if a ray defined in same coordinate system as this box intersects
+		// this bounding box.
+		// Parameters:
+		//   start: position of start of ray in local space.
+		//   end: position of end of ray in local space.
+		//   result: RayIntersectionInfo structure to fill out with results. If
+		//       result->valid() is false then something was wrong like using this
+		//       function with an uninitialized bounding box. If result->intersected()
+		//       is true then the ray intersected the box and result->position() is
+		//       the exact point of intersection.
+		void IntersectRay(const Point3& start,
+		                  const Point3& end,
+		                  RayIntersectionInfo* result) const;
 
-  // Returns true if the bounding box is inside the frustum.
-  // Parameter:
-  //   matrix: Matrix to transform the box from its local space to view frustum
-  //       space.
-  bool InFrustum(const Matrix4& matrix) const;
+		// Returns true if the bounding box is inside the frustum.
+		// Parameter:
+		//   matrix: Matrix to transform the box from its local space to view frustum
+		//       space.
+		bool InFrustum(const Matrix4& matrix) const;
 
- private:
-  bool valid_;  // true if this bounding box has been initialized.
-  Point3 min_extent_;
-  Point3 max_extent_;
-};
+	private:
+		bool valid_;  // true if this bounding box has been initialized.
+		Point3 min_extent_;
+		Point3 max_extent_;
+	};
 
 // A Param that contains a bounding box.
-class ParamBoundingBox : public TypedParam<BoundingBox> {
- public:
-  typedef SmartPointer<ParamBoundingBox> Ref;
+	class ParamBoundingBox : public TypedParam<BoundingBox> {
+	public:
+		typedef SmartPointer<ParamBoundingBox> Ref;
 
- protected:
-  ParamBoundingBox(ServiceLocator* service_locator,
-                   bool dynamic,
-                   bool read_only)
-      : TypedParam<BoundingBox>(service_locator, dynamic, read_only) {
-  }
+	protected:
+		ParamBoundingBox(ServiceLocator* service_locator,
+		                 bool dynamic,
+		                 bool read_only)
+			: TypedParam<BoundingBox>(service_locator, dynamic, read_only) {
+		}
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  O3D_DECL_CLASS(ParamBoundingBox, Param);
-  O3D_DISALLOW_COPY_AND_ASSIGN(ParamBoundingBox);
-};
+		O3D_DECL_CLASS(ParamBoundingBox, Param);
+		O3D_DISALLOW_COPY_AND_ASSIGN(ParamBoundingBox);
+	};
 
 }  // namespace o3d
 

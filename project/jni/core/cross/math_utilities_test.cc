@@ -35,14 +35,14 @@
 
 namespace o3d {
 
-TEST(TestFrobeniusNormTest, OfMatrix3) {
-  Matrix3 matrix(Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9));
-  ASSERT_NEAR(16.882f, FrobeniusNorm(matrix), 0.001f);
-}
+	TEST(TestFrobeniusNormTest, OfMatrix3) {
+		Matrix3 matrix(Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9));
+		ASSERT_NEAR(16.882f, FrobeniusNorm(matrix), 0.001f);
+	}
 
-TEST(FrobeniusNormTest, OfMatrix4) {
-  Matrix4 matrix(Vector4(1, 2, 3, 4), Vector4(5, 6, 7, 8),
-                 Vector4(9, 10, 11, 12), Vector4(13, 14, 15, 16));
-  ASSERT_NEAR(38.678f, FrobeniusNorm(matrix), 0.001f);
-}
+	TEST(FrobeniusNormTest, OfMatrix4) {
+		Matrix4 matrix(Vector4(1, 2, 3, 4), Vector4(5, 6, 7, 8),
+		               Vector4(9, 10, 11, 12), Vector4(13, 14, 15, 16));
+		ASSERT_NEAR(38.678f, FrobeniusNorm(matrix), 0.001f);
+	}
 }  // namespace o3d

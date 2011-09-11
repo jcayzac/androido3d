@@ -41,40 +41,40 @@
 namespace o3d {
 
 // A StateSet is a render node that sets render states for all of its children.
-class StateSet : public RenderNode {
- public:
-  typedef SmartPointer<StateSet> Ref;
+	class StateSet : public RenderNode {
+	public:
+		typedef SmartPointer<StateSet> Ref;
 
-  // Names of StateSet Params.
-  static const char* kStateParamName;
+		// Names of StateSet Params.
+		static const char* kStateParamName;
 
-  // Gets the state.
-  State* state() const {
-    return state_param_->value();
-  }
+		// Gets the state.
+		State* state() const {
+			return state_param_->value();
+		}
 
-  // Sets the state.
-  void set_state(State* value) {
-    state_param_->set_value(value);
-  }
+		// Sets the state.
+		void set_state(State* value) {
+			state_param_->set_value(value);
+		}
 
-  // Overridden from RenderNode. Sets the state.
-  virtual void Render(RenderContext* render_context);
+		// Overridden from RenderNode. Sets the state.
+		virtual void Render(RenderContext* render_context);
 
-  // Overridden from RenderNode. Restores the state.
-  virtual void PostRender(RenderContext* render_context);
+		// Overridden from RenderNode. Restores the state.
+		virtual void PostRender(RenderContext* render_context);
 
- private:
-  explicit StateSet(ServiceLocator* service_locator);
+	private:
+		explicit StateSet(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  ParamState::Ref state_param_;  // state
+		ParamState::Ref state_param_;  // state
 
-  O3D_DECL_CLASS(StateSet, RenderNode);
-  O3D_DISALLOW_COPY_AND_ASSIGN(StateSet);
-};
+		O3D_DECL_CLASS(StateSet, RenderNode);
+		O3D_DISALLOW_COPY_AND_ASSIGN(StateSet);
+	};
 
 }  // namespace o3d
 

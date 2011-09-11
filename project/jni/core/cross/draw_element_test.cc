@@ -40,39 +40,38 @@
 
 namespace o3d {
 
-class DrawElementTest : public testing::Test {
- protected:
+	class DrawElementTest : public testing::Test {
+	protected:
 
-  DrawElementTest()
-      : object_manager_(g_service_locator) {}
+		DrawElementTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
+	private:
 
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack* pack_;
-};
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+	};
 
-void DrawElementTest::SetUp() {
-  pack_ = object_manager_->CreatePack();
-}
+	void DrawElementTest::SetUp() {
+		pack_ = object_manager_->CreatePack();
+	}
 
-void DrawElementTest::TearDown() {
-  pack_->Destroy();
-}
+	void DrawElementTest::TearDown() {
+		pack_->Destroy();
+	}
 
-TEST_F(DrawElementTest, Basic) {
-  DrawElement* draw_element = pack()->Create<DrawElement>();
-  // Check that draw_pass got created.
-  EXPECT_TRUE(draw_element != NULL);
-
-  // Check that the default parameters got created.
-  EXPECT_TRUE(draw_element->GetParam<ParamMaterial>(
-      DrawElement::kMaterialParamName) != NULL);
-}
+	TEST_F(DrawElementTest, Basic) {
+		DrawElement* draw_element = pack()->Create<DrawElement>();
+		// Check that draw_pass got created.
+		EXPECT_TRUE(draw_element != NULL);
+		// Check that the default parameters got created.
+		EXPECT_TRUE(draw_element->GetParam<ParamMaterial>(
+		                DrawElement::kMaterialParamName) != NULL);
+	}
 
 }  // namespace o3d

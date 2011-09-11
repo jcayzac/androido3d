@@ -52,220 +52,223 @@
 namespace o3d {
 
 // Number of times to log a repeated event before giving up.
-const int kNumLoggedEvents = 5;
+	const int kNumLoggedEvents = 5;
 
 // PrimitiveGLES2 functions ----------------------------------------------------
 
-PrimitiveGLES2::PrimitiveGLES2(ServiceLocator* service_locator)
-    : Primitive(service_locator) {
-  O3D_LOG(INFO) << "PrimitiveGLES2 Construct";
-}
+	PrimitiveGLES2::PrimitiveGLES2(ServiceLocator* service_locator)
+		: Primitive(service_locator) {
+		O3D_LOG(INFO) << "PrimitiveGLES2 Construct";
+	}
 
-PrimitiveGLES2::~PrimitiveGLES2() {
-  O3D_LOG(INFO) << "PrimitiveGLES2 Destruct";
-}
+	PrimitiveGLES2::~PrimitiveGLES2() {
+		O3D_LOG(INFO) << "PrimitiveGLES2 Destruct";
+	}
 
 // Binds the vertex and index streams required to draw the shape.  If the
 // vertex or fragment programs have changed since the last time this method
 // was called (or it's the first time it's getting called) then it forces
 // an update of the mapping between the Shape Param's and the shader parameters
 // and also fills in for any missing streams.
-void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
-                                            DrawElement* draw_element,
-                                            Material* material,
-                                            ParamObject* override,
-                                            ParamCache* param_cache) {
-  O3D_ASSERT(material);
-  O3D_ASSERT(draw_element);
-  O3D_ASSERT(param_cache);
-  O3D_LOG_FIRST_N(INFO, kNumLoggedEvents) << "PrimitiveGLES2 Draw \""
-                                       << draw_element->name() << "\"";
-  DrawElementGLES2* draw_element_gl =
-      down_cast<DrawElementGLES2*>(draw_element);
-  EffectGLES2* effect_gl = down_cast<EffectGLES2*>(material->effect());
-  O3D_ASSERT(effect_gl);
-  StreamBankGLES2* stream_bank_gl = down_cast<StreamBankGLES2*>(stream_bank());
-  O3D_ASSERT(stream_bank_gl);
+	void PrimitiveGLES2::PlatformSpecificRender(Renderer* renderer,
+	        DrawElement* draw_element,
+	        Material* material,
+	        ParamObject* override,
+	        ParamCache* param_cache) {
+		O3D_ASSERT(material);
+		O3D_ASSERT(draw_element);
+		O3D_ASSERT(param_cache);
+		O3D_LOG_FIRST_N(INFO, kNumLoggedEvents) << "PrimitiveGLES2 Draw \""
+		                                        << draw_element->name() << "\"";
+		DrawElementGLES2* draw_element_gl =
+		    down_cast<DrawElementGLES2*>(draw_element);
+		EffectGLES2* effect_gl = down_cast<EffectGLES2*>(material->effect());
+		O3D_ASSERT(effect_gl);
+		StreamBankGLES2* stream_bank_gl = down_cast<StreamBankGLES2*>(stream_bank());
+		O3D_ASSERT(stream_bank_gl);
+		ParamCacheGLES2* param_cache_gl = down_cast<ParamCacheGLES2*>(param_cache);
+		ParamCacheGLES2::VaryingParameterMap& varying_map =
+		    param_cache_gl->varying_map();
 
-  ParamCacheGLES2* param_cache_gl = down_cast<ParamCacheGLES2*>(param_cache);
-  ParamCacheGLES2::VaryingParameterMap& varying_map =
-      param_cache_gl->varying_map();
+		// If this PrimitiveGLES2 has an effect we haven't seen before (or it's the
+		// first time through), initalize the parameter lists before drawing with it.
+		if(effect_gl->gl_program()) {
+			// Set up the current CGeffect.
+			if(!param_cache_gl->ValidateAndCacheParams(effect_gl,
+			        draw_element_gl,
+			        this,
+			        stream_bank_gl,
+			        material,
+			        override)) {
+				std::string missing_stream;
 
-  // If this PrimitiveGLES2 has an effect we haven't seen before (or it's the
-  // first time through), initalize the parameter lists before drawing with it.
-  if (effect_gl->gl_program()) {
-    // Set up the current CGeffect.
-    if (!param_cache_gl->ValidateAndCacheParams(effect_gl,
-                                                draw_element_gl,
-                                                this,
-                                                stream_bank_gl,
-                                                material,
-                                                override)) {
-      std::string missing_stream;
-      if (!stream_bank_gl->CheckForMissingVertexStreams(
-              varying_map,
-              effect_gl->gl_program(),
-              &missing_stream)) {
-        param_cache_gl->ClearParamCache();
-        O3D_ERROR(service_locator())
-            << "Required Stream "
-            << missing_stream << " missing on Primitive '" << name()
-            << "' using Material '" << material->name()
-            << "' with Effect '" << effect_gl->name() << "'";
-        return;
-      }
-    }
-  } else {
-    O3D_ERROR(service_locator())
-        << "No CG effect provided in Effect \""
-        << effect_gl->name() << "\" used by Material \""
-        << material->name() << "\" in Shape \""
-        << draw_element_gl->name() << "\". Drawing nothing.";
-    return;
-  }
+				if(!stream_bank_gl->CheckForMissingVertexStreams(
+				            varying_map,
+				            effect_gl->gl_program(),
+				            &missing_stream)) {
+					param_cache_gl->ClearParamCache();
+					O3D_ERROR(service_locator())
+					        << "Required Stream "
+					        << missing_stream << " missing on Primitive '" << name()
+					        << "' using Material '" << material->name()
+					        << "' with Effect '" << effect_gl->name() << "'";
+					return;
+				}
+			}
+		}
+		else {
+			O3D_ERROR(service_locator())
+			        << "No CG effect provided in Effect \""
+			        << effect_gl->name() << "\" used by Material \""
+			        << material->name() << "\" in Shape \""
+			        << draw_element_gl->name() << "\". Drawing nothing.";
+			return;
+		}
 
-  // Make sure our streams are up to date (skinned, etc..)
-  stream_bank_gl->UpdateStreams();
+		// Make sure our streams are up to date (skinned, etc..)
+		stream_bank_gl->UpdateStreams();
+		unsigned int max_vertices;
 
-  unsigned int max_vertices;
-  if (!stream_bank_gl->BindStreamsForRendering(varying_map,
-                                               effect_gl->gl_program(),
-                                               &max_vertices)) {
-    return;
-  }
+		if(!stream_bank_gl->BindStreamsForRendering(varying_map,
+		        effect_gl->gl_program(),
+		        &max_vertices)) {
+			return;
+		}
 
-  // TODO(o3d): move these checks at 'set' time instead of draw time.
+		// TODO(o3d): move these checks at 'set' time instead of draw time.
+		bool draw = true;
 
-  bool draw = true;
-  if (number_vertices_ > max_vertices) {
-    O3D_ERROR(service_locator())
-        << "Trying to draw with " << number_vertices_
-        << " vertices when there are only " << max_vertices
-        << " available in the buffers. Skipping primitive.";
-    draw = false;
-  }
+		if(number_vertices_ > max_vertices) {
+			O3D_ERROR(service_locator())
+			        << "Trying to draw with " << number_vertices_
+			        << " vertices when there are only " << max_vertices
+			        << " available in the buffers. Skipping primitive.";
+			draw = false;
+		}
 
-  unsigned int index_count;
+		unsigned int index_count;
 
-  if (!Primitive::GetIndexCount(primitive_type_,
-                                number_primitives_,
-                                &index_count)) {
-    O3D_ERROR(service_locator())
-        << "Unknown Primitive Type in GetIndexCount: "
-        << primitive_type_ << ". Skipping primitive "
-        << name();
-    draw = false;
-  }
+		if(!Primitive::GetIndexCount(primitive_type_,
+		                             number_primitives_,
+		                             &index_count)) {
+			O3D_ERROR(service_locator())
+			        << "Unknown Primitive Type in GetIndexCount: "
+			        << primitive_type_ << ". Skipping primitive "
+			        << name();
+			draw = false;
+		}
 
-  if (indexed()) {
-    // Re-bind the index buffer for this shape
-    IndexBufferGLES2 *ibuffer = down_cast<IndexBufferGLES2*>(index_buffer());
+		if(indexed()) {
+			// Re-bind the index buffer for this shape
+			IndexBufferGLES2* ibuffer = down_cast<IndexBufferGLES2*>(index_buffer());
+			unsigned int max_indices = ibuffer->num_elements();
 
-    unsigned int max_indices = ibuffer->num_elements();
+			if(index_count > max_indices) {
+				O3D_ERROR(service_locator())
+				        << "Trying to draw with " << index_count
+				        << " indices when only " << max_indices
+				        << " are available in the buffer. Skipping shape.";
+				draw = false;
+			}
 
-    if (index_count > max_indices) {
-      O3D_ERROR(service_locator())
-          << "Trying to draw with " << index_count
-          << " indices when only " << max_indices
-          << " are available in the buffer. Skipping shape.";
-      draw = false;
-    }
+			// TODO(o3d): Also check that indices in the index buffer are less than
+			// max_vertices_. Needs support from the index buffer (scan indices on
+			// Unlock).
+			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, ibuffer->gl_buffer());
+		}
 
-    // TODO(o3d): Also check that indices in the index buffer are less than
-    // max_vertices_. Needs support from the index buffer (scan indices on
-    // Unlock).
+		// Set up the shaders in this drawcall from the Effect.
+		effect_gl->PrepareForDraw(param_cache_gl);
+		CHECK_GL_ERROR();
+		// Do the drawcall.
+		GLenum gl_primitive_type = GL_NONE;
 
-    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, ibuffer->gl_buffer());
-  }
+		switch(primitive_type_) {
+		case Primitive::POINTLIST : {
+				if(indexed()) {
+					O3D_ERROR(service_locator())
+					        << "POINTLIST unsupported for indexed primitives for primitive "
+					        << name();
+					draw = false;
+				}
+				else {
+					gl_primitive_type = GL_POINTS;
+				}
 
-  // Set up the shaders in this drawcall from the Effect.
-  effect_gl->PrepareForDraw(param_cache_gl);
+				break;
+			}
+		case Primitive::LINELIST : {
+				O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
+				        << "Draw " << number_primitives_ << " GL_LINES";
+				gl_primitive_type = GL_LINES;
+				break;
+			}
+		case Primitive::LINESTRIP : {
+				O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
+				        << "Draw " << number_primitives_ << " GL_LINE_STRIP";
+				gl_primitive_type = GL_LINE_STRIP;
+				break;
+			}
+		case Primitive::TRIANGLELIST : {
+				O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
+				        << "Draw " << number_primitives_ << " GL_TRIANGLES";
+				gl_primitive_type = GL_TRIANGLES;
+				break;
+			}
+		case Primitive::TRIANGLESTRIP : {
+				O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
+				        << "Draw " << number_primitives_ << " GL_TRIANGLE_STRIP";
+				gl_primitive_type = GL_TRIANGLE_STRIP;
+				break;
+			}
+		case Primitive::TRIANGLEFAN : {
+				O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
+				        << "Draw " << number_primitives_ << " GL_TRIANGLE_FAN";
+				gl_primitive_type = GL_TRIANGLE_FAN;
+				break;
+			}
+		default : {
+				O3D_LOG(ERROR) << "Unknown Primitive Type in Primitive: "
+				               << primitive_type_;
+				draw = false;
+			}
+		}
 
-  CHECK_GL_ERROR();
-	
-  // Do the drawcall.
-  GLenum gl_primitive_type = GL_NONE;
-  switch (primitive_type_) {
-    case Primitive::POINTLIST : {
-      if (indexed()) {
-        O3D_ERROR(service_locator())
-            << "POINTLIST unsupported for indexed primitives for primitive "
-            << name();
-        draw = false;
-      } else {
-        gl_primitive_type = GL_POINTS;
-      }
-      break;
-    }
-    case Primitive::LINELIST : {
-      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
-          << "Draw " << number_primitives_ << " GL_LINES";
-      gl_primitive_type = GL_LINES;
-      break;
-    }
-    case Primitive::LINESTRIP : {
-      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
-          << "Draw " << number_primitives_ << " GL_LINE_STRIP";
-      gl_primitive_type = GL_LINE_STRIP;
-      break;
-    }
-    case Primitive::TRIANGLELIST : {
-      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
-          << "Draw " << number_primitives_ << " GL_TRIANGLES";
-      gl_primitive_type = GL_TRIANGLES;
-      break;
-    }
-    case Primitive::TRIANGLESTRIP : {
-      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
-          << "Draw " << number_primitives_ << " GL_TRIANGLE_STRIP";
-      gl_primitive_type = GL_TRIANGLE_STRIP;
-      break;
-    }
-    case Primitive::TRIANGLEFAN : {
-      O3D_LOG_FIRST_N(INFO, kNumLoggedEvents)
-          << "Draw " << number_primitives_ << " GL_TRIANGLE_FAN";
-      gl_primitive_type = GL_TRIANGLE_FAN;
-      break;
-    }
-    default : {
-      O3D_LOG(ERROR) << "Unknown Primitive Type in Primitive: "
-                  << primitive_type_;
-      draw = false;
-    }
-  }
-  if (draw) {
-    O3D_ASSERT(gl_primitive_type != static_cast<unsigned int>(GL_NONE));
-    renderer->AddPrimitivesRendered(number_primitives_);
-    if (indexed()) {
+		if(draw) {
+			O3D_ASSERT(gl_primitive_type != static_cast<unsigned int>(GL_NONE));
+			renderer->AddPrimitivesRendered(number_primitives_);
+
+			if(indexed()) {
 #ifdef GLES2_BACKEND_NATIVE_GLES2
-		glDrawElements(gl_primitive_type,
-					   index_count,
-					   GL_UNSIGNED_SHORT,
-					   BufferOffset(start_index() * sizeof(uint16_t)));
-#else		
-      glDrawElements(gl_primitive_type,
-                     index_count,
-                     GL_UNSIGNED_INT,
-                     BufferOffset(start_index() * sizeof(uint32_t)));  // NOLINT
+				glDrawElements(gl_primitive_type,
+				               index_count,
+				               GL_UNSIGNED_SHORT,
+				               BufferOffset(start_index() * sizeof(uint16_t)));
+#else
+				glDrawElements(gl_primitive_type,
+				               index_count,
+				               GL_UNSIGNED_INT,
+				               BufferOffset(start_index() * sizeof(uint32_t)));  // NOLINT
 #endif
-    } else {
-      glDrawArrays(gl_primitive_type, start_index(), index_count);
-    }
-  }
-	
-  CHECK_GL_ERROR();
+			}
+			else {
+				glDrawArrays(gl_primitive_type, start_index(), index_count);
+			}
+		}
 
-  // Clean up the shaders.
-  effect_gl->PostDraw(param_cache_gl);
+		CHECK_GL_ERROR();
+		// Clean up the shaders.
+		effect_gl->PostDraw(param_cache_gl);
 
-  // Disable the vertex attribute states set earlier.
-  for (ParamCacheGLES2::VaryingParameterMap::iterator i = varying_map.begin();
-       i != varying_map.end();
-       ++i) {
-    glDisableVertexAttribArray(i->first);
-  }
-  CHECK_GL_ERROR();
-}
+		// Disable the vertex attribute states set earlier.
+		for(ParamCacheGLES2::VaryingParameterMap::iterator i = varying_map.begin();
+		        i != varying_map.end();
+		        ++i) {
+			glDisableVertexAttribArray(i->first);
+		}
+
+		CHECK_GL_ERROR();
+	}
 
 }  // namespace o3d
 

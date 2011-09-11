@@ -35,45 +35,47 @@
 
 namespace o3d {
 
-const InterfaceId DrawListManager::kInterfaceId =
-    InterfaceTraits<DrawListManager>::kInterfaceId;
+	const InterfaceId DrawListManager::kInterfaceId =
+	    InterfaceTraits<DrawListManager>::kInterfaceId;
 
-DrawListManager::DrawListManager(ServiceLocator* service_locator)
-    : service_(service_locator, this) {}
+	DrawListManager::DrawListManager(ServiceLocator* service_locator)
+		: service_(service_locator, this) {}
 
-unsigned int DrawListManager::RegisterDrawList(DrawList* draw_list) {
-  // Find a free global id.
-  unsigned int index = 0;
-  DrawListIndexMap::iterator end(draw_list_map_.end());
-  for (DrawListIndexMap::iterator iter(draw_list_map_.begin());
-       iter != end;
-       ++iter) {
-    if (iter->first != index) {
-      break;
-    }
-    ++index;
-  }
+	unsigned int DrawListManager::RegisterDrawList(DrawList* draw_list) {
+		// Find a free global id.
+		unsigned int index = 0;
+		DrawListIndexMap::iterator end(draw_list_map_.end());
 
-  // Save the global id so we know it's used.
-  draw_list_map_.insert(std::make_pair(index, draw_list));
+		for(DrawListIndexMap::iterator iter(draw_list_map_.begin());
+		        iter != end;
+		        ++iter) {
+			if(iter->first != index) {
+				break;
+			}
 
-  return index;
-}
+			++index;
+		}
 
-void DrawListManager::UnregisterDrawList(DrawList* draw_list) {
-  // Remove it from the client's Pass List map.
-  DrawListIndexMap::iterator iter = draw_list_map_.find(
-      draw_list->global_index());
-  O3D_ASSERT(iter != draw_list_map_.end());
-  draw_list_map_.erase(iter);
-}
+		// Save the global id so we know it's used.
+		draw_list_map_.insert(std::make_pair(index, draw_list));
+		return index;
+	}
 
-void DrawListManager::Reset() {
-  DrawListIndexMap::iterator end(draw_list_map_.end());
-  for (DrawListIndexMap::iterator iter(draw_list_map_.begin());
-       iter != end;
-       ++iter) {
-    iter->second->Reset(Matrix4::identity(), Matrix4::identity());
-  }
-}
+	void DrawListManager::UnregisterDrawList(DrawList* draw_list) {
+		// Remove it from the client's Pass List map.
+		DrawListIndexMap::iterator iter = draw_list_map_.find(
+		                                      draw_list->global_index());
+		O3D_ASSERT(iter != draw_list_map_.end());
+		draw_list_map_.erase(iter);
+	}
+
+	void DrawListManager::Reset() {
+		DrawListIndexMap::iterator end(draw_list_map_.end());
+
+		for(DrawListIndexMap::iterator iter(draw_list_map_.begin());
+		        iter != end;
+		        ++iter) {
+			iter->second->Reset(Matrix4::identity(), Matrix4::identity());
+		}
+	}
 }  // namespace o3d

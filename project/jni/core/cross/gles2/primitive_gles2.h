@@ -43,21 +43,21 @@ namespace o3d {
 
 // PrimitiveGLES2 is the OpenGLES2 implementation of the Primitive.  It provides
 // the necessary interfaces for setting the geometry streams on the Primitive.
-class PrimitiveGLES2 : public Primitive {
- public:
-  explicit PrimitiveGLES2(ServiceLocator* service_locator);
-  virtual ~PrimitiveGLES2();
+	class PrimitiveGLES2 : public Primitive {
+	public:
+		explicit PrimitiveGLES2(ServiceLocator* service_locator);
+		virtual ~PrimitiveGLES2();
 
- protected:
-  // Overridden from Primitive.
-  virtual void PlatformSpecificRender(Renderer* renderer,
-                                      DrawElement* draw_element,
-                                      Material* material,
-                                      ParamObject* override,
-                                      ParamCache* param_cache);
+	protected:
+		// Overridden from Primitive.
+		virtual void PlatformSpecificRender(Renderer* renderer,
+		                                    DrawElement* draw_element,
+		                                    Material* material,
+		                                    ParamObject* override,
+		                                    ParamCache* param_cache);
 
- private:
-};
+	private:
+	};
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_PRIMITIVE_GLES2_H_

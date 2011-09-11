@@ -42,67 +42,67 @@
 
 namespace o3d {
 
-class RenderSurfaceGL : public RenderSurface {
- public:
-  typedef SmartPointer<RenderSurfaceGL> Ref;
+	class RenderSurfaceGL : public RenderSurface {
+	public:
+		typedef SmartPointer<RenderSurfaceGL> Ref;
 
-  // Constructs a RenderSurfaceGL instance associated with the texture argument.
-  // Parameters:
-  //  service_locator:  Service locator for the instance.
-  //  width:  The width of the surface, in pixels.
-  //  height:  The height of the surface, in pixels.
-  //  cube_face:  The face of the cube texture to which the surface is to be
-  //    associated.  NOTE: If the texture is a 2d texture, then the value of
-  //    this argument is irrelevent.
-  //  mip_level:  The mip-level of the texture to associate with the surface.
-  //  texture:  The texture to associate with the surface.
-  RenderSurfaceGL(ServiceLocator *service_locator,
-                  int width,
-                  int height,
-                  GLenum cube_face,
-                  int mip_level,
-                  Texture *texture);
-  virtual ~RenderSurfaceGL();
+		// Constructs a RenderSurfaceGL instance associated with the texture argument.
+		// Parameters:
+		//  service_locator:  Service locator for the instance.
+		//  width:  The width of the surface, in pixels.
+		//  height:  The height of the surface, in pixels.
+		//  cube_face:  The face of the cube texture to which the surface is to be
+		//    associated.  NOTE: If the texture is a 2d texture, then the value of
+		//    this argument is irrelevent.
+		//  mip_level:  The mip-level of the texture to associate with the surface.
+		//  texture:  The texture to associate with the surface.
+		RenderSurfaceGL(ServiceLocator* service_locator,
+		                int width,
+		                int height,
+		                GLenum cube_face,
+		                int mip_level,
+		                Texture* texture);
+		virtual ~RenderSurfaceGL();
 
-  GLenum cube_face() const {
-    return cube_face_;
-  }
+		GLenum cube_face() const {
+			return cube_face_;
+		}
 
-  int mip_level() const {
-    return mip_level_;
-  }
+		int mip_level() const {
+			return mip_level_;
+		}
 
- protected:
-  // The platform specific part of GetIntoBitmap.
-  virtual bool PlatformSpecificGetIntoBitmap(Bitmap::Ref bitmap) const;
+	protected:
+		// The platform specific part of GetIntoBitmap.
+		virtual bool PlatformSpecificGetIntoBitmap(Bitmap::Ref bitmap) const;
 
- private:
-  GLenum cube_face_;
-  int mip_level_;
-  O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceGL);
-};
+	private:
+		GLenum cube_face_;
+		int mip_level_;
+		O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceGL);
+	};
 
-class RenderDepthStencilSurfaceGL : public RenderDepthStencilSurface {
- public:
-  typedef SmartPointer<RenderDepthStencilSurfaceGL> Ref;
+	class RenderDepthStencilSurfaceGL : public RenderDepthStencilSurface {
+	public:
+		typedef SmartPointer<RenderDepthStencilSurfaceGL> Ref;
 
-  RenderDepthStencilSurfaceGL(ServiceLocator *service_locator,
-                              int width,
-                              int height);
-  virtual ~RenderDepthStencilSurfaceGL();
+		RenderDepthStencilSurfaceGL(ServiceLocator* service_locator,
+		                            int width,
+		                            int height);
+		virtual ~RenderDepthStencilSurfaceGL();
 
-  GLuint depth_buffer() const {
-    return render_buffers_[0];
-  }
+		GLuint depth_buffer() const {
+			return render_buffers_[0];
+		}
 
-  GLuint stencil_buffer() const {
-    return render_buffers_[1];
-  }
- private:
-  // Handles to the depth and stencil render-buffers, respectively.
-  GLuint render_buffers_[2];
-  O3D_DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceGL);
-};
+		GLuint stencil_buffer() const {
+			return render_buffers_[1];
+		}
+	private:
+		// Handles to the depth and stencil render-buffers, respectively.
+		GLuint render_buffers_[2];
+		O3D_DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceGL);
+	};
 
 }  // namespace o3d
 

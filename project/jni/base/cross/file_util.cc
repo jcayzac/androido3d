@@ -15,27 +15,31 @@ namespace file_util {
 
 // TODO(jcayzac): Replace these with boost::filesystem
 
-bool AbsolutePath(FilePath* path) {
-  char full_path[PATH_MAX];
-  if (realpath(path->value().c_str(), full_path) == NULL)
-    return false;
-  *path = FilePath(full_path);
-  return true;
-}
+	bool AbsolutePath(FilePath* path) {
+		char full_path[PATH_MAX];
 
-bool PathExists(const FilePath& path) {
-  struct stat file_info;
-  return stat(path.value().c_str(), &file_info) == 0;
-}
+		if(realpath(path->value().c_str(), full_path) == NULL)
+			return false;
 
-bool GetCurrentDirectory(FilePath* dir) {
-  char system_buffer[PATH_MAX] = "";
-  if (!getcwd(system_buffer, sizeof(system_buffer))) {
-    O3D_NEVER_REACHED();
-    return false;
-  }
-  *dir = FilePath(system_buffer);
-  return true;
-}
+		*path = FilePath(full_path);
+		return true;
+	}
+
+	bool PathExists(const FilePath& path) {
+		struct stat file_info;
+		return stat(path.value().c_str(), &file_info) == 0;
+	}
+
+	bool GetCurrentDirectory(FilePath* dir) {
+		char system_buffer[PATH_MAX] = "";
+
+		if(!getcwd(system_buffer, sizeof(system_buffer))) {
+			O3D_NEVER_REACHED();
+			return false;
+		}
+
+		*dir = FilePath(system_buffer);
+		return true;
+	}
 
 }  // namespace

@@ -41,7 +41,7 @@
 
 namespace o3d {
 
-class RendererGL;
+	class RendererGL;
 
 // VertexBufferGL is a wrapper around an OpenGL Vertex Buffer Object (VBO).
 // The buffer starts out empty.  Calling Allocate() will reserve video memory
@@ -54,65 +54,65 @@ class RendererGL;
 // default and buffers are created, locked and managed using the OpenGL
 // "ARB_vertex_buffer_object" extension.
 
-class VertexBufferGL : public VertexBuffer {
- public:
-  explicit VertexBufferGL(ServiceLocator* service_locator);
-  ~VertexBufferGL();
+	class VertexBufferGL : public VertexBuffer {
+	public:
+		explicit VertexBufferGL(ServiceLocator* service_locator);
+		~VertexBufferGL();
 
-  // Returns the OpenGL vertex buffer Object handle.
-  GLuint gl_buffer() const { return gl_buffer_; }
+		// Returns the OpenGL vertex buffer Object handle.
+		GLuint gl_buffer() const { return gl_buffer_; }
 
- protected:
-  // Creates a OpenGL vertex buffer object of the specified size.
-  virtual bool ConcreteAllocate(size_t size_in_bytes);
+	protected:
+		// Creates a OpenGL vertex buffer object of the specified size.
+		virtual bool ConcreteAllocate(size_t size_in_bytes);
 
-  // Frees the OpenGL vertex buffer object.
-  virtual void ConcreteFree();
+		// Frees the OpenGL vertex buffer object.
+		virtual void ConcreteFree();
 
-  // Returns a pointer to the current contents of the buffer.  A matching
-  // call to Unlock is necessary to update the contents of the buffer.
-  virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
+		// Returns a pointer to the current contents of the buffer.  A matching
+		// call to Unlock is necessary to update the contents of the buffer.
+		virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
 
-  // Notifies OpenGL that the buffer data has been updated.  Unlock is only
-  // valid if it follows a Lock operation.
-  virtual bool ConcreteUnlock();
+		// Notifies OpenGL that the buffer data has been updated.  Unlock is only
+		// valid if it follows a Lock operation.
+		virtual bool ConcreteUnlock();
 
- private:
-  RendererGL* renderer_;
-  GLuint gl_buffer_;
-};
+	private:
+		RendererGL* renderer_;
+		GLuint gl_buffer_;
+	};
 
 // IndexBufferGL is a wrapper around an OpenGL Index Buffer Object (VBO).
 // The buffer starts out empty.  A call to Allocate() will create an OpenGL
 // index buffer of the requested size.  Updates the to the contents of the
 // buffer are done via the Lock/Unlock calls.
-class IndexBufferGL : public IndexBuffer {
- public:
-  explicit IndexBufferGL(ServiceLocator* service_locator);
-  ~IndexBufferGL();
+	class IndexBufferGL : public IndexBuffer {
+	public:
+		explicit IndexBufferGL(ServiceLocator* service_locator);
+		~IndexBufferGL();
 
-  // Returns the OpenGL vertex buffer Object handle.
-  GLuint gl_buffer() const { return gl_buffer_; }
+		// Returns the OpenGL vertex buffer Object handle.
+		GLuint gl_buffer() const { return gl_buffer_; }
 
- protected:
-  // Creates a OpenGL index buffer of the specified size.
-  virtual bool ConcreteAllocate(size_t size_in_bytes);
+	protected:
+		// Creates a OpenGL index buffer of the specified size.
+		virtual bool ConcreteAllocate(size_t size_in_bytes);
 
-  // Frees the OpenGL vertex buffer object.
-  virtual void ConcreteFree();
+		// Frees the OpenGL vertex buffer object.
+		virtual void ConcreteFree();
 
-  // Returns a pointer to the current contents of the buffer.  After calling
-  // Lock, the contents of the buffer can be updated in place.
-  virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
+		// Returns a pointer to the current contents of the buffer.  After calling
+		// Lock, the contents of the buffer can be updated in place.
+		virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
 
-  // Notifies OpenGL that the buffer data has been updated.  Unlock is only
-  // valid if it follows a Lock operation.
-  virtual bool ConcreteUnlock();
+		// Notifies OpenGL that the buffer data has been updated.  Unlock is only
+		// valid if it follows a Lock operation.
+		virtual bool ConcreteUnlock();
 
- private:
-  RendererGL* renderer_;
-  GLuint gl_buffer_;
-};
+	private:
+		RendererGL* renderer_;
+		GLuint gl_buffer_;
+	};
 
 }  // namespace o3d
 

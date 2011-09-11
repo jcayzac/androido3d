@@ -40,53 +40,52 @@
 
 namespace o3d {
 
-PerformanceTimer::PerformanceTimer(const char *name)
-    : name_(name) {
+	PerformanceTimer::PerformanceTimer(const char* name)
+		: name_(name) {
 #ifdef TARGET_OS_IPHONE
-  start_time_ = 0;
-  accum_time_ = 0;
+		start_time_ = 0;
+		accum_time_ = 0;
 #else
-  start_time_.lo = start_time_.hi = 0;
-  accum_time_.lo = accum_time_.hi = 0;
+		start_time_.lo = start_time_.hi = 0;
+		accum_time_.lo = accum_time_.hi = 0;
 #endif
-}
+	}
 
-void PerformanceTimer::Start() {
+	void PerformanceTimer::Start() {
 #ifdef TARGET_OS_IPHONE
-  start_time_ = CFAbsoluteTimeGetCurrent();
+		start_time_ = CFAbsoluteTimeGetCurrent();
 #else
-  start_time_ = UpTime();
+		start_time_ = UpTime();
 #endif
-}
+	}
 
-void PerformanceTimer::Stop() {
+	void PerformanceTimer::Stop() {
 #ifdef TARGET_OS_IPHONE
-  CFAbsoluteTime time = CFAbsoluteTimeGetCurrent();
-  accum_time_ = (time - start_time_);
+		CFAbsoluteTime time = CFAbsoluteTimeGetCurrent();
+		accum_time_ = (time - start_time_);
 #else
-  AbsoluteTime time = UpTime();
-  AbsoluteTime deltaTime = SubAbsoluteFromAbsolute(time, start_time_);
-  accum_time_ = AddAbsoluteToAbsolute(accum_time_, deltaTime);
+		AbsoluteTime time = UpTime();
+		AbsoluteTime deltaTime = SubAbsoluteFromAbsolute(time, start_time_);
+		accum_time_ = AddAbsoluteToAbsolute(accum_time_, deltaTime);
 #endif
-}
+	}
 
-double PerformanceTimer::GetElapsedTime() {
+	double PerformanceTimer::GetElapsedTime() {
 #ifdef TARGET_OS_IPHONE
-  return static_cast<float>(accum_time_ * 1.e-6);
+		return static_cast<float>(accum_time_ * 1.e-6);
 #else
-  Nanoseconds ns = AbsoluteToNanoseconds(accum_time_);
-  uint64_t ns64 = UnsignedWideToUInt64(ns);
-
-  return static_cast<double>(ns64) * 0.000000001;
+		Nanoseconds ns = AbsoluteToNanoseconds(accum_time_);
+		uint64_t ns64 = UnsignedWideToUInt64(ns);
+		return static_cast<double>(ns64) * 0.000000001;
 #endif
-}
+	}
 
-void PerformanceTimer::Print() {
-  O3D_LOG(INFO) << name_.c_str() << " " << GetElapsedTime() << " seconds";
-}
+	void PerformanceTimer::Print() {
+		O3D_LOG(INFO) << name_.c_str() << " " << GetElapsedTime() << " seconds";
+	}
 
-void PerformanceTimer::StopAndPrint() {
-  Stop();
-  Print();
-}
+	void PerformanceTimer::StopAndPrint() {
+		Stop();
+		Print();
+	}
 }

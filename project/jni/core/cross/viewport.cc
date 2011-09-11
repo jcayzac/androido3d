@@ -37,33 +37,32 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Viewport, RenderNode);
+	O3D_DEFN_CLASS(Viewport, RenderNode);
 
-const char* Viewport::kViewportParamName =
-    O3D_STRING_CONSTANT("viewport");
-const char* Viewport::kDepthRangeParamName =
-    O3D_STRING_CONSTANT("depthRange");
+	const char* Viewport::kViewportParamName =
+	    O3D_STRING_CONSTANT("viewport");
+	const char* Viewport::kDepthRangeParamName =
+	    O3D_STRING_CONSTANT("depthRange");
 
-Viewport::Viewport(ServiceLocator* service_locator)
-    : RenderNode(service_locator) {
-  RegisterParamRef(kViewportParamName, &viewport_param_);
-  RegisterParamRef(kDepthRangeParamName, &depth_range_param_);
+	Viewport::Viewport(ServiceLocator* service_locator)
+		: RenderNode(service_locator) {
+		RegisterParamRef(kViewportParamName, &viewport_param_);
+		RegisterParamRef(kDepthRangeParamName, &depth_range_param_);
+		set_viewport(Float4(0.0, 0.0f, 1.0f, 1.0f));
+		set_depth_range(Float2(0.0, 1.0f));
+	}
 
-  set_viewport(Float4(0.0, 0.0f, 1.0f, 1.0f));
-  set_depth_range(Float2(0.0, 1.0f));
-}
+	ObjectBase::Ref Viewport::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new Viewport(service_locator));
+	}
 
-ObjectBase::Ref Viewport::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new Viewport(service_locator));
-}
+	void Viewport::Render(RenderContext* render_context) {
+		render_context->renderer()->GetViewport(&old_viewport_, &old_depth_range_);
+		render_context->renderer()->SetViewport(viewport(), depth_range());
+	}
 
-void Viewport::Render(RenderContext* render_context) {
-  render_context->renderer()->GetViewport(&old_viewport_, &old_depth_range_);
-  render_context->renderer()->SetViewport(viewport(), depth_range());
-}
-
-void Viewport::PostRender(RenderContext* render_context) {
-  render_context->renderer()->SetViewport(old_viewport_, old_depth_range_);
-}
+	void Viewport::PostRender(RenderContext* render_context) {
+		render_context->renderer()->SetViewport(old_viewport_, old_depth_range_);
+	}
 
 }  // namespace o3d

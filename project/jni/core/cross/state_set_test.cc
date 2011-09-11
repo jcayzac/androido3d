@@ -40,38 +40,37 @@
 
 namespace o3d {
 
-class StateSetTest : public testing::Test {
- protected:
+	class StateSetTest : public testing::Test {
+	protected:
 
-  StateSetTest()
-      : object_manager_(g_service_locator) {}
+		StateSetTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack *pack_;
-};
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+	};
 
-void StateSetTest::SetUp() {
-  pack_ = object_manager_->CreatePack();
-}
+	void StateSetTest::SetUp() {
+		pack_ = object_manager_->CreatePack();
+	}
 
-void StateSetTest::TearDown() {
-  pack_->Destroy();
-}
+	void StateSetTest::TearDown() {
+		pack_->Destroy();
+	}
 
-TEST_F(StateSetTest, Basic) {
-  StateSet* state_set = pack()->Create<StateSet>();
-  // Check that state_set got created.
-  EXPECT_TRUE(state_set != NULL);
-
-  // Check that the state param got created.
-  EXPECT_TRUE(
-      state_set->GetParam<ParamState>(StateSet::kStateParamName) != NULL);
-}
+	TEST_F(StateSetTest, Basic) {
+		StateSet* state_set = pack()->Create<StateSet>();
+		// Check that state_set got created.
+		EXPECT_TRUE(state_set != NULL);
+		// Check that the state param got created.
+		EXPECT_TRUE(
+		    state_set->GetParam<ParamState>(StateSet::kStateParamName) != NULL);
+	}
 
 }  // namespace o3d

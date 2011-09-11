@@ -34,7 +34,7 @@
 
 namespace o3d {
 
-const InterfaceId IErrorStatus::kInterfaceId =
-    InterfaceTraits<IErrorStatus>::kInterfaceId;
+	const InterfaceId IErrorStatus::kInterfaceId =
+	    InterfaceTraits<IErrorStatus>::kInterfaceId;
 
 }  // namespace o3d

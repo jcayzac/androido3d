@@ -38,14 +38,14 @@
 
 // Helper function to convert from Float4 to an SkColor
 static SkColor Float4ToSkColor(const o3d::Float4& color) {
-  unsigned char red = static_cast<unsigned char>(color[0] * 255.0f);
-  unsigned char green = static_cast<unsigned char>(color[1] * 255.0f);
-  unsigned char blue = static_cast<unsigned char>(color[2] * 255.0f);
-  unsigned char alpha = static_cast<unsigned char>(color[3] * 255.0f);
-  return SkColorSetARGB(static_cast<U8CPU>(alpha),
-                        static_cast<U8CPU>(red),
-                        static_cast<U8CPU>(green),
-                        static_cast<U8CPU>(blue));
+	unsigned char red = static_cast<unsigned char>(color[0] * 255.0f);
+	unsigned char green = static_cast<unsigned char>(color[1] * 255.0f);
+	unsigned char blue = static_cast<unsigned char>(color[2] * 255.0f);
+	unsigned char alpha = static_cast<unsigned char>(color[3] * 255.0f);
+	return SkColorSetARGB(static_cast<U8CPU>(alpha),
+	                      static_cast<U8CPU>(red),
+	                      static_cast<U8CPU>(green),
+	                      static_cast<U8CPU>(blue));
 }
 
 #endif  // O3D_CORE_CROSS_CANVAS_UTILS_H_

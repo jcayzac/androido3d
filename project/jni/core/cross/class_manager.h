@@ -43,67 +43,67 @@ namespace o3d {
 
 // Maintains a collection of Class objects. Allows Classes to be retreived
 // by name and objects of those Classes to be created.
-class ClassManager : public IClassManager {
- public:
-  explicit ClassManager(ServiceLocator* service_locator);
+	class ClassManager : public IClassManager {
+	public:
+		explicit ClassManager(ServiceLocator* service_locator);
 
-  virtual void AddClass(const ObjectBase::Class* class_type,
-                        ObjectCreateFunc function);
+		virtual void AddClass(const ObjectBase::Class* class_type,
+		                      ObjectCreateFunc function);
 
-  virtual void RemoveClass(const ObjectBase::Class* class_type);
+		virtual void RemoveClass(const ObjectBase::Class* class_type);
 
-  virtual const ObjectBase::Class* GetClassByClassName(
-      const std::string& class_name) const;
+		virtual const ObjectBase::Class* GetClassByClassName(
+		    const std::string& class_name) const;
 
-  virtual bool ClassNameIsAClass(const std::string& derived_class_name,
-                                 const ObjectBase::Class* base_class) const;
+		virtual bool ClassNameIsAClass(const std::string& derived_class_name,
+		                               const ObjectBase::Class* base_class) const;
 
-  virtual ObjectBase::Ref CreateObjectByClass(
-      const ObjectBase::Class* object_class);
+		virtual ObjectBase::Ref CreateObjectByClass(
+		    const ObjectBase::Class* object_class);
 
-  virtual ObjectBase::Ref CreateObject(const std::string& type_name);
+		virtual ObjectBase::Ref CreateObject(const std::string& type_name);
 
-  std::vector<const ObjectBase::Class*> GetAllClasses() const;
+		std::vector<const ObjectBase::Class*> GetAllClasses() const;
 
- private:
-  ServiceLocator* service_locator_;
-  ServiceImplementation<IClassManager> service_;
+	private:
+		ServiceLocator* service_locator_;
+		ServiceImplementation<IClassManager> service_;
 
-  // A class to hold data about a class in the ObjectClassInfoNameMap;
+		// A class to hold data about a class in the ObjectClassInfoNameMap;
 
-  class ObjectClassInfo {
-   public:
+		class ObjectClassInfo {
+		public:
 
-    ObjectClassInfo(const ObjectBase::Class* class_type,
-                    ObjectCreateFunc func)
-        : class_type_(class_type),
-          creation_func_(func) { }
+			ObjectClassInfo(const ObjectBase::Class* class_type,
+			                ObjectCreateFunc func)
+				: class_type_(class_type),
+				  creation_func_(func) { }
 
-    const ObjectBase::Class* class_type() const {
-      return class_type_;
-    }
+			const ObjectBase::Class* class_type() const {
+				return class_type_;
+			}
 
-    ObjectCreateFunc creation_func() const {
-      return creation_func_;
-    }
+			ObjectCreateFunc creation_func() const {
+				return creation_func_;
+			}
 
-   private:
-    const ObjectBase::Class* class_type_;
-    const ObjectCreateFunc creation_func_;
-  };
+		private:
+			const ObjectBase::Class* class_type_;
+			const ObjectCreateFunc creation_func_;
+		};
 
-  // A map by string of ObjectClassInfos.
-  typedef std::map<const std::string, ObjectClassInfo> ObjectClassInfoNameMap;
-  // A map by ObjectBase::Class of Object creations functions.
-  typedef std::map<const ObjectBase::Class*,
-                   ObjectCreateFunc> ObjectCreatorClassMap;
+		// A map by string of ObjectClassInfos.
+		typedef std::map<const std::string, ObjectClassInfo> ObjectClassInfoNameMap;
+		// A map by ObjectBase::Class of Object creations functions.
+		typedef std::map < const ObjectBase::Class*,
+		        ObjectCreateFunc > ObjectCreatorClassMap;
 
-  // ObjectClassInfo by name.
-  ObjectClassInfoNameMap object_class_info_name_map_;
+		// ObjectClassInfo by name.
+		ObjectClassInfoNameMap object_class_info_name_map_;
 
-  // ObjectClassInfo by class.
-  ObjectCreatorClassMap object_creator_class_map_;
-};
+		// ObjectClassInfo by class.
+		ObjectCreatorClassMap object_creator_class_map_;
+	};
 }
 
 #endif  // O3D_CORE_CROSS_CLASS_MANAGER_H_

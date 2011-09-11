@@ -46,239 +46,226 @@ using file_util::GetFileSize;
 
 namespace o3d {
 
-namespace {
+	namespace {
 
 // Checks if an error has occured on the client then clears the error.
-bool CheckErrorExists(IErrorStatus* error_status) {
-  bool have_error = !error_status->GetLastError().empty();
-  error_status->ClearLastError();
-  return have_error;
-}
+		bool CheckErrorExists(IErrorStatus* error_status) {
+			bool have_error = !error_status->GetLastError().empty();
+			error_status->ClearLastError();
+			return have_error;
+		}
 
-}  // anonymous namespace
+	}  // anonymous namespace
 
 // Test fixture for RawData testing.
-class RawDataTest : public testing::Test {
- protected:
-  RawDataTest()
-      : error_status_(g_service_locator) {
-  }
+	class RawDataTest : public testing::Test {
+	protected:
+		RawDataTest()
+			: error_status_(g_service_locator) {
+		}
 
-  IErrorStatus* error_status() { return &error_status_; }
+		IErrorStatus* error_status() { return &error_status_; }
 
- private:
-  ErrorStatus error_status_;
-};
+	private:
+		ErrorStatus error_status_;
+	};
 
 // Test RawData
-TEST_F(RawDataTest, Basic) {
-  std::string uri("test_filename");
-  const int kBufferLength = 1024;
+	TEST_F(RawDataTest, Basic) {
+		std::string uri("test_filename");
+		const int kBufferLength = 1024;
+		// Create a buffer and initialize it will some values
+		MemoryBuffer<uint8_t> buffer(kBufferLength);
 
-  // Create a buffer and initialize it will some values
-  MemoryBuffer<uint8_t> buffer(kBufferLength);
-  for (int i = 0; i < kBufferLength; i++) {
-    buffer[i] = i % 256;
-  }
+		for(int i = 0; i < kBufferLength; i++) {
+			buffer[i] = i % 256;
+		}
 
+		RawData::Ref ref = RawData::Create(g_service_locator,
+		                                   uri,
+		                                   buffer,
+		                                   buffer.GetLength());
+		RawData* raw_data = ref;
+		// Check that it got created.
+		ASSERT_TRUE(raw_data != NULL);
+		// Now, let's make sure it got the data length correct
+		ASSERT_EQ(raw_data->GetLength(), buffer.GetLength());
+		// Check the contents are correct
+		ASSERT_EQ(0, memcmp(raw_data->GetData(), buffer, buffer.GetLength()));
+		// Check that the uri is correct
+		ASSERT_EQ(raw_data->uri(), uri);
+	}
 
-  RawData::Ref ref = RawData::Create(g_service_locator,
-                                     uri,
-                                     buffer,
-                                     buffer.GetLength() );
-  RawData *raw_data = ref;
+	TEST_F(RawDataTest, CreateFromFile) {
+		std::string uri("test_filename");
+		std::string filename = *g_program_path + "/bitmap_test/tga-256x256-24bit.tga";
+		RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
+		                   uri,
+		                   filename);
+		ASSERT_FALSE(ref.IsNull());
+		FilePath filepath = UTF8ToFilePath(filename);
+		FILE* file = OpenFile(filepath, "rb");
+		ASSERT_TRUE(file != NULL);
+		int64_t file_size64;
+		ASSERT_TRUE(GetFileSize(filepath, &file_size64));
+		size_t file_length = static_cast<size_t>(file_size64);
+		ASSERT_TRUE(file_length > 0);
+		::o3d::base::scoped_array<uint8_t> data(new uint8_t[file_length]);
+		ASSERT_EQ(fread(data.get(), file_length, 1, file), 1U);
+		CloseFile(file);
+		ASSERT_EQ(file_length, ref->GetLength());
+		ASSERT_EQ(0, memcmp(ref->GetData(), data.get(), file_length));
+	}
 
-  // Check that it got created.
-  ASSERT_TRUE(raw_data != NULL);
+	TEST_F(RawDataTest, CreateFromFileFail) {
+		std::string uri("test_filename");
+		std::string filename = *g_program_path + "/bitmap_test/non-existent-file.foo";
+		RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
+		                   uri,
+		                   filename);
+		ASSERT_TRUE(ref.IsNull());
+	}
 
-  // Now, let's make sure it got the data length correct
-  ASSERT_EQ(raw_data->GetLength(), buffer.GetLength());
+	TEST_F(RawDataTest, CreateFromFileStringValue) {
+		std::string uri("test_filename");
+		std::string filename = *g_program_path + "/unittest_data/fur.fx";
+		RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
+		                   uri,
+		                   filename);
+		ASSERT_FALSE(ref.IsNull());
+		EXPECT_TRUE(ref->GetLength() > 0);
+		EXPECT_FALSE(CheckErrorExists(error_status()));
+		// We should NOT be able to get a string value from an individually
+		// loaded RawData.
+		EXPECT_TRUE(ref->StringValue().empty());
+		EXPECT_TRUE(CheckErrorExists(error_status()));
+	}
 
-  // Check the contents are correct
-  ASSERT_EQ(0, memcmp(raw_data->GetData(), buffer, buffer.GetLength()));
+	namespace {
 
-  // Check that the uri is correct
-  ASSERT_EQ(raw_data->uri(), uri);
-}
+		struct TestData {
+			const uint8_t* data;
+			size_t length;
+			bool valid;
+			size_t offset;
+		};
 
-TEST_F(RawDataTest, CreateFromFile) {
-  std::string uri("test_filename");
-  std::string filename = *g_program_path + "/bitmap_test/tga-256x256-24bit.tga";
-  RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
-                                             uri,
-                                             filename);
-  ASSERT_FALSE(ref.IsNull());
-  FilePath filepath = UTF8ToFilePath(filename);
-  FILE *file = OpenFile(filepath, "rb");
-  ASSERT_TRUE(file != NULL);
-  int64_t file_size64;
-  ASSERT_TRUE(GetFileSize(filepath, &file_size64));
-  size_t file_length = static_cast<size_t>(file_size64);
-  ASSERT_TRUE(file_length > 0);
-  ::o3d::base::scoped_array<uint8_t> data(new uint8_t[file_length]);
-  ASSERT_EQ(fread(data.get(), file_length, 1, file), 1U);
-  CloseFile(file);
+	}  // anonymous namespace
 
-  ASSERT_EQ(file_length, ref->GetLength());
-  ASSERT_EQ(0, memcmp(ref->GetData(), data.get(), file_length));
-}
+	TEST_F(RawDataTest, StringValue) {
+		// A BOM in the front (valid)
+		static const uint8_t data_0[] = {
+			0xEF,
+			0xBB,
+			0xBF,
+			0x65,
+			0x66,
+			0x65,
+			0x67,
+		};
+		// A null in the string (invalid)
+		static const uint8_t data_1[] = {
+			0x65,
+			0x66,
+			0x00,
+			0x67,
+		};
+		// A valid string
+		static const uint8_t data_2[] = {
+			0x65,
+			0x66,
+			0x65,
+			0x67,
+		};
+		// Null at the end (invalid)
+		static const uint8_t data_3[] = {
+			0x65,
+			0x66,
+			0x65,
+			0x67,
+			0x00,
+		};
+		// A badly formed utf-8 like string (invalid)
+		static const uint8_t data_4[] = {
+			0xE9,
+			0xBE,
+			0xE0,
+		};
+		// A badly formed utf-8 like string (invalid)
+		static const uint8_t data_5[] = {
+			0xC1,
+			0x65,
+			0x66,
+		};
+		// A badly formed utf-8 like string (invalid)
+		static const uint8_t data_6[] = {
+			0x65,
+			0x66,
+			0xF4,
+		};
+		// A valid multi-byte utf-8 string (valid)
+		static const uint8_t data_7[] = {
+			0xE9,
+			0xBE,
+			0x8D,
+			0xF0,
+			0x90,
+			0x90,
+			0x92,
+		};
+		// A UTF-8 but in D800-DFFF range
+		static const uint8_t data_8[] = {
+			0xED,
+			0xA0,
+			0xA1,
+		};
+		TestData test_datas[] = {
+			{ &data_0[0], o3d_arraysize(data_0), true, 3, },
+			{ &data_1[0], o3d_arraysize(data_1), false, },
+			{ &data_2[0], o3d_arraysize(data_2), true, },
+			{ &data_3[0], o3d_arraysize(data_3), false, },
+			{ &data_4[0], o3d_arraysize(data_4), false, },
+			{ &data_5[0], o3d_arraysize(data_5), false, },
+			{ &data_6[0], o3d_arraysize(data_6), false, },
+			{ &data_7[0], o3d_arraysize(data_7), true, },
+			{ &data_8[0], o3d_arraysize(data_8), false, },
+		};
 
-TEST_F(RawDataTest, CreateFromFileFail) {
-  std::string uri("test_filename");
-  std::string filename = *g_program_path + "/bitmap_test/non-existent-file.foo";
-  RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
-                                             uri,
-                                             filename);
-  ASSERT_TRUE(ref.IsNull());
-}
+		for(unsigned ii = 0; ii < o3d_arraysize(test_datas); ++ii) {
+			TestData& test_data = test_datas[ii];
+			RawData::Ref raw_data = RawData::Create(g_service_locator,
+			                                        "test",
+			                                        test_data.data,
+			                                        test_data.length);
+			std::string str(raw_data->StringValue());
 
-TEST_F(RawDataTest, CreateFromFileStringValue) {
-  std::string uri("test_filename");
-  std::string filename = *g_program_path + "/unittest_data/fur.fx";
-  RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
-                                             uri,
-                                             filename);
-  ASSERT_FALSE(ref.IsNull());
-  EXPECT_TRUE(ref->GetLength() > 0);
-  EXPECT_FALSE(CheckErrorExists(error_status()));
-  // We should NOT be able to get a string value from an individually
-  // loaded RawData.
-  EXPECT_TRUE(ref->StringValue().empty());
-  EXPECT_TRUE(CheckErrorExists(error_status()));
-}
+			if(test_data.valid) {
+				size_t test_length = test_data.length - test_data.offset;
+				const char* test_string = reinterpret_cast<const char*>(test_data.data +
+				                          test_data.offset);
+				EXPECT_EQ(str.size(), test_length);
+				EXPECT_EQ(str.compare(0, test_length, test_string, test_length), 0);
+			}
+			else {
+				EXPECT_TRUE(str.empty());
+			}
+		}
+	}
 
-namespace {
+	TEST_F(RawDataTest, CreateFromDataURL) {
+		RawData::Ref ref = RawData::CreateFromDataURL(g_service_locator,
+		                   "data:;base64,YWJj");
+		ASSERT_FALSE(ref.IsNull());
+		EXPECT_EQ(3u, ref->GetLength());
+		EXPECT_FALSE(CheckErrorExists(error_status()));
+		EXPECT_EQ(0, memcmp(ref->GetData(), "abc", 3));
+	}
 
-struct TestData {
-  const uint8_t* data;
-  size_t length;
-  bool valid;
-  size_t offset;
-};
-
-}  // anonymous namespace
-
-TEST_F(RawDataTest, StringValue) {
-  // A BOM in the front (valid)
-  static const uint8_t data_0[] = {
-    0xEF,
-    0xBB,
-    0xBF,
-    0x65,
-    0x66,
-    0x65,
-    0x67,
-  };
-
-  // A null in the string (invalid)
-  static const uint8_t data_1[] = {
-    0x65,
-    0x66,
-    0x00,
-    0x67,
-  };
-
-  // A valid string
-  static const uint8_t data_2[] = {
-    0x65,
-    0x66,
-    0x65,
-    0x67,
-  };
-
-  // Null at the end (invalid)
-  static const uint8_t data_3[] = {
-    0x65,
-    0x66,
-    0x65,
-    0x67,
-    0x00,
-  };
-
-  // A badly formed utf-8 like string (invalid)
-  static const uint8_t data_4[] = {
-    0xE9,
-    0xBE,
-    0xE0,
-  };
-
-  // A badly formed utf-8 like string (invalid)
-  static const uint8_t data_5[] = {
-    0xC1,
-    0x65,
-    0x66,
-  };
-
-  // A badly formed utf-8 like string (invalid)
-  static const uint8_t data_6[] = {
-    0x65,
-    0x66,
-    0xF4,
-  };
-
-  // A valid multi-byte utf-8 string (valid)
-  static const uint8_t data_7[] = {
-    0xE9,
-    0xBE,
-    0x8D,
-    0xF0,
-    0x90,
-    0x90,
-    0x92,
-  };
-
-  // A UTF-8 but in D800-DFFF range
-  static const uint8_t data_8[] = {
-    0xED,
-    0xA0,
-    0xA1,
-  };
-
-  TestData test_datas[] = {
-    { &data_0[0], o3d_arraysize(data_0), true, 3, },
-    { &data_1[0], o3d_arraysize(data_1), false, },
-    { &data_2[0], o3d_arraysize(data_2), true, },
-    { &data_3[0], o3d_arraysize(data_3), false, },
-    { &data_4[0], o3d_arraysize(data_4), false, },
-    { &data_5[0], o3d_arraysize(data_5), false, },
-    { &data_6[0], o3d_arraysize(data_6), false, },
-    { &data_7[0], o3d_arraysize(data_7), true, },
-    { &data_8[0], o3d_arraysize(data_8), false, },
-  };
-
-  for (unsigned ii = 0; ii < o3d_arraysize(test_datas); ++ii) {
-    TestData& test_data = test_datas[ii];
-    RawData::Ref raw_data = RawData::Create(g_service_locator,
-                                            "test",
-                                            test_data.data,
-                                            test_data.length);
-    std::string str(raw_data->StringValue());
-    if (test_data.valid) {
-      size_t test_length = test_data.length - test_data.offset;
-      const char* test_string = reinterpret_cast<const char*>(test_data.data +
-                                                              test_data.offset);
-      EXPECT_EQ(str.size(), test_length);
-      EXPECT_EQ(str.compare(0, test_length, test_string, test_length), 0);
-    } else {
-      EXPECT_TRUE(str.empty());
-    }
-  }
-}
-
-TEST_F(RawDataTest, CreateFromDataURL) {
-  RawData::Ref ref = RawData::CreateFromDataURL(g_service_locator,
-                                                "data:;base64,YWJj");
-  ASSERT_FALSE(ref.IsNull());
-  EXPECT_EQ(3u, ref->GetLength());
-  EXPECT_FALSE(CheckErrorExists(error_status()));
-  EXPECT_EQ(0, memcmp(ref->GetData(), "abc", 3));
-}
-
-TEST_F(RawDataTest, CreateFromDataURLFail) {
-  RawData::Ref ref = RawData::CreateFromDataURL(g_service_locator,
-                                                "data:;base64,Y");
-  EXPECT_TRUE(ref.IsNull());
-  EXPECT_TRUE(CheckErrorExists(error_status()));
-}
+	TEST_F(RawDataTest, CreateFromDataURLFail) {
+		RawData::Ref ref = RawData::CreateFromDataURL(g_service_locator,
+		                   "data:;base64,Y");
+		EXPECT_TRUE(ref.IsNull());
+		EXPECT_TRUE(CheckErrorExists(error_status()));
+	}
 
 }  // namespace o3d

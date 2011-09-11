@@ -16,20 +16,31 @@
 #include <iostream>
 
 namespace o3d {
-namespace base {
+	namespace base {
 
-FullLogger::~FullLogger() {
-  std::cerr << mTag << " [";
-  switch(mLevel) {
-    default:
-    case INFO:    std::cerr << "I"; break;
-    case WARNING: std::cerr << "W"; break;
-    case ERROR:   std::cerr << "E"; break;
-    case FATAL:   std::cerr << "F"; break;
-  }
-  std::cerr << "] " << mStream.str() << "\n";
-  if (mLevel==FATAL) abort();
-}
+		FullLogger::~FullLogger() {
+			std::cerr << mTag << " [";
 
-} // namespace base
+			switch(mLevel) {
+			default:
+			case INFO:
+				std::cerr << "I";
+				break;
+			case WARNING:
+				std::cerr << "W";
+				break;
+			case ERROR:
+				std::cerr << "E";
+				break;
+			case FATAL:
+				std::cerr << "F";
+				break;
+			}
+
+			std::cerr << "] " << mStream.str() << "\n";
+
+			if(mLevel == FATAL) abort();
+		}
+
+	} // namespace base
 } // namespace o3d

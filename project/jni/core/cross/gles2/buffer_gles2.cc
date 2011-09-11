@@ -46,276 +46,310 @@
 
 namespace o3d {
 
-namespace {
+	namespace {
 
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-GLenum BufferAccessModeToGLenum(Buffer::AccessMode access_mode) {
-  switch (access_mode) {
-    case Buffer::READ_ONLY:
-      return GL_READ_ONLY_ARB;
-    case Buffer::WRITE_ONLY:
-      return GL_WRITE_ONLY_ARB;
-    case Buffer::READ_WRITE:
-      return GL_READ_WRITE_ARB;
-    case Buffer::NONE:
-      break;
-  }
-  O3D_ASSERT(false);
-  return GL_READ_WRITE_ARB;
-}
+		GLenum BufferAccessModeToGLenum(Buffer::AccessMode access_mode) {
+			switch(access_mode) {
+			case Buffer::READ_ONLY:
+				return GL_READ_ONLY_ARB;
+			case Buffer::WRITE_ONLY:
+				return GL_WRITE_ONLY_ARB;
+			case Buffer::READ_WRITE:
+				return GL_READ_WRITE_ARB;
+			case Buffer::NONE:
+				break;
+			}
+
+			O3D_ASSERT(false);
+			return GL_READ_WRITE_ARB;
+		}
 #endif
 
-}  // anonymous namespace
+	}  // anonymous namespace
 
 // Vertex Buffers --------------------------------------------------------------
 
 // Initializes the O3D VertexBuffer object but does not allocate an
 // OpenGLES2 vertex buffer object yet.
-VertexBufferGLES2::VertexBufferGLES2(ServiceLocator* service_locator)
-    : VertexBuffer(service_locator),
-      renderer_(static_cast<RendererGLES2*>(
-          service_locator->GetService<Renderer>())),
+	VertexBufferGLES2::VertexBufferGLES2(ServiceLocator* service_locator)
+		: VertexBuffer(service_locator),
+		  renderer_(static_cast<RendererGLES2*>(
+		                service_locator->GetService<Renderer>())),
 #if !defined(GLES2_BACKEND_DESKTOP_GL)
-      shadow_(NULL),
-      read_only_(true),
+		  shadow_(NULL),
+		  read_only_(true),
 #endif
-      gl_buffer_(0) {
-  O3D_LOG(INFO) << "VertexBufferGLES2 Construct";
-}
+		  gl_buffer_(0) {
+		O3D_LOG(INFO) << "VertexBufferGLES2 Construct";
+	}
 
 // Destructor releases the OpenGLES2 VBO.
-VertexBufferGLES2::~VertexBufferGLES2() {
-  O3D_LOG(INFO) << "VertexBufferGLES2 Destruct \"" << name() << "\"";
-  ConcreteFree();
-}
+	VertexBufferGLES2::~VertexBufferGLES2() {
+		O3D_LOG(INFO) << "VertexBufferGLES2 Destruct \"" << name() << "\"";
+		ConcreteFree();
+	}
 
 // Creates a OpenGLES2 vertex buffer of the requested size.
-bool VertexBufferGLES2::ConcreteAllocate(size_t size_in_bytes) {
-  O3D_LOG(INFO) << "VertexBufferGLES2 Allocate  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  ConcreteFree();
-  // Create a new VBO.
-  glGenBuffersARB(1, &gl_buffer_);
+	bool VertexBufferGLES2::ConcreteAllocate(size_t size_in_bytes) {
+		O3D_LOG(INFO) << "VertexBufferGLES2 Allocate  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		ConcreteFree();
+		// Create a new VBO.
+		glGenBuffersARB(1, &gl_buffer_);
 
-  if (!gl_buffer_) return false;
+		if(!gl_buffer_) return false;
 
-  // Give the VBO a size, but no data, and set the hint to "STATIC_DRAW"
-  // to mark the buffer as set up once then used often.
-  glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
-  glBufferDataARB(GL_ARRAY_BUFFER,
-                  size_in_bytes,
-                  NULL,
-                  GL_STATIC_DRAW);
+		// Give the VBO a size, but no data, and set the hint to "STATIC_DRAW"
+		// to mark the buffer as set up once then used often.
+		glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
+		glBufferDataARB(GL_ARRAY_BUFFER,
+		                size_in_bytes,
+		                NULL,
+		                GL_STATIC_DRAW);
+#if !defined(GLES2_BACKEND_DESKTOP_GL)
+		shadow_.reset(new char[size_in_bytes]);
+#endif
+		CHECK_GL_ERROR();
+		return true;
+	}
+
+	void VertexBufferGLES2::ConcreteFree() {
+		if(gl_buffer_) {
+			renderer_->MakeCurrentLazy();
+			glDeleteBuffersARB(1, &gl_buffer_);
+			gl_buffer_ = 0;
+			CHECK_GL_ERROR();
+		}
 
 #if !defined(GLES2_BACKEND_DESKTOP_GL)
-  shadow_.reset(new char[size_in_bytes]);
+		shadow_.reset(NULL);
 #endif
-  CHECK_GL_ERROR();
-  return true;
-}
-
-void VertexBufferGLES2::ConcreteFree() {
-  if (gl_buffer_) {
-    renderer_->MakeCurrentLazy();
-    glDeleteBuffersARB(1, &gl_buffer_);
-    gl_buffer_ = 0;
-    CHECK_GL_ERROR();
-  }
-#if !defined(GLES2_BACKEND_DESKTOP_GL)
-  shadow_.reset(NULL);
-#endif
-}
+	}
 
 // Calls Lock on the OpenGLES2 buffer to get the address in memory of where the
 // buffer data is currently stored.
-bool VertexBufferGLES2::ConcreteLock(Buffer::AccessMode access_mode,
-                                     void **buffer_data) {
-  //O3D_LOG(INFO) << "VertexBufferGLES2 Lock  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
+	bool VertexBufferGLES2::ConcreteLock(Buffer::AccessMode access_mode,
+	                                     void** buffer_data) {
+		//O3D_LOG(INFO) << "VertexBufferGLES2 Lock  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-  *buffer_data = glMapBufferARB(GL_ARRAY_BUFFER,
-                                BufferAccessModeToGLenum(access_mode));
-  if (*buffer_data == NULL) {
-    GLenum error = glGetError();
-    if (error == GL_OUT_OF_MEMORY) {
-      O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
-    } else {
-      O3D_ERROR(service_locator()) << "Unable to lock a GLES2 Array Buffer";
-    }
-    return false;
-  }
+		*buffer_data = glMapBufferARB(GL_ARRAY_BUFFER,
+		                              BufferAccessModeToGLenum(access_mode));
+
+		if(*buffer_data == NULL) {
+			GLenum error = glGetError();
+
+			if(error == GL_OUT_OF_MEMORY) {
+				O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
+			}
+			else {
+				O3D_ERROR(service_locator()) << "Unable to lock a GLES2 Array Buffer";
+			}
+
+			return false;
+		}
+
 #else
-  *buffer_data = shadow_.get();
-  read_only_ = (access_mode == READ_ONLY);
+		*buffer_data = shadow_.get();
+		read_only_ = (access_mode == READ_ONLY);
 #endif
-  CHECK_GL_ERROR();
-  return true;
-}
+		CHECK_GL_ERROR();
+		return true;
+	}
 
 // Calls Unlock on the OpenGLES2 buffer to notify that the contents of the
 // buffer are now ready for use.
-bool VertexBufferGLES2::ConcreteUnlock() {
-  //O3D_LOG(INFO) << "VertexBufferGLES2 Unlock  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
+	bool VertexBufferGLES2::ConcreteUnlock() {
+		//O3D_LOG(INFO) << "VertexBufferGLES2 Unlock  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-  if (!glUnmapBufferARB(GL_ARRAY_BUFFER)) {
-    GLenum error = glGetError();
-    if (error == GL_INVALID_OPERATION) {
-      O3D_ERROR(service_locator()) <<
-          "Buffer was unlocked without first being locked.";
-    } else {
-      O3D_ERROR(
-          service_locator()) << "Unable to unlock a GLES2 Element Array Buffer";
-    }
-    return false;
-  }
-#else
-  if (!read_only_) {
-    glBufferSubData(GL_ARRAY_BUFFER, 0, GetSizeInBytes(), shadow_.get());
-  }
-#endif
-  CHECK_GL_ERROR();
-  return true;
-}
 
-bool VertexBufferGLES2::OnContextRestored() {
-  if (shadow_.get()) {
-    renderer_->MakeCurrentLazy();
-    glGenBuffersARB(1, &gl_buffer_);
-    glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
-    glBufferData(
-        GL_ARRAY_BUFFER, GetSizeInBytes(), shadow_.get(), GL_STATIC_DRAW);
-  }
-  return true;
-}
+		if(!glUnmapBufferARB(GL_ARRAY_BUFFER)) {
+			GLenum error = glGetError();
+
+			if(error == GL_INVALID_OPERATION) {
+				O3D_ERROR(service_locator()) <<
+				                             "Buffer was unlocked without first being locked.";
+			}
+			else {
+				O3D_ERROR(
+				    service_locator()) << "Unable to unlock a GLES2 Element Array Buffer";
+			}
+
+			return false;
+		}
+
+#else
+
+		if(!read_only_) {
+			glBufferSubData(GL_ARRAY_BUFFER, 0, GetSizeInBytes(), shadow_.get());
+		}
+
+#endif
+		CHECK_GL_ERROR();
+		return true;
+	}
+
+	bool VertexBufferGLES2::OnContextRestored() {
+		if(shadow_.get()) {
+			renderer_->MakeCurrentLazy();
+			glGenBuffersARB(1, &gl_buffer_);
+			glBindBufferARB(GL_ARRAY_BUFFER, gl_buffer_);
+			glBufferData(
+			    GL_ARRAY_BUFFER, GetSizeInBytes(), shadow_.get(), GL_STATIC_DRAW);
+		}
+
+		return true;
+	}
 
 // Index Buffers ---------------------------------------------------------------
 
 // Initializes the O3D IndexBuffer object but does not create a OpenGLES2
 // buffer yet.
 
-IndexBufferGLES2::IndexBufferGLES2(ServiceLocator* service_locator)
-    : IndexBuffer(service_locator),
-      renderer_(static_cast<RendererGLES2*>(
-          service_locator->GetService<Renderer>())),
+	IndexBufferGLES2::IndexBufferGLES2(ServiceLocator* service_locator)
+		: IndexBuffer(service_locator),
+		  renderer_(static_cast<RendererGLES2*>(
+		                service_locator->GetService<Renderer>())),
 #if !defined(GLES2_BACKEND_DESKTOP_GL)
-      shadow_(NULL),
-      read_only_(true),
+		  shadow_(NULL),
+		  read_only_(true),
 #endif
-      gl_buffer_(0) {
-  O3D_LOG(INFO) << "IndexBufferGLES2 Construct";
-}
+		  gl_buffer_(0) {
+		O3D_LOG(INFO) << "IndexBufferGLES2 Construct";
+	}
 
 // Destructor releases the OpenGLES2 index buffer.
-IndexBufferGLES2::~IndexBufferGLES2() {
-  O3D_LOG(INFO) << "IndexBufferGLES2 Destruct  \"" << name() << "\"";
-  ConcreteFree();
-}
+	IndexBufferGLES2::~IndexBufferGLES2() {
+		O3D_LOG(INFO) << "IndexBufferGLES2 Destruct  \"" << name() << "\"";
+		ConcreteFree();
+	}
 
 // Creates a OpenGLES2 index buffer of the requested size.
-bool IndexBufferGLES2::ConcreteAllocate(size_t size_in_bytes) {
-  O3D_LOG(INFO) << "IndexBufferGLES2 Allocate  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  ConcreteFree();
-  // Create a new VBO.
-  glGenBuffersARB(1, &gl_buffer_);
-  if (!gl_buffer_) return false;
-  // Give the VBO a size, but no data, and set the hint to "STATIC_DRAW"
-  // to mark the buffer as set up once then used often.
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, gl_buffer_);
-  glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER,
-                  size_in_bytes,
-                  NULL,
-                  GL_STATIC_DRAW);
-#if !defined(GLES2_BACKEND_DESKTOP_GL)
-  shadow_.reset(new char[size_in_bytes]);
-#endif
-  CHECK_GL_ERROR();
-  return true;
-}
+	bool IndexBufferGLES2::ConcreteAllocate(size_t size_in_bytes) {
+		O3D_LOG(INFO) << "IndexBufferGLES2 Allocate  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		ConcreteFree();
+		// Create a new VBO.
+		glGenBuffersARB(1, &gl_buffer_);
 
-void IndexBufferGLES2::ConcreteFree() {
-  if (gl_buffer_) {
-    renderer_->MakeCurrentLazy();
-    glDeleteBuffersARB(1, &gl_buffer_);
-    gl_buffer_ = 0;
-    CHECK_GL_ERROR();
-  }
+		if(!gl_buffer_) return false;
+
+		// Give the VBO a size, but no data, and set the hint to "STATIC_DRAW"
+		// to mark the buffer as set up once then used often.
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, gl_buffer_);
+		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER,
+		                size_in_bytes,
+		                NULL,
+		                GL_STATIC_DRAW);
 #if !defined(GLES2_BACKEND_DESKTOP_GL)
-  shadow_.reset(NULL);
+		shadow_.reset(new char[size_in_bytes]);
 #endif
-}
+		CHECK_GL_ERROR();
+		return true;
+	}
+
+	void IndexBufferGLES2::ConcreteFree() {
+		if(gl_buffer_) {
+			renderer_->MakeCurrentLazy();
+			glDeleteBuffersARB(1, &gl_buffer_);
+			gl_buffer_ = 0;
+			CHECK_GL_ERROR();
+		}
+
+#if !defined(GLES2_BACKEND_DESKTOP_GL)
+		shadow_.reset(NULL);
+#endif
+	}
 
 // Maps the OpenGLES2 buffer to get the address in memory of the buffer data.
-bool IndexBufferGLES2::ConcreteLock(Buffer::AccessMode access_mode,
-                                    void **buffer_data) {
-  O3D_LOG(INFO) << "IndexBufferGLES2 Lock  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, gl_buffer_);
-  if (!num_elements())
-    return true;
+	bool IndexBufferGLES2::ConcreteLock(Buffer::AccessMode access_mode,
+	                                    void** buffer_data) {
+		O3D_LOG(INFO) << "IndexBufferGLES2 Lock  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, gl_buffer_);
+
+		if(!num_elements())
+			return true;
+
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-  *buffer_data = glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER,
-                                BufferAccessModeToGLenum(access_mode));
-  if (*buffer_data == NULL) {
-    GLenum error = glGetError();
-    if (error == GL_OUT_OF_MEMORY) {
-      O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
-    } else {
-      O3D_ERROR(
-          service_locator()) << "Unable to lock a GLES2 Element Array Buffer";
-    }
-    return false;
-  }
+		*buffer_data = glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER,
+		                              BufferAccessModeToGLenum(access_mode));
+
+		if(*buffer_data == NULL) {
+			GLenum error = glGetError();
+
+			if(error == GL_OUT_OF_MEMORY) {
+				O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
+			}
+			else {
+				O3D_ERROR(
+				    service_locator()) << "Unable to lock a GLES2 Element Array Buffer";
+			}
+
+			return false;
+		}
+
 #else
-  *buffer_data = shadow_.get();
-  read_only_ = (access_mode == READ_ONLY);
+		*buffer_data = shadow_.get();
+		read_only_ = (access_mode == READ_ONLY);
 #endif
-  CHECK_GL_ERROR();
-  return true;
-}
+		CHECK_GL_ERROR();
+		return true;
+	}
 
 // Calls Unlock on the OpenGLES2 buffer to notify that the contents of the
 // buffer are now ready for use.
-bool IndexBufferGLES2::ConcreteUnlock() {
-  O3D_LOG(INFO) << "IndexBufferGLES2 Unlock  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  if (!num_elements())
-    return true;
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, gl_buffer_);
-#if defined(GLES2_BACKEND_DESKTOP_GL)
-  if (!glUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER)) {
-    GLenum error = glGetError();
-    if (error == GL_INVALID_OPERATION) {
-      O3D_ERROR(service_locator()) <<
-          "Buffer was unlocked without first being locked.";
-    } else {
-      O3D_ERROR(
-          service_locator()) << "Unable to unlock a GLES2 Element Array Buffer";
-    }
-    return false;
-  }
-#else
-  if (!read_only_) {
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GetSizeInBytes(),
-                    shadow_.get());
-  }
-#endif
-  CHECK_GL_ERROR();
-  return true;
-}
+	bool IndexBufferGLES2::ConcreteUnlock() {
+		O3D_LOG(INFO) << "IndexBufferGLES2 Unlock  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
 
-bool IndexBufferGLES2::OnContextRestored() {
-  if (shadow_.get()) {
-    renderer_->MakeCurrentLazy();
-    glGenBuffersARB(1, &gl_buffer_);
-    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, gl_buffer_);
-    glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER, GetSizeInBytes(), shadow_.get(),
-        GL_STATIC_DRAW);
-  }
-  return true;
-}
+		if(!num_elements())
+			return true;
+
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, gl_buffer_);
+#if defined(GLES2_BACKEND_DESKTOP_GL)
+
+		if(!glUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER)) {
+			GLenum error = glGetError();
+
+			if(error == GL_INVALID_OPERATION) {
+				O3D_ERROR(service_locator()) <<
+				                             "Buffer was unlocked without first being locked.";
+			}
+			else {
+				O3D_ERROR(
+				    service_locator()) << "Unable to unlock a GLES2 Element Array Buffer";
+			}
+
+			return false;
+		}
+
+#else
+
+		if(!read_only_) {
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, GetSizeInBytes(),
+			                shadow_.get());
+		}
+
+#endif
+		CHECK_GL_ERROR();
+		return true;
+	}
+
+	bool IndexBufferGLES2::OnContextRestored() {
+		if(shadow_.get()) {
+			renderer_->MakeCurrentLazy();
+			glGenBuffersARB(1, &gl_buffer_);
+			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, gl_buffer_);
+			glBufferData(
+			    GL_ELEMENT_ARRAY_BUFFER, GetSizeInBytes(), shadow_.get(),
+			    GL_STATIC_DRAW);
+		}
+
+		return true;
+	}
 }  // namespace o3d

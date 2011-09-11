@@ -34,7 +34,7 @@
 
 namespace o3d {
 
-const InterfaceId IMainThreadTaskPoster::kInterfaceId =
-    InterfaceTraits<IMainThreadTaskPoster>::kInterfaceId;
+	const InterfaceId IMainThreadTaskPoster::kInterfaceId =
+	    InterfaceTraits<IMainThreadTaskPoster>::kInterfaceId;
 
 }  // namespace o3d

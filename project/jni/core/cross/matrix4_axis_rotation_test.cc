@@ -39,45 +39,45 @@
 
 namespace o3d {
 
-class Matrix4AxisRotationTest : public testing::Test {
- protected:
-  Matrix4AxisRotationTest()
-      : object_manager_(g_service_locator),
-        pack_(NULL),
-        rotation_(NULL) {
-  }
+	class Matrix4AxisRotationTest : public testing::Test {
+	protected:
+		Matrix4AxisRotationTest()
+			: object_manager_(g_service_locator),
+			  pack_(NULL),
+			  rotation_(NULL) {
+		}
 
-  virtual void SetUp() {
-    pack_ = object_manager_->CreatePack();
-    rotation_ = pack_->Create<Matrix4AxisRotation>();
-  }
+		virtual void SetUp() {
+			pack_ = object_manager_->CreatePack();
+			rotation_ = pack_->Create<Matrix4AxisRotation>();
+		}
 
-  virtual void TearDown() {
-    pack_->Destroy();
-  }
+		virtual void TearDown() {
+			pack_->Destroy();
+		}
 
- protected:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack* pack_;
-  Matrix4AxisRotation* rotation_;
-};
+	protected:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+		Matrix4AxisRotation* rotation_;
+	};
 
-TEST_F(Matrix4AxisRotationTest, OutputsInputRotationAsMatrixIfNoParent) {
-  rotation_->set_axis(Float3(0, 0, 1));
-  rotation_->set_angle(kPi * 0.5f);
-  Matrix4 output_matrix = rotation_->output_matrix();
-  Matrix4 expected(Vector4(0, 1, 0, 0), Vector4(-1, 0, 0, 0),
-                   Vector4(0, 0, 1, 0), Vector4(0, 0, 0, 1));
-  ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
-}
+	TEST_F(Matrix4AxisRotationTest, OutputsInputRotationAsMatrixIfNoParent) {
+		rotation_->set_axis(Float3(0, 0, 1));
+		rotation_->set_angle(kPi * 0.5f);
+		Matrix4 output_matrix = rotation_->output_matrix();
+		Matrix4 expected(Vector4(0, 1, 0, 0), Vector4(-1, 0, 0, 0),
+		                 Vector4(0, 0, 1, 0), Vector4(0, 0, 0, 1));
+		ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
+	}
 
-TEST_F(Matrix4AxisRotationTest, ComposesInputRotationWithParentMatrix) {
-  rotation_->set_axis(Float3(0, 0, 1));
-  rotation_->set_angle(kPi * 0.5f);
-  Matrix4 parent = Matrix4::rotation(kPi * 0.5f, Vector3(0, 0, 1));
-  rotation_->set_input_matrix(parent);
-  Matrix4 output_matrix = rotation_->output_matrix();
-  Matrix4 expected = Matrix4::rotation(kPi, Vector3(0, 0, 1));
-  ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
-}
+	TEST_F(Matrix4AxisRotationTest, ComposesInputRotationWithParentMatrix) {
+		rotation_->set_axis(Float3(0, 0, 1));
+		rotation_->set_angle(kPi * 0.5f);
+		Matrix4 parent = Matrix4::rotation(kPi * 0.5f, Vector3(0, 0, 1));
+		rotation_->set_input_matrix(parent);
+		Matrix4 output_matrix = rotation_->output_matrix();
+		Matrix4 expected = Matrix4::rotation(kPi, Vector3(0, 0, 1));
+		ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
+	}
 }  // namespace o3d

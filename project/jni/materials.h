@@ -22,74 +22,74 @@
 
 namespace o3d {
 
-class DrawList;
-class Element;
-class Material;
-class Pack;
-class Texture;
+	class DrawList;
+	class Element;
+	class Material;
+	class Pack;
+	class Texture;
 
 }  // namespace o3d.
 
 namespace o3d_utils {
 
-class ViewInfo;
+	class ViewInfo;
 
-class Materials {
- public:
-  // Prepares all the materials in a pack assuming they are materials as
-  // imported from the collada loader.
-  static void PrepareMaterials(
-      o3d::Pack* pack, o3d_utils::ViewInfo* view_info, o3d::Pack* effect_pack);
+	class Materials {
+	public:
+		// Prepares all the materials in a pack assuming they are materials as
+		// imported from the collada loader.
+		static void PrepareMaterials(
+		    o3d::Pack* pack, o3d_utils::ViewInfo* view_info, o3d::Pack* effect_pack);
 
-  // Prepares a material assuming it was imported from the collada loader.
-  static void PrepareMaterial(
-      o3d::Pack* pack, o3d_utils::ViewInfo* view_info, o3d::Material* material,
-      std::string opt_effect_type);
+		// Prepares a material assuming it was imported from the collada loader.
+		static void PrepareMaterial(
+		    o3d::Pack* pack, o3d_utils::ViewInfo* view_info, o3d::Material* material,
+		    std::string opt_effect_type);
 
-  static void AttachStandardEffect(
-      o3d::Pack* pack,
-      o3d::Material* material,
-      o3d_utils::ViewInfo* viewInfo,
-      const std::string& effectType);
+		static void AttachStandardEffect(
+		    o3d::Pack* pack,
+		    o3d::Material* material,
+		    o3d_utils::ViewInfo* viewInfo,
+		    const std::string& effectType);
 
-  static void AttachStandardEffectEx(
-      o3d::Pack* pack,
-      o3d::Material* material,
-      const std::string& effectType);
+		static void AttachStandardEffectEx(
+		    o3d::Pack* pack,
+		    o3d::Material* material,
+		    const std::string& effectType);
 
-  static o3d::Material* CreateBasicMaterial(
-      o3d::Pack* pack,
-      o3d_utils::ViewInfo* viewInfo,
-      o3d::Float4* opt_color,
-      o3d::Texture* opt_texture,
-      bool transparent);
+		static o3d::Material* CreateBasicMaterial(
+		    o3d::Pack* pack,
+		    o3d_utils::ViewInfo* viewInfo,
+		    o3d::Float4* opt_color,
+		    o3d::Texture* opt_texture,
+		    bool transparent);
 
-  static o3d::Material* CreateConstantMaterialEx(
-      o3d::Pack* pack,
-      o3d::DrawList* drawList,
-      o3d::Float4* opt_color,
-      o3d::Texture* opt_texture);
+		static o3d::Material* CreateConstantMaterialEx(
+		    o3d::Pack* pack,
+		    o3d::DrawList* drawList,
+		    o3d::Float4* opt_color,
+		    o3d::Texture* opt_texture);
 
-  static o3d::Material* CreateConstantMaterial(
-      o3d::Pack* pack,
-      o3d_utils::ViewInfo* viewInfo,
-      o3d::Float4* opt_color,
-      o3d::Texture* opt_texture,
-      bool transparent);
+		static o3d::Material* CreateConstantMaterial(
+		    o3d::Pack* pack,
+		    o3d_utils::ViewInfo* viewInfo,
+		    o3d::Float4* opt_color,
+		    o3d::Texture* opt_texture,
+		    bool transparent);
 
-  static o3d::Material* CreateCheckerMaterial(
-      o3d::Pack* pack,
-      o3d_utils::ViewInfo* viewInfo,
-      o3d::Float4* opt_color1 = NULL,
-      o3d::Float4* opt_color2 = NULL,
-      bool transparent = false,
-      float checkSize = 10.0f);
+		static o3d::Material* CreateCheckerMaterial(
+		    o3d::Pack* pack,
+		    o3d_utils::ViewInfo* viewInfo,
+		    o3d::Float4* opt_color1 = NULL,
+		    o3d::Float4* opt_color2 = NULL,
+		    bool transparent = false,
+		    float checkSize = 10.0f);
 
- private:
-  static bool hasNonOneAlpha(
-      o3d::Material* material, const std::string& name,
-      bool* nonOneAlpha);
-};
+	private:
+		static bool hasNonOneAlpha(
+		    o3d::Material* material, const std::string& name,
+		    bool* nonOneAlpha);
+	};
 
 }  // namespace o3d_utils
 

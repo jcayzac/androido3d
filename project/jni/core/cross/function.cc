@@ -36,64 +36,67 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(FunctionContext, ObjectBase);
-O3D_DEFN_CLASS(Function, NamedObject);
-O3D_DEFN_CLASS(ParamFunction, RefParamBase);
-O3D_DEFN_CLASS(FunctionEval, ParamObject);
+	O3D_DEFN_CLASS(FunctionContext, ObjectBase);
+	O3D_DEFN_CLASS(Function, NamedObject);
+	O3D_DEFN_CLASS(ParamFunction, RefParamBase);
+	O3D_DEFN_CLASS(FunctionEval, ParamObject);
 
-FunctionContext::FunctionContext(ServiceLocator* service_locator)
-    : ObjectBase(service_locator) {
-}
+	FunctionContext::FunctionContext(ServiceLocator* service_locator)
+		: ObjectBase(service_locator) {
+	}
 
-Function::Function(ServiceLocator* service_locator)
-    : NamedObject(service_locator),
-      weak_pointer_manager_(this) {
-}
+	Function::Function(ServiceLocator* service_locator)
+		: NamedObject(service_locator),
+		  weak_pointer_manager_(this) {
+	}
 
-const char* FunctionEval::kInputParamName =
-    O3D_STRING_CONSTANT("input");
-const char* FunctionEval::kFunctionObjectParamName =
-    O3D_STRING_CONSTANT("functionObject");
-const char* FunctionEval::kOutputParamName =
-    O3D_STRING_CONSTANT("output");
+	const char* FunctionEval::kInputParamName =
+	    O3D_STRING_CONSTANT("input");
+	const char* FunctionEval::kFunctionObjectParamName =
+	    O3D_STRING_CONSTANT("functionObject");
+	const char* FunctionEval::kOutputParamName =
+	    O3D_STRING_CONSTANT("output");
 
-FunctionEval::FunctionEval(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      function_context_(NULL) {
-  RegisterParamRef(kInputParamName, &input_param_);
-  RegisterParamRef(kFunctionObjectParamName, &function_object_param_);
-  SlaveParamFloat::RegisterParamRef(kOutputParamName,
-                                    &output_param_,
-                                    this);
-}
+	FunctionEval::FunctionEval(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  function_context_(NULL) {
+		RegisterParamRef(kInputParamName, &input_param_);
+		RegisterParamRef(kFunctionObjectParamName, &function_object_param_);
+		SlaveParamFloat::RegisterParamRef(kOutputParamName,
+		                                  &output_param_,
+		                                  this);
+	}
 
-void FunctionEval::UpdateOutputs() {
-  if (output_param_->input_connection() == NULL) {
-    Function* function = function_object_param_->value();
-    if (function) {
-      // If we don't have a function context or if the one we have is the wrong
-      // type then get a new one.
-      if (!function_context_ ||
-          !function_context_->IsA(function->GetFunctionContextClass())) {
-        function_context_.Reset();
-        function_context_ = FunctionContext::Ref(
-            function->CreateFunctionContext());
-      }
-      output_param_->set_dynamic_value(
-          function->Evaluate(input_param_->value(), function_context_.Get()));
-    } else {
-      output_param_->set_dynamic_value(input_param_->value());
-    }
-  }
-}
+	void FunctionEval::UpdateOutputs() {
+		if(output_param_->input_connection() == NULL) {
+			Function* function = function_object_param_->value();
 
-ObjectBase::Ref FunctionEval::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new FunctionEval(service_locator));
-}
+			if(function) {
+				// If we don't have a function context or if the one we have is the wrong
+				// type then get a new one.
+				if(!function_context_ ||
+				        !function_context_->IsA(function->GetFunctionContextClass())) {
+					function_context_.Reset();
+					function_context_ = FunctionContext::Ref(
+					                        function->CreateFunctionContext());
+				}
 
-ObjectBase::Ref ParamFunction::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new ParamFunction(service_locator, false, false));
-}
+				output_param_->set_dynamic_value(
+				    function->Evaluate(input_param_->value(), function_context_.Get()));
+			}
+			else {
+				output_param_->set_dynamic_value(input_param_->value());
+			}
+		}
+	}
+
+	ObjectBase::Ref FunctionEval::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new FunctionEval(service_locator));
+	}
+
+	ObjectBase::Ref ParamFunction::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new ParamFunction(service_locator, false, false));
+	}
 
 }  // namespace o3d
 

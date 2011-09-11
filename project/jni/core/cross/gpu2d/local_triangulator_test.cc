@@ -36,99 +36,112 @@
 #include "gtest/gtest.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
-using cubic::ApproxEqual;
+		using cubic::ApproxEqual;
 
-namespace {
+		namespace {
 
 // Sets up control point vertices for (approximately) a serpentine
 // curve.
-void SetupSerpentineVertices(LocalTriangulator* triangulator) {
-  triangulator->get_vertex(0)->Set(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-  triangulator->get_vertex(1)->Set(75.0f, 25.0f, 0.0f, 0.0f, 0.0f);
-  triangulator->get_vertex(2)->Set(25.0f, 75.0f, 0.0f, 0.0f, 0.0f);
-  triangulator->get_vertex(3)->Set(100.0f, 100.0f, 0.0f, 0.0f, 0.0f);
-}
+			void SetupSerpentineVertices(LocalTriangulator* triangulator) {
+				triangulator->get_vertex(0)->Set(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+				triangulator->get_vertex(1)->Set(75.0f, 25.0f, 0.0f, 0.0f, 0.0f);
+				triangulator->get_vertex(2)->Set(25.0f, 75.0f, 0.0f, 0.0f, 0.0f);
+				triangulator->get_vertex(3)->Set(100.0f, 100.0f, 0.0f, 0.0f, 0.0f);
+			}
 
-}  // anonymous namespace
+		}  // anonymous namespace
 
-TEST(LocalTriangulatorTest, TestShortestEdgeGuarantee) {
-  LocalTriangulator triangulator;
-  SetupSerpentineVertices(&triangulator);
-  triangulator.Triangulate(false, false);
-  EXPECT_EQ(triangulator.num_triangles(), 2);
-  // It would be an error if the edge from (0, 0) to (100, 100) was
-  // contained in either of the two triangles.
-  for (int i = 0; i < triangulator.num_triangles(); i++) {
-    LocalTriangulator::Triangle* triangle = triangulator.get_triangle(i);
-    bool has_0_0 = false;
-    bool has_100_100 = false;
-    for (int j = 0; j < 3; j++) {
-      LocalTriangulator::Vertex* vertex = triangle->get_vertex(j);
-      if (ApproxEqual(vertex->x(), 0) && ApproxEqual(vertex->y(), 0)) {
-        has_0_0 = true;
-      }
-      if (ApproxEqual(vertex->x(), 100) && ApproxEqual(vertex->y(), 100)) {
-        has_100_100 = true;
-      }
-    }
-    EXPECT_FALSE(has_0_0 && has_100_100);
-  }
-}
+		TEST(LocalTriangulatorTest, TestShortestEdgeGuarantee) {
+			LocalTriangulator triangulator;
+			SetupSerpentineVertices(&triangulator);
+			triangulator.Triangulate(false, false);
+			EXPECT_EQ(triangulator.num_triangles(), 2);
 
-TEST(LocalTriangulatorTest, TestInteriorVertexGuarantee) {
-  LocalTriangulator triangulator;
-  triangulator.get_vertex(0)->Set(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-  triangulator.get_vertex(1)->Set(100.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-  triangulator.get_vertex(2)->Set(50.0f, 50.0f, 0.0f, 0.0f, 0.0f);
-  triangulator.get_vertex(3)->Set(50.0f, 100.0f, 0.0f, 0.0f, 0.0f);
-  triangulator.Triangulate(false, false);
-  EXPECT_EQ(triangulator.num_triangles(), 3);
-}
+			// It would be an error if the edge from (0, 0) to (100, 100) was
+			// contained in either of the two triangles.
+			for(int i = 0; i < triangulator.num_triangles(); i++) {
+				LocalTriangulator::Triangle* triangle = triangulator.get_triangle(i);
+				bool has_0_0 = false;
+				bool has_100_100 = false;
 
-TEST(LocalTriangulatorTest, TestInteriorVertexComputationFillingRightSide) {
-  LocalTriangulator triangulator;
-  SetupSerpentineVertices(&triangulator);
-  triangulator.Triangulate(true, true);
-  EXPECT_EQ(triangulator.num_triangles(), 2);
-  // In this configuration, vertex (75, 25) should be among the
-  // interior vertices, and vertex (25, 75) should not.
-  bool found_correct_interior_vertex = false;
-  for (int i = 0; i < triangulator.num_interior_vertices(); i++) {
-    LocalTriangulator::Vertex* vertex = triangulator.get_interior_vertex(i);
-    if (ApproxEqual(vertex->x(), 75) && ApproxEqual(vertex->y(), 25)) {
-      found_correct_interior_vertex = true;
-    }
-  }
-  EXPECT_TRUE(found_correct_interior_vertex);
-  for (int i = 0; i < triangulator.num_interior_vertices(); i++) {
-    LocalTriangulator::Vertex* vertex = triangulator.get_interior_vertex(i);
-    EXPECT_FALSE(ApproxEqual(vertex->x(), 25) && ApproxEqual(vertex->y(), 75));
-  }
-}
+				for(int j = 0; j < 3; j++) {
+					LocalTriangulator::Vertex* vertex = triangle->get_vertex(j);
 
-TEST(LocalTriangulatorTest, TestInteriorVertexComputationFillingLeftSide) {
-  LocalTriangulator triangulator;
-  SetupSerpentineVertices(&triangulator);
-  triangulator.Triangulate(true, false);
-  EXPECT_EQ(triangulator.num_triangles(), 2);
-  // In this configuration, vertex (25, 75) should be among the
-  // interior vertices, and vertex (75, 25) should not.
-  bool found_correct_interior_vertex = false;
-  for (int i = 0; i < triangulator.num_interior_vertices(); i++) {
-    LocalTriangulator::Vertex* vertex = triangulator.get_interior_vertex(i);
-    if (ApproxEqual(vertex->x(), 25) && ApproxEqual(vertex->y(), 75)) {
-      found_correct_interior_vertex = true;
-    }
-  }
-  EXPECT_TRUE(found_correct_interior_vertex);
-  for (int i = 0; i < triangulator.num_interior_vertices(); i++) {
-    LocalTriangulator::Vertex* vertex = triangulator.get_interior_vertex(i);
-    EXPECT_FALSE(ApproxEqual(vertex->x(), 75) && ApproxEqual(vertex->y(), 25));
-  }
-}
+					if(ApproxEqual(vertex->x(), 0) && ApproxEqual(vertex->y(), 0)) {
+						has_0_0 = true;
+					}
 
-}  // namespace gpu2d
+					if(ApproxEqual(vertex->x(), 100) && ApproxEqual(vertex->y(), 100)) {
+						has_100_100 = true;
+					}
+				}
+
+				EXPECT_FALSE(has_0_0 && has_100_100);
+			}
+		}
+
+		TEST(LocalTriangulatorTest, TestInteriorVertexGuarantee) {
+			LocalTriangulator triangulator;
+			triangulator.get_vertex(0)->Set(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			triangulator.get_vertex(1)->Set(100.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+			triangulator.get_vertex(2)->Set(50.0f, 50.0f, 0.0f, 0.0f, 0.0f);
+			triangulator.get_vertex(3)->Set(50.0f, 100.0f, 0.0f, 0.0f, 0.0f);
+			triangulator.Triangulate(false, false);
+			EXPECT_EQ(triangulator.num_triangles(), 3);
+		}
+
+		TEST(LocalTriangulatorTest, TestInteriorVertexComputationFillingRightSide) {
+			LocalTriangulator triangulator;
+			SetupSerpentineVertices(&triangulator);
+			triangulator.Triangulate(true, true);
+			EXPECT_EQ(triangulator.num_triangles(), 2);
+			// In this configuration, vertex (75, 25) should be among the
+			// interior vertices, and vertex (25, 75) should not.
+			bool found_correct_interior_vertex = false;
+
+			for(int i = 0; i < triangulator.num_interior_vertices(); i++) {
+				LocalTriangulator::Vertex* vertex = triangulator.get_interior_vertex(i);
+
+				if(ApproxEqual(vertex->x(), 75) && ApproxEqual(vertex->y(), 25)) {
+					found_correct_interior_vertex = true;
+				}
+			}
+
+			EXPECT_TRUE(found_correct_interior_vertex);
+
+			for(int i = 0; i < triangulator.num_interior_vertices(); i++) {
+				LocalTriangulator::Vertex* vertex = triangulator.get_interior_vertex(i);
+				EXPECT_FALSE(ApproxEqual(vertex->x(), 25) && ApproxEqual(vertex->y(), 75));
+			}
+		}
+
+		TEST(LocalTriangulatorTest, TestInteriorVertexComputationFillingLeftSide) {
+			LocalTriangulator triangulator;
+			SetupSerpentineVertices(&triangulator);
+			triangulator.Triangulate(true, false);
+			EXPECT_EQ(triangulator.num_triangles(), 2);
+			// In this configuration, vertex (25, 75) should be among the
+			// interior vertices, and vertex (75, 25) should not.
+			bool found_correct_interior_vertex = false;
+
+			for(int i = 0; i < triangulator.num_interior_vertices(); i++) {
+				LocalTriangulator::Vertex* vertex = triangulator.get_interior_vertex(i);
+
+				if(ApproxEqual(vertex->x(), 25) && ApproxEqual(vertex->y(), 75)) {
+					found_correct_interior_vertex = true;
+				}
+			}
+
+			EXPECT_TRUE(found_correct_interior_vertex);
+
+			for(int i = 0; i < triangulator.num_interior_vertices(); i++) {
+				LocalTriangulator::Vertex* vertex = triangulator.get_interior_vertex(i);
+				EXPECT_FALSE(ApproxEqual(vertex->x(), 75) && ApproxEqual(vertex->y(), 25));
+			}
+		}
+
+	}  // namespace gpu2d
 }  // namespace o3d
 

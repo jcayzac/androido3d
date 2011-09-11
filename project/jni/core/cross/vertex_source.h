@@ -44,43 +44,43 @@ namespace o3d {
 // Streams such that the VertexSource updates the Buffers of the Streams that
 // have been bound to it. Example of concrete VertexSource objects would be
 // SkinEval, BlendShapeEval, TerrainEval
-class VertexSource : public ParamObject {
- public:
-  explicit VertexSource(ServiceLocator* service_locator)
-      : ParamObject(service_locator) {
-  }
+	class VertexSource : public ParamObject {
+	public:
+		explicit VertexSource(ServiceLocator* service_locator)
+			: ParamObject(service_locator) {
+		}
 
-  // Used by BindStream. Each derived class must provide this function.
-  // Returns the ParamVertexBufferStream that manages the given stream. as an
-  // output param for this VertexSource.
-  virtual ParamVertexBufferStream* GetVertexStreamParam(
-      Stream::Semantic semantic,
-      int semantic_index) const = 0;
+		// Used by BindStream. Each derived class must provide this function.
+		// Returns the ParamVertexBufferStream that manages the given stream. as an
+		// output param for this VertexSource.
+		virtual ParamVertexBufferStream* GetVertexStreamParam(
+		    Stream::Semantic semantic,
+		    int semantic_index) const = 0;
 
-  // Bind the source stream to the corresponding stream in this VertexSource.
-  // Parameters:
-  //   source: Source to get vertices from.
-  //   semantic: The semantic of the vertices to get
-  //   semantic_index: The semantic index of the vertices to get.
-  // Returns:
-  //   True if success. False if failure. If the requested semantic or semantic
-  //   index do not exist on the source or this source the bind will fail.
-  bool BindStream(VertexSource* source,
-                  Stream::Semantic semantic,
-                  int semantic_index);
+		// Bind the source stream to the corresponding stream in this VertexSource.
+		// Parameters:
+		//   source: Source to get vertices from.
+		//   semantic: The semantic of the vertices to get
+		//   semantic_index: The semantic index of the vertices to get.
+		// Returns:
+		//   True if success. False if failure. If the requested semantic or semantic
+		//   index do not exist on the source or this source the bind will fail.
+		bool BindStream(VertexSource* source,
+		                Stream::Semantic semantic,
+		                int semantic_index);
 
-  // Unbinds the requested stream.
-  // Parameters:
-  //   semantic: The semantic of the vertices to unbind
-  //   semantic_index: The semantic index of the vertices to unbind.
-  // Returns:
-  //   True if unbound. False those vertices do not exist or were not bound.
-  bool UnbindStream(Stream::Semantic semantic, int semantic_index);
+		// Unbinds the requested stream.
+		// Parameters:
+		//   semantic: The semantic of the vertices to unbind
+		//   semantic_index: The semantic index of the vertices to unbind.
+		// Returns:
+		//   True if unbound. False those vertices do not exist or were not bound.
+		bool UnbindStream(Stream::Semantic semantic, int semantic_index);
 
- private:
-  O3D_DECL_CLASS(VertexSource, ParamObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(VertexSource);
-};
+	private:
+		O3D_DECL_CLASS(VertexSource, ParamObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(VertexSource);
+	};
 
 }  // namespace o3d
 

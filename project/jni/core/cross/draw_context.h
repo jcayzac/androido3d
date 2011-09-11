@@ -47,73 +47,73 @@
 
 namespace o3d {
 
-class DrawContext : public ParamObject {
- public:
-  typedef SmartPointer<DrawContext> Ref;
-  typedef WeakPointer<DrawContext> WeakPointerType;
+	class DrawContext : public ParamObject {
+	public:
+		typedef SmartPointer<DrawContext> Ref;
+		typedef WeakPointer<DrawContext> WeakPointerType;
 
-  static const char* kViewParamName;
-  static const char* kProjectionParamName;
+		static const char* kViewParamName;
+		static const char* kProjectionParamName;
 
-  // Gets the view matrix.
-  const Matrix4 view() const {
-    return view_param_->value();
-  }
+		// Gets the view matrix.
+		const Matrix4 view() const {
+			return view_param_->value();
+		}
 
-  // Sets the view matrix.
-  void set_view(const Matrix4& value) {
-    view_param_->set_value(value);
-  }
+		// Sets the view matrix.
+		void set_view(const Matrix4& value) {
+			view_param_->set_value(value);
+		}
 
-  // Gets the projection matrix.
-  const Matrix4 projection() const {
-    return projection_param_->value();
-  }
+		// Gets the projection matrix.
+		const Matrix4 projection() const {
+			return projection_param_->value();
+		}
 
-  // Sets the projection matrix.
-  void set_projection(const Matrix4& value) {
-    projection_param_->set_value(value);
-  }
+		// Sets the projection matrix.
+		void set_projection(const Matrix4& value) {
+			projection_param_->set_value(value);
+		}
 
-  // Gets a weak pointer to us.
-  WeakPointerType GetWeakPointer() const {
-    return weak_pointer_manager_.GetWeakPointer();
-  }
+		// Gets a weak pointer to us.
+		WeakPointerType GetWeakPointer() const {
+			return weak_pointer_manager_.GetWeakPointer();
+		}
 
- private:
-  explicit DrawContext(ServiceLocator* service_locator);
+	private:
+		explicit DrawContext(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  // Predefined view matrix parameter.
-  ParamMatrix4::Ref view_param_;
+		// Predefined view matrix parameter.
+		ParamMatrix4::Ref view_param_;
 
-  // Predefined projection matrix parameter.
-  ParamMatrix4::Ref projection_param_;
+		// Predefined projection matrix parameter.
+		ParamMatrix4::Ref projection_param_;
 
-  // Manager for weak pointers to us.
-  WeakPointerType::WeakPointerManager weak_pointer_manager_;
+		// Manager for weak pointers to us.
+		WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
-  O3D_DECL_CLASS(DrawContext, ParamObject)
-  O3D_DISALLOW_COPY_AND_ASSIGN(DrawContext);
-};
+		O3D_DECL_CLASS(DrawContext, ParamObject)
+		O3D_DISALLOW_COPY_AND_ASSIGN(DrawContext);
+	};
 
-class ParamDrawContext : public TypedRefParam<DrawContext> {
- public:
-  typedef SmartPointer<ParamDrawContext> Ref;
+	class ParamDrawContext : public TypedRefParam<DrawContext> {
+	public:
+		typedef SmartPointer<ParamDrawContext> Ref;
 
-  ParamDrawContext(ServiceLocator* service_locator,
-                   bool dynamic,
-                   bool read_only)
-      : TypedRefParam<DrawContext>(service_locator, dynamic, read_only) {}
+		ParamDrawContext(ServiceLocator* service_locator,
+		                 bool dynamic,
+		                 bool read_only)
+			: TypedRefParam<DrawContext>(service_locator, dynamic, read_only) {}
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  O3D_DECL_CLASS(ParamDrawContext, RefParamBase)
-};
+		O3D_DECL_CLASS(ParamDrawContext, RefParamBase)
+	};
 
 }  // namespace o3d
 

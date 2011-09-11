@@ -35,29 +35,29 @@
 
 namespace o3d {
 
-typedef const void* InterfaceId;
+	typedef const void* InterfaceId;
 
 // Provides information (currently only the interface ID) about a service
 // interface.
-template <typename Interface>
-class InterfaceTraits {
- public:
-  // The interface ID for the service interface.
-  static const InterfaceId kInterfaceId;
+	template <typename Interface>
+	class InterfaceTraits {
+	public:
+		// The interface ID for the service interface.
+		static const InterfaceId kInterfaceId;
 
- private:
-  static char unique_;
+	private:
+		static char unique_;
 
-  InterfaceTraits();
-  O3D_DISALLOW_COPY_AND_ASSIGN(InterfaceTraits);
-};
+		InterfaceTraits();
+		O3D_DISALLOW_COPY_AND_ASSIGN(InterfaceTraits);
+	};
 
-template <typename Interface>
-const void* const InterfaceTraits<Interface>::kInterfaceId =
-    &InterfaceTraits<Interface>::unique_;
+	template <typename Interface>
+	const void* const InterfaceTraits<Interface>::kInterfaceId =
+	    &InterfaceTraits<Interface>::unique_;
 
-template <typename Interface>
-char InterfaceTraits<Interface>::unique_ = 0;
+	template <typename Interface>
+	char InterfaceTraits<Interface>::unique_ = 0;
 
 }  // namespace o3d
 

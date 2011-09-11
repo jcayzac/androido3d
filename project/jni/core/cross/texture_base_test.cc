@@ -38,64 +38,64 @@
 
 namespace o3d {
 
-namespace {
+	namespace {
 
-Texture::RGBASwizzleIndices swizzle;
+		Texture::RGBASwizzleIndices swizzle;
 
-class MockTexture : public Texture {
- public:
-  typedef SmartPointer<MockTexture> Ref;
+		class MockTexture : public Texture {
+		public:
+			typedef SmartPointer<MockTexture> Ref;
 
-  MockTexture(ServiceLocator* service_locator,
-              Texture::Format format,
-              int levels,
-              bool enable_render_surfaces)
-      : Texture(service_locator, format, levels, enable_render_surfaces) {
-  }
+			MockTexture(ServiceLocator* service_locator,
+			            Texture::Format format,
+			            int levels,
+			            bool enable_render_surfaces)
+				: Texture(service_locator, format, levels, enable_render_surfaces) {
+			}
 
-  virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices() {
-    return swizzle;
-  }
+			virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices() {
+				return swizzle;
+			}
 
-  virtual void* GetTextureHandle() const {
-    return NULL;
-  }
+			virtual void* GetTextureHandle() const {
+				return NULL;
+			}
 
-  virtual void SetFromBitmap(const Bitmap& bitmap) {
-  }
+			virtual void SetFromBitmap(const Bitmap& bitmap) {
+			}
 
-  virtual void GenerateMips(int source_level, int num_levels) {
-  }
+			virtual void GenerateMips(int source_level, int num_levels) {
+			}
 
- private:
-  O3D_DISALLOW_COPY_AND_ASSIGN(MockTexture);
-};
+		private:
+			O3D_DISALLOW_COPY_AND_ASSIGN(MockTexture);
+		};
 
-}  // anonymous namespace
+	}  // anonymous namespace
 
-class TextureTest : public testing::Test {
- protected:
+	class TextureTest : public testing::Test {
+	protected:
 
-  TextureTest()
-      : object_manager_(g_service_locator) {
-  }
+		TextureTest()
+			: object_manager_(g_service_locator) {
+		}
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-};
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+	};
 
-TEST_F(TextureTest, Basic) {
-  MockTexture::Ref texture(new MockTexture(
-      g_service_locator,
-      Texture::XRGB8,
-      1,
-      false));
-  ASSERT_TRUE(texture != NULL);
-  EXPECT_EQ(texture->format(), Texture::XRGB8);
-  EXPECT_EQ(texture->levels(), 1);
-  EXPECT_FALSE(texture->alpha_is_one());
-  EXPECT_FALSE(texture->render_surfaces_enabled());
-}
+	TEST_F(TextureTest, Basic) {
+		MockTexture::Ref texture(new MockTexture(
+		                             g_service_locator,
+		                             Texture::XRGB8,
+		                             1,
+		                             false));
+		ASSERT_TRUE(texture != NULL);
+		EXPECT_EQ(texture->format(), Texture::XRGB8);
+		EXPECT_EQ(texture->levels(), 1);
+		EXPECT_FALSE(texture->alpha_is_one());
+		EXPECT_FALSE(texture->render_surfaces_enabled());
+	}
 
 }  // namespace o3d
 

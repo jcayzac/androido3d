@@ -38,15 +38,15 @@
 namespace o3d {
 
 // Assigns unique ids.
-class IdManager {
- public:
-  // Get next unused id.
-  static Id CreateId();
+	class IdManager {
+	public:
+		// Get next unused id.
+		static Id CreateId();
 
- private:
-  // Current largest unique id
-  static Id next_unique_id_;
-};
+	private:
+		// Current largest unique id
+		static Id next_unique_id_;
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_ID_MANAGER_H_

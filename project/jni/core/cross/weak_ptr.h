@@ -62,104 +62,105 @@ namespace o3d {
 //  private:
 //   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 // };
-template <class C>
-class WeakPointer {
- public:
-  typedef C* Pointer;
-  typedef C& Reference;
-  typedef C ClassType;
+	template <class C>
+	class WeakPointer {
+	public:
+		typedef C* Pointer;
+		typedef C& Reference;
+		typedef C ClassType;
 
-  WeakPointer() : handle_(typename WeakPointerHandle::Ref(NULL)) {
-  }
+		WeakPointer() : handle_(typename WeakPointerHandle::Ref(NULL)) {
+		}
 
-  // This copy constructor is not marked explicit on purpose, so that
-  // we can copy weak pointers implicitly.
-  WeakPointer(const WeakPointer<C>& source)  // NOLINT
-      : handle_(source.handle_) {
-  }
+		// This copy constructor is not marked explicit on purpose, so that
+		// we can copy weak pointers implicitly.
+		WeakPointer(const WeakPointer<C>& source)  // NOLINT
+			: handle_(source.handle_) {
+		}
 
-  WeakPointer<C>& operator=(const WeakPointer<C>& rhs) {
-    if (this != &rhs) {
-      handle_ = rhs.handle_;
-    }
-    return *this;
-  }
+		WeakPointer<C>& operator=(const WeakPointer<C>& rhs) {
+			if(this != &rhs) {
+				handle_ = rhs.handle_;
+			}
 
-  // Gets the object this weak pointer is pointing to.
-  Pointer Get() const {
-    return handle_.IsNull() ? NULL : handle_->GetRaw();
-  }
+			return *this;
+		}
 
-  // This class manages a WeakPointer for the object the WeakPointer is pointing
-  // to. If you forget to call Init you'll get an assert on destruction. It also
-  // enforces calling Reset on the weak pointer handle at destruction.
-  class WeakPointerManager {
-   public:
-    typedef C* Pointer;
-    typedef C& Reference;
-    typedef C ClassType;
-    typedef WeakPointer<C> WeakPointerType;
-    typedef typename WeakPointerType::WeakPointerHandle HandleType;
+		// Gets the object this weak pointer is pointing to.
+		Pointer Get() const {
+			return handle_.IsNull() ? NULL : handle_->GetRaw();
+		}
 
-    explicit WeakPointerManager(Pointer data)
-        : handle_(typename HandleType::Ref(new HandleType(data))) {
-    }
+		// This class manages a WeakPointer for the object the WeakPointer is pointing
+		// to. If you forget to call Init you'll get an assert on destruction. It also
+		// enforces calling Reset on the weak pointer handle at destruction.
+		class WeakPointerManager {
+		public:
+			typedef C* Pointer;
+			typedef C& Reference;
+			typedef C ClassType;
+			typedef WeakPointer<C> WeakPointerType;
+			typedef typename WeakPointerType::WeakPointerHandle HandleType;
 
-    ~WeakPointerManager() {
-      handle_->Reset();
-    }
+			explicit WeakPointerManager(Pointer data)
+				: handle_(typename HandleType::Ref(new HandleType(data))) {
+			}
 
-    WeakPointerType GetWeakPointer() const {
-      return handle_->GetWeakPointer();
-    }
+			~WeakPointerManager() {
+				handle_->Reset();
+			}
 
-   private:
-    typename HandleType::Ref handle_;
-  };
+			WeakPointerType GetWeakPointer() const {
+				return handle_->GetWeakPointer();
+			}
 
- private:
-  // This class holds the pointer to the actual object all weak pointers
-  // are pointing to. It is ref counted so when the last weak pointer
-  // goes away this handle will go away.
-  class WeakPointerHandle : public RefCounted {
-   public:
-    typedef SmartPointer<WeakPointerHandle> Ref;
+		private:
+			typename HandleType::Ref handle_;
+		};
 
-    explicit WeakPointerHandle(Pointer data)
-        : data_(data) {
-    }
+	private:
+		// This class holds the pointer to the actual object all weak pointers
+		// are pointing to. It is ref counted so when the last weak pointer
+		// goes away this handle will go away.
+		class WeakPointerHandle : public RefCounted {
+		public:
+			typedef SmartPointer<WeakPointerHandle> Ref;
 
-    void Reset() {
-      data_ = NULL;
-    }
+			explicit WeakPointerHandle(Pointer data)
+				: data_(data) {
+			}
 
-    Pointer GetRaw() const {
-      return data_;
-    }
+			void Reset() {
+				data_ = NULL;
+			}
 
-    WeakPointer<C> GetWeakPointer() const {
-      return WeakPointer<C>(this);
-    }
+			Pointer GetRaw() const {
+				return data_;
+			}
 
-   private:
-    Pointer data_;
+			WeakPointer<C> GetWeakPointer() const {
+				return WeakPointer<C>(this);
+			}
 
-    O3D_DISALLOW_COPY_AND_ASSIGN(WeakPointerHandle);
-  };
+		private:
+			Pointer data_;
 
-  explicit WeakPointer(const WeakPointerHandle* handle)
-      : handle_(typename WeakPointerHandle::Ref(
-          const_cast<WeakPointerHandle*>(handle))) {
-  }
+			O3D_DISALLOW_COPY_AND_ASSIGN(WeakPointerHandle);
+		};
 
-  typename WeakPointerHandle::Ref handle_;
-};
+		explicit WeakPointer(const WeakPointerHandle* handle)
+			: handle_(typename WeakPointerHandle::Ref(
+			              const_cast<WeakPointerHandle*>(handle))) {
+		}
+
+		typename WeakPointerHandle::Ref handle_;
+	};
 
 // Provide a convenience equality test operator on SmartPointer objects.
-template <class C>
-inline bool operator==(const WeakPointer<C>& lhs, const WeakPointer<C>& rhs) {
-  return lhs.Get() == rhs.Get();
-}
+	template <class C>
+	inline bool operator==(const WeakPointer<C>& lhs, const WeakPointer<C>& rhs) {
+		return lhs.Get() == rhs.Get();
+	}
 
 }  // namespace o3d
 

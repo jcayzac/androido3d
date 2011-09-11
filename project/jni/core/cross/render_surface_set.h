@@ -50,64 +50,64 @@ namespace o3d {
 // 3)  If both a color and depth surface is bound, then they must be of matching
 //     dimensions.
 // 4)  At least one of render_surface and render_depth_surface must be non-NULL.
-class RenderSurfaceSet : public RenderNode {
- public:
-  typedef SmartPointer<RenderSurfaceSet> Ref;
+	class RenderSurfaceSet : public RenderNode {
+	public:
+		typedef SmartPointer<RenderSurfaceSet> Ref;
 
-  // The names of the RenderSurfaceSet parameters.
-  static const char* kRenderSurfaceParamName;
-  static const char* kRenderDepthStencilSurfaceParamName;
+		// The names of the RenderSurfaceSet parameters.
+		static const char* kRenderSurfaceParamName;
+		static const char* kRenderDepthStencilSurfaceParamName;
 
-  RenderSurface* render_surface() const {
-    return render_surface_param_->value();
-  }
+		RenderSurface* render_surface() const {
+			return render_surface_param_->value();
+		}
 
-  // Assigns a render surface to be bound to the color buffer of the active
-  // renderer.
-  void set_render_surface(RenderSurface* value) {
-    render_surface_param_->set_value(value);
-  }
+		// Assigns a render surface to be bound to the color buffer of the active
+		// renderer.
+		void set_render_surface(RenderSurface* value) {
+			render_surface_param_->set_value(value);
+		}
 
-  RenderDepthStencilSurface* render_depth_stencil_surface() const {
-    return render_depth_stencil_surface_param_->value();
-  }
+		RenderDepthStencilSurface* render_depth_stencil_surface() const {
+			return render_depth_stencil_surface_param_->value();
+		}
 
-  // Assigns a render surface to be bound to the depth buffer of the active
-  // renderer.
-  void set_render_depth_stencil_surface(RenderDepthStencilSurface* value) {
-    render_depth_stencil_surface_param_->set_value(value);
-  }
+		// Assigns a render surface to be bound to the depth buffer of the active
+		// renderer.
+		void set_render_depth_stencil_surface(RenderDepthStencilSurface* value) {
+			render_depth_stencil_surface_param_->set_value(value);
+		}
 
-  // Validates that the surfaces assigned to the depth and color parameters
-  // meet the constraints specified above.  Returns true if the constraints
-  // are satisfied.
-  bool ValidateBoundSurfaces() const;
+		// Validates that the surfaces assigned to the depth and color parameters
+		// meet the constraints specified above.  Returns true if the constraints
+		// are satisfied.
+		bool ValidateBoundSurfaces() const;
 
-  // Overridden from RenderNode.  Binds the RenderSurfaces attached to the
-  // parameters to the active renderer.
-  virtual void Render(RenderContext* render_context);
+		// Overridden from RenderNode.  Binds the RenderSurfaces attached to the
+		// parameters to the active renderer.
+		virtual void Render(RenderContext* render_context);
 
-  // Overridden from RenderNode.  Restores the depth and color RenderSurfaces
-  // associated with the active renderer to their state before the most recent
-  // call to RenderSurfaceSet::Render.
-  virtual void PostRender(RenderContext* render_context);
+		// Overridden from RenderNode.  Restores the depth and color RenderSurfaces
+		// associated with the active renderer to their state before the most recent
+		// call to RenderSurfaceSet::Render.
+		virtual void PostRender(RenderContext* render_context);
 
- private:
-  explicit RenderSurfaceSet(ServiceLocator* service_locator);
+	private:
+		explicit RenderSurfaceSet(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  const RenderSurface* old_render_surface_;
-  const RenderDepthStencilSurface* old_depth_stencil_surface_;
-  bool old_is_back_buffer_;
+		const RenderSurface* old_render_surface_;
+		const RenderDepthStencilSurface* old_depth_stencil_surface_;
+		bool old_is_back_buffer_;
 
-  ParamRenderSurface::Ref render_surface_param_;
-  ParamRenderDepthStencilSurface::Ref render_depth_stencil_surface_param_;
+		ParamRenderSurface::Ref render_surface_param_;
+		ParamRenderDepthStencilSurface::Ref render_depth_stencil_surface_param_;
 
-  O3D_DECL_CLASS(RenderSurfaceSet, RenderNode)
-  O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceSet);
-};
+		O3D_DECL_CLASS(RenderSurfaceSet, RenderNode)
+		O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceSet);
+	};
 
 }  // namespace o3d
 

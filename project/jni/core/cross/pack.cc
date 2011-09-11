@@ -49,426 +49,459 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Pack, NamedObject)
+	O3D_DEFN_CLASS(Pack, NamedObject)
 
-Pack::Pack(ServiceLocator* service_locator)
-    : NamedObject(service_locator),
-      class_manager_(service_locator->GetService<IClassManager>()),
-      object_manager_(service_locator->GetService<ObjectManager>()),
-      renderer_(service_locator->GetService<Renderer>()) {
-}
+	Pack::Pack(ServiceLocator* service_locator)
+		: NamedObject(service_locator),
+		  class_manager_(service_locator->GetService<IClassManager>()),
+		  object_manager_(service_locator->GetService<ObjectManager>()),
+		  renderer_(service_locator->GetService<Renderer>()) {
+	}
 
-Pack::~Pack() {
-}
+	Pack::~Pack() {
+	}
 
-bool Pack::Destroy() {
-  return object_manager_->DestroyPack(this);
-}
+	bool Pack::Destroy() {
+		return object_manager_->DestroyPack(this);
+	}
 
-bool Pack::RemoveObject(ObjectBase* object) {
-  return UnregisterObject(object);
-}
+	bool Pack::RemoveObject(ObjectBase* object) {
+		return UnregisterObject(object);
+	}
 
-Transform* Pack::root() const {
-  return root_.Get();
-}
+	Transform* Pack::root() const {
+		return root_.Get();
+	}
 
-void Pack::set_root(Transform *root) {
-  root_ = Transform::Ref(root);
-}
+	void Pack::set_root(Transform* root) {
+		root_ = Transform::Ref(root);
+	}
 
-ObjectBase* Pack::CreateObject(const std::string& type_name) {
-  ObjectBase::Ref new_object(class_manager_->CreateObject(type_name));
-  if (new_object.Get() != NULL) {
-    RegisterObject(new_object);
-    return new_object.Get();
-  }
-  return NULL;
-}
+	ObjectBase* Pack::CreateObject(const std::string& type_name) {
+		ObjectBase::Ref new_object(class_manager_->CreateObject(type_name));
 
-ObjectBase* Pack::CreateObjectByClass(const ObjectBase::Class* type) {
-  ObjectBase::Ref new_object(class_manager_->CreateObjectByClass(type));
-  if (new_object.Get() != NULL) {
-    RegisterObject(new_object);
-    return new_object.Get();
-  }
-  return NULL;
-}
+		if(new_object.Get() != NULL) {
+			RegisterObject(new_object);
+			return new_object.Get();
+		}
+
+		return NULL;
+	}
+
+	ObjectBase* Pack::CreateObjectByClass(const ObjectBase::Class* type) {
+		ObjectBase::Ref new_object(class_manager_->CreateObjectByClass(type));
+
+		if(new_object.Get() != NULL) {
+			RegisterObject(new_object);
+			return new_object.Get();
+		}
+
+		return NULL;
+	}
 
 // Creates a Texture object from an external resource in the current render context format.
-Texture* Pack::CreateTextureFromExternalResource(const std::string& uri,
-                                     const ExternalResource& resource,
-                                     image::ImageFileType file_type,
-                                     bool generate_mipmaps) {
-  O3D_LOG(INFO) << "CreateTextureFromExternalResource(uri='" << uri
-             << "', name='" << resource.name() << "')";
+	Texture* Pack::CreateTextureFromExternalResource(const std::string& uri,
+	        const ExternalResource& resource,
+	        image::ImageFileType file_type,
+	        bool generate_mipmaps) {
+		O3D_LOG(INFO) << "CreateTextureFromExternalResource(uri='" << uri
+		              << "', name='" << resource.name() << "')";
+		// TODO(gman): Add support for volume texture when we have code to load them.
+		BitmapRefArray bitmaps;
 
-  // TODO(gman): Add support for volume texture when we have code to load them.
-  BitmapRefArray bitmaps;
-  if (!Bitmap::LoadFromExternalResource(service_locator(), resource, file_type, &bitmaps)) {
-    O3D_ERROR(service_locator()) << "Failed to load bitmap resource \"" << resource.name() << "\"";
-    return 0;
-  }
+		if(!Bitmap::LoadFromExternalResource(service_locator(), resource, file_type, &bitmaps)) {
+			O3D_ERROR(service_locator()) << "Failed to load bitmap resource \"" << resource.name() << "\"";
+			return 0;
+		}
 
-  return CreateTextureFromBitmaps(bitmaps, uri, generate_mipmaps);
-}
+		return CreateTextureFromBitmaps(bitmaps, uri, generate_mipmaps);
+	}
 
 // Creates a Texture object from a bitmap in the current render context format.
-Texture* Pack::CreateTextureFromBitmaps(
-    const BitmapRefArray& bitmaps, const std::string& uri, bool generate_mipmaps) {
-  if (bitmaps.empty()) {
-    return NULL;
-  }
-  unsigned width = bitmaps[0]->width();
-  unsigned height = bitmaps[0]->height();
+	Texture* Pack::CreateTextureFromBitmaps(
+	    const BitmapRefArray& bitmaps, const std::string& uri, bool generate_mipmaps) {
+		if(bitmaps.empty()) {
+			return NULL;
+		}
 
-  BitmapRefArray temp_bitmaps;
-  for (BitmapRefArray::size_type ii = 0; ii < bitmaps.size(); ++ii) {
-    temp_bitmaps.push_back(bitmaps[ii]);
-    Bitmap* bitmap = temp_bitmaps[ii].Get();
-    if (bitmap->width() > static_cast<unsigned int>(Texture::kMaxDimension) ||
-        bitmap->height() > static_cast<unsigned int>(Texture::kMaxDimension)) {
-      O3D_ERROR(service_locator())
-          << "Bitmap (uri='" << uri
-          << "', size="  << bitmap->width() << "x" << bitmap->height()
-          << ", mips=" << bitmap->num_mipmaps()<< ") is larger than the "
-          << "maximum texture size which is (" << Texture::kMaxDimension
-          << "x" << Texture::kMaxDimension << ")";
-      return NULL;
-    }
-    if (bitmap->width() != width || bitmap->height() != height) {
-      O3D_ERROR(service_locator()) << "Bitmaps are not all the same dimensions";
-      return NULL;
-    }
-    if (generate_mipmaps && image::CanMakeMips(bitmap->format())) {
-      unsigned total_mips = image::ComputeMipMapCount(
-        bitmap->width(), bitmap->height());
-      // If we don't already have mips and we could use them then make them.
-      if (bitmap->num_mipmaps() == 1 && total_mips > 1) {
-        // Create a new Bitmap with mips
-        Bitmap::Ref new_bitmap(new Bitmap(service_locator()));
-        new_bitmap->Allocate(bitmap->format(),
-                             bitmap->width(),
-                             bitmap->height(),
-                             total_mips,
-                             bitmap->semantic());
-        new_bitmap->SetRect(0, 0, 0, bitmap->width(), bitmap->height(),
-                            bitmap->GetMipData(0), bitmap->GetMipPitch(0));
-        new_bitmap->GenerateMips(0, total_mips - 1);
-        temp_bitmaps[ii] = new_bitmap;
-      }
-    }
-  }
+		unsigned width = bitmaps[0]->width();
+		unsigned height = bitmaps[0]->height();
+		BitmapRefArray temp_bitmaps;
 
-  // Figure out what kind of texture to make.
-  // TODO(gman): Refactor to check semantics to distinguish between CUBE and
-  // VOLUME textures.
-  Texture::Ref texture;
-  if (temp_bitmaps.size() == 1) {
-    Bitmap* bitmap = temp_bitmaps[0].Get();
-    Texture2D::Ref texture_2d = renderer_->CreateTexture2D(
-        bitmap->width(),
-        bitmap->height(),
-        bitmap->format(),
-        bitmap->num_mipmaps(),
-        false);
-    if (!texture_2d.IsNull()) {
-      texture = Texture::Ref(texture_2d.Get());
-      texture_2d->SetFromBitmap(*bitmap);
-    }
-  } else if (temp_bitmaps.size() == 6) {
-    Bitmap* bitmap = temp_bitmaps[0].Get();
-    TextureCUBE::Ref texture_cube = renderer_->CreateTextureCUBE(
-        bitmap->width(),
-        bitmap->format(),
-        bitmap->num_mipmaps(),
-        false);
-    if (!texture_cube.IsNull()) {
-      texture = Texture::Ref(texture_cube.Get());
-      for (unsigned ii = 0; ii < 6; ++ii) {
-        texture_cube->SetFromBitmap(static_cast<TextureCUBE::CubeFace>(ii),
-                                    *temp_bitmaps[ii].Get());
-      }
-    }
-  }
+		for(BitmapRefArray::size_type ii = 0; ii < bitmaps.size(); ++ii) {
+			temp_bitmaps.push_back(bitmaps[ii]);
+			Bitmap* bitmap = temp_bitmaps[ii].Get();
 
-  if (!texture.IsNull()) {
-    // TODO(gman): remove this. Maybe set the name? or make uri an offical
-    //    Texture param.
-    ParamString* param = texture->CreateParam<ParamString>(
-        O3D_STRING_CONSTANT("uri"));
-    O3D_ASSERT(param != NULL);
-    param->set_value(uri);
+			if(bitmap->width() > static_cast<unsigned int>(Texture::kMaxDimension) ||
+			        bitmap->height() > static_cast<unsigned int>(Texture::kMaxDimension)) {
+				O3D_ERROR(service_locator())
+				        << "Bitmap (uri='" << uri
+				        << "', size="  << bitmap->width() << "x" << bitmap->height()
+				        << ", mips=" << bitmap->num_mipmaps() << ") is larger than the "
+				        << "maximum texture size which is (" << Texture::kMaxDimension
+				        << "x" << Texture::kMaxDimension << ")";
+				return NULL;
+			}
 
-    RegisterObject(texture);
-  } else {
-    O3D_ERROR(service_locator())
-        << "Unable to create texture (uri='" << uri
-        << "', size="  << width << "x" << height
-        << ", mips=" << temp_bitmaps[0]->num_mipmaps() << ")";
-  }
+			if(bitmap->width() != width || bitmap->height() != height) {
+				O3D_ERROR(service_locator()) << "Bitmaps are not all the same dimensions";
+				return NULL;
+			}
 
-  return texture.Get();
-}
+			if(generate_mipmaps && image::CanMakeMips(bitmap->format())) {
+				unsigned total_mips = image::ComputeMipMapCount(
+				                          bitmap->width(), bitmap->height());
+
+				// If we don't already have mips and we could use them then make them.
+				if(bitmap->num_mipmaps() == 1 && total_mips > 1) {
+					// Create a new Bitmap with mips
+					Bitmap::Ref new_bitmap(new Bitmap(service_locator()));
+					new_bitmap->Allocate(bitmap->format(),
+					                     bitmap->width(),
+					                     bitmap->height(),
+					                     total_mips,
+					                     bitmap->semantic());
+					new_bitmap->SetRect(0, 0, 0, bitmap->width(), bitmap->height(),
+					                    bitmap->GetMipData(0), bitmap->GetMipPitch(0));
+					new_bitmap->GenerateMips(0, total_mips - 1);
+					temp_bitmaps[ii] = new_bitmap;
+				}
+			}
+		}
+
+		// Figure out what kind of texture to make.
+		// TODO(gman): Refactor to check semantics to distinguish between CUBE and
+		// VOLUME textures.
+		Texture::Ref texture;
+
+		if(temp_bitmaps.size() == 1) {
+			Bitmap* bitmap = temp_bitmaps[0].Get();
+			Texture2D::Ref texture_2d = renderer_->CreateTexture2D(
+			                                bitmap->width(),
+			                                bitmap->height(),
+			                                bitmap->format(),
+			                                bitmap->num_mipmaps(),
+			                                false);
+
+			if(!texture_2d.IsNull()) {
+				texture = Texture::Ref(texture_2d.Get());
+				texture_2d->SetFromBitmap(*bitmap);
+			}
+		}
+		else if(temp_bitmaps.size() == 6) {
+			Bitmap* bitmap = temp_bitmaps[0].Get();
+			TextureCUBE::Ref texture_cube = renderer_->CreateTextureCUBE(
+			                                    bitmap->width(),
+			                                    bitmap->format(),
+			                                    bitmap->num_mipmaps(),
+			                                    false);
+
+			if(!texture_cube.IsNull()) {
+				texture = Texture::Ref(texture_cube.Get());
+
+				for(unsigned ii = 0; ii < 6; ++ii) {
+					texture_cube->SetFromBitmap(static_cast<TextureCUBE::CubeFace>(ii),
+					                            *temp_bitmaps[ii].Get());
+				}
+			}
+		}
+
+		if(!texture.IsNull()) {
+			// TODO(gman): remove this. Maybe set the name? or make uri an offical
+			//    Texture param.
+			ParamString* param = texture->CreateParam<ParamString>(
+			                         O3D_STRING_CONSTANT("uri"));
+			O3D_ASSERT(param != NULL);
+			param->set_value(uri);
+			RegisterObject(texture);
+		}
+		else {
+			O3D_ERROR(service_locator())
+			        << "Unable to create texture (uri='" << uri
+			        << "', size="  << width << "x" << height
+			        << ", mips=" << temp_bitmaps[0]->num_mipmaps() << ")";
+		}
+
+		return texture.Get();
+	}
 
 // Creates a Texture object from RawData and allocates
 // the necessary resources for it.
-Texture* Pack::CreateTextureFromRawData(RawData *raw_data,
-                                        bool generate_mips) {
-  if (!renderer_) {
-    O3D_ERROR(service_locator()) << "No Render Device Available";
-    return NULL;
-  }
+	Texture* Pack::CreateTextureFromRawData(RawData* raw_data,
+	                                        bool generate_mips) {
+		if(!renderer_) {
+			O3D_ERROR(service_locator()) << "No Render Device Available";
+			return NULL;
+		}
 
-  const std::string uri = raw_data->uri();
+		const std::string uri = raw_data->uri();
 
-  O3D_LOG(INFO) << "CreateTextureFromRawData(uri='" << uri << "')";
+		O3D_LOG(INFO) << "CreateTextureFromRawData(uri='" << uri << "')";
 
-  BitmapRefArray bitmap_refs;
-  if (!Bitmap::LoadFromRawData(raw_data, image::UNKNOWN, &bitmap_refs)) {
-    O3D_ERROR(service_locator())
-        << "Failed to load bitmap from raw data \"" << uri << "\"";
-    return NULL;
-  }
+		BitmapRefArray bitmap_refs;
 
-  return CreateTextureFromBitmaps(bitmap_refs, uri, generate_mips);
-}
+		if(!Bitmap::LoadFromRawData(raw_data, image::UNKNOWN, &bitmap_refs)) {
+			O3D_ERROR(service_locator())
+			        << "Failed to load bitmap from raw data \"" << uri << "\"";
+			return NULL;
+		}
 
-Texture* Pack::CreateTextureFromStream(MemoryReadStream* stream,
-                                       const std::string& uri,
-                                       bool generate_mips) {
-  if (!renderer_) {
-    O3D_ERROR(service_locator()) << "No Render Device Available";
-    return NULL;
-  }
+		return CreateTextureFromBitmaps(bitmap_refs, uri, generate_mips);
+	}
 
-  O3D_LOG(INFO) << "CreateTextureFromStream(uri='" << uri << "')";
+	Texture* Pack::CreateTextureFromStream(MemoryReadStream* stream,
+	                                       const std::string& uri,
+	                                       bool generate_mips) {
+		if(!renderer_) {
+			O3D_ERROR(service_locator()) << "No Render Device Available";
+			return NULL;
+		}
 
-  BitmapRefArray bitmap_refs;
-  if (!Bitmap::LoadFromStream(service_locator(), stream, uri, image::UNKNOWN, &bitmap_refs)) {
-    O3D_ERROR(service_locator())
-        << "Failed to load bitmap from stream \"" << uri << "\"";
-    return NULL;
-  }
+		O3D_LOG(INFO) << "CreateTextureFromStream(uri='" << uri << "')";
+		BitmapRefArray bitmap_refs;
 
-  return CreateTextureFromBitmaps(bitmap_refs, uri, generate_mips);
-}
+		if(!Bitmap::LoadFromStream(service_locator(), stream, uri, image::UNKNOWN, &bitmap_refs)) {
+			O3D_ERROR(service_locator())
+			        << "Failed to load bitmap from stream \"" << uri << "\"";
+			return NULL;
+		}
+
+		return CreateTextureFromBitmaps(bitmap_refs, uri, generate_mips);
+	}
 
 // Create a bitmap object.
-Bitmap* Pack::CreateBitmap(int width, int height, Texture::Format format) {
-  O3D_ASSERT(image::CheckImageDimensions(width, height));
+	Bitmap* Pack::CreateBitmap(int width, int height, Texture::Format format) {
+		O3D_ASSERT(image::CheckImageDimensions(width, height));
+		Bitmap::Ref bitmap(new Bitmap(service_locator()));
 
-  Bitmap::Ref bitmap(new Bitmap(service_locator()));
-  if (bitmap.IsNull()) {
-    O3D_ERROR(service_locator())
-        << "Failed to create bitmap object.";
-    return NULL;
-  }
-  bitmap->Allocate(format, width, height, 1, Bitmap::IMAGE);
-  if (!bitmap->image_data()) {
-    O3D_ERROR(service_locator())
-        << "Failed to allocate memory for bitmap.";
-    return NULL;
-  }
-  RegisterObject(bitmap);
-  return bitmap.Get();
-}
+		if(bitmap.IsNull()) {
+			O3D_ERROR(service_locator())
+			        << "Failed to create bitmap object.";
+			return NULL;
+		}
+
+		bitmap->Allocate(format, width, height, 1, Bitmap::IMAGE);
+
+		if(!bitmap->image_data()) {
+			O3D_ERROR(service_locator())
+			        << "Failed to allocate memory for bitmap.";
+			return NULL;
+		}
+
+		RegisterObject(bitmap);
+		return bitmap.Get();
+	}
 
 // Create a new bitmap object from rawdata.
-std::vector<Bitmap*> Pack::CreateBitmapsFromRawData(RawData* raw_data) {
-  BitmapRefArray bitmap_refs;
-  if (!Bitmap::LoadFromRawData(raw_data, image::UNKNOWN, &bitmap_refs)) {
-    O3D_ERROR(service_locator())
-        << "Failed to load bitmap from raw data.";
-  }
-  std::vector<Bitmap*> bitmaps(bitmap_refs.size(), NULL);
-  for (BitmapRefArray::size_type ii = 0; ii < bitmap_refs.size(); ++ii) {
-    RegisterObject(bitmap_refs[ii]);
-    bitmaps[ii] = bitmap_refs[ii].Get();
-  }
-  return bitmaps;
-}
+	std::vector<Bitmap*> Pack::CreateBitmapsFromRawData(RawData* raw_data) {
+		BitmapRefArray bitmap_refs;
+
+		if(!Bitmap::LoadFromRawData(raw_data, image::UNKNOWN, &bitmap_refs)) {
+			O3D_ERROR(service_locator())
+			        << "Failed to load bitmap from raw data.";
+		}
+
+		std::vector<Bitmap*> bitmaps(bitmap_refs.size(), NULL);
+
+		for(BitmapRefArray::size_type ii = 0; ii < bitmap_refs.size(); ++ii) {
+			RegisterObject(bitmap_refs[ii]);
+			bitmaps[ii] = bitmap_refs[ii].Get();
+		}
+
+		return bitmaps;
+	}
 
 // Creates a new RawData from a data URL.
-RawData* Pack::CreateRawDataFromDataURL(const std::string& data_url) {
-  RawData::Ref raw_data = RawData::CreateFromDataURL(service_locator(),
-                                                     data_url);
+	RawData* Pack::CreateRawDataFromDataURL(const std::string& data_url) {
+		RawData::Ref raw_data = RawData::CreateFromDataURL(service_locator(),
+		                        data_url);
 
-  if (!raw_data.IsNull()) {
-    RegisterObject(raw_data);
-  }
-  return raw_data.Get();
-}
+		if(!raw_data.IsNull()) {
+			RegisterObject(raw_data);
+		}
+
+		return raw_data.Get();
+	}
 
 // Creates a Texture2D object and allocates the necessary resources for it.
-Texture2D* Pack::CreateTexture2D(int width,
-                                 int height,
-                                 Texture::Format format,
-                                 int levels,
-                                 bool enable_render_surfaces) {
-  if (!renderer_) {
-    O3D_ERROR(service_locator()) << "No Render Device Available";
-    return NULL;
-  }
+	Texture2D* Pack::CreateTexture2D(int width,
+	                                 int height,
+	                                 Texture::Format format,
+	                                 int levels,
+	                                 bool enable_render_surfaces) {
+		if(!renderer_) {
+			O3D_ERROR(service_locator()) << "No Render Device Available";
+			return NULL;
+		}
 
-  if (width > Texture::kMaxDimension ||
-      height > Texture::kMaxDimension) {
-    O3D_ERROR(service_locator())
-        << "Maximum texture size is (" << Texture::kMaxDimension << "x"
-        << Texture::kMaxDimension << ")";
-    return NULL;
-  }
+		if(width > Texture::kMaxDimension ||
+		        height > Texture::kMaxDimension) {
+			O3D_ERROR(service_locator())
+			        << "Maximum texture size is (" << Texture::kMaxDimension << "x"
+			        << Texture::kMaxDimension << ")";
+			return NULL;
+		}
 
-  if (enable_render_surfaces) {
-    if (image::ComputePOTSize(width) != static_cast<unsigned int>(width) ||
-        image::ComputePOTSize(height) != static_cast<unsigned int>(height)) {
-      O3D_ERROR(service_locator()) <<
-          "Textures with RenderSurfaces enabled must have power-of-two "
-          "dimensions.";
-      return NULL;
-    }
-  }
+		if(enable_render_surfaces) {
+			if(image::ComputePOTSize(width) != static_cast<unsigned int>(width) ||
+			        image::ComputePOTSize(height) != static_cast<unsigned int>(height)) {
+				O3D_ERROR(service_locator()) <<
+				                             "Textures with RenderSurfaces enabled must have power-of-two "
+				                             "dimensions.";
+				return NULL;
+			}
+		}
 
-  Texture2D::Ref texture = renderer_->CreateTexture2D(
-      width,
-      height,
-      format,
-      (levels == 0) ? image::ComputeMipMapCount(width, height) : levels,
-      enable_render_surfaces);
-  if (!texture.IsNull()) {
-    RegisterObject(texture);
-  }
+		Texture2D::Ref texture = renderer_->CreateTexture2D(
+		                             width,
+		                             height,
+		                             format,
+		                             (levels == 0) ? image::ComputeMipMapCount(width, height) : levels,
+		                             enable_render_surfaces);
 
-  return texture.Get();
-}
+		if(!texture.IsNull()) {
+			RegisterObject(texture);
+		}
+
+		return texture.Get();
+	}
 
 // Creates a TextureCUBE object and allocates the necessary resources for it.
-TextureCUBE* Pack::CreateTextureCUBE(int edge_length,
-                                     Texture::Format format,
-                                     int levels,
-                                     bool enable_render_surfaces) {
-  if (!renderer_) {
-    O3D_ERROR(service_locator()) << "No Render Device Available";
-    return NULL;
-  }
+	TextureCUBE* Pack::CreateTextureCUBE(int edge_length,
+	                                     Texture::Format format,
+	                                     int levels,
+	                                     bool enable_render_surfaces) {
+		if(!renderer_) {
+			O3D_ERROR(service_locator()) << "No Render Device Available";
+			return NULL;
+		}
 
-  if (edge_length > Texture::kMaxDimension) {
-    O3D_ERROR(service_locator())
-        << "Maximum edge_length is " << Texture::kMaxDimension;
-    return NULL;
-  }
+		if(edge_length > Texture::kMaxDimension) {
+			O3D_ERROR(service_locator())
+			        << "Maximum edge_length is " << Texture::kMaxDimension;
+			return NULL;
+		}
 
+		if(enable_render_surfaces) {
+			if(image::ComputePOTSize(edge_length) !=
+			        static_cast<unsigned int>(edge_length)) {
+				O3D_ERROR(service_locator()) <<
+				                             "Textures with RenderSurfaces enabled must have power-of-two "
+				                             "dimensions.";
+				return NULL;
+			}
+		}
 
-  if (enable_render_surfaces) {
-    if (image::ComputePOTSize(edge_length) !=
-        static_cast<unsigned int>(edge_length)) {
-      O3D_ERROR(service_locator()) <<
-          "Textures with RenderSurfaces enabled must have power-of-two "
-          "dimensions.";
-      return NULL;
-    }
-  }
+		TextureCUBE::Ref texture = renderer_->CreateTextureCUBE(
+		                               edge_length,
+		                               format,
+		                               (levels == 0) ? image::ComputeMipMapCount(edge_length,
+		                                       edge_length) : levels,
+		                               enable_render_surfaces);
 
-  TextureCUBE::Ref texture = renderer_->CreateTextureCUBE(
-      edge_length,
-      format,
-      (levels == 0) ? image::ComputeMipMapCount(edge_length,
-                                                edge_length) : levels,
-      enable_render_surfaces);
-  if (!texture.IsNull()) {
-    RegisterObject(texture);
-  }
+		if(!texture.IsNull()) {
+			RegisterObject(texture);
+		}
 
-  return texture.Get();
-}
+		return texture.Get();
+	}
 
-RenderDepthStencilSurface* Pack::CreateDepthStencilSurface(int width,
-                                                           int height) {
-  if (!renderer_) {
-    O3D_ERROR(service_locator()) << "No Render Device Available";
-    return NULL;
-  }
+	RenderDepthStencilSurface* Pack::CreateDepthStencilSurface(int width,
+	        int height) {
+		if(!renderer_) {
+			O3D_ERROR(service_locator()) << "No Render Device Available";
+			return NULL;
+		}
 
-  if (width > Texture::kMaxDimension ||
-      height > Texture::kMaxDimension) {
-    O3D_ERROR(service_locator())
-        << "Maximum texture size is (" << Texture::kMaxDimension << "x"
-        << Texture::kMaxDimension << ")";
-    return NULL;
-  }
+		if(width > Texture::kMaxDimension ||
+		        height > Texture::kMaxDimension) {
+			O3D_ERROR(service_locator())
+			        << "Maximum texture size is (" << Texture::kMaxDimension << "x"
+			        << Texture::kMaxDimension << ")";
+			return NULL;
+		}
 
-  if (image::ComputePOTSize(width) != static_cast<unsigned int>(width) ||
-      image::ComputePOTSize(height) != static_cast<unsigned int>(height)) {
-    O3D_ERROR(service_locator()) <<
-        "Depth-stencil RenderSurfaces must have power-of-two dimensions.";
-    return NULL;
-  }
+		if(image::ComputePOTSize(width) != static_cast<unsigned int>(width) ||
+		        image::ComputePOTSize(height) != static_cast<unsigned int>(height)) {
+			O3D_ERROR(service_locator()) <<
+			                             "Depth-stencil RenderSurfaces must have power-of-two dimensions.";
+			return NULL;
+		}
 
-  RenderDepthStencilSurface::Ref surface =
-      renderer_->CreateDepthStencilSurface(width, height);
+		RenderDepthStencilSurface::Ref surface =
+		    renderer_->CreateDepthStencilSurface(width, height);
 
-  if (!surface.IsNull()) {
-    RegisterObject(surface);
-  }
-  return surface.Get();
-}
+		if(!surface.IsNull()) {
+			RegisterObject(surface);
+		}
 
-ObjectBase* Pack::GetObjectBaseById(Id id,
-                                    const ObjectBase::Class* class_type) {
-  ObjectBase::Ref object(object_manager_->GetObjectBaseById(id, class_type));
-  if (!object.IsNull() &&
-      owned_objects_.find(object) == owned_objects_.end()) {
-    object.Reset();
-  }
-  return object.Get();
-}
+		return surface.Get();
+	}
 
-ObjectBaseArray Pack::GetObjects(const std::string& name,
-                                 const std::string& class_type_name) const {
-  ObjectBaseArray objects;
-  ObjectSet::const_iterator end(owned_objects_.end());
-  for (ObjectSet::const_iterator iter(owned_objects_.begin());
-       iter != end;
-       ++iter) {
-    ObjectBase* object = iter->Get();
-    if (object->IsAClassName(class_type_name)) {
-      if (object->IsA(NamedObjectBase::GetApparentClass())) {
-        if (name.compare(down_cast<NamedObjectBase*>(object)->name()) == 0) {
-          objects.push_back(object);
-        }
-      }
-    }
-  }
-  return objects;
-}
+	ObjectBase* Pack::GetObjectBaseById(Id id,
+	                                    const ObjectBase::Class* class_type) {
+		ObjectBase::Ref object(object_manager_->GetObjectBaseById(id, class_type));
 
-ObjectBaseArray Pack::GetObjectsByClassName(
-    const std::string& class_type_name) const {
-  ObjectBaseArray objects;
-  ObjectSet::const_iterator end(owned_objects_.end());
-  for (ObjectSet::const_iterator iter(owned_objects_.begin());
-       iter != end;
-       ++iter) {
-    if (iter->Get()->IsAClassName(class_type_name)) {
-      objects.push_back(iter->Get());
-    }
-  }
-  return objects;
-}
+		if(!object.IsNull() &&
+		        owned_objects_.find(object) == owned_objects_.end()) {
+			object.Reset();
+		}
 
-void Pack::RegisterObject(ObjectBase *object) {
-  ObjectBase::Ref temp(object);
-  O3D_ASSERT(owned_objects_.find(temp) == owned_objects_.end())
-      << "attempt to register duplicate object in pack.";
-  owned_objects_.insert(temp);
-}
+		return object.Get();
+	}
 
-bool Pack::UnregisterObject(ObjectBase *object) {
-  ObjectSet::iterator find(owned_objects_.find(ObjectBase::Ref(object)));
-  if (find == owned_objects_.end())
-    return false;
+	ObjectBaseArray Pack::GetObjects(const std::string& name,
+	                                 const std::string& class_type_name) const {
+		ObjectBaseArray objects;
+		ObjectSet::const_iterator end(owned_objects_.end());
 
-  owned_objects_.erase(find);
-  return true;
-}
+		for(ObjectSet::const_iterator iter(owned_objects_.begin());
+		        iter != end;
+		        ++iter) {
+			ObjectBase* object = iter->Get();
+
+			if(object->IsAClassName(class_type_name)) {
+				if(object->IsA(NamedObjectBase::GetApparentClass())) {
+					if(name.compare(down_cast<NamedObjectBase*>(object)->name()) == 0) {
+						objects.push_back(object);
+					}
+				}
+			}
+		}
+
+		return objects;
+	}
+
+	ObjectBaseArray Pack::GetObjectsByClassName(
+	    const std::string& class_type_name) const {
+		ObjectBaseArray objects;
+		ObjectSet::const_iterator end(owned_objects_.end());
+
+		for(ObjectSet::const_iterator iter(owned_objects_.begin());
+		        iter != end;
+		        ++iter) {
+			if(iter->Get()->IsAClassName(class_type_name)) {
+				objects.push_back(iter->Get());
+			}
+		}
+
+		return objects;
+	}
+
+	void Pack::RegisterObject(ObjectBase* object) {
+		ObjectBase::Ref temp(object);
+		O3D_ASSERT(owned_objects_.find(temp) == owned_objects_.end())
+		        << "attempt to register duplicate object in pack.";
+		owned_objects_.insert(temp);
+	}
+
+	bool Pack::UnregisterObject(ObjectBase* object) {
+		ObjectSet::iterator find(owned_objects_.find(ObjectBase::Ref(object)));
+
+		if(find == owned_objects_.end())
+			return false;
+
+		owned_objects_.erase(find);
+		return true;
+	}
 }  // namespace o3d

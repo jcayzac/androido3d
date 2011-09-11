@@ -38,74 +38,78 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Shape, ParamObject)
+	O3D_DEFN_CLASS(Shape, ParamObject)
 
-Shape::Shape(ServiceLocator* service_locator)
-    : ParamObject(service_locator) {
-}
+	Shape::Shape(ServiceLocator* service_locator)
+		: ParamObject(service_locator) {
+	}
 
-ObjectBase::Ref Shape::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new Shape(service_locator));
-}
+	ObjectBase::Ref Shape::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new Shape(service_locator));
+	}
 
 // Adds a element do this shape.
-void Shape::AddElement(Element* element) {
-  elements_.push_back(Element::Ref(element));
-}
+	void Shape::AddElement(Element* element) {
+		elements_.push_back(Element::Ref(element));
+	}
 
 // Removes a element from this Shape.
-bool Shape::RemoveElement(Element* element) {
-  ElementRefArray::iterator iter = std::find(elements_.begin(),
-                                             elements_.end(),
-                                             Element::Ref(element));
-  if (iter != elements_.end()) {
-    elements_.erase(iter);
-    return true;
-  }
-  return false;
-}
+	bool Shape::RemoveElement(Element* element) {
+		ElementRefArray::iterator iter = std::find(elements_.begin(),
+		                                 elements_.end(),
+		                                 Element::Ref(element));
+
+		if(iter != elements_.end()) {
+			elements_.erase(iter);
+			return true;
+		}
+
+		return false;
+	}
 
 // Gets an Array of elements in this shape.
-ElementArray Shape::GetElements() const {
-  ElementArray elements;
-  elements.reserve(elements_.size());
-  std::copy(elements_.begin(),
-            elements_.end(),
-            std::back_inserter(elements));
-  return elements;
-}
+	ElementArray Shape::GetElements() const {
+		ElementArray elements;
+		elements.reserve(elements_.size());
+		std::copy(elements_.begin(),
+		          elements_.end(),
+		          std::back_inserter(elements));
+		return elements;
+	}
 
-void Shape::SetElements(const ElementArray& elements) {
-  elements_.resize(elements.size());
-  for (unsigned int i = 0; i != elements.size(); ++i) {
-    elements_[i] = Element::Ref(elements[i]);
-  }
-}
+	void Shape::SetElements(const ElementArray& elements) {
+		elements_.resize(elements.size());
 
-namespace {
-class FindByMaterial {
- public:
-  explicit FindByMaterial(Material* material) : material_(material) { }
+		for(unsigned int i = 0; i != elements.size(); ++i) {
+			elements_[i] = Element::Ref(elements[i]);
+		}
+	}
 
-  bool operator() (const DrawElement* draw_element) {
-    return draw_element->material() == material_;
-  }
- private:
-  Material* material_;
-};
-}
+	namespace {
+		class FindByMaterial {
+		public:
+			explicit FindByMaterial(Material* material) : material_(material) { }
 
-void Shape::CreateDrawElements(Pack* pack,
-                               Material* material) {
-  for (unsigned pp = 0; pp < elements_.size(); ++pp) {
-    Element* element = elements_[pp].Get();
-    const DrawElementRefArray& draw_elements = element->GetDrawElementRefs();
-    if (std::find_if(draw_elements.begin(),
-                     draw_elements.end(),
-                     FindByMaterial(material)) == draw_elements.end()) {
-      elements_[pp]->CreateDrawElement(pack, material);
-    }
-  }
-}
+			bool operator()(const DrawElement* draw_element) {
+				return draw_element->material() == material_;
+			}
+		private:
+			Material* material_;
+		};
+	}
+
+	void Shape::CreateDrawElements(Pack* pack,
+	                               Material* material) {
+		for(unsigned pp = 0; pp < elements_.size(); ++pp) {
+			Element* element = elements_[pp].Get();
+			const DrawElementRefArray& draw_elements = element->GetDrawElementRefs();
+
+			if(std::find_if(draw_elements.begin(),
+			                draw_elements.end(),
+			                FindByMaterial(material)) == draw_elements.end()) {
+				elements_[pp]->CreateDrawElement(pack, material);
+			}
+		}
+	}
 
 }  // namespace o3d

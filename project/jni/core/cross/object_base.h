@@ -94,7 +94,7 @@
 
 namespace o3d {
 
-class ServiceLocator;
+	class ServiceLocator;
 
 // class ObjectBase: base of O3D run-time objects.
 // This class provides the basic functionality for all O3D objects, in
@@ -139,104 +139,104 @@ class ServiceLocator;
 //
 // ObjectBase::ClassIsA(a_class, b_class) is false ('A' doesn't derive from 'B')
 // ObjectBase::ClassIsA(b_class, a_class) is true ('B' derives from 'A')
-class ObjectBase : public RefCounted {
- public:
-  typedef SmartPointer<ObjectBase> Ref;
+	class ObjectBase : public RefCounted {
+	public:
+		typedef SmartPointer<ObjectBase> Ref;
 
-  // Structure describing the class. A single instance of this struct exists for
-  // each class deriving from ObjectBase. Note: This is a struct with all public
-  // members because we need to be able to statically define them but we have
-  // accessors because we want it treated like a class by the code.
-  struct Class {
-   public:
-    const Class* parent() const {
-      return parent_;
-    }
+		// Structure describing the class. A single instance of this struct exists for
+		// each class deriving from ObjectBase. Note: This is a struct with all public
+		// members because we need to be able to statically define them but we have
+		// accessors because we want it treated like a class by the code.
+		struct Class {
+		public:
+			const Class* parent() const {
+				return parent_;
+			}
 
-    const char* name() const {
-      return name_;
-    }
+			const char* name() const {
+				return name_;
+			}
 
-    const char* unqualified_name() const;
+			const char* unqualified_name() const;
 
-   public:
-    // The name of the class.
-    const char *name_;
-    // The base class descriptor.
-    const Class *parent_;
-  };
+		public:
+			// The name of the class.
+			const char* name_;
+			// The base class descriptor.
+			const Class* parent_;
+		};
 
-  explicit ObjectBase(ServiceLocator* service_locator);
-  virtual ~ObjectBase();
+		explicit ObjectBase(ServiceLocator* service_locator);
+		virtual ~ObjectBase();
 
-  // Return the owning client for this object.
-  ServiceLocator* service_locator() const {
-    return service_locator_;
-  }
+		// Return the owning client for this object.
+		ServiceLocator* service_locator() const {
+			return service_locator_;
+		}
 
-  // Returns the unique id of the instance.
-  const Id id() const {
-    return id_;
-  }
+		// Returns the unique id of the instance.
+		const Id id() const {
+			return id_;
+		}
 
-  // Returns the class descriptor for this class.
-  static const Class *GetApparentClass() {
-    return &class_;
-  }
+		// Returns the class descriptor for this class.
+		static const Class* GetApparentClass() {
+			return &class_;
+		}
 
-  // Returns whether a class derives from a base class.
-  static bool ClassIsA(const Class *derived, const Class *base);
+		// Returns whether a class derives from a base class.
+		static bool ClassIsA(const Class* derived, const Class* base);
 
-  // Returns whether a class derives from a base class by class name
-  static bool ClassIsAClassName(const Class* derived,
-                                const std::string& class_name);
+		// Returns whether a class derives from a base class by class name
+		static bool ClassIsAClassName(const Class* derived,
+		                              const std::string& class_name);
 
-  // Returns the class descriptor for this instance.
-  virtual const Class *GetClass() const {
-    return GetApparentClass();
-  }
+		// Returns the class descriptor for this instance.
+		virtual const Class* GetClass() const {
+			return GetApparentClass();
+		}
 
-  // Returns the class name for this instance.
-  virtual std::string GetClassName() const {
-    return GetApparentClass()->name();
-  }
+		// Returns the class name for this instance.
+		virtual std::string GetClassName() const {
+			return GetApparentClass()->name();
+		}
 
-  // Returns whether this instance "is a" another type (its class derives from
-  // the other class).
-  bool IsA(const Class *base) const {
-    return ClassIsA(GetClass(), base);
-  }
+		// Returns whether this instance "is a" another type (its class derives from
+		// the other class).
+		bool IsA(const Class* base) const {
+			return ClassIsA(GetClass(), base);
+		}
 
-  // Returns whether this instance "is a" another type by class name (its class
-  // derives from the other class).
-  bool IsAClassName(const std::string& class_name) {
-    return ClassIsAClassName(GetClass(), class_name);
-  }
+		// Returns whether this instance "is a" another type by class name (its class
+		// derives from the other class).
+		bool IsAClassName(const std::string& class_name) {
+			return ClassIsAClassName(GetClass(), class_name);
+		}
 
-  // A dynamic_cast for types derived from ObjectBase. Like dynamic_cast it will
-  // return NULL if the cast fails. Also like dynamic_cast it's slow! Note:
-  // Unlike dynamic_cast you don't specify a pointer as the type so
-  //
-  // Derived* d = ObjectBase::rtti_dynamic_cast<Derived>(base);  // correct
-  // Derived* d = ObjectBase::rtti_dynamic_cast<Derived*>(base);  // wrong!
-  template <typename T>
-  static T* rtti_dynamic_cast(ObjectBase* object) {
-    return (object && object->IsA(T::GetApparentClass())) ?
-        static_cast<T*>(object) : 0;
-  }
+		// A dynamic_cast for types derived from ObjectBase. Like dynamic_cast it will
+		// return NULL if the cast fails. Also like dynamic_cast it's slow! Note:
+		// Unlike dynamic_cast you don't specify a pointer as the type so
+		//
+		// Derived* d = ObjectBase::rtti_dynamic_cast<Derived>(base);  // correct
+		// Derived* d = ObjectBase::rtti_dynamic_cast<Derived*>(base);  // wrong!
+		template <typename T>
+		static T* rtti_dynamic_cast(ObjectBase* object) {
+			return (object && object->IsA(T::GetApparentClass())) ?
+			       static_cast<T*>(object) : 0;
+		}
 
- private:
-  Id id_;
-  ServiceLocator* service_locator_;
-  static Class class_;
-};
+	private:
+		Id id_;
+		ServiceLocator* service_locator_;
+		static Class class_;
+	};
 
-inline Id GetObjectId(const ObjectBase* object) {
-  return object == NULL ? 0 : object->id();
-}
+	inline Id GetObjectId(const ObjectBase* object) {
+		return object == NULL ? 0 : object->id();
+	}
 
 // Array container for ObjectBase pointers
-typedef std::vector<ObjectBase*> ObjectBaseArray;
+	typedef std::vector<ObjectBase*> ObjectBaseArray;
 
 }  // namespace o3d
 

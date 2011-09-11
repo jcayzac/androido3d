@@ -40,423 +40,423 @@
 
 namespace o3d {
 
-class Pack;
-class Bitmap;
-class Canvas;
+	class Pack;
+	class Bitmap;
+	class Canvas;
 
 // An abstract class for 2D textures that defines the interface for getting
 // the dimensions of the texture and number of mipmap levels.
 // Concrete implementations should implement the Lock and Unlock methods.
-class Texture2D : public Texture {
- public:
-  typedef SmartPointer<Texture2D> Ref;
+	class Texture2D : public Texture {
+	public:
+		typedef SmartPointer<Texture2D> Ref;
 
-  // Class to help lock Texture2D. Automatically unlocks texture in destructor.
-  class LockHelper {
-   public:
-    explicit LockHelper(Texture2D* texture, int level, AccessMode mode);
-    ~LockHelper();
+		// Class to help lock Texture2D. Automatically unlocks texture in destructor.
+		class LockHelper {
+		public:
+			explicit LockHelper(Texture2D* texture, int level, AccessMode mode);
+			~LockHelper();
 
-    int pitch() const {
-      return pitch_;
-    }
+			int pitch() const {
+				return pitch_;
+			}
 
-    // Gets a pointer to the data of the buffer, locking the buffer if
-    // necessary.
-    // Returns:
-    //   Pointer to data in buffer or NULL if there was an error.
-    void* GetData();
+			// Gets a pointer to the data of the buffer, locking the buffer if
+			// necessary.
+			// Returns:
+			//   Pointer to data in buffer or NULL if there was an error.
+			void* GetData();
 
-    // Typed version of GetData
-    template <typename T>
-    T* GetDataAs() {
-      return reinterpret_cast<T*>(GetData());
-    }
+			// Typed version of GetData
+			template <typename T>
+			T* GetDataAs() {
+				return reinterpret_cast<T*>(GetData());
+			}
 
-   private:
-    AccessMode mode_;
-    Texture2D* texture_;
-    int level_;
-    int pitch_;
-    void* data_;
-    bool locked_;
+		private:
+			AccessMode mode_;
+			Texture2D* texture_;
+			int level_;
+			int pitch_;
+			void* data_;
+			bool locked_;
 
-    O3D_DISALLOW_COPY_AND_ASSIGN(LockHelper);
-  };
+			O3D_DISALLOW_COPY_AND_ASSIGN(LockHelper);
+		};
 
 
-  Texture2D(ServiceLocator* service_locator,
-            int width,
-            int height,
-            Format format,
-            int levels,
-            bool enable_render_surfaces);
-  virtual ~Texture2D();
+		Texture2D(ServiceLocator* service_locator,
+		          int width,
+		          int height,
+		          Format format,
+		          int levels,
+		          bool enable_render_surfaces);
+		virtual ~Texture2D();
 
-  static const char* kWidthParamName;
-  static const char* kHeightParamName;
+		static const char* kWidthParamName;
+		static const char* kHeightParamName;
 
-  inline int width() const {
-    return width_param_->value();
-  }
+		inline int width() const {
+			return width_param_->value();
+		}
 
-  inline int height() const {
-    return height_param_->value();
-  }
+		inline int height() const {
+			return height_param_->value();
+		}
 
-  //   level: The mipmap level to modify
-  //   dst_left: The left edge of the rectangular area to modify.
-  //   dst_top: The top edge of the rectangular area to modify.
-  //   width: The width of the rectangular area to modify.
-  //   height: The of the rectangular area to modify.
-  //   src_data: The source pixels.
-  //   src_pitch: If the format is uncompressed this is the number of bytes
-  //      per row of pixels. If compressed this value is unused.
-  virtual void SetRect(int level,
-                       unsigned dst_left,
-                       unsigned dst_top,
-                       unsigned width,
-                       unsigned height,
-                       const void* src_data,
-                       int src_pitch) = 0;
+		//   level: The mipmap level to modify
+		//   dst_left: The left edge of the rectangular area to modify.
+		//   dst_top: The top edge of the rectangular area to modify.
+		//   width: The width of the rectangular area to modify.
+		//   height: The of the rectangular area to modify.
+		//   src_data: The source pixels.
+		//   src_pitch: If the format is uncompressed this is the number of bytes
+		//      per row of pixels. If compressed this value is unused.
+		virtual void SetRect(int level,
+		                     unsigned dst_left,
+		                     unsigned dst_top,
+		                     unsigned width,
+		                     unsigned height,
+		                     const void* src_data,
+		                     int src_pitch) = 0;
 
-  // Returns a RenderSurface object associated with a mip_level of a texture.
-  // Parameters:
-  //  mip_level: [in] The mip-level of the surface to be returned.
-  // Returns:
-  //  Reference to the RenderSurface object.
-  RenderSurface::Ref GetRenderSurface(int mip_level);
+		// Returns a RenderSurface object associated with a mip_level of a texture.
+		// Parameters:
+		//  mip_level: [in] The mip-level of the surface to be returned.
+		// Returns:
+		//  Reference to the RenderSurface object.
+		RenderSurface::Ref GetRenderSurface(int mip_level);
 
-  // Copy pixels from source bitmap to certain mip level.
-  // Scales if the width and height of source and dest do not match.
-  // Parameters:
-  //   source_img: source bitmap which would be drawn.
-  //   source_mip: source mip to draw.
-  //   source_x: x-coordinate of the starting pixel in the source image.
-  //   source_y: y-coordinate of the starting pixel in the source image.
-  //   source_width: width of the source image to draw.
-  //   source_height: Height of the source image to draw.
-  //   dest_mip: on which mip level the sourceImg would be drawn.
-  //   dest_x: x-coordinate of the starting pixel in the dest image.
-  //   dest_y: y-coordinate of the starting pixel in the dest image.
-  //   dest_width: width of the dest image.
-  //   dest_height: height of the dest image.
-  void DrawImage(const Bitmap& source_img, int src_mip,
-                 int source_x, int source_y,
-                 int source_width, int source_height,
-                 int dest_mip,
-                 int dest_x, int dest_y,
-                 int dest_width, int dest_height);
+		// Copy pixels from source bitmap to certain mip level.
+		// Scales if the width and height of source and dest do not match.
+		// Parameters:
+		//   source_img: source bitmap which would be drawn.
+		//   source_mip: source mip to draw.
+		//   source_x: x-coordinate of the starting pixel in the source image.
+		//   source_y: y-coordinate of the starting pixel in the source image.
+		//   source_width: width of the source image to draw.
+		//   source_height: Height of the source image to draw.
+		//   dest_mip: on which mip level the sourceImg would be drawn.
+		//   dest_x: x-coordinate of the starting pixel in the dest image.
+		//   dest_y: y-coordinate of the starting pixel in the dest image.
+		//   dest_width: width of the dest image.
+		//   dest_height: height of the dest image.
+		void DrawImage(const Bitmap& source_img, int src_mip,
+		               int source_x, int source_y,
+		               int source_width, int source_height,
+		               int dest_mip,
+		               int dest_x, int dest_y,
+		               int dest_width, int dest_height);
 
-  // Copy pixels from source bitmap to certain mip level.
-  // Scales if the width and height of source and dest do not match.
-  // Parameters:
-  //   source_img: source canvas to draw.
-  //   source_x: x-coordinate of the starting pixel in the source image.
-  //   source_y: y-coordinate of the starting pixel in the source image.
-  //   source_width: width of the source image to draw.
-  //   source_height: Height of the source image to draw.
-  //   dest_mip: the dest mip to draw to.
-  //   dest_x: x-coordinate of the starting pixel in the dest image.
-  //   dest_y: y-coordinate of the starting pixel in the dest image.
-  //   dest_width: width of the dest image.
-  //   dest_height: height of the dest image.
+		// Copy pixels from source bitmap to certain mip level.
+		// Scales if the width and height of source and dest do not match.
+		// Parameters:
+		//   source_img: source canvas to draw.
+		//   source_x: x-coordinate of the starting pixel in the source image.
+		//   source_y: y-coordinate of the starting pixel in the source image.
+		//   source_width: width of the source image to draw.
+		//   source_height: Height of the source image to draw.
+		//   dest_mip: the dest mip to draw to.
+		//   dest_x: x-coordinate of the starting pixel in the dest image.
+		//   dest_y: y-coordinate of the starting pixel in the dest image.
+		//   dest_width: width of the dest image.
+		//   dest_height: height of the dest image.
 #if !defined(O3D_NO_CANVAS)
-  void DrawImage(const Canvas& source_img,
-                 int source_x, int source_y,
-                 int source_width, int source_height,
-                 int dest_mip,
-                 int dest_x, int dest_y,
-                 int dest_width, int dest_height);
+		void DrawImage(const Canvas& source_img,
+		               int source_x, int source_y,
+		               int source_width, int source_height,
+		               int dest_mip,
+		               int dest_x, int dest_y,
+		               int dest_width, int dest_height);
 #endif  // !defined(O3D_NO_CANVAS)
 
 
-  // Sets the contents of the texture from a Bitmap.
-  void SetFromBitmap(const Bitmap& bitmap);
+		// Sets the contents of the texture from a Bitmap.
+		void SetFromBitmap(const Bitmap& bitmap);
 
-  // Overridden from Texture.
-  virtual void GenerateMips(int source_level, int num_levels);
+		// Overridden from Texture.
+		virtual void GenerateMips(int source_level, int num_levels);
 
- protected:
-  // Returns a pointer to the internal texture data for the given mipmap level.
-  // Lock must be called before the texture data can be modified.
-  // Parameters:
-  //  level: [in] the mipmap level to be modified
-  //  texture_data: [out] a pointer to the current texture data
-  //  pitch: bytes across 1 row of pixels if uncompressed format. bytes across 1
-  //     row of blocks if compressed format.
-  //  mode: The access mode.
-  // Returns:
-  //  true if the operation succeeds
-  bool Lock(int level, void** texture_data, int* pitch, AccessMode mode);
+	protected:
+		// Returns a pointer to the internal texture data for the given mipmap level.
+		// Lock must be called before the texture data can be modified.
+		// Parameters:
+		//  level: [in] the mipmap level to be modified
+		//  texture_data: [out] a pointer to the current texture data
+		//  pitch: bytes across 1 row of pixels if uncompressed format. bytes across 1
+		//     row of blocks if compressed format.
+		//  mode: The access mode.
+		// Returns:
+		//  true if the operation succeeds
+		bool Lock(int level, void** texture_data, int* pitch, AccessMode mode);
 
-  // Notifies the texture object that the internal texture data has been
-  // been modified.  Unlock must be called in conjunction with Lock.  Modifying
-  // the contents of the texture after Unlock has been called could lead to
-  // unpredictable behavior.
-  // Parameters:
-  //  level: [in] the mipmap level that was modified
-  // Returns:
-  //  true if the operation succeeds
-  bool Unlock(int level);
+		// Notifies the texture object that the internal texture data has been
+		// been modified.  Unlock must be called in conjunction with Lock.  Modifying
+		// the contents of the texture after Unlock has been called could lead to
+		// unpredictable behavior.
+		// Parameters:
+		//  level: [in] the mipmap level that was modified
+		// Returns:
+		//  true if the operation succeeds
+		bool Unlock(int level);
 
-  // The platform specific part of Lock.
-  virtual bool PlatformSpecificLock(int level, void** texture_data, int* pitch,
-                                    AccessMode mode) = 0;
+		// The platform specific part of Lock.
+		virtual bool PlatformSpecificLock(int level, void** texture_data, int* pitch,
+		                                  AccessMode mode) = 0;
 
-  // The platform specific part of Unlock.
-  virtual bool PlatformSpecificUnlock(int level) = 0;
+		// The platform specific part of Unlock.
+		virtual bool PlatformSpecificUnlock(int level) = 0;
 
-  // The platform specific part of GetRenderSurface.
-  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(
-      int mip_level) = 0;
+		// The platform specific part of GetRenderSurface.
+		virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(
+		    int mip_level) = 0;
 
-  // Returns the current locked mode.
-  AccessMode LockedMode(unsigned int level) {
-    O3D_ASSERT(static_cast<int>(level) < levels());
-    return locked_levels_[level];
-  }
+		// Returns the current locked mode.
+		AccessMode LockedMode(unsigned int level) {
+			O3D_ASSERT(static_cast<int>(level) < levels());
+			return locked_levels_[level];
+		}
 
-  // Returns true if the mip-map level has been locked.
-  bool IsLocked(unsigned int level) {
-    return LockedMode(level) != kNone;
-  }
+		// Returns true if the mip-map level has been locked.
+		bool IsLocked(unsigned int level) {
+			return LockedMode(level) != kNone;
+		}
 
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  typedef std::vector<RenderSurface::Ref> MipToRenderSurfaceMap;
+		typedef std::vector<RenderSurface::Ref> MipToRenderSurfaceMap;
 
-  MipToRenderSurfaceMap surface_map_;
+		MipToRenderSurfaceMap surface_map_;
 
-  // The width of the texture, in texels.
-  ParamInteger::Ref width_param_;
-  // The height of the texture, in texels.
-  ParamInteger::Ref height_param_;
+		// The width of the texture, in texels.
+		ParamInteger::Ref width_param_;
+		// The height of the texture, in texels.
+		ParamInteger::Ref height_param_;
 
-  // Access mode for each level.
-  AccessMode locked_levels_[kMaxLevels];
+		// Access mode for each level.
+		AccessMode locked_levels_[kMaxLevels];
 
-  O3D_DECL_CLASS(Texture2D, Texture);
-  O3D_DISALLOW_COPY_AND_ASSIGN(Texture2D);
-};
+		O3D_DECL_CLASS(Texture2D, Texture);
+		O3D_DISALLOW_COPY_AND_ASSIGN(Texture2D);
+	};
 
-class TextureCUBE : public Texture {
- public:
-  typedef SmartPointer<TextureCUBE> Ref;
-  // Cross-platform enumeration of faces of the cube texture.
-  enum CubeFace {
-    FACE_POSITIVE_X,
-    FACE_NEGATIVE_X,
-    FACE_POSITIVE_Y,
-    FACE_NEGATIVE_Y,
-    FACE_POSITIVE_Z,
-    FACE_NEGATIVE_Z,
-    NUMBER_OF_FACES,
-  };
+	class TextureCUBE : public Texture {
+	public:
+		typedef SmartPointer<TextureCUBE> Ref;
+		// Cross-platform enumeration of faces of the cube texture.
+		enum CubeFace {
+			FACE_POSITIVE_X,
+			FACE_NEGATIVE_X,
+			FACE_POSITIVE_Y,
+			FACE_NEGATIVE_Y,
+			FACE_POSITIVE_Z,
+			FACE_NEGATIVE_Z,
+			NUMBER_OF_FACES,
+		};
 
-  // Class to help lock TextureCUBE.
-  // Automatically unlocks texture in destructor.
-  class LockHelper {
-   public:
-    explicit LockHelper(TextureCUBE* texture, CubeFace face, int level,
-                        AccessMode mode);
-    ~LockHelper();
+		// Class to help lock TextureCUBE.
+		// Automatically unlocks texture in destructor.
+		class LockHelper {
+		public:
+			explicit LockHelper(TextureCUBE* texture, CubeFace face, int level,
+			                    AccessMode mode);
+			~LockHelper();
 
-    int pitch() const {
-      return pitch_;
-    }
+			int pitch() const {
+				return pitch_;
+			}
 
-    // Gets a pointer to the data of the buffer, locking the buffer if
-    // necessary.
-    // Returns:
-    //   Pointer to data in buffer or NULL if there was an error.
-    void* GetData();
+			// Gets a pointer to the data of the buffer, locking the buffer if
+			// necessary.
+			// Returns:
+			//   Pointer to data in buffer or NULL if there was an error.
+			void* GetData();
 
-    // Typed version of GetData
-    template <typename T>
-    T* GetDataAs() {
-      return reinterpret_cast<T*>(GetData());
-    }
+			// Typed version of GetData
+			template <typename T>
+			T* GetDataAs() {
+				return reinterpret_cast<T*>(GetData());
+			}
 
-   private:
-    AccessMode mode_;
-    TextureCUBE* texture_;
-    CubeFace face_;
-    int level_;
-    int pitch_;
-    void* data_;
-    bool locked_;
+		private:
+			AccessMode mode_;
+			TextureCUBE* texture_;
+			CubeFace face_;
+			int level_;
+			int pitch_;
+			void* data_;
+			bool locked_;
 
-    O3D_DISALLOW_COPY_AND_ASSIGN(LockHelper);
-  };
+			O3D_DISALLOW_COPY_AND_ASSIGN(LockHelper);
+		};
 
-  static const char* kEdgeLengthParamName;
+		static const char* kEdgeLengthParamName;
 
-  TextureCUBE(ServiceLocator* service_locator,
-              int edge_length,
-              Format format,
-              int levels,
-              bool enable_render_surfaces);
+		TextureCUBE(ServiceLocator* service_locator,
+		            int edge_length,
+		            Format format,
+		            int levels,
+		            bool enable_render_surfaces);
 
-  virtual ~TextureCUBE();
-  inline int edge_length() const {
-    return edge_length_param_->value();
-  }
+		virtual ~TextureCUBE();
+		inline int edge_length() const {
+			return edge_length_param_->value();
+		}
 
-  // Sets a rectangular region of this texture.
-  // If the texture is a DXT format, the only acceptable values
-  // for left, top, width and height are 0, 0, texture->width, texture->height
-  //
-  // Parameters:
-  //   face: The face of the cube to modify.
-  //   level: The mipmap level to modify
-  //   dst_left: The left edge of the rectangular area to modify.
-  //   dst_top: The top edge of the rectangular area to modify.
-  //   width: The width of the rectangular area to modify.
-  //   height: The of the rectangular area to modify.
-  //   src_data: buffer to get pixels from.
-  //   src_pitch: If the format is uncompressed this is the number of bytes
-  //      per row of pixels. If compressed this value is unused.
-  virtual void SetRect(CubeFace face,
-                       int level,
-                       unsigned dst_left,
-                       unsigned dst_top,
-                       unsigned width,
-                       unsigned height,
-                       const void* src_data,
-                       int src_pitch) = 0;
+		// Sets a rectangular region of this texture.
+		// If the texture is a DXT format, the only acceptable values
+		// for left, top, width and height are 0, 0, texture->width, texture->height
+		//
+		// Parameters:
+		//   face: The face of the cube to modify.
+		//   level: The mipmap level to modify
+		//   dst_left: The left edge of the rectangular area to modify.
+		//   dst_top: The top edge of the rectangular area to modify.
+		//   width: The width of the rectangular area to modify.
+		//   height: The of the rectangular area to modify.
+		//   src_data: buffer to get pixels from.
+		//   src_pitch: If the format is uncompressed this is the number of bytes
+		//      per row of pixels. If compressed this value is unused.
+		virtual void SetRect(CubeFace face,
+		                     int level,
+		                     unsigned dst_left,
+		                     unsigned dst_top,
+		                     unsigned width,
+		                     unsigned height,
+		                     const void* src_data,
+		                     int src_pitch) = 0;
 
-  // Returns a RenderSurface object associated with a given cube face and
-  // mip_level of a texture.
-  // Parameters:
-  //  face: [in] The cube face from which to extract the surface.
-  //  mip_level: [in] The mip-level of the surface to be returned.
-  // Returns:
-  //  Reference to the RenderSurface object.
-  RenderSurface::Ref GetRenderSurface(CubeFace face, int level);
+		// Returns a RenderSurface object associated with a given cube face and
+		// mip_level of a texture.
+		// Parameters:
+		//  face: [in] The cube face from which to extract the surface.
+		//  mip_level: [in] The mip-level of the surface to be returned.
+		// Returns:
+		//  Reference to the RenderSurface object.
+		RenderSurface::Ref GetRenderSurface(CubeFace face, int level);
 
-  // Copy pixels from source bitmap to certain mip level.
-  // Scales if the width and height of source and dest do not match.
-  // Parameters:
-  //   source_img: source bitmap.
-  //   source_mip: source mip to draw.
-  //   source_x: x-coordinate of the starting pixel in the source image.
-  //   source_y: y-coordinate of the starting pixel in the source image.
-  //   source_width: width of the source image to draw.
-  //   source_height: Height of the source image to draw.
-  //   face: face to draw to.
-  //   dest_mip: mip to draw to.
-  //   dest_x: x-coordinate of the starting pixel in the dest image.
-  //   dest_y: y-coordinate of the starting pixel in the dest image.
-  //   dest_width: width of the dest image.
-  //   dest_height: height of the dest image.
-  void DrawImage(const Bitmap& source_img, int source_mip,
-                 int source_x, int source_y,
-                 int source_width, int source_height,
-                 CubeFace face, int dest_mip,
-                 int dest_x, int dest_y, int dest_width,
-                 int dest_height);
+		// Copy pixels from source bitmap to certain mip level.
+		// Scales if the width and height of source and dest do not match.
+		// Parameters:
+		//   source_img: source bitmap.
+		//   source_mip: source mip to draw.
+		//   source_x: x-coordinate of the starting pixel in the source image.
+		//   source_y: y-coordinate of the starting pixel in the source image.
+		//   source_width: width of the source image to draw.
+		//   source_height: Height of the source image to draw.
+		//   face: face to draw to.
+		//   dest_mip: mip to draw to.
+		//   dest_x: x-coordinate of the starting pixel in the dest image.
+		//   dest_y: y-coordinate of the starting pixel in the dest image.
+		//   dest_width: width of the dest image.
+		//   dest_height: height of the dest image.
+		void DrawImage(const Bitmap& source_img, int source_mip,
+		               int source_x, int source_y,
+		               int source_width, int source_height,
+		               CubeFace face, int dest_mip,
+		               int dest_x, int dest_y, int dest_width,
+		               int dest_height);
 
-  // Copy pixels from source canvas to certain mip level.
-  // Scales if the width and height of source and dest do not match.
-  // Parameters:
-  //   source_img: source canvas.
-  //   source_x: x-coordinate of the starting pixel in the source image.
-  //   source_y: y-coordinate of the starting pixel in the source image.
-  //   source_width: width of the source image to draw.
-  //   source_height: Height of the source image to draw.
-  //   face: face to draw to.
-  //   dest_mip: mip to draw to.
-  //   dest_x: x-coordinate of the starting pixel in the dest image.
-  //   dest_y: y-coordinate of the starting pixel in the dest image.
-  //   dest_width: width of the dest image.
-  //   dest_height: height of the dest image.
+		// Copy pixels from source canvas to certain mip level.
+		// Scales if the width and height of source and dest do not match.
+		// Parameters:
+		//   source_img: source canvas.
+		//   source_x: x-coordinate of the starting pixel in the source image.
+		//   source_y: y-coordinate of the starting pixel in the source image.
+		//   source_width: width of the source image to draw.
+		//   source_height: Height of the source image to draw.
+		//   face: face to draw to.
+		//   dest_mip: mip to draw to.
+		//   dest_x: x-coordinate of the starting pixel in the dest image.
+		//   dest_y: y-coordinate of the starting pixel in the dest image.
+		//   dest_width: width of the dest image.
+		//   dest_height: height of the dest image.
 #if !defined(O3D_NO_CANVAS)
-  void DrawImage(const Canvas& source_img,
-                 int source_x, int source_y,
-                 int source_width, int source_height,
-                 CubeFace face, int dest_mip,
-                 int dest_x, int dest_y, int dest_width,
-                 int dest_height);
+		void DrawImage(const Canvas& source_img,
+		               int source_x, int source_y,
+		               int source_width, int source_height,
+		               CubeFace face, int dest_mip,
+		               int dest_x, int dest_y, int dest_width,
+		               int dest_height);
 #endif  // !defined(O3D_NO_CANVAS)
 
-  // Sets the contents of the texture from a Bitmap.
-  void SetFromBitmap(CubeFace face, const Bitmap& bitmap);
+		// Sets the contents of the texture from a Bitmap.
+		void SetFromBitmap(CubeFace face, const Bitmap& bitmap);
 
-  // Overridden from Texture.
-  virtual void GenerateMips(int source_level, int num_levels);
+		// Overridden from Texture.
+		virtual void GenerateMips(int source_level, int num_levels);
 
- protected:
-  // Returns a pointer to the internal texture data for the given face and
-  // mipmap level.
-  // Lock must be called before the texture data can be modified.
-  // Parameters:
-  //  face: [in] the index of the cube face to be modified
-  //  level: [in] the mipmap level to be modified
-  //  texture_data: [out] a pointer to the current texture data
-  //  pitch: bytes across 1 row of pixels if uncompressed format. bytes across 1
-  //     row of blocks if compressed format.
-  //  mode: The access mode.
-  // Returns:
-  //  true if the operation succeeds
-  bool Lock(
-      CubeFace face, int level, void** texture_data, int* pitch,
-      AccessMode mode);
+	protected:
+		// Returns a pointer to the internal texture data for the given face and
+		// mipmap level.
+		// Lock must be called before the texture data can be modified.
+		// Parameters:
+		//  face: [in] the index of the cube face to be modified
+		//  level: [in] the mipmap level to be modified
+		//  texture_data: [out] a pointer to the current texture data
+		//  pitch: bytes across 1 row of pixels if uncompressed format. bytes across 1
+		//     row of blocks if compressed format.
+		//  mode: The access mode.
+		// Returns:
+		//  true if the operation succeeds
+		bool Lock(
+		    CubeFace face, int level, void** texture_data, int* pitch,
+		    AccessMode mode);
 
-  // Notifies the texture object that the internal texture data has been
-  // been modified.  Unlock must be called in conjunction with Lock.
-  // Modifying the contents of the texture after Unlock has been called could
-  // lead to unpredictable behavior.
-  // Parameters:
-  //  face: [in] the index of the cube face that was modified
-  //  level: [in] the mipmap level that was modified
-  // Returns:
-  //  true if the operation succeeds
-  bool Unlock(CubeFace face, int level);
+		// Notifies the texture object that the internal texture data has been
+		// been modified.  Unlock must be called in conjunction with Lock.
+		// Modifying the contents of the texture after Unlock has been called could
+		// lead to unpredictable behavior.
+		// Parameters:
+		//  face: [in] the index of the cube face that was modified
+		//  level: [in] the mipmap level that was modified
+		// Returns:
+		//  true if the operation succeeds
+		bool Unlock(CubeFace face, int level);
 
-  // The platform specific part of Lock.
-  virtual bool PlatformSpecificLock(
-      CubeFace face, int level, void** texture_data, int* pitch,
-      AccessMode mode) = 0;
+		// The platform specific part of Lock.
+		virtual bool PlatformSpecificLock(
+		    CubeFace face, int level, void** texture_data, int* pitch,
+		    AccessMode mode) = 0;
 
-  // The platform specific part of Unlock.
-  virtual bool PlatformSpecificUnlock(CubeFace face, int level) = 0;
+		// The platform specific part of Unlock.
+		virtual bool PlatformSpecificUnlock(CubeFace face, int level) = 0;
 
-  // The platform specific part of GetRenderSurface.
-  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(
-      CubeFace face, int level) = 0;
+		// The platform specific part of GetRenderSurface.
+		virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(
+		    CubeFace face, int level) = 0;
 
-  // Returns the locked mode for a level
-  AccessMode LockedMode(CubeFace face, unsigned int level) {
-    O3D_ASSERT(static_cast<int>(level) < levels());
-    return locked_levels_[face][level];
-  }
+		// Returns the locked mode for a level
+		AccessMode LockedMode(CubeFace face, unsigned int level) {
+			O3D_ASSERT(static_cast<int>(level) < levels());
+			return locked_levels_[face][level];
+		}
 
-  // Returns true if the mip-map level has been locked.
-  bool IsLocked(CubeFace face, unsigned int level) {
-    return LockedMode(face, level) != kNone;
-  }
+		// Returns true if the mip-map level has been locked.
+		bool IsLocked(CubeFace face, unsigned int level) {
+			return LockedMode(face, level) != kNone;
+		}
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  typedef std::vector<RenderSurface::Ref> MipToRenderSurfaceMap;
+		typedef std::vector<RenderSurface::Ref> MipToRenderSurfaceMap;
 
-  MipToRenderSurfaceMap surface_maps_[NUMBER_OF_FACES];
+		MipToRenderSurfaceMap surface_maps_[NUMBER_OF_FACES];
 
-  // The length of each edge of the cube, in texels.
-  ParamInteger::Ref edge_length_param_;
+		// The length of each edge of the cube, in texels.
+		ParamInteger::Ref edge_length_param_;
 
-  // AccessMode for each level on each face.
-  AccessMode locked_levels_[NUMBER_OF_FACES][kMaxLevels];
+		// AccessMode for each level on each face.
+		AccessMode locked_levels_[NUMBER_OF_FACES][kMaxLevels];
 
-  O3D_DECL_CLASS(TextureCUBE, Texture);
-  O3D_DISALLOW_COPY_AND_ASSIGN(TextureCUBE);
-};
+		O3D_DECL_CLASS(TextureCUBE, Texture);
+		O3D_DISALLOW_COPY_AND_ASSIGN(TextureCUBE);
+	};
 
 }  // namespace o3d
 

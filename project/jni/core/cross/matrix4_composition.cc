@@ -36,31 +36,31 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Matrix4Composition, ParamObject);
+	O3D_DEFN_CLASS(Matrix4Composition, ParamObject);
 
-const char* Matrix4Composition::kInputMatrixParamName =
-    O3D_STRING_CONSTANT("inputMatrix");
-const char* Matrix4Composition::kLocalMatrixParamName =
-    O3D_STRING_CONSTANT("localMatrix");
-const char* Matrix4Composition::kOutputMatrixParamName =
-    O3D_STRING_CONSTANT("outputMatrix");
+	const char* Matrix4Composition::kInputMatrixParamName =
+	    O3D_STRING_CONSTANT("inputMatrix");
+	const char* Matrix4Composition::kLocalMatrixParamName =
+	    O3D_STRING_CONSTANT("localMatrix");
+	const char* Matrix4Composition::kOutputMatrixParamName =
+	    O3D_STRING_CONSTANT("outputMatrix");
 
-Matrix4Composition::Matrix4Composition(
-    ServiceLocator* service_locator)
-    : ParamObject(service_locator) {
-  RegisterParamRef(kInputMatrixParamName, &input_matrix_param_);
-  RegisterParamRef(kLocalMatrixParamName, &local_matrix_param_);
-  SlaveParamMatrix4::RegisterParamRef(kOutputMatrixParamName,
-                                      &output_matrix_param_, this);
-}
+	Matrix4Composition::Matrix4Composition(
+	    ServiceLocator* service_locator)
+		: ParamObject(service_locator) {
+		RegisterParamRef(kInputMatrixParamName, &input_matrix_param_);
+		RegisterParamRef(kLocalMatrixParamName, &local_matrix_param_);
+		SlaveParamMatrix4::RegisterParamRef(kOutputMatrixParamName,
+		                                    &output_matrix_param_, this);
+	}
 
-void Matrix4Composition::UpdateOutputs() {
-  Matrix4 output_matrix = input_matrix_param_->value() *
-      local_matrix_param_->value();
-  output_matrix_param_->set_dynamic_value(output_matrix);
-}
+	void Matrix4Composition::UpdateOutputs() {
+		Matrix4 output_matrix = input_matrix_param_->value() *
+		                        local_matrix_param_->value();
+		output_matrix_param_->set_dynamic_value(output_matrix);
+	}
 
-ObjectBase::Ref Matrix4Composition::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new Matrix4Composition(service_locator));
-}
+	ObjectBase::Ref Matrix4Composition::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new Matrix4Composition(service_locator));
+	}
 }  // namespace o3d

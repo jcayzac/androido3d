@@ -36,37 +36,40 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(VertexSource, ParamObject);
+	O3D_DEFN_CLASS(VertexSource, ParamObject);
 
-bool VertexSource::BindStream(VertexSource* source,
-                              Stream::Semantic semantic,
-                              int semantic_index) {
-  if (source) {
-    ParamVertexBufferStream* source_param = source->GetVertexStreamParam(
-        semantic, semantic_index);
-    ParamVertexBufferStream* dest_param = GetVertexStreamParam(
-        semantic, semantic_index);
-    if (source_param && dest_param &&
-        source_param->stream().field().IsA(
-            dest_param->stream().field().GetClass()) &&
-        source_param->stream().field().num_components() ==
-        dest_param->stream().field().num_components()) {
-      return dest_param->Bind(source_param);
-    }
-  }
+	bool VertexSource::BindStream(VertexSource* source,
+	                              Stream::Semantic semantic,
+	                              int semantic_index) {
+		if(source) {
+			ParamVertexBufferStream* source_param = source->GetVertexStreamParam(
+			        semantic, semantic_index);
+			ParamVertexBufferStream* dest_param = GetVertexStreamParam(
+			        semantic, semantic_index);
 
-  return false;
-}
+			if(source_param && dest_param &&
+			        source_param->stream().field().IsA(
+			            dest_param->stream().field().GetClass()) &&
+			        source_param->stream().field().num_components() ==
+			        dest_param->stream().field().num_components()) {
+				return dest_param->Bind(source_param);
+			}
+		}
 
-bool VertexSource::UnbindStream(Stream::Semantic semantic, int semantic_index) {
-  ParamVertexBufferStream* dest_param = GetVertexStreamParam(
-      semantic, semantic_index);
-  if (dest_param && dest_param->input_connection() != NULL) {
-    dest_param->UnbindInput();
-    return true;
-  }
-  return false;
-}
+		return false;
+	}
+
+	bool VertexSource::UnbindStream(Stream::Semantic semantic, int semantic_index) {
+		ParamVertexBufferStream* dest_param = GetVertexStreamParam(
+		        semantic, semantic_index);
+
+		if(dest_param && dest_param->input_connection() != NULL) {
+			dest_param->UnbindInput();
+			return true;
+		}
+
+		return false;
+	}
 
 }  // namespace o3d
 

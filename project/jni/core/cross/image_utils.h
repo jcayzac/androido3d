@@ -38,101 +38,105 @@
 #include "core/cross/texture_base.h"
 
 namespace o3d {
-namespace image {
+	namespace image {
 
 // We will fail to load images that are bigger than 4kx4k to avoid security
 // risks. GPUs don't usually support bigger sizes anyway.
 // The biggest bitmap buffer size with these dimensions is:
 // 4k x 4k x 4xsizeof(float) x6 x4/3 (x6 for cube maps, x4/3 for mipmaps)
 // That makes 2GB, representable in an unsigned int, so we will avoid wraps.
-const unsigned int kMaxImageDimension = 4096u;
+		const unsigned int kMaxImageDimension = 4096u;
 
-enum ImageFileType {
-  UNKNOWN,
-  TGA,
-  JPEG,
-  PNG,
-  DDS,
-};
+		enum ImageFileType {
+			UNKNOWN,
+			TGA,
+			JPEG,
+			PNG,
+			DDS,
+		};
 
-unsigned int GetNumComponentsForFormat(Texture::Format format);
+		unsigned int GetNumComponentsForFormat(Texture::Format format);
 
-inline bool IsPOT(unsigned width, unsigned height) {
-  return ((width & (width - 1)) == 0) && ((height & (height - 1)) == 0);
-}
+		inline bool IsPOT(unsigned width, unsigned height) {
+			return ((width & (width - 1)) == 0) && ((height & (height - 1)) == 0);
+		}
 
-inline bool CheckImageDimensions(unsigned int width, unsigned int height) {
-  return width <= kMaxImageDimension && height <= kMaxImageDimension;
-}
+		inline bool CheckImageDimensions(unsigned int width, unsigned int height) {
+			return width <= kMaxImageDimension && height <= kMaxImageDimension;
+		}
 
 // Returns whether or not we can make mips.
-bool CanMakeMips(Texture::Format format);
+		bool CanMakeMips(Texture::Format format);
 
 // Returns the integer i such as 2^(i-1) <= n < 2^i
-static inline unsigned int ShiftBitsFloor(unsigned int n) {
-  unsigned int log(0);
-  unsigned int value(n);
-  for (int i(4); i >= 0; --i) {
-    const unsigned int shift(1u << i);
-    const unsigned int x(value >> shift);
-    if (x) {
-      value = x;
-      log += shift;
-    }
-  }
-  O3D_ASSERT(value == 1u);
-  return 1u+log;
-}
+		static inline unsigned int ShiftBitsFloor(unsigned int n) {
+			unsigned int log(0);
+			unsigned int value(n);
+
+			for(int i(4); i >= 0; --i) {
+				const unsigned int shift(1u << i);
+				const unsigned int x(value >> shift);
+
+				if(x) {
+					value = x;
+					log += shift;
+				}
+			}
+
+			O3D_ASSERT(value == 1u);
+			return 1u + log;
+		}
 
 // Gets the number of mip-maps required for a full chain starting at
 // width x height.
-inline unsigned int ComputeMipMapCount(
-    unsigned int width, unsigned int height) {
-  unsigned int dimension(std::max(width, height));
-  return dimension?ShiftBitsFloor(dimension):0u;
-}
+		inline unsigned int ComputeMipMapCount(
+		    unsigned int width, unsigned int height) {
+			unsigned int dimension(std::max(width, height));
+			return dimension ? ShiftBitsFloor(dimension) : 0u;
+		}
 
 // Gets the smallest power-of-two value that is at least as high as
 // dimension. This is the POT dimension used in ScaleUpToPOT.
-inline unsigned int ComputePOTSize(unsigned int dimension) {
-  return (dimension<2u)?dimension:(1u << ShiftBitsFloor(dimension - 1u));
-}
+		inline unsigned int ComputePOTSize(unsigned int dimension) {
+			return (dimension < 2u) ? dimension : (1u << ShiftBitsFloor(dimension - 1u));
+		}
 
 // Computes one dimension of a mip.
-inline unsigned ComputeMipDimension(int level, unsigned dimension) {
-  unsigned v = dimension >> level;
-  return v > 0 ? v : 1u;
-}
+		inline unsigned ComputeMipDimension(int level, unsigned dimension) {
+			unsigned v = dimension >> level;
+			return v > 0 ? v : 1u;
+		}
 
 // Computes the size of the buffer containing a mip-map chain, given its base
 // width, height, format and number of mip-map levels.
-size_t ComputeMipChainSize(unsigned int base_width,
-                           unsigned int base_height,
-                           Texture::Format format,
-                           unsigned int num_mipmaps);
+		size_t ComputeMipChainSize(unsigned int base_width,
+		                           unsigned int base_height,
+		                           Texture::Format format,
+		                           unsigned int num_mipmaps);
 
-inline int ComputePitch(Texture::Format format, unsigned width) {
-  if (Texture::IsCompressedFormat(format)) {
-    unsigned blocks_across = (width + 3u) / 4u;
-    unsigned bytes_per_block = format == Texture::DXT1 ? 8u : 16u;
-    return bytes_per_block * blocks_across;
-  } else {
-    return static_cast<int>(ComputeMipChainSize(width, 1u, format, 1u));
-  }
-}
+		inline int ComputePitch(Texture::Format format, unsigned width) {
+			if(Texture::IsCompressedFormat(format)) {
+				unsigned blocks_across = (width + 3u) / 4u;
+				unsigned bytes_per_block = format == Texture::DXT1 ? 8u : 16u;
+				return bytes_per_block * blocks_across;
+			}
+			else {
+				return static_cast<int>(ComputeMipChainSize(width, 1u, format, 1u));
+			}
+		}
 
 // Computes the pitch for a bitmap.
 // NOTE: For textures you must get the pitch from the OS.
-inline int ComputeMipPitch(Texture::Format format,
-                           int level,
-                           unsigned width) {
-  return ComputePitch(format, ComputeMipDimension(level, width));
-}
+		inline int ComputeMipPitch(Texture::Format format,
+		                           int level,
+		                           unsigned width) {
+			return ComputePitch(format, ComputeMipDimension(level, width));
+		}
 
 // Computes the number of bytes of a bitmap pixel buffer.
-size_t ComputeBufferSize(unsigned int width,
-                         unsigned int height,
-                         Texture::Format format);
+		size_t ComputeBufferSize(unsigned int width,
+		                         unsigned int height,
+		                         Texture::Format format);
 
 // Crop part of an image from src, scale it to an arbitrary size
 // and paste in dest image. Utility function for all DrawImage
@@ -155,28 +159,28 @@ size_t ComputeBufferSize(unsigned int width,
 //   dest_width: width of the part in dest image to be pasted to.
 //   dest_height: height of the part in dest image to be pasted to.
 //   components: number of components per pixel.
-void LanczosScale(Texture::Format format,
-                  const void* restrict src, int src_pitch,
-                  int src_x, int src_y,
-                  int src_width, int src_height,
-                  void* restrict dest, int dest_pitch,
-                  int dest_x, int dest_y,
-                  int dest_width, int dest_height,
-                  int components);
+		void LanczosScale(Texture::Format format,
+		                  const void* restrict src, int src_pitch,
+		                  int src_x, int src_y,
+		                  int src_width, int src_height,
+		                  void* restrict dest, int dest_pitch,
+		                  int dest_x, int dest_y,
+		                  int dest_width, int dest_height,
+		                  int components);
 
 // Detects the type of image file based on the filename.
-ImageFileType GetFileTypeFromFilename(const char *filename);
+		ImageFileType GetFileTypeFromFilename(const char* filename);
 //
 // Detects the type of image file based on the mime-type.
-ImageFileType GetFileTypeFromMimeType(const char *mime_type);
+		ImageFileType GetFileTypeFromMimeType(const char* mime_type);
 
 // Adds filler alpha byte (0xff) after every pixel. Assumes buffer was
 // allocated with enough storage)
 // can convert RGB -> RGBA, BGR -> BGRA, etc.
-void XYZToXYZA(uint8_t *image_data, int pixel_count);
+		void XYZToXYZA(uint8_t* image_data, int pixel_count);
 
 // Swaps Red and Blue components in the image.
-void RGBAToBGRA(uint8_t *image_data, int pixel_count);
+		void RGBAToBGRA(uint8_t* image_data, int pixel_count);
 
 // Generates a mip-map for 1 level.
 // NOTE: this doesn't work for DXTC images.
@@ -191,13 +195,13 @@ void RGBAToBGRA(uint8_t *image_data, int pixel_count);
 //   dst_data: memory for a mip one level smaller then the source.
 //   dst_pitch: If the format is uncompressed this is the number of bytes
 //      per row of pixels. If compressed this value is unused.
-bool GenerateMipmap(unsigned int src_width,
-                    unsigned int src_height,
-                    Texture::Format format,
-                    const void * restrict src_data,
-                    int src_pitch,
-                    void * restrict dst_data,
-                    int dst_pitch);
+		bool GenerateMipmap(unsigned int src_width,
+		                    unsigned int src_height,
+		                    Texture::Format format,
+		                    const void* restrict src_data,
+		                    int src_pitch,
+		                    void* restrict dst_data,
+		                    int dst_pitch);
 
 // Scales an image up to power-of-two textures, using point filtering.
 // NOTE: this doesn't work for DXTC images.
@@ -211,12 +215,12 @@ bool GenerateMipmap(unsigned int src_width,
 //       written from the end to the beginning so dst can be the same buffer
 //       as src.
 //   dst_pitch: Number of bytes across 1 row of pixels.
-bool ScaleUpToPOT(unsigned int width,
-                  unsigned int height,
-                  Texture::Format format,
-                  const void * restrict src,
-                  void * restrict dst,
-                  int dst_pitch);
+		bool ScaleUpToPOT(unsigned int width,
+		                  unsigned int height,
+		                  Texture::Format format,
+		                  const void* restrict src,
+		                  void* restrict dst,
+		                  int dst_pitch);
 
 // Scales an image to an arbitrary size, using point filtering.
 // NOTE: this doesn't work for DXTC images.
@@ -232,14 +236,14 @@ bool ScaleUpToPOT(unsigned int width,
 //       written from the end to the beginning so dst can be the same buffer
 //       as src if the transformation is an upscaling.
 //   dst_pitch: Number of bytes across 1 row of pixels.
-bool Scale(unsigned int src_width,
-           unsigned int src_height,
-           Texture::Format format,
-           const void * restrict src,
-           unsigned int dst_width,
-           unsigned int dst_height,
-           void * restrict dst,
-           int dst_pitch);
+		bool Scale(unsigned int src_width,
+		           unsigned int src_height,
+		           Texture::Format format,
+		           const void* restrict src,
+		           unsigned int dst_width,
+		           unsigned int dst_height,
+		           void* restrict dst,
+		           int dst_pitch);
 
 // adjust start points and boundaries when using DrawImage data
 // in bitmap and textures.
@@ -260,14 +264,14 @@ bool Scale(unsigned int src_width,
 //   dest_bmp_height: original height of dest bitmap.
 // Returns:
 //   false if src or dest rectangle is out of boundaries.
-bool AdjustDrawImageBoundary(int* restrict src_x, int* restrict src_y,
-                             int* restrict src_width, int* restrict src_height,
-                             int src_level,
-                             int src_bmp_width, int src_bmp_height,
-                             int* restrict dest_x, int* restrict dest_y,
-                             int* restrict dest_width, int* restrict dest_height,
-                             int dest_level,
-                             int dest_bmp_width, int dest_bmp_height);
+		bool AdjustDrawImageBoundary(int* restrict src_x, int* restrict src_y,
+		                             int* restrict src_width, int* restrict src_height,
+		                             int src_level,
+		                             int src_bmp_width, int src_bmp_height,
+		                             int* restrict dest_x, int* restrict dest_y,
+		                             int* restrict dest_width, int* restrict dest_height,
+		                             int dest_level,
+		                             int dest_bmp_width, int dest_bmp_height);
 
 // Checks whether or not we can call SetRect and adjust the inputs
 // accordingly so SetRect will work.
@@ -289,15 +293,15 @@ bool AdjustDrawImageBoundary(int* restrict src_x, int* restrict src_y,
 //       adjusted if SetRect can be called.
 // Returns:
 //    True if SetRect can be called.
-bool AdjustForSetRect(int* restrict src_y,
-                      int src_width,
-                      int src_height,
-                      int* restrict src_pitch,
-                      int* restrict dst_y,
-                      int dst_width,
-                      int*restrict  dst_height);
+		bool AdjustForSetRect(int* restrict src_y,
+		                      int src_width,
+		                      int src_height,
+		                      int* restrict src_pitch,
+		                      int* restrict dst_y,
+		                      int dst_width,
+		                      int* restrict  dst_height);
 
-}  // namespace image
+	}  // namespace image
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_IMAGE_UTILS_H_

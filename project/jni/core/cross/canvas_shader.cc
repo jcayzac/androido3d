@@ -42,104 +42,114 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(CanvasShader, ParamObject);
-O3D_DEFN_CLASS(CanvasLinearGradient, CanvasShader);
+	O3D_DEFN_CLASS(CanvasShader, ParamObject);
+	O3D_DEFN_CLASS(CanvasLinearGradient, CanvasShader);
 
-static SkShader::TileMode ToSKTileMode(CanvasShader::TileMode mode) {
-  switch (mode) {
-    case CanvasShader::CLAMP:
-      return SkShader::kClamp_TileMode;
-    case CanvasShader::MIRROR:
-      return SkShader::kMirror_TileMode;
-    case CanvasShader::REPEAT:
-      return SkShader::kRepeat_TileMode;
-    default:
-      return SkShader::kRepeat_TileMode;
-  }
-}
+	static SkShader::TileMode ToSKTileMode(CanvasShader::TileMode mode) {
+		switch(mode) {
+		case CanvasShader::CLAMP:
+			return SkShader::kClamp_TileMode;
+		case CanvasShader::MIRROR:
+			return SkShader::kMirror_TileMode;
+		case CanvasShader::REPEAT:
+			return SkShader::kRepeat_TileMode;
+		default:
+			return SkShader::kRepeat_TileMode;
+		}
+	}
 
-CanvasShader::CanvasShader(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      native_shader_(NULL) {
-}
+	CanvasShader::CanvasShader(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  native_shader_(NULL) {
+	}
 
-CanvasShader::~CanvasShader() {
-  if (native_shader_)
-    native_shader_->unref();
-}
+	CanvasShader::~CanvasShader() {
+		if(native_shader_)
+			native_shader_->unref();
+	}
 
-SkShader* CanvasShader::GetNativeShader() {
-  if (needs_update_) {
-    needs_update_ = false;
-    if (native_shader_)
-      native_shader_->unref();
-    native_shader_ = MakeNativeShader();
-  }
-  return native_shader_;
-}
+	SkShader* CanvasShader::GetNativeShader() {
+		if(needs_update_) {
+			needs_update_ = false;
 
-CanvasLinearGradient::CanvasLinearGradient(ServiceLocator* service_locator)
-    : CanvasShader(service_locator),
-      start_point_(Float2(0, 0)),
-      end_point_(Float2(0, 0)),
-      tile_mode_(REPEAT) {
-  colors_.push_back(Float4(0, 0, 0, 1));
-  colors_.push_back(Float4(0, 0, 0, 1));
-  positions_.clear();
-}
+			if(native_shader_)
+				native_shader_->unref();
 
-CanvasLinearGradient::~CanvasLinearGradient() {
-}
+			native_shader_ = MakeNativeShader();
+		}
 
-SkShader* CanvasLinearGradient::MakeNativeShader() {
-  SkPoint start_to_end[2];
-  start_to_end[0].set(SkFloatToScalar(start_point_.getX()),
-                      SkFloatToScalar(start_point_.getY()));
-  start_to_end[1].set(SkFloatToScalar(end_point_.getX()),
-                      SkFloatToScalar(end_point_.getY()));
+		return native_shader_;
+	}
 
-  if (colors_.size() < 2) {
-    O3D_ERROR(service_locator()) << "Must provide at least two colors for"
-                                 << " CanvasLinearGradient!";
-    return NULL;
-  }
-  ::o3d::base::scoped_array<SkColor> colors(new SkColor[colors_.size()]);
-  for (std::vector<Float4>::size_type ii = 0; ii < colors_.size(); ii++) {
-    (colors.get())[ii] = Float4ToSkColor(colors_[ii]);
-  }
-  ::o3d::base::scoped_ptr<SkScalar> positions;
-  if (positions_.size()) {
-    if (positions_.size() != colors_.size()) {
-      O3D_ERROR(service_locator()) << "The number of positions must match "
-                                   << "the number of colors for"
-                                   << " CanvasLinearGradient.";
-      return NULL;
-    }
-    positions.reset(new SkScalar[positions_.size()]);
-    for (std::vector<float>::size_type ii = 0; ii < positions_.size(); ii++) {
-      (positions.get())[ii] = SkFloatToScalar(positions_[ii]);
-    }
-  } else {
-    positions.reset(NULL);
-  }
+	CanvasLinearGradient::CanvasLinearGradient(ServiceLocator* service_locator)
+		: CanvasShader(service_locator),
+		  start_point_(Float2(0, 0)),
+		  end_point_(Float2(0, 0)),
+		  tile_mode_(REPEAT) {
+		colors_.push_back(Float4(0, 0, 0, 1));
+		colors_.push_back(Float4(0, 0, 0, 1));
+		positions_.clear();
+	}
 
-  SkShader* shader = SkGradientShader::CreateLinear(
-      start_to_end,
-      colors.get(),
-      positions.get(),
-      colors_.size(),
-      ToSKTileMode(tile_mode_));
+	CanvasLinearGradient::~CanvasLinearGradient() {
+	}
 
-  if (shader == NULL) {
-    O3D_LOG(ERROR) << "Failed to create SkGradientShader (linear)";
-  }
+	SkShader* CanvasLinearGradient::MakeNativeShader() {
+		SkPoint start_to_end[2];
+		start_to_end[0].set(SkFloatToScalar(start_point_.getX()),
+		                    SkFloatToScalar(start_point_.getY()));
+		start_to_end[1].set(SkFloatToScalar(end_point_.getX()),
+		                    SkFloatToScalar(end_point_.getY()));
 
-  return shader;
-}
+		if(colors_.size() < 2) {
+			O3D_ERROR(service_locator()) << "Must provide at least two colors for"
+			                             << " CanvasLinearGradient!";
+			return NULL;
+		}
+
+		::o3d::base::scoped_array<SkColor> colors(new SkColor[colors_.size()]);
+
+		for(std::vector<Float4>::size_type ii = 0; ii < colors_.size(); ii++) {
+			(colors.get())[ii] = Float4ToSkColor(colors_[ii]);
+		}
+
+		::o3d::base::scoped_ptr<SkScalar> positions;
+
+		if(positions_.size()) {
+			if(positions_.size() != colors_.size()) {
+				O3D_ERROR(service_locator()) << "The number of positions must match "
+				                             << "the number of colors for"
+				                             << " CanvasLinearGradient.";
+				return NULL;
+			}
+
+			positions.reset(new SkScalar[positions_.size()]);
+
+			for(std::vector<float>::size_type ii = 0; ii < positions_.size(); ii++) {
+				(positions.get())[ii] = SkFloatToScalar(positions_[ii]);
+			}
+		}
+		else {
+			positions.reset(NULL);
+		}
+
+		SkShader* shader = SkGradientShader::CreateLinear(
+		                       start_to_end,
+		                       colors.get(),
+		                       positions.get(),
+		                       colors_.size(),
+		                       ToSKTileMode(tile_mode_));
+
+		if(shader == NULL) {
+			O3D_LOG(ERROR) << "Failed to create SkGradientShader (linear)";
+		}
+
+		return shader;
+	}
 
 
-ObjectBase::Ref CanvasLinearGradient::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new CanvasLinearGradient(service_locator));
-}
+	ObjectBase::Ref CanvasLinearGradient::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new CanvasLinearGradient(service_locator));
+	}
 
 }  // namespace o3d

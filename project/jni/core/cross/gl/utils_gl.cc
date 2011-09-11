@@ -43,166 +43,170 @@
 
 namespace o3d {
 
-typedef std::pair<std::string, int> SemanticMapElement;
-typedef std::map<std::string, int> SemanticMap;
+	typedef std::pair<std::string, int> SemanticMapElement;
+	typedef std::map<std::string, int> SemanticMap;
 
 // The map batween the semantics on vertex program varying parameters names
 // and vertex attribute indices under the VP_30 profile.
-SemanticMapElement semantic_map_vp_30[] = {
-  SemanticMapElement("POSITION", 0),
-  SemanticMapElement("ATTR0",    0),
-  SemanticMapElement("BLENDWEIGHT", 1),
-  SemanticMapElement("ATTR1",       1),
-  SemanticMapElement("NORMAL", 2),
-  SemanticMapElement("ATTR2",  2),
-  SemanticMapElement("COLOR0",  3),
-  SemanticMapElement("DIFFUSE", 3),
-  SemanticMapElement("ATTR3",   3),
-  SemanticMapElement("COLOR1",   4),
-  SemanticMapElement("SPECULAR", 4),
-  SemanticMapElement("ATTR4",    4),
-  SemanticMapElement("TESSFACTOR", 5),
-  SemanticMapElement("FOGCOORD",   5),
-  SemanticMapElement("ATTR5",      5),
-  SemanticMapElement("PSIZE", 6),
-  SemanticMapElement("ATTR6", 6),
-  SemanticMapElement("BLENDINDICES", 7),
-  SemanticMapElement("ATTR7",        7),
-  SemanticMapElement("TEXCOORD0", 8),
-  SemanticMapElement("ATTR8",     8),
-  SemanticMapElement("TEXCOORD1", 9),
-  SemanticMapElement("ATTR9",     9),
-  SemanticMapElement("TEXCOORD2", 10),
-  SemanticMapElement("ATTR10",    10),
-  SemanticMapElement("TEXCOORD3", 11),
-  SemanticMapElement("ATTR11",    11),
-  SemanticMapElement("TEXCOORD4", 12),
-  SemanticMapElement("ATTR12",    12),
-  SemanticMapElement("TEXCOORD5", 13),
-  SemanticMapElement("ATTR13",    13),
-  SemanticMapElement("TEXCOORD6", 14),
-  SemanticMapElement("TANGENT",   14),
-  SemanticMapElement("ATTR14",    14),
-  SemanticMapElement("TEXCOORD7", 15),
-  SemanticMapElement("BINORMAL",  15),
-  SemanticMapElement("ATTR15",    15),
-};
+	SemanticMapElement semantic_map_vp_30[] = {
+		SemanticMapElement("POSITION", 0),
+		SemanticMapElement("ATTR0",    0),
+		SemanticMapElement("BLENDWEIGHT", 1),
+		SemanticMapElement("ATTR1",       1),
+		SemanticMapElement("NORMAL", 2),
+		SemanticMapElement("ATTR2",  2),
+		SemanticMapElement("COLOR0",  3),
+		SemanticMapElement("DIFFUSE", 3),
+		SemanticMapElement("ATTR3",   3),
+		SemanticMapElement("COLOR1",   4),
+		SemanticMapElement("SPECULAR", 4),
+		SemanticMapElement("ATTR4",    4),
+		SemanticMapElement("TESSFACTOR", 5),
+		SemanticMapElement("FOGCOORD",   5),
+		SemanticMapElement("ATTR5",      5),
+		SemanticMapElement("PSIZE", 6),
+		SemanticMapElement("ATTR6", 6),
+		SemanticMapElement("BLENDINDICES", 7),
+		SemanticMapElement("ATTR7",        7),
+		SemanticMapElement("TEXCOORD0", 8),
+		SemanticMapElement("ATTR8",     8),
+		SemanticMapElement("TEXCOORD1", 9),
+		SemanticMapElement("ATTR9",     9),
+		SemanticMapElement("TEXCOORD2", 10),
+		SemanticMapElement("ATTR10",    10),
+		SemanticMapElement("TEXCOORD3", 11),
+		SemanticMapElement("ATTR11",    11),
+		SemanticMapElement("TEXCOORD4", 12),
+		SemanticMapElement("ATTR12",    12),
+		SemanticMapElement("TEXCOORD5", 13),
+		SemanticMapElement("ATTR13",    13),
+		SemanticMapElement("TEXCOORD6", 14),
+		SemanticMapElement("TANGENT",   14),
+		SemanticMapElement("ATTR14",    14),
+		SemanticMapElement("TEXCOORD7", 15),
+		SemanticMapElement("BINORMAL",  15),
+		SemanticMapElement("ATTR15",    15),
+	};
 
 // The map batween the semantics on vertex program varying parameters names
 // and vertex attribute indices under the VP_40 profile.
-SemanticMapElement semantic_map_vp_40[] = {
-  SemanticMapElement("POSITION", 0),
-  SemanticMapElement("POSITION0", 0),
-  SemanticMapElement("ATTR0",    0),
-  SemanticMapElement("BLENDWEIGHT",  1),
-  SemanticMapElement("BLENDWEIGHT0", 1),
-  SemanticMapElement("ATTR1",        1),
-  SemanticMapElement("NORMAL",  2),
-  SemanticMapElement("NORMAL0", 2),
-  SemanticMapElement("ATTR2",   2),
-  SemanticMapElement("COLOR",   3),
-  SemanticMapElement("COLOR0",  3),
-  SemanticMapElement("DIFFUSE", 3),
-  SemanticMapElement("ATTR3",   3),
-  SemanticMapElement("COLOR1",   4),
-  SemanticMapElement("SPECULAR", 4),
-  SemanticMapElement("ATTR4",    4),
-  SemanticMapElement("TESSFACTOR",  5),
-  SemanticMapElement("FOGCOORD",    5),
-  SemanticMapElement("TESSFACTOR0", 5),
-  SemanticMapElement("FOGCOORD0",   5),
-  SemanticMapElement("ATTR5",       5),
-  SemanticMapElement("PSIZE",  6),
-  SemanticMapElement("PSIZE0", 6),
-  SemanticMapElement("ATTR6",  6),
-  SemanticMapElement("BLENDINDICES",  7),
-  SemanticMapElement("BLENDINDICES0", 7),
-  SemanticMapElement("ATTR7",         7),
-  SemanticMapElement("TEXCOORD",  8),
-  SemanticMapElement("TEXCOORD0", 8),
-  SemanticMapElement("ATTR8",     8),
-  SemanticMapElement("TEXCOORD1", 9),
-  SemanticMapElement("ATTR9",     9),
-  SemanticMapElement("TEXCOORD2", 10),
-  SemanticMapElement("ATTR10",    10),
-  SemanticMapElement("TEXCOORD3", 11),
-  SemanticMapElement("ATTR11",    11),
-  SemanticMapElement("TEXCOORD4", 12),
-  SemanticMapElement("ATTR12",    12),
-  SemanticMapElement("TEXCOORD5", 13),
-  SemanticMapElement("ATTR13",    13),
-  SemanticMapElement("TANGENT",   14),
-  SemanticMapElement("TANGENT0",  14),
-  SemanticMapElement("TEXCOORD6", 14),
-  SemanticMapElement("ATTR14",    14),
-  SemanticMapElement("BINORMAL",  15),
-  SemanticMapElement("BINORMAL0", 15),
-  SemanticMapElement("TEXCOORD7", 15),
-  SemanticMapElement("ATTR15",    15),
-};
+	SemanticMapElement semantic_map_vp_40[] = {
+		SemanticMapElement("POSITION", 0),
+		SemanticMapElement("POSITION0", 0),
+		SemanticMapElement("ATTR0",    0),
+		SemanticMapElement("BLENDWEIGHT",  1),
+		SemanticMapElement("BLENDWEIGHT0", 1),
+		SemanticMapElement("ATTR1",        1),
+		SemanticMapElement("NORMAL",  2),
+		SemanticMapElement("NORMAL0", 2),
+		SemanticMapElement("ATTR2",   2),
+		SemanticMapElement("COLOR",   3),
+		SemanticMapElement("COLOR0",  3),
+		SemanticMapElement("DIFFUSE", 3),
+		SemanticMapElement("ATTR3",   3),
+		SemanticMapElement("COLOR1",   4),
+		SemanticMapElement("SPECULAR", 4),
+		SemanticMapElement("ATTR4",    4),
+		SemanticMapElement("TESSFACTOR",  5),
+		SemanticMapElement("FOGCOORD",    5),
+		SemanticMapElement("TESSFACTOR0", 5),
+		SemanticMapElement("FOGCOORD0",   5),
+		SemanticMapElement("ATTR5",       5),
+		SemanticMapElement("PSIZE",  6),
+		SemanticMapElement("PSIZE0", 6),
+		SemanticMapElement("ATTR6",  6),
+		SemanticMapElement("BLENDINDICES",  7),
+		SemanticMapElement("BLENDINDICES0", 7),
+		SemanticMapElement("ATTR7",         7),
+		SemanticMapElement("TEXCOORD",  8),
+		SemanticMapElement("TEXCOORD0", 8),
+		SemanticMapElement("ATTR8",     8),
+		SemanticMapElement("TEXCOORD1", 9),
+		SemanticMapElement("ATTR9",     9),
+		SemanticMapElement("TEXCOORD2", 10),
+		SemanticMapElement("ATTR10",    10),
+		SemanticMapElement("TEXCOORD3", 11),
+		SemanticMapElement("ATTR11",    11),
+		SemanticMapElement("TEXCOORD4", 12),
+		SemanticMapElement("ATTR12",    12),
+		SemanticMapElement("TEXCOORD5", 13),
+		SemanticMapElement("ATTR13",    13),
+		SemanticMapElement("TANGENT",   14),
+		SemanticMapElement("TANGENT0",  14),
+		SemanticMapElement("TEXCOORD6", 14),
+		SemanticMapElement("ATTR14",    14),
+		SemanticMapElement("BINORMAL",  15),
+		SemanticMapElement("BINORMAL0", 15),
+		SemanticMapElement("TEXCOORD7", 15),
+		SemanticMapElement("ATTR15",    15),
+	};
 
 // The map batween OpenGL Vertex Attribute indexes under the VP_40 profile
 // to Stream::Semantic identifiers (with index offsets).
-struct AttrMapElement {
-  AttrMapElement(Stream::Semantic s, int i) : semantic(s), index(i) {}
-  Stream::Semantic semantic;
-  int index;
-};
-AttrMapElement attr_map_vp_40[] = {
-  AttrMapElement(Stream::POSITION, 0),
-  AttrMapElement(Stream::UNKNOWN_SEMANTIC,  0),
-  AttrMapElement(Stream::NORMAL,   0),
-  AttrMapElement(Stream::COLOR,    0),
-  AttrMapElement(Stream::COLOR,    1),
-  AttrMapElement(Stream::UNKNOWN_SEMANTIC,  0),
-  AttrMapElement(Stream::UNKNOWN_SEMANTIC,  0),
-  AttrMapElement(Stream::UNKNOWN_SEMANTIC,  0),
-  AttrMapElement(Stream::TEXCOORD, 0),
-  AttrMapElement(Stream::TEXCOORD, 1),
-  AttrMapElement(Stream::TEXCOORD, 2),
-  AttrMapElement(Stream::TEXCOORD, 3),
-  AttrMapElement(Stream::TEXCOORD, 4),
-  AttrMapElement(Stream::TEXCOORD, 5),
-  AttrMapElement(Stream::TANGENT,  0),
-  AttrMapElement(Stream::BINORMAL, 0),
-};
+	struct AttrMapElement {
+		AttrMapElement(Stream::Semantic s, int i) : semantic(s), index(i) {}
+		Stream::Semantic semantic;
+		int index;
+	};
+	AttrMapElement attr_map_vp_40[] = {
+		AttrMapElement(Stream::POSITION, 0),
+		AttrMapElement(Stream::UNKNOWN_SEMANTIC,  0),
+		AttrMapElement(Stream::NORMAL,   0),
+		AttrMapElement(Stream::COLOR,    0),
+		AttrMapElement(Stream::COLOR,    1),
+		AttrMapElement(Stream::UNKNOWN_SEMANTIC,  0),
+		AttrMapElement(Stream::UNKNOWN_SEMANTIC,  0),
+		AttrMapElement(Stream::UNKNOWN_SEMANTIC,  0),
+		AttrMapElement(Stream::TEXCOORD, 0),
+		AttrMapElement(Stream::TEXCOORD, 1),
+		AttrMapElement(Stream::TEXCOORD, 2),
+		AttrMapElement(Stream::TEXCOORD, 3),
+		AttrMapElement(Stream::TEXCOORD, 4),
+		AttrMapElement(Stream::TEXCOORD, 5),
+		AttrMapElement(Stream::TANGENT,  0),
+		AttrMapElement(Stream::BINORMAL, 0),
+	};
 
 // TODO: make this choice a runtime decision in RendererGL
 // initialisation.
-static SemanticMap semantic_map(semantic_map_vp_40,
-                                semantic_map_vp_40 +
-                                sizeof(semantic_map_vp_40) /
-                                sizeof(SemanticMapElement) );
+	static SemanticMap semantic_map(semantic_map_vp_40,
+	                                semantic_map_vp_40 +
+	                                sizeof(semantic_map_vp_40) /
+	                                sizeof(SemanticMapElement));
 
 // Converts a semantic string to an OpenGL vertex attribute number using the
 // standard VP_40 shader semantic mappings. If the semantic is not
 // recognised, it returns an index of -1.
-int SemanticNameToGLVertexAttribute(const char* semantic) {
-  SemanticMap::const_iterator i = semantic_map.find(semantic);
-  if (i == semantic_map.end()) {
-    return -1;
-  }
-  return i->second;
-}
+	int SemanticNameToGLVertexAttribute(const char* semantic) {
+		SemanticMap::const_iterator i = semantic_map.find(semantic);
+
+		if(i == semantic_map.end()) {
+			return -1;
+		}
+
+		return i->second;
+	}
 
 // Given a vertex attribute stream, convert it to a Stream::Semantic number
 // and index. This is an imprecise operation.
-Stream::Semantic GLVertexAttributeToStream(const unsigned int attr,
-                                           int *index) {
-  // kMaxAttrIndex is available from:
-  //    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
-  //
-  // TODO: make this a runtime provided value discovered during
-  // Renderer creation.
-  const unsigned int kMaxAttrIndex = 15u;
-  if (attr > kMaxAttrIndex) {
-    //TODO: Figure out how to get errors out of here to the client.
-    O3D_LOG(ERROR) << "Invalid vertex attribute index.";
-    *index = 0;
-    return Stream::UNKNOWN_SEMANTIC;
-  }
-  *index = attr_map_vp_40[attr].index;
-  return attr_map_vp_40[attr].semantic;
-}
+	Stream::Semantic GLVertexAttributeToStream(const unsigned int attr,
+	        int* index) {
+		// kMaxAttrIndex is available from:
+		//    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
+		//
+		// TODO: make this a runtime provided value discovered during
+		// Renderer creation.
+		const unsigned int kMaxAttrIndex = 15u;
+
+		if(attr > kMaxAttrIndex) {
+			//TODO: Figure out how to get errors out of here to the client.
+			O3D_LOG(ERROR) << "Invalid vertex attribute index.";
+			*index = 0;
+			return Stream::UNKNOWN_SEMANTIC;
+		}
+
+		*index = attr_map_vp_40[attr].index;
+		return attr_map_vp_40[attr].semantic;
+	}
 
 }  // namespace o3d

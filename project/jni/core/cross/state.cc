@@ -39,129 +39,137 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(State, NamedObject);
-O3D_DEFN_CLASS(ParamState, RefParamBase);
+	O3D_DEFN_CLASS(State, NamedObject);
+	O3D_DEFN_CLASS(ParamState, RefParamBase);
 
-State::State(ServiceLocator* service_locator, Renderer *renderer)
-    : ParamObject(service_locator) ,
-      renderer_(renderer),
-      weak_pointer_manager_(this) {
-}
+	State::State(ServiceLocator* service_locator, Renderer* renderer)
+		: ParamObject(service_locator) ,
+		  renderer_(renderer),
+		  weak_pointer_manager_(this) {
+	}
 
-Param* State::GetUntypedStateParam(const std::string& state_name) {
-  Param* param = GetUntypedParam(state_name);
-  if (!param) {
-    std::string name(state_name);
-    const ObjectBase::Class* param_type =
-        renderer_->GetStateParamType(name);
-    if (!param_type) {
-      // Try adding the o3d namespace prefix
-      name = std::string(O3D_STRING_CONSTANT("") + state_name);
-      param_type = renderer_->GetStateParamType(name);
-    }
-    if (param_type) {
-      param = CreateParamByClass(name, param_type);
-    }
-  }
-  return param;
-}
+	Param* State::GetUntypedStateParam(const std::string& state_name) {
+		Param* param = GetUntypedParam(state_name);
+
+		if(!param) {
+			std::string name(state_name);
+			const ObjectBase::Class* param_type =
+			    renderer_->GetStateParamType(name);
+
+			if(!param_type) {
+				// Try adding the o3d namespace prefix
+				name = std::string(O3D_STRING_CONSTANT("") + state_name);
+				param_type = renderer_->GetStateParamType(name);
+			}
+
+			if(param_type) {
+				param = CreateParamByClass(name, param_type);
+			}
+		}
+
+		return param;
+	}
 
 // Before a Param is added, verify that if its name matches a state name
 // that its type also matches.
-bool State::OnBeforeAddParam(Param* param) {
-  const ObjectBase::Class* param_type =
-      renderer_->GetStateParamType(param->name());
-  if (param_type) {
-    return param->IsA(param_type);
-  }
-  return true;
-}
+	bool State::OnBeforeAddParam(Param* param) {
+		const ObjectBase::Class* param_type =
+		    renderer_->GetStateParamType(param->name());
 
-const char* State::kAlphaTestEnableParamName =
-    O3D_STRING_CONSTANT("AlphaTestEnable");
-const char* State::kAlphaReferenceParamName =
-    O3D_STRING_CONSTANT("AlphaReference");
-const char* State::kAlphaComparisonFunctionParamName =
-    O3D_STRING_CONSTANT("AlphaComparisonFunction");
-const char* State::kCullModeParamName =
-    O3D_STRING_CONSTANT("CullMode");
-const char* State::kDitherEnableParamName =
-    O3D_STRING_CONSTANT("DitherEnable");
-const char* State::kLineSmoothEnableParamName =
-    O3D_STRING_CONSTANT("LineSmoothEnable");
-const char* State::kPointSpriteEnableParamName =
-    O3D_STRING_CONSTANT("PointSpriteEnable");
-const char* State::kPointSizeParamName =
-    O3D_STRING_CONSTANT("PointSize");
-const char* State::kPolygonOffset1ParamName =
-    O3D_STRING_CONSTANT("PolygonOffset1");
-const char* State::kPolygonOffset2ParamName =
-    O3D_STRING_CONSTANT("PolygonOffset2");
-const char* State::kFillModeParamName =
-    O3D_STRING_CONSTANT("FillMode");
-const char* State::kZEnableParamName =
-    O3D_STRING_CONSTANT("ZEnable");
-const char* State::kZWriteEnableParamName =
-    O3D_STRING_CONSTANT("ZWriteEnable");
-const char* State::kZComparisonFunctionParamName =
-    O3D_STRING_CONSTANT("ZComparisonFunction");
-const char* State::kAlphaBlendEnableParamName =
-    O3D_STRING_CONSTANT("AlphaBlendEnable");
-const char* State::kSourceBlendFunctionParamName =
-    O3D_STRING_CONSTANT("SourceBlendFunction");
-const char* State::kDestinationBlendFunctionParamName =
-    O3D_STRING_CONSTANT("DestinationBlendFunction");
-const char* State::kStencilEnableParamName =
-    O3D_STRING_CONSTANT("StencilEnable");
-const char* State::kStencilFailOperationParamName =
-    O3D_STRING_CONSTANT("StencilFailOperation");
-const char* State::kStencilZFailOperationParamName =
-    O3D_STRING_CONSTANT("StencilZFailOperation");
-const char* State::kStencilPassOperationParamName =
-    O3D_STRING_CONSTANT("StencilPassOperation");
-const char* State::kStencilComparisonFunctionParamName =
-    O3D_STRING_CONSTANT("StencilComparisonFunction");
-const char* State::kStencilReferenceParamName =
-    O3D_STRING_CONSTANT("StencilReference");
-const char* State::kStencilMaskParamName =
-    O3D_STRING_CONSTANT("StencilMask");
-const char* State::kStencilWriteMaskParamName =
-    O3D_STRING_CONSTANT("StencilWriteMask");
-const char* State::kColorWriteEnableParamName =
-    O3D_STRING_CONSTANT("ColorWriteEnable");
-const char* State::kBlendEquationParamName =
-    O3D_STRING_CONSTANT("BlendEquation");
-const char* State::kTwoSidedStencilEnableParamName =
-    O3D_STRING_CONSTANT("TwoSidedStencilEnable");
-const char* State::kCCWStencilFailOperationParamName =
-    O3D_STRING_CONSTANT("CCWStencilFailOperation");
-const char* State::kCCWStencilZFailOperationParamName =
-    O3D_STRING_CONSTANT("CCWStencilZFailOperation");
-const char* State::kCCWStencilPassOperationParamName =
-    O3D_STRING_CONSTANT("CCWStencilPassOperation");
-const char* State::kCCWStencilComparisonFunctionParamName =
-    O3D_STRING_CONSTANT("CCWStencilComparisonFunction");
-const char* State::kSeparateAlphaBlendEnableParamName =
-    O3D_STRING_CONSTANT("SeparateAlphaBlendEnable");
-const char* State::kSourceBlendAlphaFunctionParamName =
-    O3D_STRING_CONSTANT("SourceBlendAlphaFunction");
-const char* State::kDestinationBlendAlphaFunctionParamName =
-    O3D_STRING_CONSTANT("DestinationBlendAlphaFunction");
-const char* State::kBlendAlphaEquationParamName =
-    O3D_STRING_CONSTANT("BlendAlphaEquation");
+		if(param_type) {
+			return param->IsA(param_type);
+		}
+
+		return true;
+	}
+
+	const char* State::kAlphaTestEnableParamName =
+	    O3D_STRING_CONSTANT("AlphaTestEnable");
+	const char* State::kAlphaReferenceParamName =
+	    O3D_STRING_CONSTANT("AlphaReference");
+	const char* State::kAlphaComparisonFunctionParamName =
+	    O3D_STRING_CONSTANT("AlphaComparisonFunction");
+	const char* State::kCullModeParamName =
+	    O3D_STRING_CONSTANT("CullMode");
+	const char* State::kDitherEnableParamName =
+	    O3D_STRING_CONSTANT("DitherEnable");
+	const char* State::kLineSmoothEnableParamName =
+	    O3D_STRING_CONSTANT("LineSmoothEnable");
+	const char* State::kPointSpriteEnableParamName =
+	    O3D_STRING_CONSTANT("PointSpriteEnable");
+	const char* State::kPointSizeParamName =
+	    O3D_STRING_CONSTANT("PointSize");
+	const char* State::kPolygonOffset1ParamName =
+	    O3D_STRING_CONSTANT("PolygonOffset1");
+	const char* State::kPolygonOffset2ParamName =
+	    O3D_STRING_CONSTANT("PolygonOffset2");
+	const char* State::kFillModeParamName =
+	    O3D_STRING_CONSTANT("FillMode");
+	const char* State::kZEnableParamName =
+	    O3D_STRING_CONSTANT("ZEnable");
+	const char* State::kZWriteEnableParamName =
+	    O3D_STRING_CONSTANT("ZWriteEnable");
+	const char* State::kZComparisonFunctionParamName =
+	    O3D_STRING_CONSTANT("ZComparisonFunction");
+	const char* State::kAlphaBlendEnableParamName =
+	    O3D_STRING_CONSTANT("AlphaBlendEnable");
+	const char* State::kSourceBlendFunctionParamName =
+	    O3D_STRING_CONSTANT("SourceBlendFunction");
+	const char* State::kDestinationBlendFunctionParamName =
+	    O3D_STRING_CONSTANT("DestinationBlendFunction");
+	const char* State::kStencilEnableParamName =
+	    O3D_STRING_CONSTANT("StencilEnable");
+	const char* State::kStencilFailOperationParamName =
+	    O3D_STRING_CONSTANT("StencilFailOperation");
+	const char* State::kStencilZFailOperationParamName =
+	    O3D_STRING_CONSTANT("StencilZFailOperation");
+	const char* State::kStencilPassOperationParamName =
+	    O3D_STRING_CONSTANT("StencilPassOperation");
+	const char* State::kStencilComparisonFunctionParamName =
+	    O3D_STRING_CONSTANT("StencilComparisonFunction");
+	const char* State::kStencilReferenceParamName =
+	    O3D_STRING_CONSTANT("StencilReference");
+	const char* State::kStencilMaskParamName =
+	    O3D_STRING_CONSTANT("StencilMask");
+	const char* State::kStencilWriteMaskParamName =
+	    O3D_STRING_CONSTANT("StencilWriteMask");
+	const char* State::kColorWriteEnableParamName =
+	    O3D_STRING_CONSTANT("ColorWriteEnable");
+	const char* State::kBlendEquationParamName =
+	    O3D_STRING_CONSTANT("BlendEquation");
+	const char* State::kTwoSidedStencilEnableParamName =
+	    O3D_STRING_CONSTANT("TwoSidedStencilEnable");
+	const char* State::kCCWStencilFailOperationParamName =
+	    O3D_STRING_CONSTANT("CCWStencilFailOperation");
+	const char* State::kCCWStencilZFailOperationParamName =
+	    O3D_STRING_CONSTANT("CCWStencilZFailOperation");
+	const char* State::kCCWStencilPassOperationParamName =
+	    O3D_STRING_CONSTANT("CCWStencilPassOperation");
+	const char* State::kCCWStencilComparisonFunctionParamName =
+	    O3D_STRING_CONSTANT("CCWStencilComparisonFunction");
+	const char* State::kSeparateAlphaBlendEnableParamName =
+	    O3D_STRING_CONSTANT("SeparateAlphaBlendEnable");
+	const char* State::kSourceBlendAlphaFunctionParamName =
+	    O3D_STRING_CONSTANT("SourceBlendAlphaFunction");
+	const char* State::kDestinationBlendAlphaFunctionParamName =
+	    O3D_STRING_CONSTANT("DestinationBlendAlphaFunction");
+	const char* State::kBlendAlphaEquationParamName =
+	    O3D_STRING_CONSTANT("BlendAlphaEquation");
 
 
-ObjectBase::Ref State::Create(ServiceLocator* service_locator) {
-  Renderer* renderer = service_locator->GetService<Renderer>();
-  if (NULL == renderer) {
-    O3D_ERROR(service_locator) << "No Render Device Available";
-    return ObjectBase::Ref();
-  }
-  return ObjectBase::Ref(new State(service_locator, renderer));
-}
+	ObjectBase::Ref State::Create(ServiceLocator* service_locator) {
+		Renderer* renderer = service_locator->GetService<Renderer>();
 
-ObjectBase::Ref ParamState::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new ParamState(service_locator, false, false));
-}
+		if(NULL == renderer) {
+			O3D_ERROR(service_locator) << "No Render Device Available";
+			return ObjectBase::Ref();
+		}
+
+		return ObjectBase::Ref(new State(service_locator, renderer));
+	}
+
+	ObjectBase::Ref ParamState::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new ParamState(service_locator, false, false));
+	}
 
 }  // namespace o3d

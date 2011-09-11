@@ -42,302 +42,302 @@
 
 namespace o3d {
 
-class Buffer;
-class MemoryReadStream;
+	class Buffer;
+	class MemoryReadStream;
 
 // A Field is an abstract base class that manages a set of components in a
 // buffer of a specific type. Fields are managed by Buffers and can not be
 // directly created. When a Buffer is destroyed or if a Field is removed from a
 // Buffer the Field's buffer pointer will be set to NULL.
-class Field : public NamedObject {
- public:
-  typedef SmartPointer<Field> Ref;
+	class Field : public NamedObject {
+	public:
+		typedef SmartPointer<Field> Ref;
 
-  // These IDs are used for serialization and are not exposed to
-  // Javascript.
-  enum FieldID {
-    FIELDID_UNKNOWN = 0,
-    FIELDID_FLOAT32 = 1,
-    FIELDID_UINT32  = 2,
-	FIELDID_UINT16  = 3,
-    FIELDID_BYTE    = 4
-  };
+		// These IDs are used for serialization and are not exposed to
+		// Javascript.
+		enum FieldID {
+			FIELDID_UNKNOWN = 0,
+			FIELDID_FLOAT32 = 1,
+			FIELDID_UINT32  = 2,
+			FIELDID_UINT16  = 3,
+			FIELDID_BYTE    = 4
+		};
 
-  Field(ServiceLocator* service_locator,
-        Buffer* buffer,
-        unsigned num_components,
-        unsigned offset);
+		Field(ServiceLocator* service_locator,
+		      Buffer* buffer,
+		      unsigned num_components,
+		      unsigned offset);
 
-  // The number of components in this field.
-  unsigned num_components() const {
-    return num_components_;
-  }
+		// The number of components in this field.
+		unsigned num_components() const {
+			return num_components_;
+		}
 
-  // The offset for this field.
-  unsigned offset() const {
-    return offset_;
-  }
+		// The offset for this field.
+		unsigned offset() const {
+			return offset_;
+		}
 
-  // The size of this field in bytes.
-  size_t size() const {
-    return num_components_ * GetFieldComponentSize();
-  }
+		// The size of this field in bytes.
+		size_t size() const {
+			return num_components_ * GetFieldComponentSize();
+		}
 
-  // The buffer this field belongs to. Can be NULL if the buffer has been
-  // deleted.
-  Buffer* buffer() const {
-    return buffer_;
-  }
+		// The buffer this field belongs to. Can be NULL if the buffer has been
+		// deleted.
+		Buffer* buffer() const {
+			return buffer_;
+		}
 
-  // Returns the size of a field type in bytes.
-  virtual size_t GetFieldComponentSize() const = 0;
+		// Returns the size of a field type in bytes.
+		virtual size_t GetFieldComponentSize() const = 0;
 
-  // Sets this field from source floats
-  //
-  // This function copies elements from the source array to the field.
-  // It assumes that there are a multiple of N components in the source where N
-  // is the number of components in the field. In other words, if the field has
-  // 3 components then passing a num_elements of 2 would copy 2 elements, each 3
-  // components.
-  //
-  // Parameters:
-  //   source: pointer to first element in array.
-  //   source_stride: stride between elements in source where an element
-  //       equals the number of components this field uses. This is in source
-  //       units not in bytes.
-  //   destination_start_index: element in the destination to start.
-  //   num_elements: The number of elements to copy.
-  virtual void SetFromFloats(const float* source,
-                             unsigned source_stride,
-                             unsigned destination_start_index,
-                             unsigned num_elements) = 0;
+		// Sets this field from source floats
+		//
+		// This function copies elements from the source array to the field.
+		// It assumes that there are a multiple of N components in the source where N
+		// is the number of components in the field. In other words, if the field has
+		// 3 components then passing a num_elements of 2 would copy 2 elements, each 3
+		// components.
+		//
+		// Parameters:
+		//   source: pointer to first element in array.
+		//   source_stride: stride between elements in source where an element
+		//       equals the number of components this field uses. This is in source
+		//       units not in bytes.
+		//   destination_start_index: element in the destination to start.
+		//   num_elements: The number of elements to copy.
+		virtual void SetFromFloats(const float* source,
+		                           unsigned source_stride,
+		                           unsigned destination_start_index,
+		                           unsigned num_elements) = 0;
 
-  // This function is the same as SetFromFloats except takes UInt32s as input.
-  virtual void SetFromUInt32s(const uint32_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements) = 0;
+		// This function is the same as SetFromFloats except takes UInt32s as input.
+		virtual void SetFromUInt32s(const uint32_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements) = 0;
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
-  // This function is the same as SetFromFloats except takes UInt16s as input.
-  virtual void SetFromUInt16s(const uint16_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements) = 0;
+		// This function is the same as SetFromFloats except takes UInt16s as input.
+		virtual void SetFromUInt16s(const uint16_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements) = 0;
 #endif
 
-  // This function is the same as SetFromFloats except takes UByteNs as input.
-  virtual void SetFromUByteNs(const uint8_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements) = 0;
+		// This function is the same as SetFromFloats except takes UByteNs as input.
+		virtual void SetFromUByteNs(const uint8_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements) = 0;
 
-  // Sets all the elements for this field given the memory stream
-  virtual bool SetFromMemoryStream(MemoryReadStream* stream) = 0;
+		// Sets all the elements for this field given the memory stream
+		virtual bool SetFromMemoryStream(MemoryReadStream* stream) = 0;
 
-  // Gets this field as floats.
-  //
-  // This function copies elements from the the field to the destination array.
-  // It assumes that there are a multiple of N components in the destination
-  // where N is the number of components in the field. In other words, if the
-  // field has 3 components then passing a num_elements of 2 would copy 2
-  // elements, each 3 components.
-  //
-  // Parameters:
-  //   source_start_index: element in the source to start.
-  //   destination: pointer to first element in destination array.
-  //   destination_stride: stride between elements in the destination in
-  //       destination units.
-  //   num_elements: The number of elements to copy.
-  virtual void GetAsFloats(unsigned source_start_index,
-                           float* destination,
-                           unsigned destination_stride,
-                           unsigned num_elements) const = 0;
+		// Gets this field as floats.
+		//
+		// This function copies elements from the the field to the destination array.
+		// It assumes that there are a multiple of N components in the destination
+		// where N is the number of components in the field. In other words, if the
+		// field has 3 components then passing a num_elements of 2 would copy 2
+		// elements, each 3 components.
+		//
+		// Parameters:
+		//   source_start_index: element in the source to start.
+		//   destination: pointer to first element in destination array.
+		//   destination_stride: stride between elements in the destination in
+		//       destination units.
+		//   num_elements: The number of elements to copy.
+		virtual void GetAsFloats(unsigned source_start_index,
+		                         float* destination,
+		                         unsigned destination_stride,
+		                         unsigned num_elements) const = 0;
 
-  // Checks if the start_index and num_elements would reference something
-  // outside the buffer associated with this field.
-  bool RangeValid(unsigned int start_index, unsigned int num_elements);
+		// Checks if the start_index and num_elements would reference something
+		// outside the buffer associated with this field.
+		bool RangeValid(unsigned int start_index, unsigned int num_elements);
 
-  // Copies a field. The field must be of the same type.
-  // Paremeters:
-  //   source: field to copy from.
-  void Copy(const Field& source);
+		// Copies a field. The field must be of the same type.
+		// Paremeters:
+		//   source: field to copy from.
+		void Copy(const Field& source);
 
- protected:
-  // The concrete version of Copy. Copy calls this function to do the actual
-  // copying after it has verified the types are compatible and the buffers
-  // exist. ConcreteCopy does NOT have to check for those errors.
-  // Paremeters:
-  //   source: field to copy from.
-  virtual void ConcreteCopy(const Field& source) = 0;
+	protected:
+		// The concrete version of Copy. Copy calls this function to do the actual
+		// copying after it has verified the types are compatible and the buffers
+		// exist. ConcreteCopy does NOT have to check for those errors.
+		// Paremeters:
+		//   source: field to copy from.
+		virtual void ConcreteCopy(const Field& source) = 0;
 
- private:
-  friend class Buffer;
-  void set_offset(unsigned offset) {
-    offset_ = offset;
-  }
+	private:
+		friend class Buffer;
+		void set_offset(unsigned offset) {
+			offset_ = offset;
+		}
 
-  void ClearBuffer() {
-    buffer_ = NULL;
-  }
+		void ClearBuffer() {
+			buffer_ = NULL;
+		}
 
-  Buffer* buffer_;
-  unsigned num_components_;
-  unsigned offset_;
+		Buffer* buffer_;
+		unsigned num_components_;
+		unsigned offset_;
 
-  O3D_DECL_CLASS(Field, NamedObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(Field);
-};
+		O3D_DECL_CLASS(Field, NamedObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(Field);
+	};
 
-typedef std::vector<Field*> FieldArray;
-typedef std::vector<Field::Ref> FieldRefArray;
+	typedef std::vector<Field*> FieldArray;
+	typedef std::vector<Field::Ref> FieldRefArray;
 
 // A field the hold floats.
-class FloatField : public Field {
- public:
-  // When requesting a field of this type the number of componets must be a
-  // multiple of this.
-  static const unsigned kRequiredComponentMultiple = 1;
+	class FloatField : public Field {
+	public:
+		// When requesting a field of this type the number of componets must be a
+		// multiple of this.
+		static const unsigned kRequiredComponentMultiple = 1;
 
-  // Overridden from Field.
-  virtual size_t GetFieldComponentSize() const;
+		// Overridden from Field.
+		virtual size_t GetFieldComponentSize() const;
 
-  static Field::Ref Create(ServiceLocator* service_locator,
-                           Buffer* buffer,
-                           unsigned num_components,
-                           unsigned offset);
+		static Field::Ref Create(ServiceLocator* service_locator,
+		                         Buffer* buffer,
+		                         unsigned num_components,
+		                         unsigned offset);
 
-  // Overridden from Field.
-  virtual void SetFromFloats(const float* source,
-                             unsigned source_stride,
-                             unsigned destination_start_index,
-                             unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromFloats(const float* source,
+		                           unsigned source_stride,
+		                           unsigned destination_start_index,
+		                           unsigned num_elements);
 
-  // Overridden from Field.
-  virtual void SetFromUInt32s(const uint32_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromUInt32s(const uint32_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
-  // Overridden from Field.
-  virtual void SetFromUInt16s(const uint16_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromUInt16s(const uint16_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 #endif
 
-  // Overridden from Field.
-  virtual void SetFromUByteNs(const uint8_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromUByteNs(const uint8_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 
-  // Overridden from Field.
-  virtual bool SetFromMemoryStream(MemoryReadStream* stream);
+		// Overridden from Field.
+		virtual bool SetFromMemoryStream(MemoryReadStream* stream);
 
-  // Overridden from Field.
-  virtual void GetAsFloats(unsigned source_start_index,
-                           float* destination,
-                           unsigned destination_stride,
-                           unsigned num_elements) const;
+		// Overridden from Field.
+		virtual void GetAsFloats(unsigned source_start_index,
+		                         float* destination,
+		                         unsigned destination_stride,
+		                         unsigned num_elements) const;
 
- protected:
-  // Overridden from Field.
-  virtual void ConcreteCopy(const Field& source);
+	protected:
+		// Overridden from Field.
+		virtual void ConcreteCopy(const Field& source);
 
- private:
-  FloatField(ServiceLocator* service_locator,
-             Buffer* buffer,
-             unsigned num_components,
-             unsigned offset);
+	private:
+		FloatField(ServiceLocator* service_locator,
+		           Buffer* buffer,
+		           unsigned num_components,
+		           unsigned offset);
 
-  O3D_DECL_CLASS(FloatField, Field);
-  O3D_DISALLOW_COPY_AND_ASSIGN(FloatField);
-};
+		O3D_DECL_CLASS(FloatField, Field);
+		O3D_DISALLOW_COPY_AND_ASSIGN(FloatField);
+	};
 
 // A field the hold uint32s.
-class UInt32Field : public Field {
- public:
-  // When requesting a field of this type the number of componets must be a
-  // multiple of this.
-  static const unsigned kRequiredComponentMultiple = 1;
+	class UInt32Field : public Field {
+	public:
+		// When requesting a field of this type the number of componets must be a
+		// multiple of this.
+		static const unsigned kRequiredComponentMultiple = 1;
 
-  // Overridden from Field.
-  virtual size_t GetFieldComponentSize() const;
+		// Overridden from Field.
+		virtual size_t GetFieldComponentSize() const;
 
-  static Field::Ref Create(ServiceLocator* service_locator,
-                           Buffer* buffer,
-                           unsigned num_components,
-                           unsigned offset);
+		static Field::Ref Create(ServiceLocator* service_locator,
+		                         Buffer* buffer,
+		                         unsigned num_components,
+		                         unsigned offset);
 
-  // Overridden from Field.
-  virtual void SetFromFloats(const float* source,
-                             unsigned source_stride,
-                             unsigned destination_start_index,
-                             unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromFloats(const float* source,
+		                           unsigned source_stride,
+		                           unsigned destination_start_index,
+		                           unsigned num_elements);
 
-  // Overridden from Field.
-  virtual void SetFromUInt32s(const uint32_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromUInt32s(const uint32_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
-  // Overridden from Field.
-  virtual void SetFromUInt16s(const uint16_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromUInt16s(const uint16_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 #endif
 
-  // Overridden from Field.
-  virtual void SetFromUByteNs(const uint8_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromUByteNs(const uint8_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 
-  // Overridden from Field.
-  virtual bool SetFromMemoryStream(MemoryReadStream* stream);
+		// Overridden from Field.
+		virtual bool SetFromMemoryStream(MemoryReadStream* stream);
 
-  // Overridden from Field.
-  virtual void GetAsFloats(unsigned source_start_index,
-                           float* destination,
-                           unsigned destination_stride,
-                           unsigned num_elements) const;
+		// Overridden from Field.
+		virtual void GetAsFloats(unsigned source_start_index,
+		                         float* destination,
+		                         unsigned destination_stride,
+		                         unsigned num_elements) const;
 
-  // Gets this field as uint32s.
-  //
-  // This function copies elements from the the field to the destination array.
-  // It assumes that there are a multiple of N components in the destination
-  // where N is the number of components in the field. In other words, if the
-  // field has 3 components then passing a num_elements of 2 would copy 2
-  // elements, each 3 components.
-  //
-  // Parameters:
-  //   source_start_index: element in the source to start.
-  //   destination: pointer to first element in destination array.
-  //   destination_stride: stride between elements in the destination in
-  //       destination units.
-  //   num_elements: The number of elements to copy.
-  void GetAsUInt32s(unsigned source_start_index,
-                    uint32_t* destination,
-                    unsigned destination_stride,
-                    unsigned num_elements) const;
+		// Gets this field as uint32s.
+		//
+		// This function copies elements from the the field to the destination array.
+		// It assumes that there are a multiple of N components in the destination
+		// where N is the number of components in the field. In other words, if the
+		// field has 3 components then passing a num_elements of 2 would copy 2
+		// elements, each 3 components.
+		//
+		// Parameters:
+		//   source_start_index: element in the source to start.
+		//   destination: pointer to first element in destination array.
+		//   destination_stride: stride between elements in the destination in
+		//       destination units.
+		//   num_elements: The number of elements to copy.
+		void GetAsUInt32s(unsigned source_start_index,
+		                  uint32_t* destination,
+		                  unsigned destination_stride,
+		                  unsigned num_elements) const;
 
- protected:
-  // Overridden from Field.
-  virtual void ConcreteCopy(const Field& source);
+	protected:
+		// Overridden from Field.
+		virtual void ConcreteCopy(const Field& source);
 
- private:
-  UInt32Field(ServiceLocator* service_locator,
-              Buffer* buffer,
-              unsigned num_components,
-              unsigned offset);
+	private:
+		UInt32Field(ServiceLocator* service_locator,
+		            Buffer* buffer,
+		            unsigned num_components,
+		            unsigned offset);
 
-  O3D_DECL_CLASS(UInt32Field, Field);
-  O3D_DISALLOW_COPY_AND_ASSIGN(UInt32Field);
-};
+		O3D_DECL_CLASS(UInt32Field, Field);
+		O3D_DISALLOW_COPY_AND_ASSIGN(UInt32Field);
+	};
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
 	// A field the hold uint16s.
@@ -346,50 +346,50 @@ class UInt32Field : public Field {
 		// When requesting a field of this type the number of componets must be a
 		// multiple of this.
 		static const unsigned kRequiredComponentMultiple = 1;
-		
+
 		// Overridden from Field.
 		virtual size_t GetFieldComponentSize() const;
-		
+
 		static Field::Ref Create(ServiceLocator* service_locator,
-								 Buffer* buffer,
-								 unsigned num_components,
-								 unsigned offset);
-		
+		                         Buffer* buffer,
+		                         unsigned num_components,
+		                         unsigned offset);
+
 		// Overridden from Field.
 		virtual void SetFromFloats(const float* source,
-								   unsigned source_stride,
-								   unsigned destination_start_index,
-								   unsigned num_elements);
-		
+		                           unsigned source_stride,
+		                           unsigned destination_start_index,
+		                           unsigned num_elements);
+
 		// Overridden from Field.
 		virtual void SetFromUInt32s(const uint32_t* source,
-									unsigned source_stride,
-									unsigned destination_start_index,
-									unsigned num_elements);
-		
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
+
 #ifdef GLES2_BACKEND_NATIVE_GLES2
 		// Overridden from Field.
 		virtual void SetFromUInt16s(const uint16_t* source,
-									unsigned source_stride,
-									unsigned destination_start_index,
-									unsigned num_elements);
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 #endif
-		
+
 		// Overridden from Field.
 		virtual void SetFromUByteNs(const uint8_t* source,
-									unsigned source_stride,
-									unsigned destination_start_index,
-									unsigned num_elements);
-		
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
+
 		// Overridden from Field.
 		virtual bool SetFromMemoryStream(MemoryReadStream* stream);
-		
+
 		// Overridden from Field.
 		virtual void GetAsFloats(unsigned source_start_index,
-								 float* destination,
-								 unsigned destination_stride,
-								 unsigned num_elements) const;
-		
+		                         float* destination,
+		                         unsigned destination_stride,
+		                         unsigned num_elements) const;
+
 		// Gets this field as uint16s.
 		//
 		// This function copies elements from the the field to the destination array.
@@ -405,20 +405,20 @@ class UInt32Field : public Field {
 		//       destination units.
 		//   num_elements: The number of elements to copy.
 		void GetAsUInt16s(unsigned source_start_index,
-						  uint16_t* destination,
-						  unsigned destination_stride,
-						  unsigned num_elements) const;
-		
+		                  uint16_t* destination,
+		                  unsigned destination_stride,
+		                  unsigned num_elements) const;
+
 	protected:
 		// Overridden from Field.
 		virtual void ConcreteCopy(const Field& source);
-		
+
 	private:
 		UInt16Field(ServiceLocator* service_locator,
-					Buffer* buffer,
-					unsigned num_components,
-					unsigned offset);
-		
+		            Buffer* buffer,
+		            unsigned num_components,
+		            unsigned offset);
+
 		O3D_DECL_CLASS(UInt16Field, Field);
 		O3D_DISALLOW_COPY_AND_ASSIGN(UInt16Field);
 	};
@@ -426,89 +426,89 @@ class UInt32Field : public Field {
 
 // A field the hold UByteNs where a UByteN is an uint8_t that represents a value
 // from 0.0 to 1.0.
-class UByteNField : public Field {
- public:
-  // When requesting a field of this type the number of componets must be a
-  // multiple of this.
-  static const unsigned kRequiredComponentMultiple = 4;
+	class UByteNField : public Field {
+	public:
+		// When requesting a field of this type the number of componets must be a
+		// multiple of this.
+		static const unsigned kRequiredComponentMultiple = 4;
 
-  // Overridden from Field.
-  virtual size_t GetFieldComponentSize() const;
+		// Overridden from Field.
+		virtual size_t GetFieldComponentSize() const;
 
-  static Field::Ref Create(ServiceLocator* service_locator,
-                           Buffer* buffer,
-                           unsigned num_components,
-                           unsigned offset);
+		static Field::Ref Create(ServiceLocator* service_locator,
+		                         Buffer* buffer,
+		                         unsigned num_components,
+		                         unsigned offset);
 
-  // Overridden from Field.
-  virtual void SetFromFloats(const float* source,
-                             unsigned source_stride,
-                             unsigned destination_start_index,
-                             unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromFloats(const float* source,
+		                           unsigned source_stride,
+		                           unsigned destination_start_index,
+		                           unsigned num_elements);
 
-  // Overridden from Field.
-  virtual void SetFromUInt32s(const uint32_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromUInt32s(const uint32_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 
 #ifdef GLES2_BACKEND_NATIVE_GLES2
-  // Overridden from Field.
-  virtual void SetFromUInt16s(const uint16_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromUInt16s(const uint16_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 #endif
 
-  // Overridden from Field.
-  virtual void SetFromUByteNs(const uint8_t* source,
-                              unsigned source_stride,
-                              unsigned destination_start_index,
-                              unsigned num_elements);
+		// Overridden from Field.
+		virtual void SetFromUByteNs(const uint8_t* source,
+		                            unsigned source_stride,
+		                            unsigned destination_start_index,
+		                            unsigned num_elements);
 
-  // Overridden from Field.
-  virtual bool SetFromMemoryStream(MemoryReadStream* stream);
+		// Overridden from Field.
+		virtual bool SetFromMemoryStream(MemoryReadStream* stream);
 
-  // Overridden from Field.
-  virtual void GetAsFloats(unsigned source_start_index,
-                           float* destination,
-                           unsigned destination_stride,
-                           unsigned num_elements) const;
+		// Overridden from Field.
+		virtual void GetAsFloats(unsigned source_start_index,
+		                         float* destination,
+		                         unsigned destination_stride,
+		                         unsigned num_elements) const;
 
-  // Gets this field as ubyten data.
-  //
-  // This function copies elements from the the field to the destination array.
-  // It assumes that there are a multiple of N components in the destination
-  // where N is the number of components in the field. In other words, if the
-  // field has 3 components then passing a num_elements of 2 would copy 2
-  // elements, each 3 components.
-  //
-  // Parameters:
-  //   source_start_index: element in the source to start.
-  //   destination: pointer to first element in destination array.
-  //   destination_stride: stride between elements in the destination in
-  //       destination units.
-  //   num_elements: The number of elements to copy.
-  void GetAsUByteNs(unsigned source_start_index,
-                    uint8_t* destination,
-                    unsigned destination_stride,
-                    unsigned num_elements) const;
+		// Gets this field as ubyten data.
+		//
+		// This function copies elements from the the field to the destination array.
+		// It assumes that there are a multiple of N components in the destination
+		// where N is the number of components in the field. In other words, if the
+		// field has 3 components then passing a num_elements of 2 would copy 2
+		// elements, each 3 components.
+		//
+		// Parameters:
+		//   source_start_index: element in the source to start.
+		//   destination: pointer to first element in destination array.
+		//   destination_stride: stride between elements in the destination in
+		//       destination units.
+		//   num_elements: The number of elements to copy.
+		void GetAsUByteNs(unsigned source_start_index,
+		                  uint8_t* destination,
+		                  unsigned destination_stride,
+		                  unsigned num_elements) const;
 
- protected:
-  // Overridden from Field.
-  virtual void ConcreteCopy(const Field& source);
+	protected:
+		// Overridden from Field.
+		virtual void ConcreteCopy(const Field& source);
 
- private:
-  UByteNField(ServiceLocator* service_locator,
-              Buffer* buffer,
-              unsigned num_components,
-              unsigned offset);
+	private:
+		UByteNField(ServiceLocator* service_locator,
+		            Buffer* buffer,
+		            unsigned num_components,
+		            unsigned offset);
 
-  const int* swizzle_table_;
+		const int* swizzle_table_;
 
-  O3D_DECL_CLASS(UByteNField, Field);
-  O3D_DISALLOW_COPY_AND_ASSIGN(UByteNField);
-};
+		O3D_DECL_CLASS(UByteNField, Field);
+		O3D_DISALLOW_COPY_AND_ASSIGN(UByteNField);
+	};
 
 }  // namespace o3d
 

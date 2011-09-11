@@ -45,40 +45,40 @@
 namespace o3d {
 
 // Provides Classes associated with semantic names.
-class SemanticManager {
- public:
-  static const InterfaceId kInterfaceId;
+	class SemanticManager {
+	public:
+		static const InterfaceId kInterfaceId;
 
-  explicit SemanticManager(ServiceLocator* service_locator);
-  ~SemanticManager();
+		explicit SemanticManager(ServiceLocator* service_locator);
+		~SemanticManager();
 
-  // Gets the SAS param object.
-  ParamObject* sas_param_object() {
-    return sas_param_object_.Get();
-  }
+		// Gets the SAS param object.
+		ParamObject* sas_param_object() {
+			return sas_param_object_.Get();
+		}
 
-  // Looks up an SAS transform semantic by name, and returns the class type.
-  const ObjectBase::Class* LookupSemantic(const std::string& semantic_name) const;
+		// Looks up an SAS transform semantic by name, and returns the class type.
+		const ObjectBase::Class* LookupSemantic(const std::string& semantic_name) const;
 
- private:
-  ServiceImplementation<SemanticManager> service_;
+	private:
+		ServiceImplementation<SemanticManager> service_;
 
-  // A case-insensitive string comparator.
-  struct lesscasecmp {
-    bool operator() (const std::string& a, const std::string& b) const {
-      // TODO : This is doing ASCII compare - not UTF8!
-      return(strcasecmp(a.c_str(), b.c_str()) < 0);
-    }
-  };
+		// A case-insensitive string comparator.
+		struct lesscasecmp {
+			bool operator()(const std::string& a, const std::string& b) const {
+				// TODO : This is doing ASCII compare - not UTF8!
+				return(strcasecmp(a.c_str(), b.c_str()) < 0);
+			}
+		};
 
-  // Object to hold one of each Sas param to make it easy
-  // to cache them without adding them to any other param object.
-  ParamObject::Ref sas_param_object_;
+		// Object to hold one of each Sas param to make it easy
+		// to cache them without adding them to any other param object.
+		ParamObject::Ref sas_param_object_;
 
-  // This is a a case-insensitive map between strings and Param semantics.
-  typedef std::map<std::string, const ObjectBase::Class*, lesscasecmp> SasMap;
-  SasMap sas_map_;
-};
+		// This is a a case-insensitive map between strings and Param semantics.
+		typedef std::map<std::string, const ObjectBase::Class*, lesscasecmp> SasMap;
+		SasMap sas_map_;
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_SEMANTIC_MANAGER_H_

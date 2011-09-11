@@ -40,9 +40,9 @@ namespace o3d {
 // convert a byte offset into a Vertex Buffer Object into a GLvoid* for
 // use with glVertexPointer(), glNormalPointer(), glVertexAttribPointer(),
 // etc. after having used a glBindBuffer().
-inline GLvoid* BufferOffset(unsigned i) {
-  return static_cast<int8_t *>(NULL)+(i);
-}
+	inline GLvoid* BufferOffset(unsigned i) {
+		return static_cast<int8_t*>(NULL) + (i);
+	}
 
 #ifdef GL_ERROR_DEBUGGING
 #define CHECK_GL_ERROR() do {                                         \

@@ -41,53 +41,53 @@
 #include "core/cross/gpu2d/cubic_classifier.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
 // Computes texture coordinates for rendering cubic curves on the GPU.
-class CubicTextureCoords {
- public:
-  // Container for the cubic texture coordinates and other associated
-  // information.
-  struct Result {
-    Result()
-        : is_line_or_point(false),
-          has_rendering_artifact(false),
-          subdivision_parameter_value(0.0f) {
-    }
+		class CubicTextureCoords {
+		public:
+			// Container for the cubic texture coordinates and other associated
+			// information.
+			struct Result {
+				Result()
+					: is_line_or_point(false),
+					  has_rendering_artifact(false),
+					  subdivision_parameter_value(0.0f) {
+				}
 
-    // The 3D texture coordinates that are to be associated with the
-    // four control points of the cubic curve.
-    Vector3 coords[4];
+				// The 3D texture coordinates that are to be associated with the
+				// four control points of the cubic curve.
+				Vector3 coords[4];
 
-    // Indicates whether the curve is a line or a point, in which case
-    // we do not need to add its triangles to the mesh.
-    bool is_line_or_point;
+				// Indicates whether the curve is a line or a point, in which case
+				// we do not need to add its triangles to the mesh.
+				bool is_line_or_point;
 
-    // For the loop case, indicates whether a rendering artifact was
-    // detected, in which case the curve needs to be further
-    // subdivided.
-    bool has_rendering_artifact;
+				// For the loop case, indicates whether a rendering artifact was
+				// detected, in which case the curve needs to be further
+				// subdivided.
+				bool has_rendering_artifact;
 
-    // If a rendering artifact will occur for the given loop curve,
-    // this is the parameter value (0 <= value <= 1) at which the
-    // curve needs to be subdivided to fix the artifact.
-    float subdivision_parameter_value;
-  };
+				// If a rendering artifact will occur for the given loop curve,
+				// this is the parameter value (0 <= value <= 1) at which the
+				// curve needs to be subdivided to fix the artifact.
+				float subdivision_parameter_value;
+			};
 
-  // Computes the texture coordinates for a cubic curve segment's
-  // control points, given the classification of the curve as well as
-  // an indication of which side is to be filled.
-  static void Compute(const CubicClassifier::Result& classification,
-                      bool fill_right_side,
-                      Result* result);
+			// Computes the texture coordinates for a cubic curve segment's
+			// control points, given the classification of the curve as well as
+			// an indication of which side is to be filled.
+			static void Compute(const CubicClassifier::Result& classification,
+			                    bool fill_right_side,
+			                    Result* result);
 
- private:
-  // This class does not need to be instantiated.
-  CubicTextureCoords() {}
-  O3D_DISALLOW_COPY_AND_ASSIGN(CubicTextureCoords);
-};
+		private:
+			// This class does not need to be instantiated.
+			CubicTextureCoords() {}
+			O3D_DISALLOW_COPY_AND_ASSIGN(CubicTextureCoords);
+		};
 
-}  // namespace gpu2d
+	}  // namespace gpu2d
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GPU2D_CUBIC_TEXTURE_COORDS_H_

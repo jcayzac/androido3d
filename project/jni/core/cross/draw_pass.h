@@ -41,58 +41,58 @@
 
 namespace o3d {
 
-class TransformationContext;
-class DrawList;
-class RenderContext;
+	class TransformationContext;
+	class DrawList;
+	class RenderContext;
 
 // A DrawPass is a RenderNode that renders a DrawList with a specific
 // DrawContext.
-class DrawPass : public RenderNode {
- public:
-  typedef SmartPointer<DrawPass> Ref;
+	class DrawPass : public RenderNode {
+	public:
+		typedef SmartPointer<DrawPass> Ref;
 
-  static const char* kDrawListParamName;
-  static const char* kSortMethodParamName;
+		static const char* kDrawListParamName;
+		static const char* kSortMethodParamName;
 
-  // Gets the draw list.
-  DrawList* draw_list() const {
-    return draw_list_param_->value();
-  }
+		// Gets the draw list.
+		DrawList* draw_list() const {
+			return draw_list_param_->value();
+		}
 
-  // Sets the draw list.
-  void set_draw_list(DrawList* value) {
-    draw_list_param_->set_value(value);
-  }
+		// Sets the draw list.
+		void set_draw_list(DrawList* value) {
+			draw_list_param_->set_value(value);
+		}
 
-  // Gets the sort method.
-  DrawList::SortMethod sort_method() const {
-    return static_cast<DrawList::SortMethod>(sort_method_param_->value());
-  }
+		// Gets the sort method.
+		DrawList::SortMethod sort_method() const {
+			return static_cast<DrawList::SortMethod>(sort_method_param_->value());
+		}
 
-  // Sets the sort method.
-  void set_sort_method(DrawList::SortMethod value) {
-    sort_method_param_->set_value(value);
-  }
+		// Sets the sort method.
+		void set_sort_method(DrawList::SortMethod value) {
+			sort_method_param_->set_value(value);
+		}
 
-  // Renders this DrawPass.
-  void Render(RenderContext* render_context);
+		// Renders this DrawPass.
+		void Render(RenderContext* render_context);
 
- private:
-  explicit DrawPass(ServiceLocator* service_locator);
+	private:
+		explicit DrawPass(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  TransformationContext* transformation_context_;
+		TransformationContext* transformation_context_;
 
-  // Predefined draw context parameter.
-  ParamDrawContext::Ref draw_context_param_;
-  ParamDrawList::Ref draw_list_param_;  // DrawList we will render.
-  ParamInteger::Ref sort_method_param_;  // The order we will sort the DrawList.
+		// Predefined draw context parameter.
+		ParamDrawContext::Ref draw_context_param_;
+		ParamDrawList::Ref draw_list_param_;  // DrawList we will render.
+		ParamInteger::Ref sort_method_param_;  // The order we will sort the DrawList.
 
-  O3D_DECL_CLASS(DrawPass, RenderNode);
-  O3D_DISALLOW_COPY_AND_ASSIGN(DrawPass);
-};
+		O3D_DECL_CLASS(DrawPass, RenderNode);
+		O3D_DISALLOW_COPY_AND_ASSIGN(DrawPass);
+	};
 
 }  // namespace o3d
 

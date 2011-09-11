@@ -34,85 +34,85 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(RenderSurfaceBase, ParamObject);
-O3D_DEFN_CLASS(RenderSurface, RenderSurfaceBase);
-O3D_DEFN_CLASS(RenderDepthStencilSurface, RenderSurfaceBase);
-O3D_DEFN_CLASS(ParamRenderSurface, RefParamBase);
-O3D_DEFN_CLASS(ParamRenderDepthStencilSurface, RefParamBase);
+	O3D_DEFN_CLASS(RenderSurfaceBase, ParamObject);
+	O3D_DEFN_CLASS(RenderSurface, RenderSurfaceBase);
+	O3D_DEFN_CLASS(RenderDepthStencilSurface, RenderSurfaceBase);
+	O3D_DEFN_CLASS(ParamRenderSurface, RefParamBase);
+	O3D_DEFN_CLASS(ParamRenderDepthStencilSurface, RefParamBase);
 
-const char* RenderSurfaceBase::kWidthParamName =
-    O3D_STRING_CONSTANT("width");
-const char* RenderSurfaceBase::kHeightParamName =
-    O3D_STRING_CONSTANT("height");
-const char* RenderSurface::kTextureParamName =
-    O3D_STRING_CONSTANT("texture");
+	const char* RenderSurfaceBase::kWidthParamName =
+	    O3D_STRING_CONSTANT("width");
+	const char* RenderSurfaceBase::kHeightParamName =
+	    O3D_STRING_CONSTANT("height");
+	const char* RenderSurface::kTextureParamName =
+	    O3D_STRING_CONSTANT("texture");
 
-RenderSurfaceBase::RenderSurfaceBase(ServiceLocator* service_locator,
-                                     int width,
-                                     int height)
-    : ParamObject(service_locator),
-      clip_width_(width),
-      clip_height_(height) {
-  RegisterReadOnlyParamRef(kWidthParamName, &width_param_);
-  RegisterReadOnlyParamRef(kHeightParamName, &height_param_);
+	RenderSurfaceBase::RenderSurfaceBase(ServiceLocator* service_locator,
+	                                     int width,
+	                                     int height)
+		: ParamObject(service_locator),
+		  clip_width_(width),
+		  clip_height_(height) {
+		RegisterReadOnlyParamRef(kWidthParamName, &width_param_);
+		RegisterReadOnlyParamRef(kHeightParamName, &height_param_);
+		width_param_->set_read_only_value(width);
+		height_param_->set_read_only_value(height);
+	}
 
-  width_param_->set_read_only_value(width);
-  height_param_->set_read_only_value(height);
-}
+	RenderSurface::RenderSurface(ServiceLocator* service_locator,
+	                             int width,
+	                             int height,
+	                             Texture* texture)
+		: RenderSurfaceBase(service_locator, width, height),
+		  weak_pointer_manager_(this) {
+		RegisterReadOnlyParamRef(kTextureParamName, &texture_param_);
+		texture_param_->set_read_only_value(texture);
+	}
 
-RenderSurface::RenderSurface(ServiceLocator* service_locator,
-                             int width,
-                             int height,
-                             Texture* texture)
-    : RenderSurfaceBase(service_locator, width, height),
-      weak_pointer_manager_(this) {
-  RegisterReadOnlyParamRef(kTextureParamName, &texture_param_);
+	Bitmap::Ref RenderSurface::GetBitmap() const {
+		Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
+		bitmap->Allocate(Texture::ARGB8,
+		                 clip_width(),
+		                 clip_height(),
+		                 1,
+		                 Bitmap::IMAGE);
 
-  texture_param_->set_read_only_value(texture);
-}
+		if(!GetIntoBitmap(bitmap)) {
+			Bitmap::Ref empty;
+			return empty;
+		}
 
-Bitmap::Ref RenderSurface::GetBitmap() const {
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->Allocate(Texture::ARGB8,
-                   clip_width(),
-                   clip_height(),
-                   1,
-                   Bitmap::IMAGE);
-  if (!GetIntoBitmap(bitmap)) {
-    Bitmap::Ref empty;
-    return empty;
-  }
-  return bitmap;
-}
+		return bitmap;
+	}
 
-bool RenderSurface::GetIntoBitmap(Bitmap::Ref bitmap) const {
-  if (bitmap.IsNull() ||
-      bitmap->width() != static_cast<unsigned int>(clip_width()) ||
-      bitmap->height() != static_cast<unsigned int>(clip_height()) ||
-      bitmap->num_mipmaps() != 1 ||
-      bitmap->format() != Texture::ARGB8) {
-    return false;
-  }
+	bool RenderSurface::GetIntoBitmap(Bitmap::Ref bitmap) const {
+		if(bitmap.IsNull() ||
+		        bitmap->width() != static_cast<unsigned int>(clip_width()) ||
+		        bitmap->height() != static_cast<unsigned int>(clip_height()) ||
+		        bitmap->num_mipmaps() != 1 ||
+		        bitmap->format() != Texture::ARGB8) {
+			return false;
+		}
 
-  return PlatformSpecificGetIntoBitmap(bitmap);
-}
+		return PlatformSpecificGetIntoBitmap(bitmap);
+	}
 
-RenderDepthStencilSurface::RenderDepthStencilSurface(
-    ServiceLocator* service_locator,
-    int width,
-    int height)
-    : RenderSurfaceBase(service_locator, width, height),
-      weak_pointer_manager_(this) {
-}
+	RenderDepthStencilSurface::RenderDepthStencilSurface(
+	    ServiceLocator* service_locator,
+	    int width,
+	    int height)
+		: RenderSurfaceBase(service_locator, width, height),
+		  weak_pointer_manager_(this) {
+	}
 
-ObjectBase::Ref ParamRenderSurface::Create(ServiceLocator* client) {
-  return ObjectBase::Ref(new ParamRenderSurface(client, false, false));
-}
+	ObjectBase::Ref ParamRenderSurface::Create(ServiceLocator* client) {
+		return ObjectBase::Ref(new ParamRenderSurface(client, false, false));
+	}
 
-ObjectBase::Ref ParamRenderDepthStencilSurface::Create(ServiceLocator* client) {
-  return ObjectBase::Ref(new ParamRenderDepthStencilSurface(client,
-                                                            false,
-                                                            false));
-}
+	ObjectBase::Ref ParamRenderDepthStencilSurface::Create(ServiceLocator* client) {
+		return ObjectBase::Ref(new ParamRenderDepthStencilSurface(client,
+		                       false,
+		                       false));
+	}
 
 }  // namespace o3d

@@ -46,82 +46,82 @@ namespace o3d {
 // example a Lambert effect with a "diffuseColor" set to blue vs a Lambert
 // effect with "diffuseColor" set to red. Note that a material MUST have its
 // draw_list set in order for objects using it to render.
-class Material : public ParamObject {
- public:
-  typedef SmartPointer<Material> Ref;
-  typedef WeakPointer<Material> WeakPointerType;
+	class Material : public ParamObject {
+	public:
+		typedef SmartPointer<Material> Ref;
+		typedef WeakPointer<Material> WeakPointerType;
 
-  // Names of Material Params.
-  static const char* kEffectParamName;
-  static const char* kStateParamName;
-  static const char* kDrawListParamName;
+		// Names of Material Params.
+		static const char* kEffectParamName;
+		static const char* kStateParamName;
+		static const char* kDrawListParamName;
 
-  // Returns the Effect object bound to the Material.
-  Effect* effect() const {
-    return effect_param_ref_->value();
-  }
+		// Returns the Effect object bound to the Material.
+		Effect* effect() const {
+			return effect_param_ref_->value();
+		}
 
-  // Binds an Effect object to the Material.
-  void set_effect(Effect *effect) {
-    effect_param_ref_->set_value(effect);
-  }
+		// Binds an Effect object to the Material.
+		void set_effect(Effect* effect) {
+			effect_param_ref_->set_value(effect);
+		}
 
-  // Returns the State object bound to the Material.
-  State* state() const {
-    return state_param_ref_->value();
-  }
+		// Returns the State object bound to the Material.
+		State* state() const {
+			return state_param_ref_->value();
+		}
 
-  // Binds a State object to the Material.
-  void set_state(State *state) {
-    state_param_ref_->set_value(state);
-  }
+		// Binds a State object to the Material.
+		void set_state(State* state) {
+			state_param_ref_->set_value(state);
+		}
 
-  // Gets the pass list.
-  DrawList* draw_list() const {
-    return draw_list_param_->value();
-  }
+		// Gets the pass list.
+		DrawList* draw_list() const {
+			return draw_list_param_->value();
+		}
 
-  // Sets the pass list.
-  void set_draw_list(DrawList* value) {
-    draw_list_param_->set_value(value);
-  }
+		// Sets the pass list.
+		void set_draw_list(DrawList* value) {
+			draw_list_param_->set_value(value);
+		}
 
-  // Gets a weak pointer to us.
-  WeakPointerType GetWeakPointer() const {
-    return weak_pointer_manager_.GetWeakPointer();
-  }
+		// Gets a weak pointer to us.
+		WeakPointerType GetWeakPointer() const {
+			return weak_pointer_manager_.GetWeakPointer();
+		}
 
- private:
-  explicit Material(ServiceLocator* service_locator);
+	private:
+		explicit Material(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  ParamState::Ref state_param_ref_;  // State for material.
-  ParamEffect::Ref effect_param_ref_;  // Effect for material.
-  ParamDrawList::Ref draw_list_param_;  // DrawList we will go on.
+		ParamState::Ref state_param_ref_;  // State for material.
+		ParamEffect::Ref effect_param_ref_;  // Effect for material.
+		ParamDrawList::Ref draw_list_param_;  // DrawList we will go on.
 
-  // Manager for weak pointers to us.
-  WeakPointerType::WeakPointerManager weak_pointer_manager_;
+		// Manager for weak pointers to us.
+		WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
-  O3D_DECL_CLASS(Material, ParamObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(Material);
-};
+		O3D_DECL_CLASS(Material, ParamObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(Material);
+	};
 
-class ParamMaterial : public TypedRefParam<Material> {
- public:
-  typedef SmartPointer<ParamMaterial> Ref;
+	class ParamMaterial : public TypedRefParam<Material> {
+	public:
+		typedef SmartPointer<ParamMaterial> Ref;
 
-  ParamMaterial(ServiceLocator* service_locator, bool dynamic, bool read_only)
-      : TypedRefParam<Material>(service_locator, dynamic, read_only) {
-  }
+		ParamMaterial(ServiceLocator* service_locator, bool dynamic, bool read_only)
+			: TypedRefParam<Material>(service_locator, dynamic, read_only) {
+		}
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  O3D_DECL_CLASS(ParamMaterial, RefParamBase)
-};
+		O3D_DECL_CLASS(ParamMaterial, RefParamBase)
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_MATERIAL_H_

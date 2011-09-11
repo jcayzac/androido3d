@@ -42,12 +42,12 @@
 class SkPath;
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
-class Arena;
-class Contour;
-class PathCache;
-class Segment;
+		class Arena;
+		class Contour;
+		class PathCache;
+		class Segment;
 
 // The PathProcessor turns an SkPath (assumed to contain one or more
 // closed regions) into a set of exterior and interior triangles,
@@ -59,67 +59,67 @@ class Segment;
 // Note that the fill style and management of multiple layers are
 // separate concerns, handled at a higher level with shaders and
 // polygon offsets.
-class PathProcessor {
- public:
-  PathProcessor();
-  explicit PathProcessor(Arena* arena);
-  ~PathProcessor();
+		class PathProcessor {
+		public:
+			PathProcessor();
+			explicit PathProcessor(Arena* arena);
+			~PathProcessor();
 
-  // Transforms the given path into a triangle mesh for rendering
-  // using Loop and Blinn's shader, placing the result into the given
-  // PathCache.
-  void Process(const SkPath& path, PathCache* cache);
+			// Transforms the given path into a triangle mesh for rendering
+			// using Loop and Blinn's shader, placing the result into the given
+			// PathCache.
+			void Process(const SkPath& path, PathCache* cache);
 
-  // Enables or disables verbose logging in debug mode.
-  void set_verbose_logging(bool on_or_off);
+			// Enables or disables verbose logging in debug mode.
+			void set_verbose_logging(bool on_or_off);
 
- private:
-  // Builds a list of contours for the given path.
-  void BuildContours(const SkPath& path);
+		private:
+			// Builds a list of contours for the given path.
+			void BuildContours(const SkPath& path);
 
-  // Determines whether the left or right side of each contour should
-  // be filled.
-  void DetermineSidesToFill();
+			// Determines whether the left or right side of each contour should
+			// be filled.
+			void DetermineSidesToFill();
 
-  // Determines whether the given (closed) contour is oriented
-  // clockwise or counterclockwise.
-  void DetermineOrientation(Contour* contour);
+			// Determines whether the given (closed) contour is oriented
+			// clockwise or counterclockwise.
+			void DetermineOrientation(Contour* contour);
 
-  // Subdivides the curves so that there are no overlaps of the
-  // triangles associated with the curves' control points.
-  void SubdivideCurves();
+			// Subdivides the curves so that there are no overlaps of the
+			// triangles associated with the curves' control points.
+			void SubdivideCurves();
 
-  // Helper function used during curve subdivision.
-  void ConditionallySubdivide(Segment* seg,
-                              std::vector<Segment*>* next_segments);
+			// Helper function used during curve subdivision.
+			void ConditionallySubdivide(Segment* seg,
+			                            std::vector<Segment*>* next_segments);
 
-  // Tessellates the interior regions of the contours.
-  void TessellateInterior(PathCache* cache);
+			// Tessellates the interior regions of the contours.
+			void TessellateInterior(PathCache* cache);
 
-  // For debugging the orientation computation. Returns all of the
-  // segments overlapping the given Y coordinate.
-  std::vector<Segment*> AllSegmentsOverlappingY(float y);
+			// For debugging the orientation computation. Returns all of the
+			// segments overlapping the given Y coordinate.
+			std::vector<Segment*> AllSegmentsOverlappingY(float y);
 
-  // For debugging the curve subdivision algorithm. Subdivides the
-  // curves using an alternate, slow (O(n^3)) algorithm.
-  void SubdivideCurvesSlow();
+			// For debugging the curve subdivision algorithm. Subdivides the
+			// curves using an alternate, slow (O(n^3)) algorithm.
+			void SubdivideCurvesSlow();
 
-  // Arena from which to allocate temporary objects.
-  Arena* arena_;
+			// Arena from which to allocate temporary objects.
+			Arena* arena_;
 
-  // Whether to delete the arena upon deletion of the PathProcessor.
-  bool should_delete_arena_;
+			// Whether to delete the arena upon deletion of the PathProcessor.
+			bool should_delete_arena_;
 
-  // The contours described by the path.
-  std::vector<Contour*> contours_;
+			// The contours described by the path.
+			std::vector<Contour*> contours_;
 
-  // Whether or not to perform verbose logging in debug mode.
-  bool verbose_logging_;
+			// Whether or not to perform verbose logging in debug mode.
+			bool verbose_logging_;
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(PathProcessor);
-};
+			O3D_DISALLOW_COPY_AND_ASSIGN(PathProcessor);
+		};
 
-}  // namespace gpu2d
+	}  // namespace gpu2d
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GPU2D_PATH_PROCESSOR_H_

@@ -38,249 +38,260 @@
 
 namespace o3d {
 
-namespace {
+	namespace {
 
-union Int16Union {
-  uint8_t c[2];
-  int16_t i;
-};
+		union Int16Union {
+			uint8_t c[2];
+			int16_t i;
+		};
 
-union UInt16Union {
-  uint8_t c[2];
-  uint16_t i;
-};
+		union UInt16Union {
+			uint8_t c[2];
+			uint16_t i;
+		};
 
-union Int32Union {
-  uint8_t c[4];
-  int32_t i;
-};
+		union Int32Union {
+			uint8_t c[4];
+			int32_t i;
+		};
 
-union UInt32Union {
-  uint8_t c[4];
-  uint32_t i;
-};
+		union UInt32Union {
+			uint8_t c[4];
+			uint32_t i;
+		};
 
-union Int32FloatUnion {
-  int32_t i;
-  float f;
-};
+		union Int32FloatUnion {
+			int32_t i;
+			float f;
+		};
 
-union UInt32FloatUnion {
-  uint32_t i;
-  float f;
-};
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-static inline int16_t SwapInt16(const int16_t *value) {
-  union { uint16_t u; int16_t s; };
-  s = *value;
-  u = switch_endianness16(u);
-  return s;
-}
+		union UInt32FloatUnion {
+			uint32_t i;
+			float f;
+		};
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-static inline uint16_t SwapUInt16(const uint16_t *value) {
-  return switch_endianness16(*value);
-}
+	static inline int16_t SwapInt16(const int16_t* value) {
+		union { uint16_t u; int16_t s; };
+		s = *value;
+		u = switch_endianness16(u);
+		return s;
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-static inline int32_t SwapInt32(const int32_t *value) {
-  union { uint32_t u; int32_t s; };
-  s = *value;
-  u = switch_endianness32(u);
-  return s;
-}
+	static inline uint16_t SwapUInt16(const uint16_t* value) {
+		return switch_endianness16(*value);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-static uint32_t SwapUInt32(const uint32_t *value) {
-  return switch_endianness32(*value);
-}
+	static inline int32_t SwapInt32(const int32_t* value) {
+		union { uint32_t u; int32_t s; };
+		s = *value;
+		u = switch_endianness32(u);
+		return s;
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-int16_t MemoryReadStream::ReadLittleEndianInt16() {
-  Int16Union u;
-  Read(u.c, 2);
-  if (is_little_endian()) return u.i;
-  else return SwapInt16(&u.i);
-}
+	static uint32_t SwapUInt32(const uint32_t* value) {
+		return switch_endianness32(*value);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-uint16_t MemoryReadStream::ReadLittleEndianUInt16() {
-  UInt16Union u;
-  Read(u.c, 2);
-  if (is_little_endian()) return u.i;
-  else return SwapUInt16(&u.i);
-}
+	int16_t MemoryReadStream::ReadLittleEndianInt16() {
+		Int16Union u;
+		Read(u.c, 2);
+
+		if(is_little_endian()) return u.i;
+		else return SwapInt16(&u.i);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-int16_t MemoryReadStream::ReadBigEndianInt16() {
-  Int16Union u;
-  Read(u.c, 2);
-  if (is_little_endian()) return SwapInt16(&u.i);
-  else return u.i;
-}
+	uint16_t MemoryReadStream::ReadLittleEndianUInt16() {
+		UInt16Union u;
+		Read(u.c, 2);
+
+		if(is_little_endian()) return u.i;
+		else return SwapUInt16(&u.i);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-uint16_t MemoryReadStream::ReadBigEndianUInt16() {
-  UInt16Union u;
-  Read(u.c, 2);
+	int16_t MemoryReadStream::ReadBigEndianInt16() {
+		Int16Union u;
+		Read(u.c, 2);
 
-  if (is_little_endian()) return SwapUInt16(&u.i);
-  else return u.i;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-int32_t MemoryReadStream::ReadLittleEndianInt32() {
-  Int32Union u;
-  Read(u.c, 4);
-
-  if (is_little_endian()) return u.i;
-  else return SwapInt32(&u.i);
-}
+		if(is_little_endian()) return SwapInt16(&u.i);
+		else return u.i;
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-uint32_t MemoryReadStream::ReadLittleEndianUInt32() {
-  UInt32Union u;
-  Read(u.c, 4);
+	uint16_t MemoryReadStream::ReadBigEndianUInt16() {
+		UInt16Union u;
+		Read(u.c, 2);
 
-  if (is_little_endian()) return u.i;
-  else return SwapUInt32(&u.i);
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-int32_t MemoryReadStream::ReadBigEndianInt32() {
-  Int32Union u;
-  Read(u.c, 4);
-
-  if (is_little_endian()) return SwapInt32(&u.i);
-  else return u.i;
-}
+		if(is_little_endian()) return SwapUInt16(&u.i);
+		else return u.i;
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-uint32_t MemoryReadStream::ReadBigEndianUInt32() {
-  UInt32Union u;
-  Read(u.c, 4);
+	int32_t MemoryReadStream::ReadLittleEndianInt32() {
+		Int32Union u;
+		Read(u.c, 4);
 
-  if (is_little_endian()) return SwapUInt32(&u.i);
-  else return u.i;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-float MemoryReadStream::ReadLittleEndianFloat32() {
-  // Read in as int32_t then interpret as float32
-  Int32FloatUnion u;
-  u.i = ReadLittleEndianInt32();
-  if (!is_little_endian()) u.i=SwapInt32(&u.i);
-  return u.f;
-}
+		if(is_little_endian()) return u.i;
+		else return SwapInt32(&u.i);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-float MemoryReadStream::ReadBigEndianFloat32() {
-  // Read in as int32_t then interpret as float32
-  Int32FloatUnion u;
-  u.i = ReadBigEndianInt32();
-  if (is_little_endian()) u.i=SwapInt32(&u.i);
-  return u.f;
-}
+	uint32_t MemoryReadStream::ReadLittleEndianUInt32() {
+		UInt32Union u;
+		Read(u.c, 4);
+
+		if(is_little_endian()) return u.i;
+		else return SwapUInt32(&u.i);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteLittleEndianInt16(int16_t i) {
-  Int16Union u;
+	int32_t MemoryReadStream::ReadBigEndianInt32() {
+		Int32Union u;
+		Read(u.c, 4);
 
-  if (is_little_endian()) u.i=i;
-  else u.i = SwapInt16(&i);
-
-  Write(u.c, 2);
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteLittleEndianUInt16(uint16_t i) {
-  UInt16Union u;
-
-  if (is_little_endian()) u.i = i;
-  else u.i = SwapUInt16(&i);
-
-  Write(u.c, 2);
-}
+		if(is_little_endian()) return SwapInt32(&u.i);
+		else return u.i;
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteBigEndianInt16(int16_t i) {
-  Int16Union u;
+	uint32_t MemoryReadStream::ReadBigEndianUInt32() {
+		UInt32Union u;
+		Read(u.c, 4);
 
-  if (is_little_endian()) u.i = SwapInt16(&i);
-  else u.i = i;
-
-  Write(u.c, 2);
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteBigEndianUInt16(uint16_t i) {
-  UInt16Union u;
-
-  if (is_little_endian()) u.i = SwapUInt16(&i);
-  else u.i = i;
-
-  Write(u.c, 2);
-}
+		if(is_little_endian()) return SwapUInt32(&u.i);
+		else return u.i;
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteLittleEndianInt32(int32_t i) {
-  Int32Union u;
+	float MemoryReadStream::ReadLittleEndianFloat32() {
+		// Read in as int32_t then interpret as float32
+		Int32FloatUnion u;
+		u.i = ReadLittleEndianInt32();
 
-  if (is_little_endian()) u.i = i;
-  else u.i = SwapInt32(&i);
+		if(!is_little_endian()) u.i = SwapInt32(&u.i);
 
-  Write(u.c, 4);
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteLittleEndianUInt32(uint32_t i) {
-  UInt32Union u;
-
-  if (is_little_endian()) u.i = i;
-  else u.i = SwapUInt32(&i);
-
-  Write(u.c, 4);
-}
+		return u.f;
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteBigEndianInt32(int32_t i) {
-  Int32Union u;
+	float MemoryReadStream::ReadBigEndianFloat32() {
+		// Read in as int32_t then interpret as float32
+		Int32FloatUnion u;
+		u.i = ReadBigEndianInt32();
 
-  if (is_little_endian()) u.i = SwapInt32(&i);
-  else u.i = i;
+		if(is_little_endian()) u.i = SwapInt32(&u.i);
 
-  Write(u.c, 4);
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteBigEndianUInt32(uint32_t i) {
-  UInt32Union u;
-
-  if (is_little_endian()) u.i = SwapUInt32(&i);
-  else u.i = i;
-
-  Write(u.c, 4);
-}
+		return u.f;
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteLittleEndianFloat32(float f) {
-  // Interpret byte-pattern of f as int32_t and write out
-  Int32FloatUnion u;
-  u.f = f;
-  if (!is_little_endian()) u.i=SwapInt32(&u.i);
-  WriteLittleEndianInt32(u.i);
-}
+	void MemoryWriteStream::WriteLittleEndianInt16(int16_t i) {
+		Int16Union u;
+
+		if(is_little_endian()) u.i = i;
+		else u.i = SwapInt16(&i);
+
+		Write(u.c, 2);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void MemoryWriteStream::WriteBigEndianFloat32(float f) {
-  // Interpret byte-pattern of f as int32_t and write out
-  Int32FloatUnion u;
-  u.f = f;
-  if (is_little_endian()) u.i=SwapInt32(&u.i);
-  WriteBigEndianInt32(u.i);
-}
+	void MemoryWriteStream::WriteLittleEndianUInt16(uint16_t i) {
+		UInt16Union u;
+
+		if(is_little_endian()) u.i = i;
+		else u.i = SwapUInt16(&i);
+
+		Write(u.c, 2);
+	}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	void MemoryWriteStream::WriteBigEndianInt16(int16_t i) {
+		Int16Union u;
+
+		if(is_little_endian()) u.i = SwapInt16(&i);
+		else u.i = i;
+
+		Write(u.c, 2);
+	}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	void MemoryWriteStream::WriteBigEndianUInt16(uint16_t i) {
+		UInt16Union u;
+
+		if(is_little_endian()) u.i = SwapUInt16(&i);
+		else u.i = i;
+
+		Write(u.c, 2);
+	}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	void MemoryWriteStream::WriteLittleEndianInt32(int32_t i) {
+		Int32Union u;
+
+		if(is_little_endian()) u.i = i;
+		else u.i = SwapInt32(&i);
+
+		Write(u.c, 4);
+	}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	void MemoryWriteStream::WriteLittleEndianUInt32(uint32_t i) {
+		UInt32Union u;
+
+		if(is_little_endian()) u.i = i;
+		else u.i = SwapUInt32(&i);
+
+		Write(u.c, 4);
+	}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	void MemoryWriteStream::WriteBigEndianInt32(int32_t i) {
+		Int32Union u;
+
+		if(is_little_endian()) u.i = SwapInt32(&i);
+		else u.i = i;
+
+		Write(u.c, 4);
+	}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	void MemoryWriteStream::WriteBigEndianUInt32(uint32_t i) {
+		UInt32Union u;
+
+		if(is_little_endian()) u.i = SwapUInt32(&i);
+		else u.i = i;
+
+		Write(u.c, 4);
+	}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	void MemoryWriteStream::WriteLittleEndianFloat32(float f) {
+		// Interpret byte-pattern of f as int32_t and write out
+		Int32FloatUnion u;
+		u.f = f;
+
+		if(!is_little_endian()) u.i = SwapInt32(&u.i);
+
+		WriteLittleEndianInt32(u.i);
+	}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	void MemoryWriteStream::WriteBigEndianFloat32(float f) {
+		// Interpret byte-pattern of f as int32_t and write out
+		Int32FloatUnion u;
+		u.f = f;
+
+		if(is_little_endian()) u.i = SwapInt32(&u.i);
+
+		WriteBigEndianInt32(u.i);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -288,30 +299,30 @@ void MemoryWriteStream::WriteBigEndianFloat32(float f) {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Returns the bytes pointed to by |value| as little-endian 16
-int16_t MemoryReadStream::GetLittleEndianInt16(const int16_t *value) {
-  if (is_little_endian()) return *value;
-  else return SwapInt16(value);
-}
+	int16_t MemoryReadStream::GetLittleEndianInt16(const int16_t* value) {
+		if(is_little_endian()) return *value;
+		else return SwapInt16(value);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Returns the bytes pointed to by |value| as little-endian 16
-uint16_t MemoryReadStream::GetLittleEndianUInt16(const uint16_t *value) {
-  if (is_little_endian()) return *value;
-  else return SwapUInt16(value);
-}
+	uint16_t MemoryReadStream::GetLittleEndianUInt16(const uint16_t* value) {
+		if(is_little_endian()) return *value;
+		else return SwapUInt16(value);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Returns the bytes pointed to by |value| as little-endian 32
-int32_t MemoryReadStream::GetLittleEndianInt32(const int32_t *value) {
-  if (is_little_endian()) return *value;
-  else return SwapInt32(value);
-}
+	int32_t MemoryReadStream::GetLittleEndianInt32(const int32_t* value) {
+		if(is_little_endian()) return *value;
+		else return SwapInt32(value);
+	}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Returns the bytes pointed to by |value| as little-endian 32
-uint32_t MemoryReadStream::GetLittleEndianUInt32(const uint32_t *value) {
-  if (is_little_endian()) return *value;
-  else return SwapUInt32(value);
-}
+	uint32_t MemoryReadStream::GetLittleEndianUInt32(const uint32_t* value) {
+		if(is_little_endian()) return *value;
+		else return SwapUInt32(value);
+	}
 
 }  // namespace o3d

@@ -45,140 +45,140 @@ namespace o3d {
 
 // A StreamBank collects streams so they can be shared amoung StreamBanks. It
 // also handles platform specific things like vertex declarations..
-class StreamBank : public VertexSource {
- public:
-  typedef SmartPointer<StreamBank> Ref;
-  typedef WeakPointer<StreamBank> WeakPointerType;
+	class StreamBank : public VertexSource {
+	public:
+		typedef SmartPointer<StreamBank> Ref;
+		typedef WeakPointer<StreamBank> WeakPointerType;
 
-  virtual ~StreamBank();
+		virtual ~StreamBank();
 
-  // The number of times streams have been added or removed from this stream
-  // bank. Can be used for caching.
-  int change_count() const {
-    return change_count_;
-  }
+		// The number of times streams have been added or removed from this stream
+		// bank. Can be used for caching.
+		int change_count() const {
+			return change_count_;
+		}
 
-  // True if all the streams on this streambank are renderable. 
-  bool renderable() const {
-    return renderable_;
-  }
+		// True if all the streams on this streambank are renderable.
+		bool renderable() const {
+			return renderable_;
+		}
 
-  // Binds a field of a vertex buffer to the streambank and defines how the data
-  // in the buffer should be accessed and interpreted. The buffer of the field
-  // must be of a compatible type otherwise the binding fails and the function
-  // returns false.
-  virtual bool SetVertexStream(Stream::Semantic semantic,
-                               int semantic_index,
-                               Field* field,
-                               unsigned int start_index);
+		// Binds a field of a vertex buffer to the streambank and defines how the data
+		// in the buffer should be accessed and interpreted. The buffer of the field
+		// must be of a compatible type otherwise the binding fails and the function
+		// returns false.
+		virtual bool SetVertexStream(Stream::Semantic semantic,
+		                             int semantic_index,
+		                             Field* field,
+		                             unsigned int start_index);
 
-  // Searches the vertex streams bound to the shape for one with the given
-  // stream semantic.  If a stream is not found then it returns NULL.
-  const Stream* GetVertexStream(Stream::Semantic stream_semantic,
-                                int semantic_index) const;
+		// Searches the vertex streams bound to the shape for one with the given
+		// stream semantic.  If a stream is not found then it returns NULL.
+		const Stream* GetVertexStream(Stream::Semantic stream_semantic,
+		                              int semantic_index) const;
 
-  // Removes a vertex stream from this primitive.
-  // Returns true if the specified stream existed.
-  bool RemoveVertexStream(Stream::Semantic stream_semantic,
-                          int semantic_index);
+		// Removes a vertex stream from this primitive.
+		// Returns true if the specified stream existed.
+		bool RemoveVertexStream(Stream::Semantic stream_semantic,
+		                        int semantic_index);
 
-  // Returns the maximum vertices available given the streams currently
-  // set on this StreamBank.
-  unsigned GetMaxVertices() const;
+		// Returns the maximum vertices available given the streams currently
+		// set on this StreamBank.
+		unsigned GetMaxVertices() const;
 
-  // Overriden from VertexSource.
-  virtual ParamVertexBufferStream* GetVertexStreamParam(
-      Stream::Semantic semantic,
-      int semantic_index) const;
+		// Overriden from VertexSource.
+		virtual ParamVertexBufferStream* GetVertexStreamParam(
+		    Stream::Semantic semantic,
+		    int semantic_index) const;
 
-  const StreamParamVector& vertex_stream_params() const {
-    return vertex_stream_params_;
-  }
+		const StreamParamVector& vertex_stream_params() const {
+			return vertex_stream_params_;
+		}
 
-  // If the streams are bound to other streams, update them.
-  void UpdateStreams();
+		// If the streams are bound to other streams, update them.
+		void UpdateStreams();
 
-  // Gets a weak pointer to us.
-  WeakPointerType GetWeakPointer() const {
-    return weak_pointer_manager_.GetWeakPointer();
-  }
+		// Gets a weak pointer to us.
+		WeakPointerType GetWeakPointer() const {
+			return weak_pointer_manager_.GetWeakPointer();
+		}
 
- protected:
-  explicit StreamBank(ServiceLocator* service_locator);
+	protected:
+		explicit StreamBank(ServiceLocator* service_locator);
 
-  class SlaveParamVertexBufferStream : public ParamVertexBufferStream {
-   public:
-    typedef SmartPointer<SlaveParamVertexBufferStream> Ref;
-    SlaveParamVertexBufferStream(ServiceLocator* service_locator,
-                                 StreamBank* master,
-                                 Stream* stream)
-        : ParamVertexBufferStream(service_locator, stream, true, false),
-          master_(master) {
-    }
+		class SlaveParamVertexBufferStream : public ParamVertexBufferStream {
+		public:
+			typedef SmartPointer<SlaveParamVertexBufferStream> Ref;
+			SlaveParamVertexBufferStream(ServiceLocator* service_locator,
+			                             StreamBank* master,
+			                             Stream* stream)
+				: ParamVertexBufferStream(service_locator, stream, true, false),
+				  master_(master) {
+			}
 
-    virtual void CopyDataFromParam(Param* source_param) {
-      // do nothing.
-    }
+			virtual void CopyDataFromParam(Param* source_param) {
+				// do nothing.
+			}
 
-    virtual void OnAfterBindInput() {
-      ++master_->number_binds_;
-    }
+			virtual void OnAfterBindInput() {
+				++master_->number_binds_;
+			}
 
-    virtual void OnAfterUnbindInput(Param* old_source) {
-      --master_->number_binds_;
-    }
+			virtual void OnAfterUnbindInput(Param* old_source) {
+				--master_->number_binds_;
+			}
 
-   private:
-    StreamBank* master_;
-    O3D_DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
-  };
+		private:
+			StreamBank* master_;
+			O3D_DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
+		};
 
-  // Called after the a stream as been added or removed.
-  // Overridden in derived classes that need to know when a stream has been
-  // added or removed.
-  virtual void OnUpdateStreams() { }
+		// Called after the a stream as been added or removed.
+		// Overridden in derived classes that need to know when a stream has been
+		// added or removed.
+		virtual void OnUpdateStreams() { }
 
-  StreamParamVector vertex_stream_params_;
+		StreamParamVector vertex_stream_params_;
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  // Updates the renderable flag.
-  void UpdateRenderable();
+		// Updates the renderable flag.
+		void UpdateRenderable();
 
-  // the number of streams that are bound to a VertexSource.
-  // Used as a shortcut. If zero no need to do expensive checking.
-  unsigned int number_binds_;
+		// the number of streams that are bound to a VertexSource.
+		// Used as a shortcut. If zero no need to do expensive checking.
+		unsigned int number_binds_;
 
-  // The number of times a stream has been added or removed.
-  int change_count_;
+		// The number of times a stream has been added or removed.
+		int change_count_;
 
-  // True if all the streams on this streambank are renderable.
-  bool renderable_;
+		// True if all the streams on this streambank are renderable.
+		bool renderable_;
 
-  // Manager for weak pointers to us.
-  WeakPointerType::WeakPointerManager weak_pointer_manager_;
+		// Manager for weak pointers to us.
+		WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
-  O3D_DECL_CLASS(StreamBank, NamedObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(StreamBank);
-};
+		O3D_DECL_CLASS(StreamBank, NamedObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(StreamBank);
+	};
 
-class ParamStreamBank : public TypedRefParam<StreamBank> {
- public:
-  typedef SmartPointer<ParamStreamBank> Ref;
+	class ParamStreamBank : public TypedRefParam<StreamBank> {
+	public:
+		typedef SmartPointer<ParamStreamBank> Ref;
 
-  ParamStreamBank(ServiceLocator* service_locator,
-                  bool dynamic,
-                  bool read_only)
-      : TypedRefParam<StreamBank>(service_locator, dynamic, read_only) {}
+		ParamStreamBank(ServiceLocator* service_locator,
+		                bool dynamic,
+		                bool read_only)
+			: TypedRefParam<StreamBank>(service_locator, dynamic, read_only) {}
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  O3D_DECL_CLASS(ParamStreamBank, RefParamBase)
-};
+		O3D_DECL_CLASS(ParamStreamBank, RefParamBase)
+	};
 
 }  // namespace o3d
 

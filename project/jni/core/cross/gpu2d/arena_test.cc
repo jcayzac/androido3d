@@ -39,109 +39,114 @@
 #include "gtest/gtest.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
-namespace {
+		namespace {
 
 // A base allocator for the Arena which tracks the regions
 // which have been allocated.
-class TrackedMallocAllocator : public Arena::Allocator {
- public:
-  TrackedMallocAllocator() {
-  }
+			class TrackedMallocAllocator : public Arena::Allocator {
+			public:
+				TrackedMallocAllocator() {
+				}
 
-  virtual void* Allocate(size_t size) {
-    void* res = ::malloc(size);
-    allocated_regions_.push_back(res);
-    return res;
-  }
+				virtual void* Allocate(size_t size) {
+					void* res = ::malloc(size);
+					allocated_regions_.push_back(res);
+					return res;
+				}
 
-  virtual void Free(void* ptr) {
-    std::vector<void*>::iterator slot = std::find(allocated_regions_.begin(),
-                                                  allocated_regions_.end(),
-                                                  ptr);
-    ASSERT_TRUE(slot != allocated_regions_.end());
-    allocated_regions_.erase(slot);
-    ::free(ptr);
-  }
+				virtual void Free(void* ptr) {
+					std::vector<void*>::iterator slot = std::find(allocated_regions_.begin(),
+					                                    allocated_regions_.end(),
+					                                    ptr);
+					ASSERT_TRUE(slot != allocated_regions_.end());
+					allocated_regions_.erase(slot);
+					::free(ptr);
+				}
 
-  bool IsEmpty() {
-    return NumRegions() == 0;
-  }
+				bool IsEmpty() {
+					return NumRegions() == 0;
+				}
 
-  int NumRegions() {
-    return allocated_regions_.size();
-  }
+				int NumRegions() {
+					return allocated_regions_.size();
+				}
 
- private:
-  std::vector<void*> allocated_regions_;
-  O3D_DISALLOW_COPY_AND_ASSIGN(TrackedMallocAllocator);
-};
+			private:
+				std::vector<void*> allocated_regions_;
+				O3D_DISALLOW_COPY_AND_ASSIGN(TrackedMallocAllocator);
+			};
 
 // A couple of simple structs to allocate.
-struct TestClass1 {
-  TestClass1()
-      : x(0), y(0), z(0), w(1) {
-  }
+			struct TestClass1 {
+				TestClass1()
+					: x(0), y(0), z(0), w(1) {
+				}
 
-  float x, y, z, w;
-};
+				float x, y, z, w;
+			};
 
-struct TestClass2 {
-  TestClass2()
-      : a(1), b(2), c(3), d(4) {
-  }
+			struct TestClass2 {
+				TestClass2()
+					: a(1), b(2), c(3), d(4) {
+				}
 
-  float a, b, c, d;
-};
+				float a, b, c, d;
+			};
 
-}  // anonymous namespace
+		}  // anonymous namespace
 
-class ArenaTest : public testing::Test {
-};
+		class ArenaTest : public testing::Test {
+		};
 
 // Make sure the arena can successfully allocate from more than one
 // region.
-TEST_F(ArenaTest, CanAllocateFromMoreThanOneRegion) {
-  TrackedMallocAllocator base_allocator;
-  Arena arena(&base_allocator);
-  for (int i = 0; i < 10000; i++) {
-    arena.Alloc<TestClass1>();
-  }
-  EXPECT_GT(base_allocator.NumRegions(), 1);
-}
+		TEST_F(ArenaTest, CanAllocateFromMoreThanOneRegion) {
+			TrackedMallocAllocator base_allocator;
+			Arena arena(&base_allocator);
+
+			for(int i = 0; i < 10000; i++) {
+				arena.Alloc<TestClass1>();
+			}
+
+			EXPECT_GT(base_allocator.NumRegions(), 1);
+		}
 
 // Make sure the arena frees all allocated regions during destruction.
-TEST_F(ArenaTest, FreesAllAllocatedRegions) {
-  ::o3d::base::scoped_ptr<TrackedMallocAllocator> base_allocator(
-      new TrackedMallocAllocator());
-  {
-    ::o3d::base::scoped_ptr<Arena> arena(new Arena(base_allocator.get()));
-    for (int i = 0; i < 3; i++) {
-      arena->Alloc<TestClass1>();
-    }
-    EXPECT_GT(base_allocator->NumRegions(), 0);
-  }
-  EXPECT_TRUE(base_allocator->IsEmpty());
-}
+		TEST_F(ArenaTest, FreesAllAllocatedRegions) {
+			::o3d::base::scoped_ptr<TrackedMallocAllocator> base_allocator(
+			    new TrackedMallocAllocator());
+			{
+				::o3d::base::scoped_ptr<Arena> arena(new Arena(base_allocator.get()));
+
+				for(int i = 0; i < 3; i++) {
+					arena->Alloc<TestClass1>();
+				}
+
+				EXPECT_GT(base_allocator->NumRegions(), 0);
+			}
+			EXPECT_TRUE(base_allocator->IsEmpty());
+		}
 
 // Make sure the arena runs constructors of the objects allocated within.
-TEST_F(ArenaTest, RunsConstructors) {
-  Arena arena;
-  for (int i = 0; i < 10000; i++) {
-    TestClass1* tc1 = arena.Alloc<TestClass1>();
-    EXPECT_EQ(0, tc1->x);
-    EXPECT_EQ(0, tc1->y);
-    EXPECT_EQ(0, tc1->z);
-    EXPECT_EQ(1, tc1->w);
-    TestClass2* tc2 = arena.Alloc<TestClass2>();
-    EXPECT_EQ(1, tc2->a);
-    EXPECT_EQ(2, tc2->b);
-    EXPECT_EQ(3, tc2->c);
-    EXPECT_EQ(4, tc2->d);
-  }
-}
+		TEST_F(ArenaTest, RunsConstructors) {
+			Arena arena;
 
-}  // namespace gpu2d
+			for(int i = 0; i < 10000; i++) {
+				TestClass1* tc1 = arena.Alloc<TestClass1>();
+				EXPECT_EQ(0, tc1->x);
+				EXPECT_EQ(0, tc1->y);
+				EXPECT_EQ(0, tc1->z);
+				EXPECT_EQ(1, tc1->w);
+				TestClass2* tc2 = arena.Alloc<TestClass2>();
+				EXPECT_EQ(1, tc2->a);
+				EXPECT_EQ(2, tc2->b);
+				EXPECT_EQ(3, tc2->c);
+				EXPECT_EQ(4, tc2->d);
+			}
+		}
+
+	}  // namespace gpu2d
 }  // namespace o3d
 

@@ -37,76 +37,78 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(RenderSurfaceSet, RenderNode);
+	O3D_DEFN_CLASS(RenderSurfaceSet, RenderNode);
 
-const char* RenderSurfaceSet::kRenderSurfaceParamName =
-    O3D_STRING_CONSTANT("renderSurface");
-const char* RenderSurfaceSet::kRenderDepthStencilSurfaceParamName =
-    O3D_STRING_CONSTANT("renderDepthStencilSurface");
+	const char* RenderSurfaceSet::kRenderSurfaceParamName =
+	    O3D_STRING_CONSTANT("renderSurface");
+	const char* RenderSurfaceSet::kRenderDepthStencilSurfaceParamName =
+	    O3D_STRING_CONSTANT("renderDepthStencilSurface");
 
-RenderSurfaceSet::RenderSurfaceSet(ServiceLocator* service_locator)
-    : RenderNode(service_locator),
-      old_render_surface_(NULL),
-      old_depth_stencil_surface_(NULL) {
-  RegisterParamRef(kRenderSurfaceParamName, &render_surface_param_);
-  RegisterParamRef(kRenderDepthStencilSurfaceParamName,
-                   &render_depth_stencil_surface_param_);
-}
+	RenderSurfaceSet::RenderSurfaceSet(ServiceLocator* service_locator)
+		: RenderNode(service_locator),
+		  old_render_surface_(NULL),
+		  old_depth_stencil_surface_(NULL) {
+		RegisterParamRef(kRenderSurfaceParamName, &render_surface_param_);
+		RegisterParamRef(kRenderDepthStencilSurfaceParamName,
+		                 &render_depth_stencil_surface_param_);
+	}
 
-ObjectBase::Ref RenderSurfaceSet::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new RenderSurfaceSet(service_locator));
-}
+	ObjectBase::Ref RenderSurfaceSet::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new RenderSurfaceSet(service_locator));
+	}
 
-bool RenderSurfaceSet::ValidateBoundSurfaces() const {
-  RenderSurface *surface = render_surface();
-  RenderDepthStencilSurface *depth_stencil_surface =
-      render_depth_stencil_surface();
+	bool RenderSurfaceSet::ValidateBoundSurfaces() const {
+		RenderSurface* surface = render_surface();
+		RenderDepthStencilSurface* depth_stencil_surface =
+		    render_depth_stencil_surface();
 
-  // Validate that at least one surface is assigned.
-  if (!(surface || depth_stencil_surface)) {
-    O3D_ERROR(service_locator())
-        << "RenderSurfaceSet '" << name()
-        << "' has neither a surface nor a depth stencil surface. "
-        << "It must have at least one.";
-    return false;
-  }
+		// Validate that at least one surface is assigned.
+		if(!(surface || depth_stencil_surface)) {
+			O3D_ERROR(service_locator())
+			        << "RenderSurfaceSet '" << name()
+			        << "' has neither a surface nor a depth stencil surface. "
+			        << "It must have at least one.";
+			return false;
+		}
 
-  // If both surfaces are bound, validate that they share the same dimensions.
-  if (surface && depth_stencil_surface) {
-    if (surface->width() != depth_stencil_surface->width() ||
-        surface->height() != depth_stencil_surface->height()) {
-      O3D_ERROR(service_locator())
-          << "RenderSurfaceSet '" << name()
-          << "' has a surface and a depth stencil surface that do not match"
-          << " dimensions.";
-      return false;
-    }
-  }
+		// If both surfaces are bound, validate that they share the same dimensions.
+		if(surface && depth_stencil_surface) {
+			if(surface->width() != depth_stencil_surface->width() ||
+			        surface->height() != depth_stencil_surface->height()) {
+				O3D_ERROR(service_locator())
+				        << "RenderSurfaceSet '" << name()
+				        << "' has a surface and a depth stencil surface that do not match"
+				        << " dimensions.";
+				return false;
+			}
+		}
 
-  return true;
-}
+		return true;
+	}
 
-void RenderSurfaceSet::Render(RenderContext* render_context) {
-  if (!ValidateBoundSurfaces()) {
-    return;
-  }
-  render_context->renderer()->GetRenderSurfaces(
-      &old_render_surface_,
-      &old_depth_stencil_surface_,
-      &old_is_back_buffer_);
-  render_context->renderer()->SetRenderSurfaces(
-      render_surface(),
-      render_depth_stencil_surface(),
-      false);
-}
+	void RenderSurfaceSet::Render(RenderContext* render_context) {
+		if(!ValidateBoundSurfaces()) {
+			return;
+		}
 
-void RenderSurfaceSet::PostRender(RenderContext* render_context) {
-  if (!ValidateBoundSurfaces()) {
-    return;
-  }
-  render_context->renderer()->SetRenderSurfaces(old_render_surface_,
-                                                old_depth_stencil_surface_,
-                                                old_is_back_buffer_);
-}
+		render_context->renderer()->GetRenderSurfaces(
+		    &old_render_surface_,
+		    &old_depth_stencil_surface_,
+		    &old_is_back_buffer_);
+		render_context->renderer()->SetRenderSurfaces(
+		    render_surface(),
+		    render_depth_stencil_surface(),
+		    false);
+	}
+
+	void RenderSurfaceSet::PostRender(RenderContext* render_context) {
+		if(!ValidateBoundSurfaces()) {
+			return;
+		}
+
+		render_context->renderer()->SetRenderSurfaces(old_render_surface_,
+		        old_depth_stencil_surface_,
+		        old_is_back_buffer_);
+	}
 
 }  // namespace o3d

@@ -42,61 +42,59 @@
 namespace o3d {
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-static uint64_t GetCurrentTime() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000000ULL + tv.tv_usec;
-}
+	static uint64_t GetCurrentTime() {
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		return tv.tv_sec * 1000000ULL + tv.tv_usec;
+	}
 #endif
 
-ElapsedTimeTimer::ElapsedTimeTimer() {
+	ElapsedTimeTimer::ElapsedTimeTimer() {
 #if defined(TARGET_OS_IPHONE)
-	last_time_ = CFAbsoluteTimeGetCurrent();
+		last_time_ = CFAbsoluteTimeGetCurrent();
 #elif defined(OS_MACOSX)
-  last_time_ = UpTime();
+		last_time_ = UpTime();
 #endif
 #if defined(OS_LINUX)
-  last_time_ = GetCurrentTime();
+		last_time_ = GetCurrentTime();
 #endif
-}
+	}
 
-float ElapsedTimeTimer::GetElapsedTimeHelper(bool reset) {
-  float elapsedTime = 0.0f;
-  // Get current performance timer value.
-  TimeStamp current_time;
-
+	float ElapsedTimeTimer::GetElapsedTimeHelper(bool reset) {
+		float elapsedTime = 0.0f;
+		// Get current performance timer value.
+		TimeStamp current_time;
 #ifdef TARGET_OS_IPHONE
-  current_time = CFAbsoluteTimeGetCurrent();
-  elapsedTime = static_cast<float>((current_time - last_time_));
+		current_time = CFAbsoluteTimeGetCurrent();
+		elapsedTime = static_cast<float>((current_time - last_time_));
 #elif OS_MACOSX
-  current_time = UpTime();
-  AbsoluteTime elapsed_ticks = SubAbsoluteFromAbsolute(current_time,
-                                                       last_time_);
-  Nanoseconds elapsedInNanos = AbsoluteToNanoseconds(elapsed_ticks);
-  uint64_t ns64 = UnsignedWideToUInt64(elapsedInNanos);
-  double elapsedInSeconds = static_cast<double>(ns64) * 0.000000001;
-  elapsedTime = elapsedInSeconds;
+		current_time = UpTime();
+		AbsoluteTime elapsed_ticks = SubAbsoluteFromAbsolute(current_time,
+		                             last_time_);
+		Nanoseconds elapsedInNanos = AbsoluteToNanoseconds(elapsed_ticks);
+		uint64_t ns64 = UnsignedWideToUInt64(elapsedInNanos);
+		double elapsedInSeconds = static_cast<double>(ns64) * 0.000000001;
+		elapsedTime = elapsedInSeconds;
 #endif
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  current_time = GetCurrentTime();
-  elapsedTime = static_cast<float>((current_time - last_time_) * 1.e-6);
+		current_time = GetCurrentTime();
+		elapsedTime = static_cast<float>((current_time - last_time_) * 1.e-6);
 #endif
 
-  if (reset) {
-    // Save the current time for the next time we ask.
-    last_time_ = current_time;
-  }
+		if(reset) {
+			// Save the current time for the next time we ask.
+			last_time_ = current_time;
+		}
 
-  return elapsedTime;
-}
+		return elapsedTime;
+	}
 
-float ElapsedTimeTimer::GetElapsedTimeWithoutClearing() {
-  return GetElapsedTimeHelper(false);
-}
+	float ElapsedTimeTimer::GetElapsedTimeWithoutClearing() {
+		return GetElapsedTimeHelper(false);
+	}
 
-float ElapsedTimeTimer::GetElapsedTimeAndReset() {
-  return GetElapsedTimeHelper(true);
-}
+	float ElapsedTimeTimer::GetElapsedTimeAndReset() {
+		return GetElapsedTimeHelper(true);
+	}
 
 }  // namespace o3d

@@ -20,22 +20,22 @@
 
 namespace o3d {
 
-class FileResource: public ExternalResource {
- public:
-  explicit FileResource(const std::string& path);
-  virtual ~FileResource();
-  // From ExternalResource:
-  const uint8_t* const data() const {
-    return mData;
-  }
-  size_t size() const {
-    return mSize;
-  }
- protected:
-  int    mFD;
-  uint8_t* mData;
-  size_t mSize;
-};
+	class FileResource: public ExternalResource {
+	public:
+		explicit FileResource(const std::string& path);
+		virtual ~FileResource();
+		// From ExternalResource:
+		const uint8_t* const data() const {
+			return mData;
+		}
+		size_t size() const {
+			return mSize;
+		}
+	protected:
+		int    mFD;
+		uint8_t* mData;
+		size_t mSize;
+	};
 
 } // namespace o3d
 

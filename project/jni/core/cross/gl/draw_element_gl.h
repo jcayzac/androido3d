@@ -40,18 +40,18 @@
 
 namespace o3d {
 
-class Element;
+	class Element;
 
 // DrawElementGL is the OpenGL implementation of the DrawElement. It
 // provides a place for the renderer to store platform specific cache
 // information.
-class DrawElementGL : public DrawElement {
- public:
-  explicit DrawElementGL(ServiceLocator* service_locator);
-  ~DrawElementGL();
+	class DrawElementGL : public DrawElement {
+	public:
+		explicit DrawElementGL(ServiceLocator* service_locator);
+		~DrawElementGL();
 
- private:
-};
+	private:
+	};
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GL_DRAW_ELEMENT_GL_H_

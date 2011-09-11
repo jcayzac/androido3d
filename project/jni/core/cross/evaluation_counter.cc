@@ -34,7 +34,7 @@
 
 namespace o3d {
 
-const InterfaceId EvaluationCounter::kInterfaceId =
-    InterfaceTraits<EvaluationCounter>::kInterfaceId;
+	const InterfaceId EvaluationCounter::kInterfaceId =
+	    InterfaceTraits<EvaluationCounter>::kInterfaceId;
 
 }  // namespace o3d

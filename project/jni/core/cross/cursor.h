@@ -37,33 +37,33 @@
 
 namespace o3d {
 
-namespace Cursor {
+	namespace Cursor {
 
 // Defines the cursor tyoes.
-enum CursorType {
-  DEFAULT,
-  NONE,
-  CROSSHAIR,
-  POINTER,
-  E_RESIZE,
-  NE_RESIZE,
-  NW_RESIZE,
-  N_RESIZE,
-  SE_RESIZE,
-  SW_RESIZE,
-  S_RESIZE,
-  W_RESIZE,
-  MOVE,
-  TEXT,
-  WAIT,
-  PROGRESS,
-  HELP,
+		enum CursorType {
+			DEFAULT,
+			NONE,
+			CROSSHAIR,
+			POINTER,
+			E_RESIZE,
+			NE_RESIZE,
+			NW_RESIZE,
+			N_RESIZE,
+			SE_RESIZE,
+			SW_RESIZE,
+			S_RESIZE,
+			W_RESIZE,
+			MOVE,
+			TEXT,
+			WAIT,
+			PROGRESS,
+			HELP,
 
-  NUM_CURSORS,  // This is not a valid Cursor Type. It is the number of cursor
-                // types.
-};
+			NUM_CURSORS,  // This is not a valid Cursor Type. It is the number of cursor
+			// types.
+		};
 
-}  // namespace Cursor
+	}  // namespace Cursor
 
 }  // namespace o3d
 

@@ -20,40 +20,40 @@
 
 namespace o3d {
 
-/** @brief An external resource.
-  *
-  * This class is basically just a reference-counted
-  * interface to a data holding object.
-  *
-  * It provides a simple way to handle arbitrary
-  * data from various sources (mmapped file,
-  * memory, database, etc)
-  */
-class ExternalResource: public RefCounted  {
- public:
-  typedef SmartPointer<ExternalResource> Ref;
+	/** @brief An external resource.
+	  *
+	  * This class is basically just a reference-counted
+	  * interface to a data holding object.
+	  *
+	  * It provides a simple way to handle arbitrary
+	  * data from various sources (mmapped file,
+	  * memory, database, etc)
+	  */
+	class ExternalResource: public RefCounted  {
+	public:
+		typedef SmartPointer<ExternalResource> Ref;
 
-  virtual ~ExternalResource() { }
+		virtual ~ExternalResource() { }
 
-  /// @return Pointer to the data
-  virtual const uint8_t* const data() const = 0;
+		/// @return Pointer to the data
+		virtual const uint8_t* const data() const = 0;
 
-  /// @return Size of the data
-  virtual size_t size() const = 0;
-  
-  /// @return Name of the resource, if any
-  const std::string& name() const {
-    return mName;
-  }
+		/// @return Size of the data
+		virtual size_t size() const = 0;
 
-  /// @return <code>true</code> if some data is available, <code>false</code> otherwise
-  operator bool() const {
-    return (data() && size());
-  }
+		/// @return Name of the resource, if any
+		const std::string& name() const {
+			return mName;
+		}
 
- protected:
-  std::string mName;
-};
+		/// @return <code>true</code> if some data is available, <code>false</code> otherwise
+		operator bool() const {
+			return (data() && size());
+		}
+
+	protected:
+		std::string mName;
+	};
 
 } // namespace o3d
 

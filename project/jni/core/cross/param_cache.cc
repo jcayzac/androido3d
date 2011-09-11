@@ -41,84 +41,89 @@
 
 namespace o3d {
 
-void ParamCache::ClearParamCache() {
-  rebuild_cache_ = true;
-}
+	void ParamCache::ClearParamCache() {
+		rebuild_cache_ = true;
+	}
 
-bool ParamCache::ValidateAndCacheParams(Effect* effect,
-                                        DrawElement* draw_element,
-                                        Element* element,
-                                        StreamBank* stream_bank,
-                                        Material* material,
-                                        ParamObject* override) {
-  if (rebuild_cache_ ||
-      draw_element_tracker_.NeedToUpdate(draw_element) ||
-      element_tracker_.NeedToUpdate(element) ||
-      material_tracker_.NeedToUpdate(material) ||
-      effect_tracker_.NeedToUpdate(effect) ||
-      stream_bank_tracker_.NeedToUpdate(stream_bank) ||
-      override_tracker_.NeedToUpdate(override) ||
-      !ValidateEffect(effect)) {
-    UpdateCache(effect, draw_element, element, material, override);
-    draw_element_tracker_.Update(draw_element);
-    element_tracker_.Update(element);
-    material_tracker_.Update(material);
-    effect_tracker_.Update(effect);
-    stream_bank_tracker_.Update(stream_bank);
-    override_tracker_.Update(override);
-    rebuild_cache_ = false;
-    return false;
-  }
-  return true;
-}
+	bool ParamCache::ValidateAndCacheParams(Effect* effect,
+	                                        DrawElement* draw_element,
+	                                        Element* element,
+	                                        StreamBank* stream_bank,
+	                                        Material* material,
+	                                        ParamObject* override) {
+		if(rebuild_cache_ ||
+		        draw_element_tracker_.NeedToUpdate(draw_element) ||
+		        element_tracker_.NeedToUpdate(element) ||
+		        material_tracker_.NeedToUpdate(material) ||
+		        effect_tracker_.NeedToUpdate(effect) ||
+		        stream_bank_tracker_.NeedToUpdate(stream_bank) ||
+		        override_tracker_.NeedToUpdate(override) ||
+		        !ValidateEffect(effect)) {
+			UpdateCache(effect, draw_element, element, material, override);
+			draw_element_tracker_.Update(draw_element);
+			element_tracker_.Update(element);
+			material_tracker_.Update(material);
+			effect_tracker_.Update(effect);
+			stream_bank_tracker_.Update(stream_bank);
+			override_tracker_.Update(override);
+			rebuild_cache_ = false;
+			return false;
+		}
 
-ParamCacheManager::ParamCacheManager(Renderer* renderer)
-    : top_cache_index_(0),
-      last_render_count_(renderer->render_frame_count() - 1) {
-}
+		return true;
+	}
 
-ParamCacheManager::~ParamCacheManager() {
-  for (unsigned ii = 0; ii < param_caches_.size(); ++ii) {
-    delete param_caches_[ii];
-  }
-}
+	ParamCacheManager::ParamCacheManager(Renderer* renderer)
+		: top_cache_index_(0),
+		  last_render_count_(renderer->render_frame_count() - 1) {
+	}
 
-ParamCache* ParamCacheManager::GetNextCache(Renderer* renderer) {
-  // If this is the first time we've been asked for a cache this frame
-  // reset to start using the first cache.
-  if (renderer->render_frame_count() != last_render_count_) {
-    last_render_count_ = renderer->render_frame_count();
-    // remove any un-needed caches.
-    for (unsigned ii = top_cache_index_; ii < param_caches_.size(); ++ii) {
-      renderer->FreeParamCache(param_caches_[ii]);
-      param_caches_[ii] = NULL;
-    }
+	ParamCacheManager::~ParamCacheManager() {
+		for(unsigned ii = 0; ii < param_caches_.size(); ++ii) {
+			delete param_caches_[ii];
+		}
+	}
 
-    // Reset to first cache.
-    top_cache_index_ = 0;
-  }
+	ParamCache* ParamCacheManager::GetNextCache(Renderer* renderer) {
+		// If this is the first time we've been asked for a cache this frame
+		// reset to start using the first cache.
+		if(renderer->render_frame_count() != last_render_count_) {
+			last_render_count_ = renderer->render_frame_count();
 
-  // ParamCaches only get created once and then reused. This saves lots of
-  // allocations/deallocation that would otherwise happen every frame.
+			// remove any un-needed caches.
+			for(unsigned ii = top_cache_index_; ii < param_caches_.size(); ++ii) {
+				renderer->FreeParamCache(param_caches_[ii]);
+				param_caches_[ii] = NULL;
+			}
 
-  // If I instead used size() then I would have to clear() param_caches_ each
-  // frame which in turn would mean I'd need to keep a separate container of
-  // ParamCaches to keep track of the ParamCaches I'm keeping around and pulling
-  // them out of that container and putting them in this one.
+			// Reset to first cache.
+			top_cache_index_ = 0;
+		}
 
-  // Instead I just keep using the ones in this container and use
-  // top_cache_index_ to track the highest used ParamCache.
-  if (top_cache_index_ >= param_caches_.size()) {
-    param_caches_.push_back(NULL);
-  }
-  ParamCache* param_cache = param_caches_[top_cache_index_];
-  if (!param_cache) {
-    param_cache = renderer->CreateParamCache();
-    param_caches_[top_cache_index_] = param_cache;
-  }
-  ++top_cache_index_;
-  return param_cache;
-}
+		// ParamCaches only get created once and then reused. This saves lots of
+		// allocations/deallocation that would otherwise happen every frame.
+
+		// If I instead used size() then I would have to clear() param_caches_ each
+		// frame which in turn would mean I'd need to keep a separate container of
+		// ParamCaches to keep track of the ParamCaches I'm keeping around and pulling
+		// them out of that container and putting them in this one.
+
+		// Instead I just keep using the ones in this container and use
+		// top_cache_index_ to track the highest used ParamCache.
+		if(top_cache_index_ >= param_caches_.size()) {
+			param_caches_.push_back(NULL);
+		}
+
+		ParamCache* param_cache = param_caches_[top_cache_index_];
+
+		if(!param_cache) {
+			param_cache = renderer->CreateParamCache();
+			param_caches_[top_cache_index_] = param_cache;
+		}
+
+		++top_cache_index_;
+		return param_cache;
+	}
 
 }  // namespace o3d
 

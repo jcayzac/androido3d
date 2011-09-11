@@ -40,59 +40,62 @@
 namespace o3d {
 
 // Test fixture for RawData testing.
-class MemoryBufferTest : public testing::Test {
-};
+	class MemoryBufferTest : public testing::Test {
+	};
 
 // Test RawData
-TEST_F(MemoryBufferTest, Basic) {
-  int i;
-  MemoryBuffer<int> buffer;
-  // Check that initially the buffer is not allocated
-  ASSERT_EQ(0U, buffer.GetLength());
+	TEST_F(MemoryBufferTest, Basic) {
+		int i;
+		MemoryBuffer<int> buffer;
+		// Check that initially the buffer is not allocated
+		ASSERT_EQ(0U, buffer.GetLength());
+		// Allocate and check the length is good
+		const int kBufferLength = 1024;
+		buffer.Allocate(kBufferLength);
+		ASSERT_EQ(kBufferLength, static_cast<int>(buffer.GetLength()));
+		// Once allocated, the initial contents should be zero
+		// Check that the buffer contents are zeroed out
+		bool buffer_is_cleared = true;
 
-  // Allocate and check the length is good
-  const int kBufferLength = 1024;
-  buffer.Allocate(kBufferLength);
-  ASSERT_EQ(kBufferLength, static_cast<int>(buffer.GetLength()));
+		for(i = 0; i < kBufferLength; ++i) {
+			if(buffer[i] != 0) {
+				buffer_is_cleared = false;
+				break;
+			}
+		}
 
-  // Once allocated, the initial contents should be zero
-  // Check that the buffer contents are zeroed out
-  bool buffer_is_cleared = true;
-  for (i = 0; i < kBufferLength; ++i) {
-    if (buffer[i] != 0) {
-      buffer_is_cleared = false;
-      break;
-    }
-  }
-  ASSERT_TRUE(buffer_is_cleared);
+		ASSERT_TRUE(buffer_is_cleared);
 
-  // Write some values and check that they're OK
-  for (i = 0; i < kBufferLength; ++i) {
-    buffer[i] = i;
-  }
-  bool buffer_values_good = true;
-  for (i = 0; i < kBufferLength; ++i) {
-    if (buffer[i] != i) {
-      buffer_values_good = false;
-      break;
-    }
-  }
-  ASSERT_TRUE(buffer_values_good);
+		// Write some values and check that they're OK
+		for(i = 0; i < kBufferLength; ++i) {
+			buffer[i] = i;
+		}
 
-  // Now, clear the buffer and check that it worked
-  buffer.Clear();
-  buffer_is_cleared = true;
-  for (i = 0; i < kBufferLength; ++i) {
-    if (buffer[i] != 0) {
-      buffer_is_cleared = false;
-      break;
-    }
-  }
-  ASSERT_TRUE(buffer_is_cleared);
+		bool buffer_values_good = true;
 
-  // Deallocate the buffer and verify its length
-  buffer.Deallocate();
-  ASSERT_EQ(0U, buffer.GetLength());
-}
+		for(i = 0; i < kBufferLength; ++i) {
+			if(buffer[i] != i) {
+				buffer_values_good = false;
+				break;
+			}
+		}
+
+		ASSERT_TRUE(buffer_values_good);
+		// Now, clear the buffer and check that it worked
+		buffer.Clear();
+		buffer_is_cleared = true;
+
+		for(i = 0; i < kBufferLength; ++i) {
+			if(buffer[i] != 0) {
+				buffer_is_cleared = false;
+				break;
+			}
+		}
+
+		ASSERT_TRUE(buffer_is_cleared);
+		// Deallocate the buffer and verify its length
+		buffer.Deallocate();
+		ASSERT_EQ(0U, buffer.GetLength());
+	}
 
 }  // namespace o3d

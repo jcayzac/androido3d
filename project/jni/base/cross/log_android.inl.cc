@@ -16,24 +16,29 @@
 #include <android/log.h>
 
 namespace o3d {
-namespace base {
+	namespace base {
 
-inline static int translateLogLevel(LogLevel s) {
-  switch(s) {
-    default:
-    case INFO:    return ANDROID_LOG_INFO;
-    case WARNING: return ANDROID_LOG_WARN;
-    case ERROR:   return ANDROID_LOG_ERROR;
-    case FATAL:   return ANDROID_LOG_FATAL;
-  }
-}
+		inline static int translateLogLevel(LogLevel s) {
+			switch(s) {
+			default:
+			case INFO:
+				return ANDROID_LOG_INFO;
+			case WARNING:
+				return ANDROID_LOG_WARN;
+			case ERROR:
+				return ANDROID_LOG_ERROR;
+			case FATAL:
+				return ANDROID_LOG_FATAL;
+			}
+		}
 
-FullLogger::~FullLogger() {
-  // Sometimes, __android_log_assert() traps the process *before* the message
-  // gets sent to the log, so I don't use it.
-  __android_log_write(translateLogLevel(mLevel), mTag.c_str(), mStream.str().c_str());
-  if (mLevel==FATAL) abort();
-}
+		FullLogger::~FullLogger() {
+			// Sometimes, __android_log_assert() traps the process *before* the message
+			// gets sent to the log, so I don't use it.
+			__android_log_write(translateLogLevel(mLevel), mTag.c_str(), mStream.str().c_str());
 
-} // namespace base
+			if(mLevel == FATAL) abort();
+		}
+
+	} // namespace base
 } // namespace o3d

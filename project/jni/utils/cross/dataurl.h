@@ -38,13 +38,13 @@
 #include "base/cross/scoped_ptr.h"
 
 namespace o3d {
-namespace dataurl {
+	namespace dataurl {
 
 // An empty data URL. ("data:,")
-extern const char* const kEmptyDataURL;
+		extern const char* const kEmptyDataURL;
 
 // Creates a data URL for the given data.
-std::string ToDataURL(const std::string& mime_type, const void* data, size_t length);
+		std::string ToDataURL(const std::string& mime_type, const void* data, size_t length);
 
 // Decodes the data from a data URL and stores a pointer to the data in
 // dst_buffer. If an error occurs in decoding, it returns false and
@@ -58,12 +58,12 @@ std::string ToDataURL(const std::string& mime_type, const void* data, size_t len
 //   error_string: This will contain the error message, if an error occurs.
 // Returns:
 //   False if an error occurs in decoding, true otherwise.
-bool FromDataURL(const std::string& data_url,
-                 ::o3d::base::scoped_array<uint8_t>* dst_buffer,
-                 size_t* output_length,
-                 std::string* error_string);
+		bool FromDataURL(const std::string& data_url,
+		                 ::o3d::base::scoped_array<uint8_t>* dst_buffer,
+		                 size_t* output_length,
+		                 std::string* error_string);
 
-}  // namespace dataurl
+	}  // namespace dataurl
 }  // namespace o3d
 
 #endif  // O3D_UTILS_CROSS_DATAURL_H_

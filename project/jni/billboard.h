@@ -23,14 +23,14 @@
 // object used to represent the billboard.
 
 namespace o3d {
-	
+
 	class Pack;
 	class ParamSampler;
 	class Sampler;
 	class Shape;
 	class Transform;
 	class Texture2D;
-	
+
 }  // namespace o3d.
 
 namespace o3d_utils {
@@ -46,30 +46,30 @@ namespace o3d_utils {
 	//       created with: pack->Create<o3d::Transform>();
 	//       If the transform was not newly created, the behavior is undefined although
 	//       it will likely not be catastrophic in nature.
-	bool MakeBillboard(Transform *transform,
-					   Pack *pack,
-					   ViewInfo *viewInfo,
-					   Sampler *sampler,
-					   float x, float y, float z,
-					   float width, float height);
-	
+	bool MakeBillboard(Transform* transform,
+	                   Pack* pack,
+	                   ViewInfo* viewInfo,
+	                   Sampler* sampler,
+	                   float x, float y, float z,
+	                   float width, float height);
+
 	// Creates a billboard (i.e. an O3D transform) and puts it in the tree at parent.
 	// Returns the Id of the newly created Transform representing the billboard.
 	// Note: We can remove x, y, z, width, height parameters and require they are
 	//       set with the functions below if that is preferred.
-	Id GenerateBillboard(Pack *pack,
-						 ViewInfo *viewInfo,
-						 Transform *parent,
-						 Sampler *sampler,
-						 float x, float y, float z,
-						 float width, float height);
-	
+	Id GenerateBillboard(Pack* pack,
+	                     ViewInfo* viewInfo,
+	                     Transform* parent,
+	                     Sampler* sampler,
+	                     float x, float y, float z,
+	                     float width, float height);
+
 	// Deletes a billboard (transform)
-	bool DeleteBillboard(Pack *pack, Id bid);
+	bool DeleteBillboard(Pack* pack, Id bid);
 
 	// Function for querying if a transform is being used to represent a billboard.
 	bool isBillBoardTransform(const Transform*);
-	
+
 }  // namespace o3d_utils
 
 #endif  // O3D_UTILS_BILLBOARD_H_

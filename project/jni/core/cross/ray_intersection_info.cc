@@ -36,57 +36,58 @@
 
 namespace o3d {
 
-static const float kEpsilon = 0.000001f;
+	static const float kEpsilon = 0.000001f;
 
 // TODO: Someone who is better at math, please optimize this.
-bool RayIntersectionInfo::IntersectTriangle(const Point3& start,
-                                            const Point3& end,
-                                            const Point3& vert0,
-                                            const Point3& vert1,
-                                            const Point3& vert2,
-                                            Point3* intersectionPoint) {
-  Vector3 ab(vert1 - vert0);
-  Vector3 ac(vert2 - vert0);
-  Vector3 qp(start - end);
+	bool RayIntersectionInfo::IntersectTriangle(const Point3& start,
+	        const Point3& end,
+	        const Point3& vert0,
+	        const Point3& vert1,
+	        const Point3& vert2,
+	        Point3* intersectionPoint) {
+		Vector3 ab(vert1 - vert0);
+		Vector3 ac(vert2 - vert0);
+		Vector3 qp(start - end);
+		Vector3 n(cross(ab, ac));
+		float d = dot(qp, n);
 
-  Vector3 n(cross(ab, ac));
+		if(d <= 0.0f) {
+			return false;
+		}
 
-  float d = dot(qp, n);
-  if (d <= 0.0f) {
-    return false;
-  }
+		Vector3 ap(start - vert0);
+		float t = dot(ap, n);
 
-  Vector3 ap(start - vert0);
-  float t = dot(ap, n);
-  if (t < 0.0f) {
-    return false;
-  }
-  if (t > d) {
-    return false;
-  }
+		if(t < 0.0f) {
+			return false;
+		}
 
-  Vector3 e(cross(qp, ap));
-  float v = dot(ac, e);
-  if (v < 0.0f || v > d) {
-    return false;
-  }
+		if(t > d) {
+			return false;
+		}
 
-  float w = -dot(ab, e);
-  if (w < 0.0f || v + w > d) {
-    return false;
-  }
+		Vector3 e(cross(qp, ap));
+		float v = dot(ac, e);
 
-  float ood = 1.0f / d;
-  t *= ood;
-  v *= ood;
-  w *= ood;
-  float u = 1.0f - v -w;
+		if(v < 0.0f || v > d) {
+			return false;
+		}
 
-  *intersectionPoint = Point3(
-      Vector3(vert0) * u + Vector3(vert1) * v + Vector3(vert2) * w);
+		float w = -dot(ab, e);
 
-  return true;
-}
+		if(w < 0.0f || v + w > d) {
+			return false;
+		}
+
+		float ood = 1.0f / d;
+		t *= ood;
+		v *= ood;
+		w *= ood;
+		float u = 1.0f - v - w;
+		*intersectionPoint = Point3(
+		                         Vector3(vert0) * u + Vector3(vert1) * v + Vector3(vert2) * w);
+		return true;
+	}
 
 }  // namespace o3d
 

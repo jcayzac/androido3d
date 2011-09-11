@@ -36,20 +36,20 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(NamedObjectBase, ObjectBase);
-O3D_DEFN_CLASS(NamedObject, NamedObjectBase);
+	O3D_DEFN_CLASS(NamedObjectBase, ObjectBase);
+	O3D_DEFN_CLASS(NamedObject, NamedObjectBase);
 
-NamedObjectBase::NamedObjectBase(ServiceLocator *service_locator)
-    : ObjectBase(service_locator) {
-}
+	NamedObjectBase::NamedObjectBase(ServiceLocator* service_locator)
+		: ObjectBase(service_locator) {
+	}
 
-const std::string& NamedObject::name() const {
-  return name_;
-}
+	const std::string& NamedObject::name() const {
+		return name_;
+	}
 
-NamedObject::NamedObject(ServiceLocator *service_locator)
-    : NamedObjectBase(service_locator) {
-}
+	NamedObject::NamedObject(ServiceLocator* service_locator)
+		: NamedObjectBase(service_locator) {
+	}
 
 
 }  // namespace o3d

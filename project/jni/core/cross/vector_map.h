@@ -57,324 +57,337 @@ namespace o3d {
 // but assigning the key could mess up the sorting of the vector. So don't do
 // that (the compiler won't protect you like it would in a std::map).
 // TODO: see if that could be made safer without adding extra copies.
-template <typename Key, typename Data, typename Compare = std::less<Key> >
-class vector_map {
- public:
-  typedef Key key_type;
-  typedef Data data_type;
-  typedef Compare key_compare;
+	template <typename Key, typename Data, typename Compare = std::less<Key> >
+	class vector_map {
+	public:
+		typedef Key key_type;
+		typedef Data data_type;
+		typedef Compare key_compare;
 
-  typedef std::pair<key_type, data_type> value_type;
+		typedef std::pair<key_type, data_type> value_type;
 
-  class value_compare {
-   public:
-    explicit value_compare(const key_compare &compare) : compare_(compare) {}
-    bool operator()(const value_type &left, const value_type &right) {
-      return compare_(left.first, right.first);
-    }
-   private:
-    key_compare compare_;
-  };
+		class value_compare {
+		public:
+			explicit value_compare(const key_compare& compare) : compare_(compare) {}
+			bool operator()(const value_type& left, const value_type& right) {
+				return compare_(left.first, right.first);
+			}
+		private:
+			key_compare compare_;
+		};
 
-  typedef std::vector<value_type> VectorType;
-  typedef typename VectorType::size_type size_type;
+		typedef std::vector<value_type> VectorType;
+		typedef typename VectorType::size_type size_type;
 
-  class const_iterator;
+		class const_iterator;
 
-  class iterator {
-   public:
-    typedef typename VectorType::iterator::iterator_category iterator_category;
-    typedef typename VectorType::iterator::value_type value_type;
-    typedef typename VectorType::iterator::difference_type difference_type;
-    typedef typename VectorType::iterator::pointer pointer;
-    typedef typename VectorType::iterator::reference reference;
+		class iterator {
+		public:
+			typedef typename VectorType::iterator::iterator_category iterator_category;
+			typedef typename VectorType::iterator::value_type value_type;
+			typedef typename VectorType::iterator::difference_type difference_type;
+			typedef typename VectorType::iterator::pointer pointer;
+			typedef typename VectorType::iterator::reference reference;
 
-    iterator() : vector_iterator_() {}
-    iterator(const iterator &other)
-        : vector_iterator_(other.vector_iterator_) {}
+			iterator() : vector_iterator_() {}
+			iterator(const iterator& other)
+				: vector_iterator_(other.vector_iterator_) {}
 
-    iterator& operator++() {
-      ++vector_iterator_;
-      return *this;
-    }
+			iterator& operator++() {
+				++vector_iterator_;
+				return *this;
+			}
 
-    iterator operator++(int unused) {
-      iterator old = *this;
-      ++*this;
-      return old;
-    }
+			iterator operator++(int unused) {
+				iterator old = *this;
+				++*this;
+				return old;
+			}
 
-    value_type* operator->() const {
-      return vector_iterator_.operator->();
-    }
+			value_type* operator->() const {
+				return vector_iterator_.operator->();
+			}
 
-    value_type& operator*() const {
-      return *vector_iterator_;
-    }
+			value_type& operator*() const {
+				return *vector_iterator_;
+			}
 
-    bool operator==(const iterator& other) const {
-      return vector_iterator_ == other.vector_iterator_;
-    }
+			bool operator==(const iterator& other) const {
+				return vector_iterator_ == other.vector_iterator_;
+			}
 
-    bool operator!=(const iterator& other) const {
-      return !(*this == other);
-    }
+			bool operator!=(const iterator& other) const {
+				return !(*this == other);
+			}
 
-    bool operator==(const const_iterator& other) const;
-    bool operator!=(const const_iterator& other) const;
+			bool operator==(const const_iterator& other) const;
+			bool operator!=(const const_iterator& other) const;
 
-   private:
-    friend class vector_map;
-    friend class const_iterator;
-    explicit iterator(const typename VectorType::iterator &it)
-        : vector_iterator_(it) {}
+		private:
+			friend class vector_map;
+			friend class const_iterator;
+			explicit iterator(const typename VectorType::iterator& it)
+				: vector_iterator_(it) {}
 
-    typename VectorType::iterator vector_iterator_;
-  };
+			typename VectorType::iterator vector_iterator_;
+		};
 
-  class const_iterator {
-   public:
-    typedef typename VectorType::const_iterator::iterator_category
-        iterator_category;
-    typedef typename VectorType::const_iterator::value_type value_type;
-    typedef typename VectorType::const_iterator::difference_type
-        difference_type;
-    typedef typename VectorType::const_iterator::pointer pointer;
-    typedef typename VectorType::const_iterator::reference reference;
+		class const_iterator {
+		public:
+			typedef typename VectorType::const_iterator::iterator_category
+			iterator_category;
+			typedef typename VectorType::const_iterator::value_type value_type;
+			typedef typename VectorType::const_iterator::difference_type
+			difference_type;
+			typedef typename VectorType::const_iterator::pointer pointer;
+			typedef typename VectorType::const_iterator::reference reference;
 
-    const_iterator() : vector_iterator_() {}
+			const_iterator() : vector_iterator_() {}
 
-    const_iterator(const const_iterator &other)
-        : vector_iterator_(other.vector_iterator_) {}
+			const_iterator(const const_iterator& other)
+				: vector_iterator_(other.vector_iterator_) {}
 
-    const_iterator(const iterator &other)  // NOLINT - we want the implicit cast
-        : vector_iterator_(other.vector_iterator_) {}
+			const_iterator(const iterator& other)  // NOLINT - we want the implicit cast
+				: vector_iterator_(other.vector_iterator_) {}
 
-    const_iterator& operator++() {
-      ++vector_iterator_;
-      return *this;
-    }
+			const_iterator& operator++() {
+				++vector_iterator_;
+				return *this;
+			}
 
-    const_iterator operator++(int unused) {
-      const_iterator old = *this;
-      ++*this;
-      return old;
-    }
+			const_iterator operator++(int unused) {
+				const_iterator old = *this;
+				++*this;
+				return old;
+			}
 
-    const value_type* operator->() const {
-      return vector_iterator_.operator->();
-    }
+			const value_type* operator->() const {
+				return vector_iterator_.operator->();
+			}
 
-    const value_type& operator*() const {
-      return *vector_iterator_;
-    }
+			const value_type& operator*() const {
+				return *vector_iterator_;
+			}
 
-    bool operator==(const const_iterator& other) const {
-      return vector_iterator_ == other.vector_iterator_;
-    }
+			bool operator==(const const_iterator& other) const {
+				return vector_iterator_ == other.vector_iterator_;
+			}
 
-    bool operator!=(const const_iterator& other) const {
-      return !(*this == other);
-    }
+			bool operator!=(const const_iterator& other) const {
+				return !(*this == other);
+			}
 
-   private:
-    friend class vector_map;
-    explicit const_iterator(const typename VectorType::const_iterator &it)
-        : vector_iterator_(it) {}
+		private:
+			friend class vector_map;
+			explicit const_iterator(const typename VectorType::const_iterator& it)
+				: vector_iterator_(it) {}
 
-    typename VectorType::const_iterator vector_iterator_;
-  };
-  // TODO: add reverse iterators.
+			typename VectorType::const_iterator vector_iterator_;
+		};
+		// TODO: add reverse iterators.
 
-  vector_map() {}
+		vector_map() {}
 
-  explicit vector_map(const key_compare &compare)
-      : compare_(compare) {}
+		explicit vector_map(const key_compare& compare)
+			: compare_(compare) {}
 
-  vector_map(const vector_map &other)
-      : vector_(other.vector_),
-        compare_(other.compare_) {}
+		vector_map(const vector_map& other)
+			: vector_(other.vector_),
+			  compare_(other.compare_) {}
 
-  template <class InputIterator>
-  vector_map(InputIterator f, InputIterator l) {
-    insert(f, l);
-  }
+		template <class InputIterator>
+		vector_map(InputIterator f, InputIterator l) {
+			insert(f, l);
+		}
 
-  template <class InputIterator>
-  vector_map(InputIterator f, InputIterator l, const key_compare &compare)
-      : compare_(compare) {
-    insert(f, l);
-  }
+		template <class InputIterator>
+		vector_map(InputIterator f, InputIterator l, const key_compare& compare)
+			: compare_(compare) {
+			insert(f, l);
+		}
 
-  vector_map &operator=(const vector_map &other) {
-    vector_ = other.vector_;
-    compare_ = other.compare_;
-    return *this;
-  }
+		vector_map& operator=(const vector_map& other) {
+			vector_ = other.vector_;
+			compare_ = other.compare_;
+			return *this;
+		}
 
-  void swap(vector_map &other) {
-    vector_.swap(other.vector_);
-    compare_.swap(other.compare_);
-  }
+		void swap(vector_map& other) {
+			vector_.swap(other.vector_);
+			compare_.swap(other.compare_);
+		}
 
-  key_compare key_comp() const { return compare_; }
-  value_compare value_comp() const { return value_compare(key_comp()); }
+		key_compare key_comp() const { return compare_; }
+		value_compare value_comp() const { return value_compare(key_comp()); }
 
-  iterator begin() { return iterator(vector_.begin()); }
-  const_iterator begin() const { return const_iterator(vector_.begin()); }
-  iterator end() { return iterator(vector_.end()); }
-  const_iterator end() const { return const_iterator(vector_.end()); }
+		iterator begin() { return iterator(vector_.begin()); }
+		const_iterator begin() const { return const_iterator(vector_.begin()); }
+		iterator end() { return iterator(vector_.end()); }
+		const_iterator end() const { return const_iterator(vector_.end()); }
 
-  size_type size() const { return vector_.size(); }
-  size_type max_size() const { return vector_.max_size(); }
-  bool empty() const { return vector_.empty(); }
+		size_type size() const { return vector_.size(); }
+		size_type max_size() const { return vector_.max_size(); }
+		bool empty() const { return vector_.empty(); }
 
-  std::pair<iterator, bool> insert(const value_type& x) {
-    typename VectorType::iterator it =
-        std::lower_bound(vector_.begin(), vector_.end(), x, value_comp());
-    if ((it == vector_.end()) || (x.first != it->first)) {
-      // Didn't find the key. Insert an element.
-      return std::make_pair(iterator(vector_.insert(it, x)), true);
-    } else {
-      // Found the key.
-      return std::make_pair(iterator(it), false);
-    }
-  }
+		std::pair<iterator, bool> insert(const value_type& x) {
+			typename VectorType::iterator it =
+			    std::lower_bound(vector_.begin(), vector_.end(), x, value_comp());
 
-  iterator insert(iterator pos, const value_type& x) {
-    // TODO: take pos into account.
-    return insert(x).first;
-  }
+			if((it == vector_.end()) || (x.first != it->first)) {
+				// Didn't find the key. Insert an element.
+				return std::make_pair(iterator(vector_.insert(it, x)), true);
+			}
+			else {
+				// Found the key.
+				return std::make_pair(iterator(it), false);
+			}
+		}
 
-  template <class InputIterator>
-  void insert(InputIterator f, InputIterator l) {
-    if (empty()) {
-      // If the vector is empty, we can add all elements and then sort in the
-      // end. It should be faster.
-      vector_.insert(vector_.begin(), f, l);
-      std::sort(vector_.begin(), vector_.end(), value_comp());
-    } else {
-      for (; f != l; ++f) {
-        insert(*f);
-      }
-    }
-  }
+		iterator insert(iterator pos, const value_type& x) {
+			// TODO: take pos into account.
+			return insert(x).first;
+		}
 
-  void erase(iterator pos) {
-    vector_.erase(pos.vector_iterator_);
-  }
+		template <class InputIterator>
+		void insert(InputIterator f, InputIterator l) {
+			if(empty()) {
+				// If the vector is empty, we can add all elements and then sort in the
+				// end. It should be faster.
+				vector_.insert(vector_.begin(), f, l);
+				std::sort(vector_.begin(), vector_.end(), value_comp());
+			}
+			else {
+				for(; f != l; ++f) {
+					insert(*f);
+				}
+			}
+		}
 
-  size_type erase(const key_type& k) {
-    iterator it = find(k);
-    if (it != end()) {
-      erase(it);
-      return 1;
-    } else {
-      return 0;
-    }
-  }
+		void erase(iterator pos) {
+			vector_.erase(pos.vector_iterator_);
+		}
 
-  void erase(iterator first, iterator last) {
-    vector_.erase(first.vector_iterator_, last.vector_iterator_);
-  }
+		size_type erase(const key_type& k) {
+			iterator it = find(k);
 
-  void clear() {
-    vector_.clear();
-  }
+			if(it != end()) {
+				erase(it);
+				return 1;
+			}
+			else {
+				return 0;
+			}
+		}
 
-  iterator find(const key_type& k) {
-    iterator it = lower_bound(k);
-    if ((it == end()) || (k != it->first)) {
-      return end();
-    } else {
-      return it;
-    }
-  }
+		void erase(iterator first, iterator last) {
+			vector_.erase(first.vector_iterator_, last.vector_iterator_);
+		}
 
-  const_iterator find(const key_type& k) const {
-    const_iterator it = lower_bound(k);
-    if ((it == end()) || (k != it->first)) {
-      return end();
-    } else {
-      return it;
-    }
-  }
+		void clear() {
+			vector_.clear();
+		}
 
-  const size_type count(const key_type& k) const {
-    return (find(k) == end()) ? 0 : 1;
-  }
+		iterator find(const key_type& k) {
+			iterator it = lower_bound(k);
 
-  iterator lower_bound(const key_type& k) {
-    // TODO: Is it possible to use lower_bound without having to
-    // construct a data_type ?
-    value_type x(k, data_type());
-    typename VectorType::iterator it =
-        std::lower_bound(vector_.begin(), vector_.end(), x, value_comp());
-    return iterator(it);
-  }
+			if((it == end()) || (k != it->first)) {
+				return end();
+			}
+			else {
+				return it;
+			}
+		}
 
-  const_iterator lower_bound(const key_type& k) const {
-    // TODO: Is it possible to use lower_bound without having to
-    // construct a data_type ?
-    value_type x(k, data_type());
-    typename VectorType::const_iterator it =
-        std::lower_bound(vector_.begin(), vector_.end(), x, value_comp());
-    return const_iterator(it);
-  }
+		const_iterator find(const key_type& k) const {
+			const_iterator it = lower_bound(k);
 
-  iterator upper_bound(const key_type& k) {
-    // TODO: Is it possible to use upper_bound without having to
-    // construct a data_type ?
-    value_type x(k, data_type());
-    typename VectorType::iterator it =
-        std::upper_bound(vector_.begin(), vector_.end(), x, value_comp());
-    return iterator(it);
-  }
+			if((it == end()) || (k != it->first)) {
+				return end();
+			}
+			else {
+				return it;
+			}
+		}
 
-  const_iterator upper_bound(const key_type& k) const {
-    // TODO: Is it possible to use upper_bound without having to
-    // construct a data_type ?
-    value_type x(k, data_type());
-    typename VectorType::const_iterator it =
-        std::upper_bound(vector_.begin(), vector_.end(), x, value_comp());
-    return const_iterator(it);
-  }
+		const size_type count(const key_type& k) const {
+			return (find(k) == end()) ? 0 : 1;
+		}
 
-  std::pair<iterator, iterator> equal_range(const key_type& k) {
-    iterator low = lower_bound(k);
-    iterator up = low;
-    // We have at most 1 element.
-    if (up != end() && up->first == k)
-      ++up;
-    return std::make_pair(low, up);
-  }
+		iterator lower_bound(const key_type& k) {
+			// TODO: Is it possible to use lower_bound without having to
+			// construct a data_type ?
+			value_type x(k, data_type());
+			typename VectorType::iterator it =
+			    std::lower_bound(vector_.begin(), vector_.end(), x, value_comp());
+			return iterator(it);
+		}
 
-  std::pair<const_iterator, const_iterator> equal_range(
-      const key_type& k) const {
-    const_iterator low = lower_bound(k);
-    const_iterator up = low;
-    // We have at most 1 element.
-    if (up != end() && up->first == k)
-      ++up;
-    return std::make_pair(low, up);
-  }
+		const_iterator lower_bound(const key_type& k) const {
+			// TODO: Is it possible to use lower_bound without having to
+			// construct a data_type ?
+			value_type x(k, data_type());
+			typename VectorType::const_iterator it =
+			    std::lower_bound(vector_.begin(), vector_.end(), x, value_comp());
+			return const_iterator(it);
+		}
 
-  data_type &operator[](const key_type &k) {
-    std::pair<iterator, bool> pos = insert(value_type(k, data_type()));
-    return pos.first->second;
-  }
+		iterator upper_bound(const key_type& k) {
+			// TODO: Is it possible to use upper_bound without having to
+			// construct a data_type ?
+			value_type x(k, data_type());
+			typename VectorType::iterator it =
+			    std::upper_bound(vector_.begin(), vector_.end(), x, value_comp());
+			return iterator(it);
+		}
 
-  bool operator==(const vector_map &other) const {
-    return vector_ == other.vector_;
-  }
+		const_iterator upper_bound(const key_type& k) const {
+			// TODO: Is it possible to use upper_bound without having to
+			// construct a data_type ?
+			value_type x(k, data_type());
+			typename VectorType::const_iterator it =
+			    std::upper_bound(vector_.begin(), vector_.end(), x, value_comp());
+			return const_iterator(it);
+		}
 
-  bool operator<(const vector_map &other) const {
-    return vector_ < other.vector_;
-  }
- private:
-  VectorType vector_;
-  key_compare compare_;
-};
+		std::pair<iterator, iterator> equal_range(const key_type& k) {
+			iterator low = lower_bound(k);
+			iterator up = low;
+
+			// We have at most 1 element.
+			if(up != end() && up->first == k)
+				++up;
+
+			return std::make_pair(low, up);
+		}
+
+		std::pair<const_iterator, const_iterator> equal_range(
+		    const key_type& k) const {
+			const_iterator low = lower_bound(k);
+			const_iterator up = low;
+
+			// We have at most 1 element.
+			if(up != end() && up->first == k)
+				++up;
+
+			return std::make_pair(low, up);
+		}
+
+		data_type& operator[](const key_type& k) {
+			std::pair<iterator, bool> pos = insert(value_type(k, data_type()));
+			return pos.first->second;
+		}
+
+		bool operator==(const vector_map& other) const {
+			return vector_ == other.vector_;
+		}
+
+		bool operator<(const vector_map& other) const {
+			return vector_ < other.vector_;
+		}
+	private:
+		VectorType vector_;
+		key_compare compare_;
+	};
 
 }  // namespace o3d
 

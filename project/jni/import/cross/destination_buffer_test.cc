@@ -38,66 +38,67 @@
 
 namespace o3d {
 
-class DestinationBufferTest : public testing::Test {
- protected:
-  DestinationBufferTest()
-      : class_manager_(g_service_locator),
-        object_manager_(g_service_locator) {
-    class_manager_->AddTypedClass<DestinationBuffer>();
-  }
+	class DestinationBufferTest : public testing::Test {
+	protected:
+		DestinationBufferTest()
+			: class_manager_(g_service_locator),
+			  object_manager_(g_service_locator) {
+			class_manager_->AddTypedClass<DestinationBuffer>();
+		}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
-  ServiceDependency<ClassManager> class_manager_;
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack* pack_;
-};
+	private:
+		ServiceDependency<ClassManager> class_manager_;
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+	};
 
-void DestinationBufferTest::SetUp() {
-  pack_ = object_manager_->CreatePack();
-}
+	void DestinationBufferTest::SetUp() {
+		pack_ = object_manager_->CreatePack();
+	}
 
-void DestinationBufferTest::TearDown() {
-  object_manager_->DestroyPack(pack_);
-}
+	void DestinationBufferTest::TearDown() {
+		object_manager_->DestroyPack(pack_);
+	}
 
 
 // Creates a Destination buffer, tests basic properties, and checks that writing
 // then reading data works.
-TEST_F(DestinationBufferTest, TestDestinationBuffer) {
-  Buffer *buffer = pack()->Create<DestinationBuffer>();
-  EXPECT_TRUE(buffer->IsA(DestinationBuffer::GetApparentClass()));
-  EXPECT_TRUE(buffer->IsA(VertexBuffer::GetApparentClass()));
-  EXPECT_TRUE(buffer->IsA(Buffer::GetApparentClass()));
+	TEST_F(DestinationBufferTest, TestDestinationBuffer) {
+		Buffer* buffer = pack()->Create<DestinationBuffer>();
+		EXPECT_TRUE(buffer->IsA(DestinationBuffer::GetApparentClass()));
+		EXPECT_TRUE(buffer->IsA(VertexBuffer::GetApparentClass()));
+		EXPECT_TRUE(buffer->IsA(Buffer::GetApparentClass()));
+		const size_t kSize = 100;
+		Field* field = buffer->CreateField(UInt32Field::GetApparentClass(), 1);
+		ASSERT_TRUE(field != NULL);
+		ASSERT_TRUE(buffer->AllocateElements(kSize));
+		EXPECT_EQ(kSize * sizeof(uint32_t), buffer->GetSizeInBytes());  // NOLINT
+		// Put some data into the buffer.
+		uint32_t* data = NULL;
+		ASSERT_TRUE(buffer->LockAs(Buffer::WRITE_ONLY, &data));
+		ASSERT_TRUE(data != NULL);
 
-  const size_t kSize = 100;
-  Field* field = buffer->CreateField(UInt32Field::GetApparentClass(), 1);
-  ASSERT_TRUE(field != NULL);
-  ASSERT_TRUE(buffer->AllocateElements(kSize));
-  EXPECT_EQ(kSize * sizeof(uint32_t), buffer->GetSizeInBytes());  // NOLINT
+		for(uint32_t i = 0; i < kSize; ++i) {
+			data[i] = i;
+		}
 
-  // Put some data into the buffer.
-  uint32_t *data = NULL;
-  ASSERT_TRUE(buffer->LockAs(Buffer::WRITE_ONLY, &data));
-  ASSERT_TRUE(data != NULL);
-  for (uint32_t i = 0; i < kSize; ++i) {
-    data[i] = i;
-  }
-  ASSERT_TRUE(buffer->Unlock());
+		ASSERT_TRUE(buffer->Unlock());
+		data = NULL;
+		// Read the data from the buffer, checks that it's the expected values.
+		ASSERT_TRUE(buffer->LockAs(Buffer::READ_ONLY, &data));
+		ASSERT_TRUE(data != NULL);
 
-  data = NULL;
-  // Read the data from the buffer, checks that it's the expected values.
-  ASSERT_TRUE(buffer->LockAs(Buffer::READ_ONLY, &data));
-  ASSERT_TRUE(data != NULL);
-  for (uint32_t i = 0; i < kSize; ++i) {
-    EXPECT_EQ(i, data[i]);
-  }
-  ASSERT_TRUE(buffer->Unlock());
-}
+		for(uint32_t i = 0; i < kSize; ++i) {
+			EXPECT_EQ(i, data[i]);
+		}
+
+		ASSERT_TRUE(buffer->Unlock());
+	}
 
 
 }  // namespace o3d

@@ -40,126 +40,126 @@
 
 namespace o3d {
 
-class TestClass : public ObjectBase {
- public:
-  explicit TestClass(ServiceLocator* service_locator)
-      : ObjectBase(service_locator) {
-  }
-  static ObjectBase::Ref Create(ServiceLocator* service_locator) {
-    return ObjectBase::Ref(new TestClass(service_locator));
-  }
-  O3D_DECL_CLASS(TestClass, ObjectBase);
-};
-O3D_DEFN_CLASS(TestClass, ObjectBase);
+	class TestClass : public ObjectBase {
+	public:
+		explicit TestClass(ServiceLocator* service_locator)
+			: ObjectBase(service_locator) {
+		}
+		static ObjectBase::Ref Create(ServiceLocator* service_locator) {
+			return ObjectBase::Ref(new TestClass(service_locator));
+		}
+		O3D_DECL_CLASS(TestClass, ObjectBase);
+	};
+	O3D_DEFN_CLASS(TestClass, ObjectBase);
 
-class TestVisitor : public VisitorBase<TestVisitor> {
- public:
-  TestVisitor()
-      : visit_object_base_calls_(0),
-        visit_object_base_param_(NULL),
-        visit_test_class_calls_(0),
-        visit_test_class_param_(NULL) {
-  }
+	class TestVisitor : public VisitorBase<TestVisitor> {
+	public:
+		TestVisitor()
+			: visit_object_base_calls_(0),
+			  visit_object_base_param_(NULL),
+			  visit_test_class_calls_(0),
+			  visit_test_class_param_(NULL) {
+		}
 
-  void VisitObjectBase(ObjectBase* param) {
-    ++visit_object_base_calls_;
-    visit_object_base_param_ = param;
-  }
+		void VisitObjectBase(ObjectBase* param) {
+			++visit_object_base_calls_;
+			visit_object_base_param_ = param;
+		}
 
-  void VisitTestClass(TestClass* param) {
-    ++visit_test_class_calls_;
-    visit_test_class_param_ = param;
-  }
+		void VisitTestClass(TestClass* param) {
+			++visit_test_class_calls_;
+			visit_test_class_param_ = param;
+		}
 
-  int visit_object_base_calls_;
-  ObjectBase* visit_object_base_param_;
+		int visit_object_base_calls_;
+		ObjectBase* visit_object_base_param_;
 
-  int visit_test_class_calls_;
-  TestClass* visit_test_class_param_;
-};
+		int visit_test_class_calls_;
+		TestClass* visit_test_class_param_;
+	};
 
-class VisitorBaseTest : public testing::Test {
- protected:
-  virtual void SetUp() {
-    service_locator_ = new ServiceLocator;
-    class_manager_ = new ClassManager(service_locator_);
-    class_manager_->AddTypedClass<TestClass>();
-    object_manager_ = new ObjectManager(service_locator_);
-  }
+	class VisitorBaseTest : public testing::Test {
+	protected:
+		virtual void SetUp() {
+			service_locator_ = new ServiceLocator;
+			class_manager_ = new ClassManager(service_locator_);
+			class_manager_->AddTypedClass<TestClass>();
+			object_manager_ = new ObjectManager(service_locator_);
+		}
 
-  virtual void TearDown() {
-    delete object_manager_;
-    delete class_manager_;
-    delete service_locator_;
-  }
+		virtual void TearDown() {
+			delete object_manager_;
+			delete class_manager_;
+			delete service_locator_;
+		}
 
-  ServiceLocator* service_locator_;
-  ObjectManager* object_manager_;
-  ClassManager* class_manager_;
-  Pack* pack_;
-  TestVisitor visitor_;
-};
+		ServiceLocator* service_locator_;
+		ObjectManager* object_manager_;
+		ClassManager* class_manager_;
+		Pack* pack_;
+		TestVisitor visitor_;
+	};
 
-TEST_F(VisitorBaseTest, AcceptShouldForwardToRegisteredFunction) {
-  visitor_.Enable(&TestVisitor::VisitTestClass);
-  ObjectBase::Ref object(class_manager_->CreateObjectByClass(
-      TestClass::GetApparentClass()));
-  visitor_.Accept(object);
-  EXPECT_EQ(1, visitor_.visit_test_class_calls_);
-  EXPECT_EQ(object.Get(), visitor_.visit_test_class_param_);
-  EXPECT_EQ(0, visitor_.visit_object_base_calls_);
-}
+	TEST_F(VisitorBaseTest, AcceptShouldForwardToRegisteredFunction) {
+		visitor_.Enable(&TestVisitor::VisitTestClass);
+		ObjectBase::Ref object(class_manager_->CreateObjectByClass(
+		                           TestClass::GetApparentClass()));
+		visitor_.Accept(object);
+		EXPECT_EQ(1, visitor_.visit_test_class_calls_);
+		EXPECT_EQ(object.Get(), visitor_.visit_test_class_param_);
+		EXPECT_EQ(0, visitor_.visit_object_base_calls_);
+	}
 
-TEST_F(VisitorBaseTest, AcceptShouldDoNothingIfNoFunctionIsRegisteredForClass) {
-  ObjectBase::Ref object(class_manager_->CreateObjectByClass(
-      TestClass::GetApparentClass()));
-  visitor_.Accept(object);
-  EXPECT_EQ(0, visitor_.visit_test_class_calls_);
-  EXPECT_EQ(0, visitor_.visit_object_base_calls_);
-}
+	TEST_F(VisitorBaseTest, AcceptShouldDoNothingIfNoFunctionIsRegisteredForClass) {
+		ObjectBase::Ref object(class_manager_->CreateObjectByClass(
+		                           TestClass::GetApparentClass()));
+		visitor_.Accept(object);
+		EXPECT_EQ(0, visitor_.visit_test_class_calls_);
+		EXPECT_EQ(0, visitor_.visit_object_base_calls_);
+	}
 
-TEST_F(VisitorBaseTest,
-    AcceptShouldForwardToRegisteredFunctionForParentIfClassNotRegistered) {
-  visitor_.Enable(&TestVisitor::VisitObjectBase);
-  ObjectBase::Ref object(class_manager_->CreateObjectByClass(
-      TestClass::GetApparentClass()));
-  visitor_.Accept(object);
-  EXPECT_EQ(1, visitor_.visit_object_base_calls_);
-  EXPECT_EQ(object.Get(), visitor_.visit_object_base_param_);
-  EXPECT_EQ(0, visitor_.visit_test_class_calls_);
-}
+	TEST_F(VisitorBaseTest,
+	       AcceptShouldForwardToRegisteredFunctionForParentIfClassNotRegistered) {
+		visitor_.Enable(&TestVisitor::VisitObjectBase);
+		ObjectBase::Ref object(class_manager_->CreateObjectByClass(
+		                           TestClass::GetApparentClass()));
+		visitor_.Accept(object);
+		EXPECT_EQ(1, visitor_.visit_object_base_calls_);
+		EXPECT_EQ(object.Get(), visitor_.visit_object_base_param_);
+		EXPECT_EQ(0, visitor_.visit_test_class_calls_);
+	}
 
-TEST_F(VisitorBaseTest, AcceptShouldDoNothingForNull) {
-  visitor_.Accept(NULL);
-  EXPECT_EQ(0, visitor_.visit_test_class_calls_);
-  EXPECT_EQ(0, visitor_.visit_object_base_calls_);
-}
+	TEST_F(VisitorBaseTest, AcceptShouldDoNothingForNull) {
+		visitor_.Accept(NULL);
+		EXPECT_EQ(0, visitor_.visit_test_class_calls_);
+		EXPECT_EQ(0, visitor_.visit_object_base_calls_);
+	}
 
-TEST_F(VisitorBaseTest,
-    VisitorBaseAcceptShouldForwardToRegisteredFunctionOnceForEachAccept) {
-  visitor_.Enable(&TestVisitor::VisitTestClass);
-  ObjectBase::Ref object(class_manager_->CreateObjectByClass(
-      TestClass::GetApparentClass()));
-  visitor_.Accept(object);
-  visitor_.Accept(object);
-  EXPECT_EQ(2, visitor_.visit_test_class_calls_);
-  EXPECT_EQ(object.Get(), visitor_.visit_test_class_param_);
-  EXPECT_EQ(0, visitor_.visit_object_base_calls_);
-}
+	TEST_F(VisitorBaseTest,
+	       VisitorBaseAcceptShouldForwardToRegisteredFunctionOnceForEachAccept) {
+		visitor_.Enable(&TestVisitor::VisitTestClass);
+		ObjectBase::Ref object(class_manager_->CreateObjectByClass(
+		                           TestClass::GetApparentClass()));
+		visitor_.Accept(object);
+		visitor_.Accept(object);
+		EXPECT_EQ(2, visitor_.visit_test_class_calls_);
+		EXPECT_EQ(object.Get(), visitor_.visit_test_class_param_);
+		EXPECT_EQ(0, visitor_.visit_object_base_calls_);
+	}
 
-TEST_F(VisitorBaseTest, IsHandledReturnsTrueIfAFunctionIsRegistered) {
-  visitor_.Enable(&TestVisitor::VisitTestClass);
-  EXPECT_TRUE(visitor_.IsHandled(TestClass::GetApparentClass()));
-}
+	TEST_F(VisitorBaseTest, IsHandledReturnsTrueIfAFunctionIsRegistered) {
+		visitor_.Enable(&TestVisitor::VisitTestClass);
+		EXPECT_TRUE(visitor_.IsHandled(TestClass::GetApparentClass()));
+	}
 
-TEST_F(VisitorBaseTest,
-    IsHandledReturnsTrueIfAFunctionIsRegisteredForABaseClass) {
-  visitor_.Enable(&TestVisitor::VisitObjectBase);
-  EXPECT_TRUE(visitor_.IsHandled(TestClass::GetApparentClass()));
-}
+	TEST_F(VisitorBaseTest,
+	       IsHandledReturnsTrueIfAFunctionIsRegisteredForABaseClass) {
+		visitor_.Enable(&TestVisitor::VisitObjectBase);
+		EXPECT_TRUE(visitor_.IsHandled(TestClass::GetApparentClass()));
+	}
 
-TEST_F(VisitorBaseTest, IsHandledReturnsFalseIfNoFunctionIsRegistered) {
-  EXPECT_FALSE(visitor_.IsHandled(TestClass::GetApparentClass()));
-}
+	TEST_F(VisitorBaseTest, IsHandledReturnsFalseIfNoFunctionIsRegistered) {
+		EXPECT_FALSE(visitor_.IsHandled(TestClass::GetApparentClass()));
+	}
 
 }  // namespace o3d

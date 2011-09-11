@@ -40,18 +40,18 @@
 namespace o3d {
 
 // Adds an arbitrary byte offset to a typed pointer.
-template <typename T>
-T AddPointerOffset(T pointer, int offset) {
-  return reinterpret_cast<T>(
-      const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(pointer) + offset));
-}
+	template <typename T>
+	T AddPointerOffset(T pointer, int offset) {
+		return reinterpret_cast<T>(
+		           const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(pointer) + offset));
+	}
 
 // Creates a typed pointer from a void pointer and an offset.
-template <typename T>
-T PointerFromVoidPointer(const void* pointer, int offset) {
-  return reinterpret_cast<T>(
-      const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(pointer) + offset));
-}
+	template <typename T>
+	T PointerFromVoidPointer(const void* pointer, int offset) {
+		return reinterpret_cast<T>(
+		           const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(pointer) + offset));
+	}
 
 }  // namespace o3d
 

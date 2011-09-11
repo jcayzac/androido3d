@@ -39,50 +39,50 @@
 
 namespace o3d {
 
-class RenderNode;
-class Renderer;
+	class RenderNode;
+	class Renderer;
 
 // Array container for RenderNodes.
-typedef std::vector<RenderNode*> RenderNodeArray;
+	typedef std::vector<RenderNode*> RenderNodeArray;
 
 // Iterators for RenderNodeArray
-typedef RenderNodeArray::const_iterator RenderNodeArrayConstIterator;
-typedef RenderNodeArray::iterator RenderNodeArrayIterator;
+	typedef RenderNodeArray::const_iterator RenderNodeArrayConstIterator;
+	typedef RenderNodeArray::iterator RenderNodeArrayIterator;
 
 // The RenderContext class passed down the render graph
 // as the render graph is walked to hold state information
 // and other context needed while walking the render graph.
-class RenderContext {
- public:
-  explicit RenderContext(Renderer* renderer);
+	class RenderContext {
+	public:
+		explicit RenderContext(Renderer* renderer);
 
-  // Adds a Render Node to the current render list.
-  void AddToRenderList(RenderNode* render_node);
+		// Adds a Render Node to the current render list.
+		void AddToRenderList(RenderNode* render_node);
 
-  // Sets the renderlist that will be used when AddToRenderList is called.
-  void set_render_list(RenderNodeArray* render_list);
+		// Sets the renderlist that will be used when AddToRenderList is called.
+		void set_render_list(RenderNodeArray* render_list);
 
-  Renderer* renderer();
+		Renderer* renderer();
 
- private:
-  // The current list used by AddToRenderList.
-  RenderNodeArray* render_list_;
-  Renderer*        renderer_;
-};
+	private:
+		// The current list used by AddToRenderList.
+		RenderNodeArray* render_list_;
+		Renderer*        renderer_;
+	};
 
-inline Renderer* RenderContext::renderer() {
-  return renderer_;
-}
+	inline Renderer* RenderContext::renderer() {
+		return renderer_;
+	}
 
-inline void RenderContext::AddToRenderList(RenderNode* render_node) {
-  if (render_list_) {
-    render_list_->push_back(render_node);
-  }
-}
+	inline void RenderContext::AddToRenderList(RenderNode* render_node) {
+		if(render_list_) {
+			render_list_->push_back(render_node);
+		}
+	}
 
-inline void RenderContext::set_render_list(RenderNodeArray* render_list) {
-  render_list_ = render_list;
-}
+	inline void RenderContext::set_render_list(RenderNodeArray* render_list) {
+		render_list_ = render_list;
+	}
 
 }  // namespace o3d
 

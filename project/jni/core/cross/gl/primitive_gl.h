@@ -43,21 +43,21 @@ namespace o3d {
 
 // PrimitiveGL is the OpenGL implementation of the Primitive.  It provides the
 // necessary interfaces for setting the geometry streams on the Primitive.
-class PrimitiveGL : public Primitive {
- public:
-  explicit PrimitiveGL(ServiceLocator* service_locator);
-  virtual ~PrimitiveGL();
+	class PrimitiveGL : public Primitive {
+	public:
+		explicit PrimitiveGL(ServiceLocator* service_locator);
+		virtual ~PrimitiveGL();
 
- protected:
-  // Overridden from Primitive.
-  virtual void PlatformSpecificRender(Renderer* renderer,
-                                      DrawElement* draw_element,
-                                      Material* material,
-                                      ParamObject* override,
-                                      ParamCache* param_cache);
+	protected:
+		// Overridden from Primitive.
+		virtual void PlatformSpecificRender(Renderer* renderer,
+		                                    DrawElement* draw_element,
+		                                    Material* material,
+		                                    ParamObject* override,
+		                                    ParamCache* param_cache);
 
- private:
-};
+	private:
+	};
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GL_PRIMITIVE_GL_H_

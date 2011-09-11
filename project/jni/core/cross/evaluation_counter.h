@@ -39,30 +39,30 @@ namespace o3d {
 
 // Keeps track of the current evaluation count, used to determine whether a
 // parameter's state is valid or needs to be computed.
-class EvaluationCounter {
- public:
-  static const InterfaceId kInterfaceId;
+	class EvaluationCounter {
+	public:
+		static const InterfaceId kInterfaceId;
 
-  explicit EvaluationCounter(ServiceLocator* service_locator)
-      : service_(service_locator, this),
-        evaluation_count_(0) {}
+		explicit EvaluationCounter(ServiceLocator* service_locator)
+			: service_(service_locator, this),
+			  evaluation_count_(0) {}
 
-  // Marks all parameters as so they will get re-evaluated
-  void InvalidateAllParameters() {
-    ++evaluation_count_;
-  }
+		// Marks all parameters as so they will get re-evaluated
+		void InvalidateAllParameters() {
+			++evaluation_count_;
+		}
 
-  // Gets the current global evaluation count.
-  int evaluation_count() {
-    return evaluation_count_;
-  }
+		// Gets the current global evaluation count.
+		int evaluation_count() {
+			return evaluation_count_;
+		}
 
- private:
-  ServiceImplementation<EvaluationCounter> service_;
+	private:
+		ServiceImplementation<EvaluationCounter> service_;
 
-  // The global evaluation count;
-  int evaluation_count_;
-};
+		// The global evaluation count;
+		int evaluation_count_;
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_EVALUATION_COUNTER_H_

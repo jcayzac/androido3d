@@ -37,527 +37,589 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Counter, ParamObject);
-O3D_DEFN_CLASS(SecondCounter, Counter);
-O3D_DEFN_CLASS(RenderFrameCounter, Counter);
-O3D_DEFN_CLASS(TickCounter, Counter);
+	O3D_DEFN_CLASS(Counter, ParamObject);
+	O3D_DEFN_CLASS(SecondCounter, Counter);
+	O3D_DEFN_CLASS(RenderFrameCounter, Counter);
+	O3D_DEFN_CLASS(TickCounter, Counter);
 
-const char* Counter::kRunningParamName =
-    O3D_STRING_CONSTANT("running");
-const char* Counter::kForwardParamName =
-    O3D_STRING_CONSTANT("forward");
-const char* Counter::kStartParamName =
-    O3D_STRING_CONSTANT("start");
-const char* Counter::kEndParamName =
-    O3D_STRING_CONSTANT("end");
-const char* Counter::kCountModeParamName =
-    O3D_STRING_CONSTANT("countMode");
-const char* Counter::kCountParamName =
-    O3D_STRING_CONSTANT("count");
-const char* Counter::kMultiplierParamName =
-    O3D_STRING_CONSTANT("multiplier");
+	const char* Counter::kRunningParamName =
+	    O3D_STRING_CONSTANT("running");
+	const char* Counter::kForwardParamName =
+	    O3D_STRING_CONSTANT("forward");
+	const char* Counter::kStartParamName =
+	    O3D_STRING_CONSTANT("start");
+	const char* Counter::kEndParamName =
+	    O3D_STRING_CONSTANT("end");
+	const char* Counter::kCountModeParamName =
+	    O3D_STRING_CONSTANT("countMode");
+	const char* Counter::kCountParamName =
+	    O3D_STRING_CONSTANT("count");
+	const char* Counter::kMultiplierParamName =
+	    O3D_STRING_CONSTANT("multiplier");
 
-Counter::Counter(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      next_callback_valid_(false),
-      prev_callback_valid_(false),
-      last_call_callbacks_end_count_(0.0f) {
-  RegisterParamRef(kRunningParamName, &running_param_);
-  RegisterParamRef(kForwardParamName, &forward_param_);
-  RegisterParamRef(kCountModeParamName, &count_mode_param_);
-  RegisterParamRef(kStartParamName, &start_param_);
-  RegisterParamRef(kEndParamName, &end_param_);
-  RegisterParamRef(kCountParamName, &count_param_);
-  RegisterParamRef(kMultiplierParamName, &multiplier_param_);
-  set_multiplier(1.0f);
-  set_forward(true);
-  set_running(true);
-  set_count_mode(Counter::CONTINUOUS);
-}
+	Counter::Counter(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  next_callback_valid_(false),
+		  prev_callback_valid_(false),
+		  last_call_callbacks_end_count_(0.0f) {
+		RegisterParamRef(kRunningParamName, &running_param_);
+		RegisterParamRef(kForwardParamName, &forward_param_);
+		RegisterParamRef(kCountModeParamName, &count_mode_param_);
+		RegisterParamRef(kStartParamName, &start_param_);
+		RegisterParamRef(kEndParamName, &end_param_);
+		RegisterParamRef(kCountParamName, &count_param_);
+		RegisterParamRef(kMultiplierParamName, &multiplier_param_);
+		set_multiplier(1.0f);
+		set_forward(true);
+		set_running(true);
+		set_count_mode(Counter::CONTINUOUS);
+	}
 
-Counter::~Counter() {
-  // We have to call this manually to make sure all the callback managers
-  // unregister themselves before callback_managers_ is destoryed.
-  callbacks_.clear();
-}
+	Counter::~Counter() {
+		// We have to call this manually to make sure all the callback managers
+		// unregister themselves before callback_managers_ is destoryed.
+		callbacks_.clear();
+	}
 
-void Counter::Reset() {
-  SetCount(forward() ? start() : end());
-}
+	void Counter::Reset() {
+		SetCount(forward() ? start() : end());
+	}
 
-void Counter::SetCount(float value) {
-  set_count(value);
-  next_callback_valid_ = false;
-  prev_callback_valid_ = false;
-}
+	void Counter::SetCount(float value) {
+		set_count(value);
+		next_callback_valid_ = false;
+		prev_callback_valid_ = false;
+	}
 
-void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
-  O3D_ASSERT(queue != NULL);
+	void Counter::Advance(float advance_amount, CounterCallbackQueue* queue) {
+		O3D_ASSERT(queue != NULL);
+		float old_count = count_param_->value();
 
-  float old_count = count_param_->value();
+		// Update the count.
+		if(count_param_->input_connection() != NULL) {
+			float new_count = count_param_->value();
+			CallCallbacks(old_count, new_count, queue);
+		}
+		else {
+			bool direction = forward();
+			float start_count = start();
+			float end_count = end();
+			float delta = (direction ? advance_amount : -advance_amount) * multiplier();
+			float period = end_count - start_count;
+			CountMode mode = count_mode();
 
-  // Update the count.
-  if (count_param_->input_connection() != NULL) {
-    float new_count = count_param_->value();
-    CallCallbacks(old_count, new_count, queue);
-  } else {
-    bool direction = forward();
-    float start_count = start();
-    float end_count = end();
-    float delta = (direction ? advance_amount : -advance_amount) * multiplier();
-    float period = end_count - start_count;
+			if(period >= 0.0f) {
+				// end > start
+				float new_count = old_count + delta;
 
-    CountMode mode = count_mode();
-    if (period >= 0.0f) {
-      // end > start
-      float new_count = old_count + delta;
-      if (delta >= 0.0f) {
-        switch (mode) {
-          case Counter::ONCE: {
-            if (new_count >= end_count) {
-              new_count = end_count;
-              set_running(false);
-            }
-            break;
-          }
-          case Counter::CYCLE: {
-            while (new_count >= end_count) {
-              CallCallbacks(old_count, end_count, queue);
-              if (std::equal_to<float>()(period, 0.0f)) {
-                break;
-              }
-              old_count = start_count;
-              new_count -= period;
-            }
-            break;
-          }
-          case Counter::OSCILLATE: {
-            while (delta > 0.0f) {
-              new_count = old_count + delta;
-              if (new_count < end_count) {
-                break;
-              }
-              CallCallbacks(old_count, end_count, queue);
-              direction = !direction;
-              float amount = end_count - old_count;
-              delta -= amount;
-              old_count = end_count;
-              new_count = end_count;
-              if (delta <= 0.0f || std::equal_to<float>()(period, 0.0f)) {
-                break;
-              }
-              new_count -= delta;
-              if (new_count > start_count) {
-                break;
-              }
-              CallCallbacks(old_count, start_count, queue);
-              direction = !direction;
-              amount = old_count - start_count;
-              delta -= amount;
-              old_count = start_count;
-              new_count = start_count;
-            }
-            set_forward(direction);
-            break;
-          }
-          case Counter::CONTINUOUS:
-          default:
-            break;
-        }
-        CallCallbacks(old_count, new_count, queue);
-        set_count(new_count);
-      } else if (delta < 0.0f) {
-        switch (mode) {
-          case Counter::ONCE: {
-            if (new_count <= start_count) {
-              new_count = start_count;
-              set_running(false);
-            }
-            break;
-          }
-          case Counter::CYCLE: {
-            while (new_count <= start_count) {
-              CallCallbacks(old_count, start_count, queue);
-              if (std::equal_to<float>()(period, 0.0f)) {
-                break;
-              }
-              old_count = end_count;
-              new_count += period;
-            }
-            break;
-          }
-          case Counter::OSCILLATE: {
-            while (delta < 0.0f) {
-              new_count = old_count + delta;
-              if (new_count > start_count) {
-                break;
-              }
-              CallCallbacks(old_count, start_count, queue);
-              direction = !direction;
-              float amount = old_count - start_count;
-              delta += amount;
-              old_count = start_count;
-              new_count = start_count;
-              if (delta >= 0.0f || std::equal_to<float>()(period, 0.0f)) {
-                break;
-              }
-              new_count -= delta;
-              if (new_count < end_count) {
-                break;
-              }
-              CallCallbacks(old_count, end_count, queue);
-              direction = !direction;
-              amount = end_count - old_count;
-              delta += amount;
-              old_count = end_count;
-              new_count = end_count;
-            }
-            set_forward(direction);
-            break;
-          }
-          case Counter::CONTINUOUS:
-          default:
-            break;
-        }
-        CallCallbacks(old_count, new_count, queue);
-        set_count(new_count);
-      }
-    } else if (period < 0.0f) {
-      // start > end
-      period = -period;
-      float new_count = old_count - delta;
-      if (delta > 0.0f) {
-        switch (mode) {
-          case Counter::ONCE: {
-            if (new_count <= end_count) {
-              new_count = end_count;
-              set_running(false);
-            }
-            break;
-          }
-          case Counter::CYCLE: {
-            while (new_count <= end_count) {
-              CallCallbacks(old_count, end_count, queue);
-              old_count = start_count;
-              new_count += period;
-            }
-            break;
-          }
-          case Counter::OSCILLATE: {
-            while (delta > 0.0f) {
-              new_count = old_count - delta;
-              if (new_count > end_count) {
-                break;
-              }
-              CallCallbacks(old_count, end_count, queue);
-              direction = !direction;
-              float amount = old_count - end_count;
-              delta -= amount;
-              old_count = end_count;
-              new_count = end_count;
-              if (delta <= 0.0f) {
-                break;
-              }
-              new_count += delta;
-              if (new_count < start_count) {
-                break;
-              }
-              CallCallbacks(old_count, start_count, queue);
-              direction = !direction;
-              amount = start_count - old_count;
-              delta -= amount;
-              old_count = start_count;
-              new_count = start_count;
-            }
-            set_forward(direction);
-            break;
-          }
-          case Counter::CONTINUOUS:
-          default:
-            break;
-        }
-        CallCallbacks(old_count, new_count, queue);
-        set_count(new_count);
-      } else if (delta < 0.0f) {
-        switch (mode) {
-          case Counter::ONCE: {
-            if (new_count >= start_count) {
-              new_count = start_count;
-              set_running(false);
-            }
-            break;
-          }
-          case Counter::CYCLE: {
-            while (new_count >= start_count) {
-              CallCallbacks(old_count, start_count, queue);
-              old_count = end_count;
-              new_count -= period;
-            }
-            break;
-          }
-          case Counter::OSCILLATE: {
-            while (delta < 0.0f) {
-              new_count = old_count - delta;
-              if (new_count < start_count) {
-                break;
-              }
-              CallCallbacks(old_count, start_count, queue);
-              direction = !direction;
-              float amount = start_count - old_count;
-              delta += amount;
-              old_count = start_count;
-              new_count = start_count;
-              if (delta >= 0.0f) {
-                break;
-              }
-              new_count += delta;
-              if (new_count > end_count) {
-                break;
-              }
-              CallCallbacks(old_count, end_count, queue);
-              direction = !direction;
-              amount = old_count - end_count;
-              delta += amount;
-              old_count = end_count;
-              new_count = end_count;
-            }
-            set_forward(direction);
-            break;
-          }
-          case Counter::CONTINUOUS:
-          default:
-            break;
-        }
-        CallCallbacks(old_count, new_count, queue);
-        set_count(new_count);
-      }
-    }
-  }
-}
+				if(delta >= 0.0f) {
+					switch(mode) {
+					case Counter::ONCE: {
+							if(new_count >= end_count) {
+								new_count = end_count;
+								set_running(false);
+							}
 
-void Counter::CallCallbacks(float start_count,
-                            float end_count,
-                            CounterCallbackQueue* queue) {
-  O3D_ASSERT(queue != NULL);
+							break;
+						}
+					case Counter::CYCLE: {
+							while(new_count >= end_count) {
+								CallCallbacks(old_count, end_count, queue);
 
-  if (end_count > start_count) {
-    // Going forward.
-    // If next_callback is not valid, find the first possible callback.
-    if (!next_callback_valid_ ||
-        std::not_equal_to<float>()(start_count, last_call_callbacks_end_count_)) {
-      next_callback_ = callbacks_.begin();
-      while (next_callback_ != callbacks_.end() &&
-             next_callback_->count() < start_count) {
-        ++next_callback_;
-      }
-    }
+								if(std::equal_to<float>()(period, 0.0f)) {
+									break;
+								}
 
-    // add callbacks until we get to some callback past end_count.
-    while (next_callback_ != callbacks_.end()) {
-      if (next_callback_->count() > end_count) {
-        break;
-      }
-      queue->QueueCounterCallback(next_callback_->callback_manager());
-      ++next_callback_;
-    }
-    next_callback_valid_ = true;
-    prev_callback_valid_ = false;
-    last_call_callbacks_end_count_ = end_count;
-  } else if (end_count < start_count) {
-    // Going backward.
-    // If prev_callback is not valid, find the first possible callback.
-    if (!prev_callback_valid_ ||
-        std::not_equal_to<float>()(start_count, last_call_callbacks_end_count_)) {
-      prev_callback_ = callbacks_.rbegin();
-      while (prev_callback_ != callbacks_.rend() &&
-             prev_callback_->count() > start_count) {
-        ++prev_callback_;
-      }
-    }
+								old_count = start_count;
+								new_count -= period;
+							}
 
-    // add callbacks until we get to some callback past end_count.
-    while (prev_callback_ != callbacks_.rend()) {
-      if (prev_callback_->count() < end_count) {
-        break;
-      }
-      queue->QueueCounterCallback(prev_callback_->callback_manager());
-      ++prev_callback_;
-    }
+							break;
+						}
+					case Counter::OSCILLATE: {
+							while(delta > 0.0f) {
+								new_count = old_count + delta;
 
-    prev_callback_valid_ = true;
-    next_callback_valid_ = false;
-    last_call_callbacks_end_count_ = end_count;
-  }
-}
+								if(new_count < end_count) {
+									break;
+								}
 
-void Counter::AddCallback(float count, CounterCallback* callback) {
-  next_callback_valid_ = false;
-  prev_callback_valid_ = false;
-  CounterCallbackManager* manager;
+								CallCallbacks(old_count, end_count, queue);
+								direction = !direction;
+								float amount = end_count - old_count;
+								delta -= amount;
+								old_count = end_count;
+								new_count = end_count;
 
-  {
-    CallbackManagerMap::iterator iter = callback_managers_.find(callback);
-    if (iter != callback_managers_.end()) {
-      manager = iter->second;
-    } else {
-      manager = new CounterCallbackManager(this, callback);
-    }
-  }
+								if(delta <= 0.0f || std::equal_to<float>()(period, 0.0f)) {
+									break;
+								}
 
-  {
-    CounterCallbackInfoArray::iterator end(callbacks_.end());
-    CounterCallbackInfoArray::iterator iter(callbacks_.begin());
-    while (iter != end) {
-      if (std::equal_to<float>()(iter->count(), count)) {
-        iter->set_callback_manager(manager);
-        return;
-      } else if (iter->count() > count) {
-        break;
-      }
-      ++iter;
-    }
-    callbacks_.insert(iter, CounterCallbackInfo(count, manager));
-  }
-}
+								new_count -= delta;
 
-bool Counter::RemoveCallback(float count) {
-  CounterCallbackInfoArray::iterator end(callbacks_.end());
-  for (CounterCallbackInfoArray::iterator iter(callbacks_.begin());
-       iter != end;
-       ++iter) {
-    if (std::equal_to<float>()(iter->count(), count)) {
-      next_callback_valid_ = false;
-      prev_callback_valid_ = false;
-      callbacks_.erase(iter);
-      return true;
-    }
-  }
-  return false;
-}
+								if(new_count > start_count) {
+									break;
+								}
 
-void Counter::RemoveAllCallbacks() {
-  callbacks_.clear();
-  next_callback_valid_ = false;
-  prev_callback_valid_ = false;
-}
+								CallCallbacks(old_count, start_count, queue);
+								direction = !direction;
+								amount = old_count - start_count;
+								delta -= amount;
+								old_count = start_count;
+								new_count = start_count;
+							}
 
-void Counter::RegisterCallbackManager(
-    Counter::CounterCallbackManager* manager) {
-  O3D_ASSERT(callback_managers_.find(manager->callback()) ==
-         callback_managers_.end());
-  callback_managers_.insert(std::make_pair(manager->callback(), manager));
-}
+							set_forward(direction);
+							break;
+						}
+					case Counter::CONTINUOUS:
+					default:
+						break;
+					}
 
-void Counter::UnregisterCallbackManager(
-    Counter::CounterCallbackManager* manager) {
-  CallbackManagerMap::iterator iter = callback_managers_.find(
-      manager->callback());
-  O3D_ASSERT(iter != callback_managers_.end());
-  callback_managers_.erase(iter);
-}
+					CallCallbacks(old_count, new_count, queue);
+					set_count(new_count);
+				}
+				else if(delta < 0.0f) {
+					switch(mode) {
+					case Counter::ONCE: {
+							if(new_count <= start_count) {
+								new_count = start_count;
+								set_running(false);
+							}
 
-ObjectBase::Ref Counter::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new Counter(service_locator));
-}
+							break;
+						}
+					case Counter::CYCLE: {
+							while(new_count <= start_count) {
+								CallCallbacks(old_count, start_count, queue);
 
-void Counter::CounterCallbackQueue::CallCounterCallbacks() {
-  // call all the queued callbacks.
-  for (unsigned ii = 0; ii < counter_callbacks_.size(); ++ii) {
-    counter_callbacks_[ii]->Run();
-  }
-  counter_callbacks_.clear();
-}
+								if(std::equal_to<float>()(period, 0.0f)) {
+									break;
+								}
 
-void Counter::CounterCallbackQueue::QueueCounterCallback(
-    CounterCallbackManager* callback_manager) {
-  counter_callbacks_.push_back(CounterCallbackManager::Ref(callback_manager));
-}
+								old_count = end_count;
+								new_count += period;
+							}
 
-Counter::CounterCallbackManager::CounterCallbackManager(Counter* counter,
-                                                        ClosureType* closure)
-    : counter_(counter),
-      closure_(closure),
-      called_(false) {
-  O3D_ASSERT(counter != NULL);
-  O3D_ASSERT(closure != NULL);
-  counter_->RegisterCallbackManager(this);
-}
+							break;
+						}
+					case Counter::OSCILLATE: {
+							while(delta < 0.0f) {
+								new_count = old_count + delta;
 
-Counter::CounterCallbackManager::~CounterCallbackManager() {
-  counter_->UnregisterCallbackManager(this);
-  delete closure_;
-}
+								if(new_count > start_count) {
+									break;
+								}
+
+								CallCallbacks(old_count, start_count, queue);
+								direction = !direction;
+								float amount = old_count - start_count;
+								delta += amount;
+								old_count = start_count;
+								new_count = start_count;
+
+								if(delta >= 0.0f || std::equal_to<float>()(period, 0.0f)) {
+									break;
+								}
+
+								new_count -= delta;
+
+								if(new_count < end_count) {
+									break;
+								}
+
+								CallCallbacks(old_count, end_count, queue);
+								direction = !direction;
+								amount = end_count - old_count;
+								delta += amount;
+								old_count = end_count;
+								new_count = end_count;
+							}
+
+							set_forward(direction);
+							break;
+						}
+					case Counter::CONTINUOUS:
+					default:
+						break;
+					}
+
+					CallCallbacks(old_count, new_count, queue);
+					set_count(new_count);
+				}
+			}
+			else if(period < 0.0f) {
+				// start > end
+				period = -period;
+				float new_count = old_count - delta;
+
+				if(delta > 0.0f) {
+					switch(mode) {
+					case Counter::ONCE: {
+							if(new_count <= end_count) {
+								new_count = end_count;
+								set_running(false);
+							}
+
+							break;
+						}
+					case Counter::CYCLE: {
+							while(new_count <= end_count) {
+								CallCallbacks(old_count, end_count, queue);
+								old_count = start_count;
+								new_count += period;
+							}
+
+							break;
+						}
+					case Counter::OSCILLATE: {
+							while(delta > 0.0f) {
+								new_count = old_count - delta;
+
+								if(new_count > end_count) {
+									break;
+								}
+
+								CallCallbacks(old_count, end_count, queue);
+								direction = !direction;
+								float amount = old_count - end_count;
+								delta -= amount;
+								old_count = end_count;
+								new_count = end_count;
+
+								if(delta <= 0.0f) {
+									break;
+								}
+
+								new_count += delta;
+
+								if(new_count < start_count) {
+									break;
+								}
+
+								CallCallbacks(old_count, start_count, queue);
+								direction = !direction;
+								amount = start_count - old_count;
+								delta -= amount;
+								old_count = start_count;
+								new_count = start_count;
+							}
+
+							set_forward(direction);
+							break;
+						}
+					case Counter::CONTINUOUS:
+					default:
+						break;
+					}
+
+					CallCallbacks(old_count, new_count, queue);
+					set_count(new_count);
+				}
+				else if(delta < 0.0f) {
+					switch(mode) {
+					case Counter::ONCE: {
+							if(new_count >= start_count) {
+								new_count = start_count;
+								set_running(false);
+							}
+
+							break;
+						}
+					case Counter::CYCLE: {
+							while(new_count >= start_count) {
+								CallCallbacks(old_count, start_count, queue);
+								old_count = end_count;
+								new_count -= period;
+							}
+
+							break;
+						}
+					case Counter::OSCILLATE: {
+							while(delta < 0.0f) {
+								new_count = old_count - delta;
+
+								if(new_count < start_count) {
+									break;
+								}
+
+								CallCallbacks(old_count, start_count, queue);
+								direction = !direction;
+								float amount = start_count - old_count;
+								delta += amount;
+								old_count = start_count;
+								new_count = start_count;
+
+								if(delta >= 0.0f) {
+									break;
+								}
+
+								new_count += delta;
+
+								if(new_count > end_count) {
+									break;
+								}
+
+								CallCallbacks(old_count, end_count, queue);
+								direction = !direction;
+								amount = old_count - end_count;
+								delta += amount;
+								old_count = end_count;
+								new_count = end_count;
+							}
+
+							set_forward(direction);
+							break;
+						}
+					case Counter::CONTINUOUS:
+					default:
+						break;
+					}
+
+					CallCallbacks(old_count, new_count, queue);
+					set_count(new_count);
+				}
+			}
+		}
+	}
+
+	void Counter::CallCallbacks(float start_count,
+	                            float end_count,
+	                            CounterCallbackQueue* queue) {
+		O3D_ASSERT(queue != NULL);
+
+		if(end_count > start_count) {
+			// Going forward.
+			// If next_callback is not valid, find the first possible callback.
+			if(!next_callback_valid_ ||
+			        std::not_equal_to<float>()(start_count, last_call_callbacks_end_count_)) {
+				next_callback_ = callbacks_.begin();
+
+				while(next_callback_ != callbacks_.end() &&
+				        next_callback_->count() < start_count) {
+					++next_callback_;
+				}
+			}
+
+			// add callbacks until we get to some callback past end_count.
+			while(next_callback_ != callbacks_.end()) {
+				if(next_callback_->count() > end_count) {
+					break;
+				}
+
+				queue->QueueCounterCallback(next_callback_->callback_manager());
+				++next_callback_;
+			}
+
+			next_callback_valid_ = true;
+			prev_callback_valid_ = false;
+			last_call_callbacks_end_count_ = end_count;
+		}
+		else if(end_count < start_count) {
+			// Going backward.
+			// If prev_callback is not valid, find the first possible callback.
+			if(!prev_callback_valid_ ||
+			        std::not_equal_to<float>()(start_count, last_call_callbacks_end_count_)) {
+				prev_callback_ = callbacks_.rbegin();
+
+				while(prev_callback_ != callbacks_.rend() &&
+				        prev_callback_->count() > start_count) {
+					++prev_callback_;
+				}
+			}
+
+			// add callbacks until we get to some callback past end_count.
+			while(prev_callback_ != callbacks_.rend()) {
+				if(prev_callback_->count() < end_count) {
+					break;
+				}
+
+				queue->QueueCounterCallback(prev_callback_->callback_manager());
+				++prev_callback_;
+			}
+
+			prev_callback_valid_ = true;
+			next_callback_valid_ = false;
+			last_call_callbacks_end_count_ = end_count;
+		}
+	}
+
+	void Counter::AddCallback(float count, CounterCallback* callback) {
+		next_callback_valid_ = false;
+		prev_callback_valid_ = false;
+		CounterCallbackManager* manager;
+		{
+			CallbackManagerMap::iterator iter = callback_managers_.find(callback);
+
+			if(iter != callback_managers_.end()) {
+				manager = iter->second;
+			}
+			else {
+				manager = new CounterCallbackManager(this, callback);
+			}
+		}
+		{
+			CounterCallbackInfoArray::iterator end(callbacks_.end());
+			CounterCallbackInfoArray::iterator iter(callbacks_.begin());
+
+			while(iter != end) {
+				if(std::equal_to<float>()(iter->count(), count)) {
+					iter->set_callback_manager(manager);
+					return;
+				}
+				else if(iter->count() > count) {
+					break;
+				}
+
+				++iter;
+			}
+
+			callbacks_.insert(iter, CounterCallbackInfo(count, manager));
+		}
+	}
+
+	bool Counter::RemoveCallback(float count) {
+		CounterCallbackInfoArray::iterator end(callbacks_.end());
+
+		for(CounterCallbackInfoArray::iterator iter(callbacks_.begin());
+		        iter != end;
+		        ++iter) {
+			if(std::equal_to<float>()(iter->count(), count)) {
+				next_callback_valid_ = false;
+				prev_callback_valid_ = false;
+				callbacks_.erase(iter);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void Counter::RemoveAllCallbacks() {
+		callbacks_.clear();
+		next_callback_valid_ = false;
+		prev_callback_valid_ = false;
+	}
+
+	void Counter::RegisterCallbackManager(
+	    Counter::CounterCallbackManager* manager) {
+		O3D_ASSERT(callback_managers_.find(manager->callback()) ==
+		           callback_managers_.end());
+		callback_managers_.insert(std::make_pair(manager->callback(), manager));
+	}
+
+	void Counter::UnregisterCallbackManager(
+	    Counter::CounterCallbackManager* manager) {
+		CallbackManagerMap::iterator iter = callback_managers_.find(
+		                                        manager->callback());
+		O3D_ASSERT(iter != callback_managers_.end());
+		callback_managers_.erase(iter);
+	}
+
+	ObjectBase::Ref Counter::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new Counter(service_locator));
+	}
+
+	void Counter::CounterCallbackQueue::CallCounterCallbacks() {
+		// call all the queued callbacks.
+		for(unsigned ii = 0; ii < counter_callbacks_.size(); ++ii) {
+			counter_callbacks_[ii]->Run();
+		}
+
+		counter_callbacks_.clear();
+	}
+
+	void Counter::CounterCallbackQueue::QueueCounterCallback(
+	    CounterCallbackManager* callback_manager) {
+		counter_callbacks_.push_back(CounterCallbackManager::Ref(callback_manager));
+	}
+
+	Counter::CounterCallbackManager::CounterCallbackManager(Counter* counter,
+	        ClosureType* closure)
+		: counter_(counter),
+		  closure_(closure),
+		  called_(false) {
+		O3D_ASSERT(counter != NULL);
+		O3D_ASSERT(closure != NULL);
+		counter_->RegisterCallbackManager(this);
+	}
+
+	Counter::CounterCallbackManager::~CounterCallbackManager() {
+		counter_->UnregisterCallbackManager(this);
+		delete closure_;
+	}
 
 // Runs the closure if one is currently set and if it is not already inside a
 // previous call.
-void Counter::CounterCallbackManager::Run() const {
-  if (!called_) {
-    called_ = true;
-    closure_->Run();
-    called_ = false;
-  }
-}
+	void Counter::CounterCallbackManager::Run() const {
+		if(!called_) {
+			called_ = true;
+			closure_->Run();
+			called_ = false;
+		}
+	}
 
 // Second Counter ------------------------
 
-SecondCounter::SecondCounter(ServiceLocator* service_locator)
-    : Counter(service_locator) {
-  CounterManager* counter_manager =
-      service_locator->GetService<CounterManager>();
-  O3D_ASSERT(counter_manager);
-  counter_manager->RegisterSecondCounter(this);
-}
+	SecondCounter::SecondCounter(ServiceLocator* service_locator)
+		: Counter(service_locator) {
+		CounterManager* counter_manager =
+		    service_locator->GetService<CounterManager>();
+		O3D_ASSERT(counter_manager);
+		counter_manager->RegisterSecondCounter(this);
+	}
 
-SecondCounter::~SecondCounter() {
-  CounterManager* counter_manager =
-      service_locator()->GetService<CounterManager>();
-  O3D_ASSERT(counter_manager);
-  counter_manager->UnregisterSecondCounter(this);
-}
+	SecondCounter::~SecondCounter() {
+		CounterManager* counter_manager =
+		    service_locator()->GetService<CounterManager>();
+		O3D_ASSERT(counter_manager);
+		counter_manager->UnregisterSecondCounter(this);
+	}
 
-ObjectBase::Ref SecondCounter::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new SecondCounter(service_locator));
-}
+	ObjectBase::Ref SecondCounter::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new SecondCounter(service_locator));
+	}
 
 // Render Frame Counter ------------------------
 
-RenderFrameCounter::RenderFrameCounter(ServiceLocator* service_locator)
-    : Counter(service_locator) {
-  CounterManager* counter_manager =
-      service_locator->GetService<CounterManager>();
-  O3D_ASSERT(counter_manager);
-  counter_manager->RegisterRenderFrameCounter(this);
-}
+	RenderFrameCounter::RenderFrameCounter(ServiceLocator* service_locator)
+		: Counter(service_locator) {
+		CounterManager* counter_manager =
+		    service_locator->GetService<CounterManager>();
+		O3D_ASSERT(counter_manager);
+		counter_manager->RegisterRenderFrameCounter(this);
+	}
 
-RenderFrameCounter::~RenderFrameCounter() {
-  CounterManager* counter_manager =
-      service_locator()->GetService<CounterManager>();
-  O3D_ASSERT(counter_manager);
-  counter_manager->UnregisterRenderFrameCounter(this);
-}
+	RenderFrameCounter::~RenderFrameCounter() {
+		CounterManager* counter_manager =
+		    service_locator()->GetService<CounterManager>();
+		O3D_ASSERT(counter_manager);
+		counter_manager->UnregisterRenderFrameCounter(this);
+	}
 
-ObjectBase::Ref RenderFrameCounter::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new RenderFrameCounter(service_locator));
-}
+	ObjectBase::Ref RenderFrameCounter::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new RenderFrameCounter(service_locator));
+	}
 
 // Tick Counter ------------------------
 
-TickCounter::TickCounter(ServiceLocator* service_locator)
-    : Counter(service_locator) {
-  CounterManager* counter_manager =
-      service_locator->GetService<CounterManager>();
-  O3D_ASSERT(counter_manager);
-  counter_manager->RegisterTickCounter(this);
-}
+	TickCounter::TickCounter(ServiceLocator* service_locator)
+		: Counter(service_locator) {
+		CounterManager* counter_manager =
+		    service_locator->GetService<CounterManager>();
+		O3D_ASSERT(counter_manager);
+		counter_manager->RegisterTickCounter(this);
+	}
 
-TickCounter::~TickCounter() {
-  CounterManager* counter_manager =
-      service_locator()->GetService<CounterManager>();
-  O3D_ASSERT(counter_manager);
-  counter_manager->UnregisterTickCounter(this);
-}
+	TickCounter::~TickCounter() {
+		CounterManager* counter_manager =
+		    service_locator()->GetService<CounterManager>();
+		O3D_ASSERT(counter_manager);
+		counter_manager->UnregisterTickCounter(this);
+	}
 
-ObjectBase::Ref TickCounter::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new TickCounter(service_locator));
-}
+	ObjectBase::Ref TickCounter::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new TickCounter(service_locator));
+	}
 }  // namespace o3d

@@ -45,73 +45,73 @@ namespace o3d {
 // This class is here to test that a primitive has its vertices updated from a
 // VertexSource through binding. It copies its source vertices, multiplying each
 // one by 2 + the semantic index of the destination stream.
-class FakeVertexSource : public VertexSource {
- public:
-  explicit FakeVertexSource(ServiceLocator* service_locator)
-      : VertexSource(service_locator),
-        update_outputs_call_count_() {
-  }
+	class FakeVertexSource : public VertexSource {
+	public:
+		explicit FakeVertexSource(ServiceLocator* service_locator)
+			: VertexSource(service_locator),
+			  update_outputs_call_count_() {
+		}
 
-  // Binds a SourceBuffer and defines how the data in the buffer should be
-  // accessed and interpreted.
-  bool SetVertexStream(Stream::Semantic semantic,
-                       int semantic_index,
-                       Field* field,
-                       unsigned int start_index);
+		// Binds a SourceBuffer and defines how the data in the buffer should be
+		// accessed and interpreted.
+		bool SetVertexStream(Stream::Semantic semantic,
+		                     int semantic_index,
+		                     Field* field,
+		                     unsigned int start_index);
 
-  // Removes a vertex stream from this primitive.
-  // Returns true if the specified stream existed.
-  bool RemoveVertexStream(Stream::Semantic stream_semantic,
-                          int semantic_index);
+		// Removes a vertex stream from this primitive.
+		// Returns true if the specified stream existed.
+		bool RemoveVertexStream(Stream::Semantic stream_semantic,
+		                        int semantic_index);
 
-  // Searches the vertex streams bound to the shape for one with the given
-  // stream semantic.  If a stream is not found then it returns NULL.
-  const Stream* GetVertexStream(Stream::Semantic stream_semantic,
-                                int semantic_index) const;
+		// Searches the vertex streams bound to the shape for one with the given
+		// stream semantic.  If a stream is not found then it returns NULL.
+		const Stream* GetVertexStream(Stream::Semantic stream_semantic,
+		                              int semantic_index) const;
 
-  // Updates all the VertexBuffers bound to streams on this VertexSource.
-  void UpdateStreams();
+		// Updates all the VertexBuffers bound to streams on this VertexSource.
+		void UpdateStreams();
 
-  // Updates the VertexBuffers bound to streams on this VertexSource.
-  void UpdateOutputs();
+		// Updates the VertexBuffers bound to streams on this VertexSource.
+		void UpdateOutputs();
 
-  // For testing.
-  unsigned update_outputs_call_count() {
-    return update_outputs_call_count_;
-  }
+		// For testing.
+		unsigned update_outputs_call_count() {
+			return update_outputs_call_count_;
+		}
 
-  // Overriden from
-  virtual ParamVertexBufferStream* GetVertexStreamParam(
-      Stream::Semantic semantic,
-      int semantic_index) const;
+		// Overriden from
+		virtual ParamVertexBufferStream* GetVertexStreamParam(
+		    Stream::Semantic semantic,
+		    int semantic_index) const;
 
- private:
-  class SlaveParamVertexBufferStream : public ParamVertexBufferStream {
-   public:
-    SlaveParamVertexBufferStream(ServiceLocator* service_locator,
-                                 FakeVertexSource* master,
-                                 Stream* stream)
-        : ParamVertexBufferStream(service_locator, stream, true, false),
-          master_(master) {
-    }
+	private:
+		class SlaveParamVertexBufferStream : public ParamVertexBufferStream {
+		public:
+			SlaveParamVertexBufferStream(ServiceLocator* service_locator,
+			                             FakeVertexSource* master,
+			                             Stream* stream)
+				: ParamVertexBufferStream(service_locator, stream, true, false),
+				  master_(master) {
+			}
 
-    virtual void ComputeValue() {
-      master_->UpdateOutputs();
-    }
+			virtual void ComputeValue() {
+				master_->UpdateOutputs();
+			}
 
-   private:
-    FakeVertexSource* master_;
-    O3D_DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
-  };
+		private:
+			FakeVertexSource* master_;
+			O3D_DISALLOW_COPY_AND_ASSIGN(SlaveParamVertexBufferStream);
+		};
 
-  typedef std::vector<SlaveParamVertexBufferStream::Ref> StreamParamVector;
+		typedef std::vector<SlaveParamVertexBufferStream::Ref> StreamParamVector;
 
-  unsigned update_outputs_call_count_;
-  StreamParamVector vertex_stream_params_;
+		unsigned update_outputs_call_count_;
+		StreamParamVector vertex_stream_params_;
 
-  O3D_DECL_CLASS(FakeVertexSource, VertexSource);
-  O3D_DISALLOW_COPY_AND_ASSIGN(FakeVertexSource);
-};
+		O3D_DECL_CLASS(FakeVertexSource, VertexSource);
+		O3D_DISALLOW_COPY_AND_ASSIGN(FakeVertexSource);
+	};
 
 }  // namespace o3d
 

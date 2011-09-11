@@ -40,44 +40,44 @@
 
 namespace o3d {
 
-class ServiceLocator;
+	class ServiceLocator;
 
 // Base class of all objects that are identifiable by a name.
-class NamedObjectBase: public ObjectBase {
- public:
-  typedef SmartPointer<NamedObjectBase> Ref;
+	class NamedObjectBase: public ObjectBase {
+	public:
+		typedef SmartPointer<NamedObjectBase> Ref;
 
-  explicit NamedObjectBase(ServiceLocator *service_locator);
+		explicit NamedObjectBase(ServiceLocator* service_locator);
 
-  // \brief Returns the object's name
-  virtual const std::string& name() const = 0;
+		// \brief Returns the object's name
+		virtual const std::string& name() const = 0;
 
- private:
-  O3D_DECL_CLASS(NamedObjectBase, ObjectBase);
-  O3D_DISALLOW_COPY_AND_ASSIGN(NamedObjectBase);
-};
+	private:
+		O3D_DECL_CLASS(NamedObjectBase, ObjectBase);
+		O3D_DISALLOW_COPY_AND_ASSIGN(NamedObjectBase);
+	};
 
 // A class of all objects that are identifiable by a name where the name is
 // settable at any time. This as opposed to Param where the name is only
 // settable once.
-class NamedObject: public NamedObjectBase {
- public:
-  typedef SmartPointer<NamedObject> Ref;
+	class NamedObject: public NamedObjectBase {
+	public:
+		typedef SmartPointer<NamedObject> Ref;
 
-  explicit NamedObject(ServiceLocator *service_locator);
+		explicit NamedObject(ServiceLocator* service_locator);
 
-  // \brief Returns the object's name
-  virtual const std::string& name() const;
+		// \brief Returns the object's name
+		virtual const std::string& name() const;
 
-  void set_name(const std::string& new_name) {
-    name_ = new_name;
-  }
+		void set_name(const std::string& new_name) {
+			name_ = new_name;
+		}
 
- private:
-  std::string name_;
-  O3D_DECL_CLASS(NamedObject, NamedObjectBase);
-  O3D_DISALLOW_COPY_AND_ASSIGN(NamedObject);
-};
+	private:
+		std::string name_;
+		O3D_DECL_CLASS(NamedObject, NamedObjectBase);
+		O3D_DISALLOW_COPY_AND_ASSIGN(NamedObject);
+	};
 
 }  // namespace o3d
 

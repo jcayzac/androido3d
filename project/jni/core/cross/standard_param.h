@@ -138,26 +138,26 @@ namespace o3d {
 #undef O3D_STANDARD_ANNOTATION_ENTRY
 #define O3D_STANDARD_ANNOTATION_ENTRY(enum_name, class_name) enum_name,
 
-enum Semantic {
-  INVALID_SEMANTIC,
-  O3D_STANDARD_ANNOTATIONS
-};
+	enum Semantic {
+		INVALID_SEMANTIC,
+		O3D_STANDARD_ANNOTATIONS
+	};
 
-template <Semantic S> class StandardParamMatrix4 : public ParamMatrix4 {
- public:
-  explicit StandardParamMatrix4(ServiceLocator* service_locator)
-      : ParamMatrix4(service_locator, true, true),
-        transformation_context_(service_locator->
-                                GetService<TransformationContext>()) {
-    SetNotCachable();
-  }
+	template <Semantic S> class StandardParamMatrix4 : public ParamMatrix4 {
+	public:
+		explicit StandardParamMatrix4(ServiceLocator* service_locator)
+			: ParamMatrix4(service_locator, true, true),
+			  transformation_context_(service_locator->
+			                          GetService<TransformationContext>()) {
+			SetNotCachable();
+		}
 
-  virtual void ComputeValue();
+		virtual void ComputeValue();
 
- private:
-  TransformationContext* transformation_context_;
-  O3D_DISALLOW_COPY_AND_ASSIGN(StandardParamMatrix4<S>);
-};
+	private:
+		TransformationContext* transformation_context_;
+		O3D_DISALLOW_COPY_AND_ASSIGN(StandardParamMatrix4<S>);
+	};
 
 #undef O3D_STANDARD_ANNOTATION_ENTRY
 #define O3D_STANDARD_ANNOTATION_ENTRY(enum_name, class_name)                 \
@@ -174,7 +174,7 @@ class class_name ## ParamMatrix4 : public StandardParamMatrix4<enum_name> {  \
   O3D_DECL_CLASS(class_name ## ParamMatrix4, ParamMatrix4);                  \
 };
 
-O3D_STANDARD_ANNOTATIONS;
+	O3D_STANDARD_ANNOTATIONS;
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_STANDARD_PARAM_H_

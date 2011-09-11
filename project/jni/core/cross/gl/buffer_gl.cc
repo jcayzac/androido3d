@@ -46,115 +46,126 @@
 
 namespace o3d {
 
-namespace {
+	namespace {
 
-GLenum BufferAccessModeToGLenum(Buffer::AccessMode access_mode) {
-  switch (access_mode) {
-    case Buffer::READ_ONLY:
-      return GL_READ_ONLY_ARB;
-    case Buffer::WRITE_ONLY:
-      return GL_WRITE_ONLY_ARB;
-    case Buffer::READ_WRITE:
-      return GL_READ_WRITE_ARB;
-    case Buffer::NONE:
-      break;
-  }
-  O3D_ASSERT(false);
-  return GL_READ_WRITE_ARB;
-}
+		GLenum BufferAccessModeToGLenum(Buffer::AccessMode access_mode) {
+			switch(access_mode) {
+			case Buffer::READ_ONLY:
+				return GL_READ_ONLY_ARB;
+			case Buffer::WRITE_ONLY:
+				return GL_WRITE_ONLY_ARB;
+			case Buffer::READ_WRITE:
+				return GL_READ_WRITE_ARB;
+			case Buffer::NONE:
+				break;
+			}
 
-}  // anonymous namespace
+			O3D_ASSERT(false);
+			return GL_READ_WRITE_ARB;
+		}
+
+	}  // anonymous namespace
 
 // Vertex Buffers --------------------------------------------------------------
 
 // Initializes the O3D VertexBuffer object but does not allocate an
 // OpenGL vertex buffer object yet.
-VertexBufferGL::VertexBufferGL(ServiceLocator* service_locator)
-    : VertexBuffer(service_locator),
-      renderer_(static_cast<RendererGL*>(
-          service_locator->GetService<Renderer>())),
-      gl_buffer_(0) {
-  O3D_LOG(INFO) << "VertexBufferGL Construct";
-}
+	VertexBufferGL::VertexBufferGL(ServiceLocator* service_locator)
+		: VertexBuffer(service_locator),
+		  renderer_(static_cast<RendererGL*>(
+		                service_locator->GetService<Renderer>())),
+		  gl_buffer_(0) {
+		O3D_LOG(INFO) << "VertexBufferGL Construct";
+	}
 
 // Destructor releases the OpenGL VBO.
-VertexBufferGL::~VertexBufferGL() {
-  O3D_LOG(INFO) << "VertexBufferGL Destruct \"" << name() << "\"";
-  ConcreteFree();
-}
+	VertexBufferGL::~VertexBufferGL() {
+		O3D_LOG(INFO) << "VertexBufferGL Destruct \"" << name() << "\"";
+		ConcreteFree();
+	}
 
 // Creates a OpenGL vertex buffer of the requested size.
-bool VertexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
-  O3D_LOG(INFO) << "VertexBufferGL Allocate  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  ConcreteFree();
-  // Create a new VBO.
-  glGenBuffersARB(1, &gl_buffer_);
+	bool VertexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
+		O3D_LOG(INFO) << "VertexBufferGL Allocate  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		ConcreteFree();
+		// Create a new VBO.
+		glGenBuffersARB(1, &gl_buffer_);
 
-  if (!gl_buffer_) return false;
+		if(!gl_buffer_) return false;
 
-  // Give the VBO a size, but no data, and set the hint to "STATIC_DRAW"
-  // to mark the buffer as set up once then used often.
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
-  glBufferDataARB(GL_ARRAY_BUFFER_ARB,
-                  size_in_bytes,
-                  NULL,
-                  GL_STATIC_DRAW_ARB);
-  CHECK_GL_ERROR();
-  return true;
-}
+		// Give the VBO a size, but no data, and set the hint to "STATIC_DRAW"
+		// to mark the buffer as set up once then used often.
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB,
+		                size_in_bytes,
+		                NULL,
+		                GL_STATIC_DRAW_ARB);
+		CHECK_GL_ERROR();
+		return true;
+	}
 
-void VertexBufferGL::ConcreteFree() {
-  if (gl_buffer_) {
-    renderer_->MakeCurrentLazy();
-    glDeleteBuffersARB(1, &gl_buffer_);
-    gl_buffer_ = 0;
-    CHECK_GL_ERROR();
-  }
-}
+	void VertexBufferGL::ConcreteFree() {
+		if(gl_buffer_) {
+			renderer_->MakeCurrentLazy();
+			glDeleteBuffersARB(1, &gl_buffer_);
+			gl_buffer_ = 0;
+			CHECK_GL_ERROR();
+		}
+	}
 
 // Calls Lock on the OpenGL buffer to get the address in memory of where the
 // buffer data is currently stored.
-bool VertexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
-                                  void **buffer_data) {
-  O3D_LOG(INFO) << "VertexBufferGL Lock  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
-  *buffer_data = glMapBufferARB(GL_ARRAY_BUFFER_ARB,
-                                BufferAccessModeToGLenum(access_mode));
-  if (*buffer_data == NULL) {
-    GLenum error = glGetError();
-    if (error == GL_OUT_OF_MEMORY) {
-      O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
-    } else {
-      O3D_ERROR(service_locator()) << "Unable to lock a GL Array Buffer";
-    }
-    return false;
-  }
-  CHECK_GL_ERROR();
-  return true;
-}
+	bool VertexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
+	                                  void** buffer_data) {
+		O3D_LOG(INFO) << "VertexBufferGL Lock  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
+		*buffer_data = glMapBufferARB(GL_ARRAY_BUFFER_ARB,
+		                              BufferAccessModeToGLenum(access_mode));
+
+		if(*buffer_data == NULL) {
+			GLenum error = glGetError();
+
+			if(error == GL_OUT_OF_MEMORY) {
+				O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
+			}
+			else {
+				O3D_ERROR(service_locator()) << "Unable to lock a GL Array Buffer";
+			}
+
+			return false;
+		}
+
+		CHECK_GL_ERROR();
+		return true;
+	}
 
 // Calls Unlock on the OpenGL buffer to notify that the contents of the buffer
 // are now ready for use.
-bool VertexBufferGL::ConcreteUnlock() {
-  O3D_LOG(INFO) << "VertexBufferGL Unlock  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
-  if (!glUnmapBufferARB(GL_ARRAY_BUFFER)) {
-    GLenum error = glGetError();
-    if (error == GL_INVALID_OPERATION) {
-      O3D_ERROR(service_locator()) <<
-          "Buffer was unlocked without first being locked.";
-    } else {
-      O3D_ERROR(
-          service_locator()) << "Unable to unlock a GL Element Array Buffer";
-    }
-    return false;
-  }
-  CHECK_GL_ERROR();
-  return true;
-}
+	bool VertexBufferGL::ConcreteUnlock() {
+		O3D_LOG(INFO) << "VertexBufferGL Unlock  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, gl_buffer_);
+
+		if(!glUnmapBufferARB(GL_ARRAY_BUFFER)) {
+			GLenum error = glGetError();
+
+			if(error == GL_INVALID_OPERATION) {
+				O3D_ERROR(service_locator()) <<
+				                             "Buffer was unlocked without first being locked.";
+			}
+			else {
+				O3D_ERROR(
+				    service_locator()) << "Unable to unlock a GL Element Array Buffer";
+			}
+
+			return false;
+		}
+
+		CHECK_GL_ERROR();
+		return true;
+	}
 
 
 // Index Buffers ---------------------------------------------------------------
@@ -162,92 +173,108 @@ bool VertexBufferGL::ConcreteUnlock() {
 // Initializes the O3D IndexBuffer object but does not create a OpenGL
 // buffer yet.
 
-IndexBufferGL::IndexBufferGL(ServiceLocator* service_locator)
-    : IndexBuffer(service_locator),
-      renderer_(static_cast<RendererGL*>(
-          service_locator->GetService<Renderer>())),
-      gl_buffer_(0) {
-  O3D_LOG(INFO) << "IndexBufferGL Construct";
-}
+	IndexBufferGL::IndexBufferGL(ServiceLocator* service_locator)
+		: IndexBuffer(service_locator),
+		  renderer_(static_cast<RendererGL*>(
+		                service_locator->GetService<Renderer>())),
+		  gl_buffer_(0) {
+		O3D_LOG(INFO) << "IndexBufferGL Construct";
+	}
 
 // Destructor releases the OpenGL index buffer.
-IndexBufferGL::~IndexBufferGL() {
-  O3D_LOG(INFO) << "IndexBufferGL Destruct  \"" << name() << "\"";
-  ConcreteFree();
-}
+	IndexBufferGL::~IndexBufferGL() {
+		O3D_LOG(INFO) << "IndexBufferGL Destruct  \"" << name() << "\"";
+		ConcreteFree();
+	}
 
 // Creates a OpenGL index buffer of the requested size.
-bool IndexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
-  O3D_LOG(INFO) << "IndexBufferGL Allocate  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  ConcreteFree();
-  // Create a new VBO.
-  glGenBuffersARB(1, &gl_buffer_);
-  if (!gl_buffer_) return false;
-  // Give the VBO a size, but no data, and set the hint to "STATIC_DRAW"
-  // to mark the buffer as set up once then used often.
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, gl_buffer_);
-  glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
-                  size_in_bytes,
-                  NULL,
-                  GL_STATIC_DRAW_ARB);
-  CHECK_GL_ERROR();
-  return true;
-}
+	bool IndexBufferGL::ConcreteAllocate(size_t size_in_bytes) {
+		O3D_LOG(INFO) << "IndexBufferGL Allocate  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		ConcreteFree();
+		// Create a new VBO.
+		glGenBuffersARB(1, &gl_buffer_);
 
-void IndexBufferGL::ConcreteFree() {
-  if (gl_buffer_) {
-    renderer_->MakeCurrentLazy();
-    glDeleteBuffersARB(1, &gl_buffer_);
-    gl_buffer_ = 0;
-    CHECK_GL_ERROR();
-  }
-}
+		if(!gl_buffer_) return false;
+
+		// Give the VBO a size, but no data, and set the hint to "STATIC_DRAW"
+		// to mark the buffer as set up once then used often.
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, gl_buffer_);
+		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
+		                size_in_bytes,
+		                NULL,
+		                GL_STATIC_DRAW_ARB);
+		CHECK_GL_ERROR();
+		return true;
+	}
+
+	void IndexBufferGL::ConcreteFree() {
+		if(gl_buffer_) {
+			renderer_->MakeCurrentLazy();
+			glDeleteBuffersARB(1, &gl_buffer_);
+			gl_buffer_ = 0;
+			CHECK_GL_ERROR();
+		}
+	}
 
 // Maps the OpenGL buffer to get the address in memory of the buffer data.
-bool IndexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
-                                 void **buffer_data) {
-  O3D_LOG(INFO) << "IndexBufferGL Lock  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, gl_buffer_);
-  if (!num_elements())
-    return true;
-  *buffer_data = glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
-                                BufferAccessModeToGLenum(access_mode));
-  if (*buffer_data == NULL) {
-    GLenum error = glGetError();
-    if (error == GL_OUT_OF_MEMORY) {
-      O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
-    } else {
-      O3D_ERROR(
-          service_locator()) << "Unable to lock a GL Element Array Buffer";
-    }
-    return false;
-  }
-  CHECK_GL_ERROR();
-  return true;
-}
+	bool IndexBufferGL::ConcreteLock(Buffer::AccessMode access_mode,
+	                                 void** buffer_data) {
+		O3D_LOG(INFO) << "IndexBufferGL Lock  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, gl_buffer_);
+
+		if(!num_elements())
+			return true;
+
+		*buffer_data = glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
+		                              BufferAccessModeToGLenum(access_mode));
+
+		if(*buffer_data == NULL) {
+			GLenum error = glGetError();
+
+			if(error == GL_OUT_OF_MEMORY) {
+				O3D_ERROR(service_locator()) << "Out of memory for buffer lock.";
+			}
+			else {
+				O3D_ERROR(
+				    service_locator()) << "Unable to lock a GL Element Array Buffer";
+			}
+
+			return false;
+		}
+
+		CHECK_GL_ERROR();
+		return true;
+	}
 
 // Calls Unlock on the OpenGL buffer to notify that the contents of the buffer
 // are now ready for use.
-bool IndexBufferGL::ConcreteUnlock() {
-  O3D_LOG(INFO) << "IndexBufferGL Unlock  \"" << name() << "\"";
-  renderer_->MakeCurrentLazy();
-  if (!num_elements())
-    return true;
-  glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, gl_buffer_);
-  if (!glUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER)) {
-    GLenum error = glGetError();
-    if (error == GL_INVALID_OPERATION) {
-      O3D_ERROR(service_locator()) <<
-          "Buffer was unlocked without first being locked.";
-    } else {
-      O3D_ERROR(
-          service_locator()) << "Unable to unlock a GL Element Array Buffer";
-    }
-    return false;
-  }
-  CHECK_GL_ERROR();
-  return true;
-}
+	bool IndexBufferGL::ConcreteUnlock() {
+		O3D_LOG(INFO) << "IndexBufferGL Unlock  \"" << name() << "\"";
+		renderer_->MakeCurrentLazy();
+
+		if(!num_elements())
+			return true;
+
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, gl_buffer_);
+
+		if(!glUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER)) {
+			GLenum error = glGetError();
+
+			if(error == GL_INVALID_OPERATION) {
+				O3D_ERROR(service_locator()) <<
+				                             "Buffer was unlocked without first being locked.";
+			}
+			else {
+				O3D_ERROR(
+				    service_locator()) << "Unable to unlock a GL Element Array Buffer";
+			}
+
+			return false;
+		}
+
+		CHECK_GL_ERROR();
+		return true;
+	}
 }  // namespace o3d

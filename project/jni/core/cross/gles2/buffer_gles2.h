@@ -42,7 +42,7 @@
 
 namespace o3d {
 
-class RendererGLES2;
+	class RendererGLES2;
 
 // VertexBufferGLES2 is a wrapper around an OpenGLES2
 // Vertex Buffer Object (VBO). The buffer starts out empty.  Calling Allocate()
@@ -56,85 +56,85 @@ class RendererGLES2;
 // default and buffers are created, locked and managed using the OpenGLES2
 // "ARB_vertex_buffer_object" extension.
 
-class VertexBufferGLES2 : public VertexBuffer {
- public:
-  explicit VertexBufferGLES2(ServiceLocator* service_locator);
-  ~VertexBufferGLES2();
+	class VertexBufferGLES2 : public VertexBuffer {
+	public:
+		explicit VertexBufferGLES2(ServiceLocator* service_locator);
+		~VertexBufferGLES2();
 
-  // Returns the OpenGLES2 vertex buffer Object handle.
-  GLuint gl_buffer() const { return gl_buffer_; }
+		// Returns the OpenGLES2 vertex buffer Object handle.
+		GLuint gl_buffer() const { return gl_buffer_; }
 
-  // Handler for a new context.
-  bool OnContextRestored();
+		// Handler for a new context.
+		bool OnContextRestored();
 
- protected:
-  // Creates a OpenGLES2 vertex buffer object of the specified size.
-  virtual bool ConcreteAllocate(size_t size_in_bytes);
+	protected:
+		// Creates a OpenGLES2 vertex buffer object of the specified size.
+		virtual bool ConcreteAllocate(size_t size_in_bytes);
 
-  // Frees the OpenGLES2 vertex buffer object.
-  virtual void ConcreteFree();
+		// Frees the OpenGLES2 vertex buffer object.
+		virtual void ConcreteFree();
 
-  // Returns a pointer to the current contents of the buffer.  A matching
-  // call to Unlock is necessary to update the contents of the buffer.
-  virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
+		// Returns a pointer to the current contents of the buffer.  A matching
+		// call to Unlock is necessary to update the contents of the buffer.
+		virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
 
-  // Notifies OpenGLES2 that the buffer data has been updated.  Unlock is only
-  // valid if it follows a Lock operation.
-  virtual bool ConcreteUnlock();
+		// Notifies OpenGLES2 that the buffer data has been updated.  Unlock is only
+		// valid if it follows a Lock operation.
+		virtual bool ConcreteUnlock();
 
- private:
-  RendererGLES2* renderer_;
+	private:
+		RendererGLES2* renderer_;
 #if !defined(GLES2_BACKEND_DESKTOP_GL)
-  // GLES doesn't support glMapBuffers (only WRITE_ONLY if an extension is
-  // present), or even glGetBufferSubData, so we need to keep a shadow of the
-  // data.
-  ::o3d::base::scoped_array<char> shadow_;
-  bool read_only_;
+		// GLES doesn't support glMapBuffers (only WRITE_ONLY if an extension is
+		// present), or even glGetBufferSubData, so we need to keep a shadow of the
+		// data.
+		::o3d::base::scoped_array<char> shadow_;
+		bool read_only_;
 #endif
-  GLuint gl_buffer_;
-};
+		GLuint gl_buffer_;
+	};
 
 // IndexBufferGLES2 is a wrapper around an OpenGLES2 Index Buffer Object (VBO).
 // The buffer starts out empty.  A call to Allocate() will create an OpenGLES2
 // index buffer of the requested size.  Updates the to the contents of the
 // buffer are done via the Lock/Unlock calls.
-class IndexBufferGLES2 : public IndexBuffer {
- public:
-  explicit IndexBufferGLES2(ServiceLocator* service_locator);
-  ~IndexBufferGLES2();
+	class IndexBufferGLES2 : public IndexBuffer {
+	public:
+		explicit IndexBufferGLES2(ServiceLocator* service_locator);
+		~IndexBufferGLES2();
 
-  // Returns the OpenGLES2 vertex buffer Object handle.
-  GLuint gl_buffer() const { return gl_buffer_; }
+		// Returns the OpenGLES2 vertex buffer Object handle.
+		GLuint gl_buffer() const { return gl_buffer_; }
 
-  // Handler for a new context.
-  bool OnContextRestored();
+		// Handler for a new context.
+		bool OnContextRestored();
 
- protected:
-  // Creates a OpenGLES2 index buffer of the specified size.
-  virtual bool ConcreteAllocate(size_t size_in_bytes);
+	protected:
+		// Creates a OpenGLES2 index buffer of the specified size.
+		virtual bool ConcreteAllocate(size_t size_in_bytes);
 
-  // Frees the OpenGLES2 vertex buffer object.
-  virtual void ConcreteFree();
+		// Frees the OpenGLES2 vertex buffer object.
+		virtual void ConcreteFree();
 
-  // Returns a pointer to the current contents of the buffer.  After calling
-  // Lock, the contents of the buffer can be updated in place.
-  virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
+		// Returns a pointer to the current contents of the buffer.  After calling
+		// Lock, the contents of the buffer can be updated in place.
+		virtual bool ConcreteLock(AccessMode access_mode, void** buffer_data);
 
-  // Notifies OpenGLES2 that the buffer data has been updated.  Unlock is only
-  // valid if it follows a Lock operation.
-  virtual bool ConcreteUnlock();
+		// Notifies OpenGLES2 that the buffer data has been updated.  Unlock is only
+		// valid if it follows a Lock operation.
+		virtual bool ConcreteUnlock();
 
- private:
-  RendererGLES2* renderer_;
+	private:
+		RendererGLES2* renderer_;
 #if !defined(GLES2_BACKEND_DESKTOP_GL)
-  // GLES doesn't support glMapBuffers (only WRITE_ONLY if an extension is
-  // present), or even glGetBufferSubData, so we need to keep a shadow of the
-  // data.
-  ::o3d::base::scoped_array<char> shadow_;
-  bool read_only_;
+		// GLES doesn't support glMapBuffers (only WRITE_ONLY if an extension is
+		// present), or even glGetBufferSubData, so we need to keep a shadow of the
+		// data.
+		::o3d::base::scoped_array<char> shadow_;
+		bool read_only_;
 #endif
-  GLuint gl_buffer_;
-};
+		GLuint gl_buffer_;
+	};
 
 }  // namespace o3d
 

@@ -37,42 +37,41 @@
 
 namespace o3d {
 
-class EventManagerTest : public testing::Test {
- protected:
-  EventManagerTest() {
-  }
+	class EventManagerTest : public testing::Test {
+	protected:
+		EventManagerTest() {
+		}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  EventManager event_manager_;
-};
+		EventManager event_manager_;
+	};
 
-void EventManagerTest::SetUp() {
-}
+	void EventManagerTest::SetUp() {
+	}
 
-void EventManagerTest::TearDown() {
-  event_manager_.ClearAll();
-}
+	void EventManagerTest::TearDown() {
+		event_manager_.ClearAll();
+	}
 
-TEST_F(EventManagerTest, CanClearAllFromEventCallback) {
-  class ClearAllEventCallback : public EventCallback {
-   public:
-    explicit ClearAllEventCallback(EventManager* event_manager)
-        : event_manager_(event_manager) {
-    }
-    virtual void Run(const Event& event) {
-      event_manager_->ClearAll();
-    }
-   private:
-    EventManager* event_manager_;
-  };
-
-  event_manager_.SetEventCallback(
-      Event::TYPE_CLICK,
-      new ClearAllEventCallback(&event_manager_));
-  Event event(Event::TYPE_CLICK);
-  event_manager_.AddEventToQueue(event);
-  event_manager_.ProcessQueue();
-}
+	TEST_F(EventManagerTest, CanClearAllFromEventCallback) {
+		class ClearAllEventCallback : public EventCallback {
+		public:
+			explicit ClearAllEventCallback(EventManager* event_manager)
+				: event_manager_(event_manager) {
+			}
+			virtual void Run(const Event& event) {
+				event_manager_->ClearAll();
+			}
+		private:
+			EventManager* event_manager_;
+		};
+		event_manager_.SetEventCallback(
+		    Event::TYPE_CLICK,
+		    new ClearAllEventCallback(&event_manager_));
+		Event event(Event::TYPE_CLICK);
+		event_manager_.AddEventToQueue(event);
+		event_manager_.ProcessQueue();
+	}
 }  // namespace o3d

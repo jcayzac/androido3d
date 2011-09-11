@@ -36,31 +36,31 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Material, ParamObject);
-O3D_DEFN_CLASS(ParamMaterial, RefParamBase);
+	O3D_DEFN_CLASS(Material, ParamObject);
+	O3D_DEFN_CLASS(ParamMaterial, RefParamBase);
 
-const char* Material::kStateParamName =
-    O3D_STRING_CONSTANT("state");
-const char* Material::kEffectParamName =
-    O3D_STRING_CONSTANT("effect");
-const char* Material::kDrawListParamName =
-    O3D_STRING_CONSTANT("drawList");
+	const char* Material::kStateParamName =
+	    O3D_STRING_CONSTANT("state");
+	const char* Material::kEffectParamName =
+	    O3D_STRING_CONSTANT("effect");
+	const char* Material::kDrawListParamName =
+	    O3D_STRING_CONSTANT("drawList");
 
-Material::Material(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      weak_pointer_manager_(this) {
-  RegisterParamRef(kStateParamName, &state_param_ref_);
-  RegisterParamRef(kEffectParamName, &effect_param_ref_);
-  RegisterParamRef(kDrawListParamName, &draw_list_param_);
-}
+	Material::Material(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  weak_pointer_manager_(this) {
+		RegisterParamRef(kStateParamName, &state_param_ref_);
+		RegisterParamRef(kEffectParamName, &effect_param_ref_);
+		RegisterParamRef(kDrawListParamName, &draw_list_param_);
+	}
 
-ObjectBase::Ref Material::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new Material(service_locator));
-}
+	ObjectBase::Ref Material::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new Material(service_locator));
+	}
 
-ObjectBase::Ref ParamMaterial::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new ParamMaterial(service_locator, false, false));
-}
+	ObjectBase::Ref ParamMaterial::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new ParamMaterial(service_locator, false, false));
+	}
 
 }  // namespace o3d
 

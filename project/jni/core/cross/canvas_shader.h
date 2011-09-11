@@ -50,116 +50,116 @@ namespace o3d {
 // This is the base class for 2D gradient shaders that can be applied to a
 // CanvasPaint.  The shaders affect both text and primitive drawing in the
 // canvas.
-class CanvasShader : public ParamObject {
- public:
-  enum TileMode {
-    CLAMP,  /* copy the edge color if the shader draws outside of its bounds */
-    REPEAT,  /* repeat horizontally and vertically outside its bounds */
-    MIRROR  /* same, alternating mirror images */
-  };
-  typedef SmartPointer<CanvasShader> Ref;
+	class CanvasShader : public ParamObject {
+	public:
+		enum TileMode {
+			CLAMP,  /* copy the edge color if the shader draws outside of its bounds */
+			REPEAT,  /* repeat horizontally and vertically outside its bounds */
+			MIRROR  /* same, alternating mirror images */
+		};
+		typedef SmartPointer<CanvasShader> Ref;
 
-  explicit CanvasShader(ServiceLocator* service_locator);
-  virtual ~CanvasShader();
+		explicit CanvasShader(ServiceLocator* service_locator);
+		virtual ~CanvasShader();
 
-  // Returns a pointer to the native (SKIA) shader object.
-  SkShader* GetNativeShader();
+		// Returns a pointer to the native (SKIA) shader object.
+		SkShader* GetNativeShader();
 
- protected:
-  // Creates a new native (SKIA) shader object using the parameter values
-  // stored in the object.
-  virtual SkShader* MakeNativeShader() = 0;
-  SkShader* native_shader_;
-  bool needs_update_;
+	protected:
+		// Creates a new native (SKIA) shader object using the parameter values
+		// stored in the object.
+		virtual SkShader* MakeNativeShader() = 0;
+		SkShader* native_shader_;
+		bool needs_update_;
 
- private:
-  O3D_DECL_CLASS(CanvasShader, ParamObject)
-  O3D_DISALLOW_COPY_AND_ASSIGN(CanvasShader);
-};
+	private:
+		O3D_DECL_CLASS(CanvasShader, ParamObject)
+		O3D_DISALLOW_COPY_AND_ASSIGN(CanvasShader);
+	};
 
 // A shader that generates a linear gradient between two specified points.
 // Two or more colors need to be specified for the gradient.
-class CanvasLinearGradient : public CanvasShader {
- public:
-  typedef SmartPointer<CanvasLinearGradient> Ref;
-  virtual ~CanvasLinearGradient();
+	class CanvasLinearGradient : public CanvasShader {
+	public:
+		typedef SmartPointer<CanvasLinearGradient> Ref;
+		virtual ~CanvasLinearGradient();
 
-  // Sets the start point of the gradient.
-  void set_start_point(Float2 start_point) {
-    start_point_ = start_point;
-  }
+		// Sets the start point of the gradient.
+		void set_start_point(Float2 start_point) {
+			start_point_ = start_point;
+		}
 
-  // Returns the start point of the gradient.
-  Float2 start_point() {
-    return start_point_;
-  }
+		// Returns the start point of the gradient.
+		Float2 start_point() {
+			return start_point_;
+		}
 
-  // Sets the end point of the gradient.
-  void set_end_point(Float2 end_point) {
-    end_point_ = end_point;
-  }
+		// Sets the end point of the gradient.
+		void set_end_point(Float2 end_point) {
+			end_point_ = end_point;
+		}
 
-  // Returns the end point of the gradient.
-  Float2 end_point() {
-    return end_point_;
-  }
+		// Returns the end point of the gradient.
+		Float2 end_point() {
+			return end_point_;
+		}
 
-  // Sets the relative positions corresponding to the colors in the color array.
-  // If the positions list is empty then the colors will be spread evenly.
-  // Otherwise, position values should start with 0 and end with 1.0 and their
-  // count should be equal to the length of the colors_ array.
-  void set_positions(std::vector<float> positions) {
-    positions_ = positions;
-    needs_update_ = true;
-  }
+		// Sets the relative positions corresponding to the colors in the color array.
+		// If the positions list is empty then the colors will be spread evenly.
+		// Otherwise, position values should start with 0 and end with 1.0 and their
+		// count should be equal to the length of the colors_ array.
+		void set_positions(std::vector<float> positions) {
+			positions_ = positions;
+			needs_update_ = true;
+		}
 
-  std::vector<float> positions() {
-    return positions_;
-  }
+		std::vector<float> positions() {
+			return positions_;
+		}
 
-  // Sets the array of colors used by the gradient.
-  void set_colors(std::vector<Float4> colors) {
-    colors_ = colors;
-    needs_update_ = true;
-  }
+		// Sets the array of colors used by the gradient.
+		void set_colors(std::vector<Float4> colors) {
+			colors_ = colors;
+			needs_update_ = true;
+		}
 
-  // Returns the color array.
-  std::vector<Float4> colors() {
-    return colors_;
-  }
+		// Returns the color array.
+		std::vector<Float4> colors() {
+			return colors_;
+		}
 
-  // Sets the tiling mode for the gradient which specifies how the shader
-  // repeats for values beyond the start and end points.
-  void set_tile_mode(CanvasShader::TileMode tile_mode) {
-    tile_mode_ = tile_mode;
-    needs_update_ = true;
-  }
+		// Sets the tiling mode for the gradient which specifies how the shader
+		// repeats for values beyond the start and end points.
+		void set_tile_mode(CanvasShader::TileMode tile_mode) {
+			tile_mode_ = tile_mode;
+			needs_update_ = true;
+		}
 
-  // Returns the tile mode.
-  TileMode tile_mode() { return tile_mode_; }
+		// Returns the tile mode.
+		TileMode tile_mode() { return tile_mode_; }
 
- protected:
-  explicit CanvasLinearGradient(ServiceLocator* service_locator);
-  virtual SkShader* MakeNativeShader();
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	protected:
+		explicit CanvasLinearGradient(ServiceLocator* service_locator);
+		virtual SkShader* MakeNativeShader();
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  // Start and end points for the gradient.
-  Float2 start_point_;
-  Float2 end_point_;
+		// Start and end points for the gradient.
+		Float2 start_point_;
+		Float2 end_point_;
 
-  // Array of colors.
-  std::vector<Float4> colors_;
+		// Array of colors.
+		std::vector<Float4> colors_;
 
-  // Array of positions corresponding to colors.
-  std::vector<float> positions_;
+		// Array of positions corresponding to colors.
+		std::vector<float> positions_;
 
-  CanvasShader::TileMode tile_mode_;
+		CanvasShader::TileMode tile_mode_;
 
-  O3D_DECL_CLASS(CanvasLinearGradient, CanvasShader)
-  O3D_DISALLOW_COPY_AND_ASSIGN(CanvasLinearGradient);
-};
+		O3D_DECL_CLASS(CanvasLinearGradient, CanvasShader)
+		O3D_DISALLOW_COPY_AND_ASSIGN(CanvasLinearGradient);
+	};
 
 }  // namespace o3d
 

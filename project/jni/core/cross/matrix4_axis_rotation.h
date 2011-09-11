@@ -44,62 +44,62 @@ namespace o3d {
 
 // Operation to build a rotation matrix from an axis vector and an angle and (if
 // bound) compose it with an input transformation matrix.
-class Matrix4AxisRotation : public ParamObject {
- public:
-  typedef SmartPointer<Matrix4AxisRotation> Ref;
-  typedef WeakPointer<Matrix4AxisRotation> WeakPointerType;
+	class Matrix4AxisRotation : public ParamObject {
+	public:
+		typedef SmartPointer<Matrix4AxisRotation> Ref;
+		typedef WeakPointer<Matrix4AxisRotation> WeakPointerType;
 
-  static const char* kInputMatrixParamName;
-  static const char* kAxisParamName;
-  static const char* kAngleParamName;
-  static const char* kOutputMatrixParamName;
+		static const char* kInputMatrixParamName;
+		static const char* kAxisParamName;
+		static const char* kAngleParamName;
+		static const char* kOutputMatrixParamName;
 
-  Matrix4 input_matrix() const {
-    return input_matrix_param_->value();
-  }
+		Matrix4 input_matrix() const {
+			return input_matrix_param_->value();
+		}
 
-  void set_input_matrix(const Matrix4& input_matrix) {
-    input_matrix_param_->set_value(input_matrix);
-  }
+		void set_input_matrix(const Matrix4& input_matrix) {
+			input_matrix_param_->set_value(input_matrix);
+		}
 
-  Float3 axis() const {
-    return axis_param_->value();
-  }
+		Float3 axis() const {
+			return axis_param_->value();
+		}
 
-  void set_axis(const Float3& axis) {
-    axis_param_->set_value(axis);
-  }
+		void set_axis(const Float3& axis) {
+			axis_param_->set_value(axis);
+		}
 
-  float angle() const {
-    return angle_param_->value();
-  }
+		float angle() const {
+			return angle_param_->value();
+		}
 
-  void set_angle(float angle) {
-    angle_param_->set_value(angle);
-  }
+		void set_angle(float angle) {
+			angle_param_->set_value(angle);
+		}
 
-  Matrix4 output_matrix() const {
-    return output_matrix_param_->value();
-  }
+		Matrix4 output_matrix() const {
+			return output_matrix_param_->value();
+		}
 
-  void UpdateOutputs();
+		void UpdateOutputs();
 
- private:
-  typedef SlaveParam<ParamMatrix4, Matrix4AxisRotation> SlaveParamMatrix4;
+	private:
+		typedef SlaveParam<ParamMatrix4, Matrix4AxisRotation> SlaveParamMatrix4;
 
-  explicit Matrix4AxisRotation(ServiceLocator* service_locator);
+		explicit Matrix4AxisRotation(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  ParamMatrix4::Ref input_matrix_param_;
-  ParamFloat3::Ref axis_param_;
-  ParamFloat::Ref angle_param_;
-  SlaveParamMatrix4::Ref output_matrix_param_;
+		ParamMatrix4::Ref input_matrix_param_;
+		ParamFloat3::Ref axis_param_;
+		ParamFloat::Ref angle_param_;
+		SlaveParamMatrix4::Ref output_matrix_param_;
 
-  O3D_DECL_CLASS(Matrix4AxisRotation, ParamObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4AxisRotation);
-};
+		O3D_DECL_CLASS(Matrix4AxisRotation, ParamObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4AxisRotation);
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_MATRIX4_AXIS_ROTATION_H_

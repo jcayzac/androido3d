@@ -36,67 +36,86 @@
 
 namespace o3d {
 
-bool Event::operator==(const Event& e) const {
-  O3D_ASSERT(valid() && e.valid());
-  if (type_ != e.type_) {
-    return false;
-  }
-  if (button_valid_ != e.button_valid_) {
-    return false;
-  }
-  if (button_valid_ && (button_ != e.button_)) {
-    return false;
-  }
-  if (modifier_state_valid_ != e.modifier_state_valid_) {
-    return false;
-  }
-  if (modifier_state_valid_ && (modifier_state_ != e.modifier_state_)) {
-    return false;
-  }
-  if (key_code_valid_ != e.key_code_valid_) {
-    return false;
-  }
-  if (key_code_valid_ && (key_code_ != e.key_code_)) {
-    return false;
-  }
-  if (char_code_valid_ != e.char_code_valid_) {
-    return false;
-  }
-  if (char_code_valid_ && (char_code_ != e.char_code_)) {
-    return false;
-  }
-  if (position_valid_ != e.position_valid_) {
-    return false;
-  }
-  if (position_valid_) {
-    if (x_ != e.x_) {
-      return false;
-    }
-    if (y_ != e.y_) {
-      return false;
-    }
-    if (screen_x_ != e.screen_x_) {
-      return false;
-    }
-    if (screen_y_ != e.screen_y_) {
-      return false;
-    }
-    if (in_plugin_ != e.in_plugin_) {
-      return false;
-    }
-  }
-  if (delta_valid_ != e.delta_valid_) {
-    return false;
-  }
-  if (delta_valid_) {
-    if (delta_x_ != e.delta_x_) {
-      return false;
-    }
-    if (delta_y_ != e.delta_y_) {
-      return false;
-    }
-  }
-  return true;
-}
+	bool Event::operator==(const Event& e) const {
+		O3D_ASSERT(valid() && e.valid());
+
+		if(type_ != e.type_) {
+			return false;
+		}
+
+		if(button_valid_ != e.button_valid_) {
+			return false;
+		}
+
+		if(button_valid_ && (button_ != e.button_)) {
+			return false;
+		}
+
+		if(modifier_state_valid_ != e.modifier_state_valid_) {
+			return false;
+		}
+
+		if(modifier_state_valid_ && (modifier_state_ != e.modifier_state_)) {
+			return false;
+		}
+
+		if(key_code_valid_ != e.key_code_valid_) {
+			return false;
+		}
+
+		if(key_code_valid_ && (key_code_ != e.key_code_)) {
+			return false;
+		}
+
+		if(char_code_valid_ != e.char_code_valid_) {
+			return false;
+		}
+
+		if(char_code_valid_ && (char_code_ != e.char_code_)) {
+			return false;
+		}
+
+		if(position_valid_ != e.position_valid_) {
+			return false;
+		}
+
+		if(position_valid_) {
+			if(x_ != e.x_) {
+				return false;
+			}
+
+			if(y_ != e.y_) {
+				return false;
+			}
+
+			if(screen_x_ != e.screen_x_) {
+				return false;
+			}
+
+			if(screen_y_ != e.screen_y_) {
+				return false;
+			}
+
+			if(in_plugin_ != e.in_plugin_) {
+				return false;
+			}
+		}
+
+		if(delta_valid_ != e.delta_valid_) {
+			return false;
+		}
+
+		if(delta_valid_) {
+			if(delta_x_ != e.delta_x_) {
+				return false;
+			}
+
+			if(delta_y_ != e.delta_y_) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 }  // namespace o3d

@@ -18,7 +18,7 @@
 #include "base/cross/log.h"
 
 namespace o3d {
-namespace base {
+	namespace base {
 
 // C standard-library functions like "strncasecmp" and "snprintf" that aren't
 // cross-platform are provided as "base::strncasecmp", and their prototypes
@@ -28,25 +28,25 @@ namespace base {
 // Compares the two strings s1 and s2 without regard to case using
 // the current locale; returns 0 if they are equal, 1 if s1 > s2, and -1 if
 // s2 > s1 according to a lexicographic comparison.
-int strcasecmp(const char* s1, const char* s2);
+		int strcasecmp(const char* s1, const char* s2);
 
 // Compares up to count characters of s1 and s2 without regard to case using
 // the current locale; returns 0 if they are equal, 1 if s1 > s2, and -1 if
 // s2 > s1 according to a lexicographic comparison.
-int strncasecmp(const char* s1, const char* s2, size_t count);
+		int strncasecmp(const char* s1, const char* s2, size_t count);
 
 // Wrapper for vsnprintf that always null-terminates and always returns the
 // number of characters that would be in an untruncated formatted
 // string, even when truncation occurs.
-int vsnprintf(char* buffer, size_t size, const char* format, va_list arguments);
+		int vsnprintf(char* buffer, size_t size, const char* format, va_list arguments);
 
-inline int snprintf(char* buffer, size_t size, const char* format, ...) {
-  va_list arguments;
-  va_start(arguments, format);
-  int result = vsnprintf(buffer, size, format, arguments);
-  va_end(arguments);
-  return result;
-}
+		inline int snprintf(char* buffer, size_t size, const char* format, ...) {
+			va_list arguments;
+			va_start(arguments, format);
+			int result = vsnprintf(buffer, size, format, arguments);
+			va_end(arguments);
+			return result;
+		}
 
 // BSD-style safe and consistent string copy functions.
 // Copies |src| to |dst|, where |dst_size| is the total allocated size of |dst|.
@@ -54,28 +54,28 @@ inline int snprintf(char* buffer, size_t size, const char* format, ...) {
 // long as |dst_size| is not 0.  Returns the length of |src| in characters.
 // If the return value is >= dst_size, then the output was truncated.
 // NOTE: All sizes are in number of characters, NOT in bytes.
-size_t strlcpy(char* dst, const char* src, size_t dst_size);
+		size_t strlcpy(char* dst, const char* src, size_t dst_size);
 
 // Chromium code style is to not use malloc'd strings; this is only for use
 // for interaction with APIs that require it.
-inline char* strdup(const char* str) {
-  return ::strdup(str);
-}
+		inline char* strdup(const char* str) {
+			return ::strdup(str);
+		}
 
-inline int strcasecmp(const char* string1, const char* string2) {
-  return ::strcasecmp(string1, string2);
-}
+		inline int strcasecmp(const char* string1, const char* string2) {
+			return ::strcasecmp(string1, string2);
+		}
 
-inline int strncasecmp(const char* string1, const char* string2, size_t count) {
-  return ::strncasecmp(string1, string2, count);
-}
+		inline int strncasecmp(const char* string1, const char* string2, size_t count) {
+			return ::strncasecmp(string1, string2, count);
+		}
 
-inline int vsnprintf(char* buffer, size_t size,
-                     const char* format, va_list arguments) {
-  return ::vsnprintf(buffer, size, format, arguments);
-}
+		inline int vsnprintf(char* buffer, size_t size,
+		                     const char* format, va_list arguments) {
+			return ::vsnprintf(buffer, size, format, arguments);
+		}
 
-} // namespace base
+	} // namespace base
 } // namespace o3d
 
 extern const char kWhitespaceASCII[];
@@ -96,10 +96,10 @@ bool TrimString(const std::string& input,
 // Please choose the best one according to your usage.
 // NOTE: Safe to use the same variable for both input and output.
 enum TrimPositions {
-  TRIM_NONE     = 0,
-  TRIM_LEADING  = 1 << 0,
-  TRIM_TRAILING = 1 << 1,
-  TRIM_ALL      = TRIM_LEADING | TRIM_TRAILING,
+	TRIM_NONE     = 0,
+	TRIM_LEADING  = 1 << 0,
+	TRIM_TRAILING = 1 << 1,
+	TRIM_ALL      = TRIM_LEADING | TRIM_TRAILING,
 };
 TrimPositions TrimWhitespaceASCII(const std::string& input,
                                   TrimPositions positions,
@@ -143,41 +143,41 @@ bool IsStringASCII(const std::string& str);
 // ASCII-specific tolower.  The standard library's tolower is locale sensitive,
 // so we don't want to use it here.
 template <class Char> inline Char ToLowerASCII(Char c) {
-  return (c >= 'A' && c <= 'Z') ? (c + ('a' - 'A')) : c;
+	return (c >= 'A' && c <= 'Z') ? (c + ('a' - 'A')) : c;
 }
 
 // Converts the elements of the given string.  This version uses a pointer to
 // clearly differentiate it from the non-pointer variant.
 template <class str> inline void StringToLowerASCII(str* s) {
-  for (typename str::iterator i = s->begin(); i != s->end(); ++i)
-    *i = ToLowerASCII(*i);
+	for(typename str::iterator i = s->begin(); i != s->end(); ++i)
+		*i = ToLowerASCII(*i);
 }
 
 template <class str> inline str StringToLowerASCII(const str& s) {
-  // for std::string and std::wstring
-  str output(s);
-  StringToLowerASCII(&output);
-  return output;
+	// for std::string and std::wstring
+	str output(s);
+	StringToLowerASCII(&output);
+	return output;
 }
 
 // ASCII-specific toupper.  The standard library's toupper is locale sensitive,
 // so we don't want to use it here.
 template <class Char> inline Char ToUpperASCII(Char c) {
-  return (c >= 'a' && c <= 'z') ? (c + ('A' - 'a')) : c;
+	return (c >= 'a' && c <= 'z') ? (c + ('A' - 'a')) : c;
 }
 
 // Converts the elements of the given string.  This version uses a pointer to
 // clearly differentiate it from the non-pointer variant.
 template <class str> inline void StringToUpperASCII(str* s) {
-  for (typename str::iterator i = s->begin(); i != s->end(); ++i)
-    *i = ToUpperASCII(*i);
+	for(typename str::iterator i = s->begin(); i != s->end(); ++i)
+		*i = ToUpperASCII(*i);
 }
 
 template <class str> inline str StringToUpperASCII(const str& s) {
-  // for std::string and std::wstring
-  str output(s);
-  StringToUpperASCII(&output);
-  return output;
+	// for std::string and std::wstring
+	str output(s);
+	StringToUpperASCII(&output);
+	return output;
 }
 
 // Compare the lower-case form of the given string against the given ASCII
@@ -207,15 +207,15 @@ bool EndsWith(const std::string& str,
 // library versions will change based on locale).
 template <typename Char>
 inline bool IsAsciiWhitespace(Char c) {
-  return c == ' ' || c == '\r' || c == '\n' || c == '\t';
+	return c == ' ' || c == '\r' || c == '\n' || c == '\t';
 }
 template <typename Char>
 inline bool IsAsciiAlpha(Char c) {
-  return ((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z'));
+	return ((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z'));
 }
 template <typename Char>
 inline bool IsAsciiDigit(Char c) {
-  return c >= '0' && c <= '9';
+	return c >= '0' && c <= '9';
 }
 
 // Starting at |start_offset| (usually 0), replace the first instance of
@@ -302,10 +302,10 @@ void StringAppendV(std::string* dst, const char* format, va_list ap);
 // Perhaps there's a constant-time way to change the string's length.
 template <class string_type>
 inline typename string_type::value_type* WriteInto(string_type* str,
-                                                   size_t length_with_null) {
-  str->reserve(length_with_null);
-  str->resize(length_with_null - 1);
-  return &((*str)[0]);
+        size_t length_with_null) {
+	str->reserve(length_with_null);
+	str->resize(length_with_null - 1);
+	return &((*str)[0]);
 }
 
 //-----------------------------------------------------------------------------
@@ -313,19 +313,19 @@ inline typename string_type::value_type* WriteInto(string_type* str,
 // Function objects to aid in comparing/searching strings.
 
 template<typename Char> struct CaseInsensitiveCompare {
- public:
-  bool operator()(Char x, Char y) const {
-    // TODO(darin): Do we really want to do locale sensitive comparisons here?
-    // See http://crbug.com/24917
-    return tolower(x) == tolower(y);
-  }
+public:
+	bool operator()(Char x, Char y) const {
+		// TODO(darin): Do we really want to do locale sensitive comparisons here?
+		// See http://crbug.com/24917
+		return tolower(x) == tolower(y);
+	}
 };
 
 template<typename Char> struct CaseInsensitiveCompareASCII {
- public:
-  bool operator()(Char x, Char y) const {
-    return ToLowerASCII(x) == ToLowerASCII(y);
-  }
+public:
+	bool operator()(Char x, Char y) const {
+		return ToLowerASCII(x) == ToLowerASCII(y);
+	}
 };
 
 // TODO(timsteele): Move these split string functions into their own API on
@@ -394,24 +394,24 @@ std::string HexEncode(const void* bytes, size_t size);
 // char.
 template<typename T>
 struct ToUnsigned {
-  typedef T Unsigned;
+	typedef T Unsigned;
 };
 
 template<>
 struct ToUnsigned<char> {
-  typedef unsigned char Unsigned;
+	typedef unsigned char Unsigned;
 };
 template<>
 struct ToUnsigned<signed char> {
-  typedef unsigned char Unsigned;
+	typedef unsigned char Unsigned;
 };
 template<>
 struct ToUnsigned<wchar_t> {
-  typedef unsigned wchar_t Unsigned;
+	typedef unsigned wchar_t Unsigned;
 };
 template<>
 struct ToUnsigned<short> {
-  typedef unsigned short Unsigned;
+	typedef unsigned short Unsigned;
 };
 
 #endif  // BASE_STRING_UTIL_H_

@@ -35,59 +35,59 @@
 #include "gtest/gtest.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
 // The data points in the following tests were determined by hand in
 // an interactive program.
 
-TEST(CubicClassifierTest, TestSerpentine) {
-  CubicClassifier::Result result =
-      CubicClassifier::Classify(100, 100,
-                                125, 175,
-                                200, 100,
-                                200, 200);
-  EXPECT_EQ(CubicClassifier::kSerpentine, result.curve_type());
-}
+		TEST(CubicClassifierTest, TestSerpentine) {
+			CubicClassifier::Result result =
+			    CubicClassifier::Classify(100, 100,
+			                              125, 175,
+			                              200, 100,
+			                              200, 200);
+			EXPECT_EQ(CubicClassifier::kSerpentine, result.curve_type());
+		}
 
-TEST(CubicClassifierTest, TestCusp) {
-  CubicClassifier::Result result =
-      CubicClassifier::Classify(100, 400,
-                                200, 200,
-                                300, 300,
-                                400, 400);
-  EXPECT_EQ(CubicClassifier::kCusp, result.curve_type());
-}
+		TEST(CubicClassifierTest, TestCusp) {
+			CubicClassifier::Result result =
+			    CubicClassifier::Classify(100, 400,
+			                              200, 200,
+			                              300, 300,
+			                              400, 400);
+			EXPECT_EQ(CubicClassifier::kCusp, result.curve_type());
+		}
 
-TEST(CubicClassifierTest, TestLoop) {
-  CubicClassifier::Result result =
-      CubicClassifier::Classify(200, 200,
-                                400, 100,
-                                100, 100,
-                                300, 200);
-  EXPECT_EQ(CubicClassifier::kLoop, result.curve_type());
-}
+		TEST(CubicClassifierTest, TestLoop) {
+			CubicClassifier::Result result =
+			    CubicClassifier::Classify(200, 200,
+			                              400, 100,
+			                              100, 100,
+			                              300, 200);
+			EXPECT_EQ(CubicClassifier::kLoop, result.curve_type());
+		}
 
-TEST(CubicClassifierTest, TestQuadratic) {
-  CubicClassifier::Result result =
-      CubicClassifier::Classify(100, 100,
-                                166.66667f, 166.66667f,
-                                233.33333f, 166.66667f,
-                                300, 100);
-  EXPECT_EQ(CubicClassifier::kQuadratic, result.curve_type());
-}
+		TEST(CubicClassifierTest, TestQuadratic) {
+			CubicClassifier::Result result =
+			    CubicClassifier::Classify(100, 100,
+			                              166.66667f, 166.66667f,
+			                              233.33333f, 166.66667f,
+			                              300, 100);
+			EXPECT_EQ(CubicClassifier::kQuadratic, result.curve_type());
+		}
 
 // Can't figure out how to get the classifier to return kLine.
 
-TEST(CubicClassifierTest, TestPoint) {
-  CubicClassifier::Result result =
-      CubicClassifier::Classify(100, 100,
-                                100, 100,
-                                100, 100,
-                                100, 100);
-  EXPECT_EQ(CubicClassifier::kPoint, result.curve_type());
-}
+		TEST(CubicClassifierTest, TestPoint) {
+			CubicClassifier::Result result =
+			    CubicClassifier::Classify(100, 100,
+			                              100, 100,
+			                              100, 100,
+			                              100, 100);
+			EXPECT_EQ(CubicClassifier::kPoint, result.curve_type());
+		}
 
 
-}  // namespace gpu2d
+	}  // namespace gpu2d
 }  // namespace o3d
 

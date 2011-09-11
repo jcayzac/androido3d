@@ -19,28 +19,28 @@
 #include <string>
 
 namespace o3d {
-class Pack;
+	class Pack;
 
-namespace extra {
+	namespace extra {
 
-/** This interface is responsible for fetching data from a
-  * network connection, cache, database or filesystem,
-  * given an URI.
-  */
-class IExternalResourceProvider {
- public:
-  /** @brief Get an external resource.
-    *
-    * @param pack Pack the callee should use if some by-product objects are created along the way.
-    * @param uri  URI of the resource being requested.
-    * @return A valid resource, or a NULL reference if something went wrong.
-    *
-    * @sa {ExternalResource}
-    */
-  virtual ExternalResource::Ref GetExternalResourceForURI(Pack& pack, const std::string& uri) = 0;
-};
+		/** This interface is responsible for fetching data from a
+		  * network connection, cache, database or filesystem,
+		  * given an URI.
+		  */
+		class IExternalResourceProvider {
+		public:
+			/** @brief Get an external resource.
+			  *
+			  * @param pack Pack the callee should use if some by-product objects are created along the way.
+			  * @param uri  URI of the resource being requested.
+			  * @return A valid resource, or a NULL reference if something went wrong.
+			  *
+			  * @sa {ExternalResource}
+			  */
+			virtual ExternalResource::Ref GetExternalResourceForURI(Pack& pack, const std::string& uri) = 0;
+		};
 
-} // namespace extra
+	} // namespace extra
 } // namespace o3d
 
 /* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */

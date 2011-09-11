@@ -39,28 +39,28 @@
 
 namespace o3d {
 
-/**
- * The DisplayWindowLinux class is a platform-specific representation
- * of a platform's display window.  This implements the Linux subclass
- * of the DisplayWindow.
- */
+	/**
+	 * The DisplayWindowLinux class is a platform-specific representation
+	 * of a platform's display window.  This implements the Linux subclass
+	 * of the DisplayWindow.
+	 */
 
-class DisplayWindowLinux : public DisplayWindow {
- public:
-  DisplayWindowLinux() : display_(NULL), window_(0) {}
-  virtual ~DisplayWindowLinux() {}
+	class DisplayWindowLinux : public DisplayWindow {
+	public:
+		DisplayWindowLinux() : display_(NULL), window_(0) {}
+		virtual ~DisplayWindowLinux() {}
 
-  Display* display() const { return display_; }
-  Window window() const { return window_; }
-  void set_window(Window window) { window_ = window; }
-  void set_display(Display* display) { display_ = display; }
+		Display* display() const { return display_; }
+		Window window() const { return window_; }
+		void set_window(Window window) { window_ = window; }
+		void set_display(Display* display) { display_ = display; }
 
- private:
-  Display* display_;
-  Window window_;
+	private:
+		Display* display_;
+		Window window_;
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(DisplayWindowLinux);
-};
+		O3D_DISALLOW_COPY_AND_ASSIGN(DisplayWindowLinux);
+	};
 }  // end namespace o3d
 
 #endif  // O3D_CORE_LINUX_DISPLAY_WINDOW_LINUX_H_

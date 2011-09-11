@@ -34,19 +34,19 @@
 
 namespace o3d {
 // Shader Instruction counts
-DEFINE_METRIC_timing(vertex_shader_instruction_count);
-DEFINE_METRIC_timing(pixel_shader_instruction_count);
+	DEFINE_METRIC_timing(vertex_shader_instruction_count);
+	DEFINE_METRIC_timing(pixel_shader_instruction_count);
 
 // Render Events
-DEFINE_METRIC_timing(render_elapsed_time);
-DEFINE_METRIC_count(render_time_seconds);
-DEFINE_METRIC_timing(render_xforms_culled);
-DEFINE_METRIC_timing(render_xforms_processed);
-DEFINE_METRIC_timing(render_draw_elts_culled);
-DEFINE_METRIC_timing(render_draw_elts_processed);
-DEFINE_METRIC_timing(render_draw_elts_rendered);
-DEFINE_METRIC_timing(render_prims_rendered);
+	DEFINE_METRIC_timing(render_elapsed_time);
+	DEFINE_METRIC_count(render_time_seconds);
+	DEFINE_METRIC_timing(render_xforms_culled);
+	DEFINE_METRIC_timing(render_xforms_processed);
+	DEFINE_METRIC_timing(render_draw_elts_culled);
+	DEFINE_METRIC_timing(render_draw_elts_processed);
+	DEFINE_METRIC_timing(render_draw_elts_rendered);
+	DEFINE_METRIC_timing(render_prims_rendered);
 
 // Messages
-DEFINE_METRIC_bool(imc_hello_msg);
+	DEFINE_METRIC_bool(imc_hello_msg);
 }  // namespace o3d

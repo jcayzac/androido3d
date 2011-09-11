@@ -37,8 +37,8 @@
 
 namespace o3d {
 
-typedef NonRecursiveClosureManager LostResourcesCallbackManager;
-typedef LostResourcesCallbackManager::ClosureType LostResourcesCallback;
+	typedef NonRecursiveClosureManager LostResourcesCallbackManager;
+	typedef LostResourcesCallbackManager::ClosureType LostResourcesCallback;
 
 }  // namespace o3d
 

@@ -40,101 +40,101 @@
 
 namespace o3d {
 
-namespace {
-class CreatableClass : public ObjectBase {
- public:
-  explicit CreatableClass(ServiceLocator* service_locator)
-      : ObjectBase(service_locator) {
-  }
-  static ObjectBase::Ref Create(ServiceLocator* service_locator) {
-    return ObjectBase::Ref(new CreatableClass(service_locator));
-  }
-  O3D_DECL_CLASS(CreatableClass, ObjectBase)
-};
-O3D_DEFN_CLASS(CreatableClass, ObjectBase);
+	namespace {
+		class CreatableClass : public ObjectBase {
+		public:
+			explicit CreatableClass(ServiceLocator* service_locator)
+				: ObjectBase(service_locator) {
+			}
+			static ObjectBase::Ref Create(ServiceLocator* service_locator) {
+				return ObjectBase::Ref(new CreatableClass(service_locator));
+			}
+			O3D_DECL_CLASS(CreatableClass, ObjectBase)
+		};
+		O3D_DEFN_CLASS(CreatableClass, ObjectBase);
 
-class NonCreatableClass : public ObjectBase {
- public:
-  explicit NonCreatableClass(ServiceLocator* service_locator)
-      : ObjectBase(service_locator) {
-  }
-  static ObjectBase::Ref Create(ServiceLocator* service_locator) {
-    return ObjectBase::Ref();
-  }
-  O3D_DECL_CLASS(NonCreatableClass, ObjectBase)
-};
-O3D_DEFN_CLASS(NonCreatableClass, ObjectBase);
-}
+		class NonCreatableClass : public ObjectBase {
+		public:
+			explicit NonCreatableClass(ServiceLocator* service_locator)
+				: ObjectBase(service_locator) {
+			}
+			static ObjectBase::Ref Create(ServiceLocator* service_locator) {
+				return ObjectBase::Ref();
+			}
+			O3D_DECL_CLASS(NonCreatableClass, ObjectBase)
+		};
+		O3D_DEFN_CLASS(NonCreatableClass, ObjectBase);
+	}
 
-class ClassManagerTest : public testing::Test {
- protected:
+	class ClassManagerTest : public testing::Test {
+	protected:
 
-  virtual void SetUp() {
-    service_locator_ = new ServiceLocator;
-    object_manager_ = new ObjectManager(service_locator_);
-    class_manager_ = new ClassManager(service_locator_);
-    class_manager_->AddTypedClass<CreatableClass>();
-    class_manager_->AddTypedClass<NonCreatableClass>();
-  }
+		virtual void SetUp() {
+			service_locator_ = new ServiceLocator;
+			object_manager_ = new ObjectManager(service_locator_);
+			class_manager_ = new ClassManager(service_locator_);
+			class_manager_->AddTypedClass<CreatableClass>();
+			class_manager_->AddTypedClass<NonCreatableClass>();
+		}
 
-  virtual void TearDown() {
-    delete class_manager_;
-    delete object_manager_;
-    delete service_locator_;
-  }
+		virtual void TearDown() {
+			delete class_manager_;
+			delete object_manager_;
+			delete service_locator_;
+		}
 
-  ServiceLocator* service_locator_;
-  ObjectManager* object_manager_;
-  ClassManager* class_manager_;
-};
+		ServiceLocator* service_locator_;
+		ObjectManager* object_manager_;
+		ClassManager* class_manager_;
+	};
 
-TEST_F(ClassManagerTest, ShouldNotBeAbleToFindClassWithNameThatIsNotAdded) {
-  EXPECT_EQ(NULL, class_manager_->GetClassByClassName(
-      "o3d.NonexistentClass"));
-}
+	TEST_F(ClassManagerTest, ShouldNotBeAbleToFindClassWithNameThatIsNotAdded) {
+		EXPECT_EQ(NULL, class_manager_->GetClassByClassName(
+		              "o3d.NonexistentClass"));
+	}
 
-TEST_F(ClassManagerTest, ShouldGetCreatableClassByName) {
-  EXPECT_EQ(CreatableClass::GetApparentClass(),
-      class_manager_->GetClassByClassName("o3d.CreatableClass"));
-}
+	TEST_F(ClassManagerTest, ShouldGetCreatableClassByName) {
+		EXPECT_EQ(CreatableClass::GetApparentClass(),
+		          class_manager_->GetClassByClassName("o3d.CreatableClass"));
+	}
 
-TEST_F(ClassManagerTest, ShouldCreateCreatableClass) {
-  ObjectBase::Ref object = class_manager_->CreateObject(
-      "o3d.CreatableClass");
-  EXPECT_FALSE(object.IsNull());
-}
+	TEST_F(ClassManagerTest, ShouldCreateCreatableClass) {
+		ObjectBase::Ref object = class_manager_->CreateObject(
+		                             "o3d.CreatableClass");
+		EXPECT_FALSE(object.IsNull());
+	}
 
-TEST_F(ClassManagerTest, ShouldGetNonCreatableClassByName) {
-  EXPECT_EQ(NonCreatableClass::GetApparentClass(),
-      class_manager_->GetClassByClassName("o3d.NonCreatableClass"));
-}
+	TEST_F(ClassManagerTest, ShouldGetNonCreatableClassByName) {
+		EXPECT_EQ(NonCreatableClass::GetApparentClass(),
+		          class_manager_->GetClassByClassName("o3d.NonCreatableClass"));
+	}
 
-TEST_F(ClassManagerTest, ShouldNotCreateNonCreatableClass) {
-  ObjectBase::Ref object = class_manager_->CreateObject(
-      "o3d.NonCreatableClass");
-  EXPECT_TRUE(object.IsNull());
-}
+	TEST_F(ClassManagerTest, ShouldNotCreateNonCreatableClass) {
+		ObjectBase::Ref object = class_manager_->CreateObject(
+		                             "o3d.NonCreatableClass");
+		EXPECT_TRUE(object.IsNull());
+	}
 
-TEST_F(ClassManagerTest, ClassShouldDeriveFromObjectBase) {
-  EXPECT_TRUE(class_manager_->ClassNameIsAClass(
-      "o3d.NonCreatableClass",
-      ObjectBase::GetApparentClass()));
-}
+	TEST_F(ClassManagerTest, ClassShouldDeriveFromObjectBase) {
+		EXPECT_TRUE(class_manager_->ClassNameIsAClass(
+		                "o3d.NonCreatableClass",
+		                ObjectBase::GetApparentClass()));
+	}
 
-TEST_F(ClassManagerTest, ClassShouldDeriveFromItself) {
-  EXPECT_TRUE(class_manager_->ClassNameIsAClass(
-      "o3d.NonCreatableClass",
-      NonCreatableClass::GetApparentClass()));
-}
+	TEST_F(ClassManagerTest, ClassShouldDeriveFromItself) {
+		EXPECT_TRUE(class_manager_->ClassNameIsAClass(
+		                "o3d.NonCreatableClass",
+		                NonCreatableClass::GetApparentClass()));
+	}
 
-TEST_F(ClassManagerTest, ShouldGetAllClasses) {
-  std::vector<const ObjectBase::Class*> classes =
-      class_manager_->GetAllClasses();
-  ASSERT_FALSE(classes.end() == std::find(
-      classes.begin(), classes.end(),
-      CreatableClass::GetApparentClass()));
-  ASSERT_FALSE(classes.end() == std::find(
-      classes.begin(), classes.end(),
-      NonCreatableClass::GetApparentClass()));
-}
+	TEST_F(ClassManagerTest, ShouldGetAllClasses) {
+		std::vector<const ObjectBase::Class*> classes =
+		    class_manager_->GetAllClasses();
+		ASSERT_FALSE(classes.end() == std::find(
+		                 classes.begin(), classes.end(),
+		                 CreatableClass::GetApparentClass()));
+		ASSERT_FALSE(classes.end() == std::find(
+		                 classes.begin(), classes.end(),
+		                 NonCreatableClass::GetApparentClass()));
+	}
 }  // namespace o3d

@@ -41,53 +41,53 @@
 
 namespace o3d {
 
-class Element;
+	class Element;
 
 // A DrawElement is what is actually "Drawn". It sits below a Element
 // and draws that Element with a different material. You can also override that
 // material/effect's params with params directly on the DrawElement.
-class DrawElement : public ParamObject {
- public:
-  typedef SmartPointer<DrawElement> Ref;
+	class DrawElement : public ParamObject {
+	public:
+		typedef SmartPointer<DrawElement> Ref;
 
-  static const char* kMaterialParamName;
+		static const char* kMaterialParamName;
 
-  explicit DrawElement(ServiceLocator* service_locator);
-  virtual ~DrawElement();
+		explicit DrawElement(ServiceLocator* service_locator);
+		virtual ~DrawElement();
 
-  // Returns the Material object bound to the DrawElement.
-  Material* material() const {
-    return material_param_ref_->value();
-  }
+		// Returns the Material object bound to the DrawElement.
+		Material* material() const {
+			return material_param_ref_->value();
+		}
 
-  // Binds an Material object to the Material.
-  void set_material(Material* material) {
-    material_param_ref_->set_value(material);
-  }
+		// Binds an Material object to the Material.
+		void set_material(Material* material) {
+			material_param_ref_->set_value(material);
+		}
 
-  // Sets the owner for this DrawElement.
-  // Parameters:
-  //   new_owner: Element to be our new owner. Pass in null to stop being owned.
-  void SetOwner(Element* new_owner);
+		// Sets the owner for this DrawElement.
+		// Parameters:
+		//   new_owner: Element to be our new owner. Pass in null to stop being owned.
+		void SetOwner(Element* new_owner);
 
-  Element* owner() const {
-    return owner_;
-  }
+		Element* owner() const {
+			return owner_;
+		}
 
- private:
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+	private:
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  ParamMaterial::Ref material_param_ref_;  // Material to render with.
+		ParamMaterial::Ref material_param_ref_;  // Material to render with.
 
-  Element* owner_;  // our current owner.
+		Element* owner_;  // our current owner.
 
-  O3D_DECL_CLASS(DrawElement, ParamObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(DrawElement);
-};
+		O3D_DECL_CLASS(DrawElement, ParamObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(DrawElement);
+	};
 
-typedef std::vector<DrawElement*> DrawElementArray;
-typedef std::vector<DrawElement::Ref> DrawElementRefArray;
+	typedef std::vector<DrawElement*> DrawElementArray;
+	typedef std::vector<DrawElement::Ref> DrawElementRefArray;
 
 }  // namespace o3d
 

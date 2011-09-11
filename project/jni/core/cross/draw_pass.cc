@@ -38,30 +38,31 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(DrawPass, RenderNode);
+	O3D_DEFN_CLASS(DrawPass, RenderNode);
 
-const char* DrawPass::kDrawListParamName =
-    O3D_STRING_CONSTANT("drawList");
-const char* DrawPass::kSortMethodParamName =
-    O3D_STRING_CONSTANT("sortMethod");
+	const char* DrawPass::kDrawListParamName =
+	    O3D_STRING_CONSTANT("drawList");
+	const char* DrawPass::kSortMethodParamName =
+	    O3D_STRING_CONSTANT("sortMethod");
 
-DrawPass::DrawPass(ServiceLocator* service_locator)
-    : RenderNode(service_locator) {
-  RegisterParamRef(kDrawListParamName, &draw_list_param_);
-  RegisterParamRef(kSortMethodParamName, &sort_method_param_);
-}
+	DrawPass::DrawPass(ServiceLocator* service_locator)
+		: RenderNode(service_locator) {
+		RegisterParamRef(kDrawListParamName, &draw_list_param_);
+		RegisterParamRef(kSortMethodParamName, &sort_method_param_);
+	}
 
-void DrawPass::Render(RenderContext* render_context) {
-  DrawList* drawlist = draw_list();
-  if (!drawlist) {
-    return;
-  }
+	void DrawPass::Render(RenderContext* render_context) {
+		DrawList* drawlist = draw_list();
 
-  // Draw the elements of this list.
-  drawlist->Render(render_context, sort_method());
-}
+		if(!drawlist) {
+			return;
+		}
 
-ObjectBase::Ref DrawPass::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new DrawPass(service_locator));
-}
+		// Draw the elements of this list.
+		drawlist->Render(render_context, sort_method());
+	}
+
+	ObjectBase::Ref DrawPass::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new DrawPass(service_locator));
+	}
 }  // namespace o3d

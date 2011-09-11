@@ -42,31 +42,31 @@
 namespace o3d {
 
 // StreamBankGL is the OpenGL implementation of the StreamBank.
-class StreamBankGL : public StreamBank {
- public:
-  explicit StreamBankGL(ServiceLocator* service_locator);
-  virtual ~StreamBankGL();
+	class StreamBankGL : public StreamBank {
+	public:
+		explicit StreamBankGL(ServiceLocator* service_locator);
+		virtual ~StreamBankGL();
 
-  // Sets the streams for rendering.
-  // Parameter:
-  //   varying_map: Map of streams.
-  //   max_vertrices: pointer to variable to receive the maximum vertices
-  //     the streams can render.
-  // Returns:
-  //   true if all streams were bound.
-  bool BindStreamsForRendering(
-      const ParamCacheGL::VaryingParameterMap& varying_map,
-      unsigned int* max_vertices);
+		// Sets the streams for rendering.
+		// Parameter:
+		//   varying_map: Map of streams.
+		//   max_vertrices: pointer to variable to receive the maximum vertices
+		//     the streams can render.
+		// Returns:
+		//   true if all streams were bound.
+		bool BindStreamsForRendering(
+		    const ParamCacheGL::VaryingParameterMap& varying_map,
+		    unsigned int* max_vertices);
 
-  // Checks for all required streams before rendering.
-  bool CheckForMissingVertexStreams(
-      ParamCacheGL::VaryingParameterMap& varying_map,
-      Stream::Semantic* missing_semantic,
-      int* missing_semantic_index);
+		// Checks for all required streams before rendering.
+		bool CheckForMissingVertexStreams(
+		    ParamCacheGL::VaryingParameterMap& varying_map,
+		    Stream::Semantic* missing_semantic,
+		    int* missing_semantic_index);
 
- private:
-  int FindVertexStream(Stream::Semantic semantic, int index);
-};
+	private:
+		int FindVertexStream(Stream::Semantic semantic, int index);
+	};
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GL_STREAM_BANK_GL_H_

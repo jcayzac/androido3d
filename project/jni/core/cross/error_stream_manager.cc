@@ -36,26 +36,28 @@
 namespace o3d {
 
 #ifdef NDEBUG
-ErrorStreamManager::ErrorStreamManager(ServiceLocator* service_locator) {
+	ErrorStreamManager::ErrorStreamManager(ServiceLocator* service_locator) {
 #else
-ErrorStreamManager::ErrorStreamManager(ServiceLocator* service_locator,
-                                       const char* file,
-                                       int line)
-    : file_(file),
-      line_(line) {
+	ErrorStreamManager::ErrorStreamManager(ServiceLocator* service_locator,
+	                                       const char* file,
+	                                       int line)
+		: file_(file),
+		  line_(line) {
 #endif
-  if (service_locator->IsAvailable<IErrorStatus>())
-    error_status_ = service_locator->GetService<o3d::IErrorStatus>();
-  else
-    error_status_ = NULL;
-}
 
-ErrorStreamManager::~ErrorStreamManager() {
-  if (error_status_ != NULL)
+		if(service_locator->IsAvailable<IErrorStatus>())
+			error_status_ = service_locator->GetService<o3d::IErrorStatus>();
+		else
+			error_status_ = NULL;
+	}
+
+	ErrorStreamManager::~ErrorStreamManager() {
+		if(error_status_ != NULL)
 #ifdef NDEBUG
-    error_status_->SetLastError(std::string(stream_.str()));
+			error_status_->SetLastError(std::string(stream_.str()));
+
 #else
-    error_status_->SetLastError(std::string(stream_.str()), file_, line_);
+			error_status_->SetLastError(std::string(stream_.str()), file_, line_);
 #endif
-}
+	}
 }  // namespace o3d

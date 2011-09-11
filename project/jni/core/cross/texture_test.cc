@@ -39,163 +39,165 @@
 
 namespace o3d {
 
-namespace {
+	namespace {
 
-bool CompareTexture(Texture2D* texture, int level, const uint8_t* expected) {
-  Texture2D::LockHelper helper(texture, level, Texture::kReadOnly);
-  const uint8_t* data = helper.GetDataAs<const uint8_t>();
-  unsigned mip_width = image::ComputeMipDimension(level, texture->width());
-  unsigned mip_height = image::ComputeMipDimension(level, texture->height());
+		bool CompareTexture(Texture2D* texture, int level, const uint8_t* expected) {
+			Texture2D::LockHelper helper(texture, level, Texture::kReadOnly);
+			const uint8_t* data = helper.GetDataAs<const uint8_t>();
+			unsigned mip_width = image::ComputeMipDimension(level, texture->width());
+			unsigned mip_height = image::ComputeMipDimension(level, texture->height());
+			int bytes_per_row = image::ComputePitch(texture->format(), mip_width);
 
-  int bytes_per_row = image::ComputePitch(texture->format(), mip_width);
-  for (unsigned yy = 0; yy < mip_height; ++yy) {
-    if (memcmp(data, expected, bytes_per_row) != 0) {
-      return false;
-    }
-    expected += bytes_per_row;
-    data += helper.pitch();
-  }
-  return true;
-}
+			for(unsigned yy = 0; yy < mip_height; ++yy) {
+				if(memcmp(data, expected, bytes_per_row) != 0) {
+					return false;
+				}
 
-}  // anonymous namespace.
+				expected += bytes_per_row;
+				data += helper.pitch();
+			}
 
-class Texture2DTest : public testing::Test {
- protected:
-  Texture2DTest()
-      : object_manager_(g_service_locator) {
-  }
+			return true;
+		}
 
-  virtual void SetUp() {
-    pack_ = object_manager_->CreatePack();
-  }
+	}  // anonymous namespace.
 
-  virtual void TearDown() {
-    pack_->Destroy();
-  }
+	class Texture2DTest : public testing::Test {
+	protected:
+		Texture2DTest()
+			: object_manager_(g_service_locator) {
+		}
 
-  Pack* pack() { return pack_; }
+		virtual void SetUp() {
+			pack_ = object_manager_->CreatePack();
+		}
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack* pack_;
-};
+		virtual void TearDown() {
+			pack_->Destroy();
+		}
 
-TEST_F(Texture2DTest, Basic) {
-  Texture2D* texture = pack()->CreateTexture2D(8, 8, Texture::ARGB8, 1, false);
-  ASSERT_TRUE(texture != NULL);
-  EXPECT_TRUE(texture->IsA(Texture2D::GetApparentClass()));
-  EXPECT_TRUE(texture->IsA(Texture::GetApparentClass()));
-  EXPECT_TRUE(texture->IsA(ParamObject::GetApparentClass()));
-  EXPECT_EQ(texture->format(), Texture::ARGB8);
-  EXPECT_EQ(texture->levels(), 1);
-  EXPECT_FALSE(texture->render_surfaces_enabled());
-  EXPECT_EQ(0, Texture::kMaxDimension >> Texture::kMaxLevels);
-  EXPECT_EQ(1, Texture::kMaxDimension >> (Texture::kMaxLevels - 1));
-}
+		Pack* pack() { return pack_; }
 
-TEST_F(Texture2DTest, SetRect) {
-  const int kWidth = 8;
-  const int kHeight = 8;
-  const int kLevels = 2;
-  const int kDestMip = 1;
-  const unsigned kDestX = 1u;
-  const unsigned kDestY = 1u;
-  Texture2D* texture = pack()->CreateTexture2D(
-      kWidth, kHeight, Texture::ARGB8, kLevels, false);
-  ASSERT_TRUE(texture != NULL);
-  static const uint8_t kExpected1[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+	};
 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	TEST_F(Texture2DTest, Basic) {
+		Texture2D* texture = pack()->CreateTexture2D(8, 8, Texture::ARGB8, 1, false);
+		ASSERT_TRUE(texture != NULL);
+		EXPECT_TRUE(texture->IsA(Texture2D::GetApparentClass()));
+		EXPECT_TRUE(texture->IsA(Texture::GetApparentClass()));
+		EXPECT_TRUE(texture->IsA(ParamObject::GetApparentClass()));
+		EXPECT_EQ(texture->format(), Texture::ARGB8);
+		EXPECT_EQ(texture->levels(), 1);
+		EXPECT_FALSE(texture->render_surfaces_enabled());
+		EXPECT_EQ(0, Texture::kMaxDimension >> Texture::kMaxLevels);
+		EXPECT_EQ(1, Texture::kMaxDimension >> (Texture::kMaxLevels - 1));
+	}
 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	TEST_F(Texture2DTest, SetRect) {
+		const int kWidth = 8;
+		const int kHeight = 8;
+		const int kLevels = 2;
+		const int kDestMip = 1;
+		const unsigned kDestX = 1u;
+		const unsigned kDestY = 1u;
+		Texture2D* texture = pack()->CreateTexture2D(
+		                         kWidth, kHeight, Texture::ARGB8, kLevels, false);
+		ASSERT_TRUE(texture != NULL);
+		static const uint8_t kExpected1[] = {
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  };
-  EXPECT_TRUE(CompareTexture(texture, 1, kExpected1));
-  const int kSrcWidth = 2;
-  const int kSrcHeight = 2;
-  static const uint8_t kSourcePixels[] = {
-    0x01, 0x01, 0x01, 0x02, 0x03, 0x03, 0x03, 0x04,
-    0x05, 0x05, 0x05, 0x06, 0x07, 0x07, 0x07, 0x08,
-  };
-  const int kSourcePitch = sizeof(kSourcePixels[0]) * kSrcWidth * 4;
-  // normal copy
-  texture->SetRect(kDestMip, kDestX, kDestY,
-                   kSrcWidth, kSrcHeight, kSourcePixels, kSourcePitch);
-  static const uint8_t kExpected2[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-    0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x02,
-    0x03, 0x03, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-    0x00, 0x00, 0x00, 0x00, 0x05, 0x05, 0x05, 0x06,
-    0x07, 0x07, 0x07, 0x08, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		};
+		EXPECT_TRUE(CompareTexture(texture, 1, kExpected1));
+		const int kSrcWidth = 2;
+		const int kSrcHeight = 2;
+		static const uint8_t kSourcePixels[] = {
+			0x01, 0x01, 0x01, 0x02, 0x03, 0x03, 0x03, 0x04,
+			0x05, 0x05, 0x05, 0x06, 0x07, 0x07, 0x07, 0x08,
+		};
+		const int kSourcePitch = sizeof(kSourcePixels[0]) * kSrcWidth * 4;
+		// normal copy
+		texture->SetRect(kDestMip, kDestX, kDestY,
+		                 kSrcWidth, kSrcHeight, kSourcePixels, kSourcePitch);
+		static const uint8_t kExpected2[] = {
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  };
-  EXPECT_TRUE(CompareTexture(texture, 1, kExpected2));
-  // flipped copy
-  texture->SetRect(
-      kDestMip, kDestX, kDestY,
-      kSrcWidth, kSrcHeight,
-      kSourcePixels + kSourcePitch,
-      -kSourcePitch);
-  static const uint8_t kExpected3[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x02,
+			0x03, 0x03, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00,
 
-    0x00, 0x00, 0x00, 0x00, 0x05, 0x05, 0x05, 0x06,
-    0x07, 0x07, 0x07, 0x08, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x05, 0x05, 0x05, 0x06,
+			0x07, 0x07, 0x07, 0x08, 0x00, 0x00, 0x00, 0x00,
 
-    0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x02,
-    0x03, 0x03, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		};
+		EXPECT_TRUE(CompareTexture(texture, 1, kExpected2));
+		// flipped copy
+		texture->SetRect(
+		    kDestMip, kDestX, kDestY,
+		    kSrcWidth, kSrcHeight,
+		    kSourcePixels + kSourcePitch,
+		    -kSourcePitch);
+		static const uint8_t kExpected3[] = {
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  };
-  EXPECT_TRUE(CompareTexture(texture, 1, kExpected3));
-}
+			0x00, 0x00, 0x00, 0x00, 0x05, 0x05, 0x05, 0x06,
+			0x07, 0x07, 0x07, 0x08, 0x00, 0x00, 0x00, 0x00,
 
-class TextureCUBETest : public testing::Test {
- protected:
-  TextureCUBETest()
-      : object_manager_(g_service_locator) {
-  }
+			0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x02,
+			0x03, 0x03, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00,
 
-  virtual void SetUp() {
-    pack_ = object_manager_->CreatePack();
-  }
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		};
+		EXPECT_TRUE(CompareTexture(texture, 1, kExpected3));
+	}
 
-  virtual void TearDown() {
-    pack_->Destroy();
-  }
+	class TextureCUBETest : public testing::Test {
+	protected:
+		TextureCUBETest()
+			: object_manager_(g_service_locator) {
+		}
 
-  Pack* pack() { return pack_; }
+		virtual void SetUp() {
+			pack_ = object_manager_->CreatePack();
+		}
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack* pack_;
-};
+		virtual void TearDown() {
+			pack_->Destroy();
+		}
 
-TEST_F(TextureCUBETest, Basic) {
-  TextureCUBE* texture =
-      pack()->CreateTextureCUBE(8, Texture::ARGB8, 1, false);
-  ASSERT_TRUE(texture != NULL);
-  EXPECT_TRUE(texture->IsA(TextureCUBE::GetApparentClass()));
-  EXPECT_TRUE(texture->IsA(Texture::GetApparentClass()));
-  EXPECT_TRUE(texture->IsA(ParamObject::GetApparentClass()));
-  EXPECT_EQ(texture->format(), Texture::ARGB8);
-  EXPECT_EQ(texture->levels(), 1);
-  EXPECT_FALSE(texture->render_surfaces_enabled());
-}
+		Pack* pack() { return pack_; }
+
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+	};
+
+	TEST_F(TextureCUBETest, Basic) {
+		TextureCUBE* texture =
+		    pack()->CreateTextureCUBE(8, Texture::ARGB8, 1, false);
+		ASSERT_TRUE(texture != NULL);
+		EXPECT_TRUE(texture->IsA(TextureCUBE::GetApparentClass()));
+		EXPECT_TRUE(texture->IsA(Texture::GetApparentClass()));
+		EXPECT_TRUE(texture->IsA(ParamObject::GetApparentClass()));
+		EXPECT_EQ(texture->format(), Texture::ARGB8);
+		EXPECT_EQ(texture->levels(), 1);
+		EXPECT_FALSE(texture->render_surfaces_enabled());
+	}
 
 }  // namespace o3d
 

@@ -33,47 +33,45 @@
 
 namespace o3d {
 
-O3D_OBJECT_BASE_DEFN_CLASS(
-    "o3djs.DestinationBuffer", DestinationBuffer, VertexBuffer);
+	O3D_OBJECT_BASE_DEFN_CLASS(
+	    "o3djs.DestinationBuffer", DestinationBuffer, VertexBuffer);
 
-DestinationBuffer::DestinationBuffer(ServiceLocator* service_locator)
-    : VertexBuffer(service_locator),
-      buffer_() {
-}
+	DestinationBuffer::DestinationBuffer(ServiceLocator* service_locator)
+		: VertexBuffer(service_locator),
+		  buffer_() {
+	}
 
-DestinationBuffer::~DestinationBuffer() {
-  ConcreteFree();
-}
+	DestinationBuffer::~DestinationBuffer() {
+		ConcreteFree();
+	}
 
-void DestinationBuffer::ConcreteFree() {
-  buffer_.reset();
-}
+	void DestinationBuffer::ConcreteFree() {
+		buffer_.reset();
+	}
 
-bool DestinationBuffer::ConcreteAllocate(size_t size_in_bytes) {
-  ConcreteFree();
+	bool DestinationBuffer::ConcreteAllocate(size_t size_in_bytes) {
+		ConcreteFree();
+		buffer_.reset(new char[size_in_bytes]);
+		return true;
+	}
 
-  buffer_.reset(new char[size_in_bytes]);
+	bool DestinationBuffer::ConcreteLock(AccessMode access_mode,
+	                                     void** buffer_data) {
+		if(!buffer_.get()) {
+			return false;
+		}
 
-  return true;
-}
+		*buffer_data = reinterpret_cast<void*>(buffer_.get());
+		return true;
+	}
 
-bool DestinationBuffer::ConcreteLock(AccessMode access_mode,
-                                     void **buffer_data) {
-  if (!buffer_.get()) {
-    return false;
-  }
+	bool DestinationBuffer::ConcreteUnlock() {
+		return buffer_.get() != NULL;
+	}
 
-  *buffer_data = reinterpret_cast<void*>(buffer_.get());
-  return true;
-}
-
-bool DestinationBuffer::ConcreteUnlock() {
-  return buffer_.get() != NULL;
-}
-
-ObjectBase::Ref DestinationBuffer::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new DestinationBuffer(service_locator));
-}
+	ObjectBase::Ref DestinationBuffer::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new DestinationBuffer(service_locator));
+	}
 
 }  // namespace o3d
 

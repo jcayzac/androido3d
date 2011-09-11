@@ -41,42 +41,41 @@
 
 namespace o3d {
 
-class DrawPassTest : public testing::Test {
- protected:
+	class DrawPassTest : public testing::Test {
+	protected:
 
-  DrawPassTest()
-      : object_manager_(g_service_locator) {}
+		DrawPassTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-  TransformationContext* transformation_context_;
-  Pack *pack_;
-};
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+		TransformationContext* transformation_context_;
+		Pack* pack_;
+	};
 
-void DrawPassTest::SetUp() {
-  transformation_context_ = new TransformationContext(g_service_locator);
-  pack_ = object_manager_->CreatePack();
-}
+	void DrawPassTest::SetUp() {
+		transformation_context_ = new TransformationContext(g_service_locator);
+		pack_ = object_manager_->CreatePack();
+	}
 
-void DrawPassTest::TearDown() {
-  object_manager_->DestroyPack(pack_);
-  delete transformation_context_;
-}
+	void DrawPassTest::TearDown() {
+		object_manager_->DestroyPack(pack_);
+		delete transformation_context_;
+	}
 
-TEST_F(DrawPassTest, Basic) {
-  DrawPass* draw_pass = pack()->Create<DrawPass>();
-  // Check that draw_pass got created.
-  EXPECT_TRUE(draw_pass != NULL);
-
-  // Check that the default parameters got created.
-  EXPECT_TRUE(draw_pass->GetParam<ParamDrawList>(
-      DrawPass::kDrawListParamName) != NULL);
-  EXPECT_TRUE(draw_pass->GetParam<ParamInteger>(
-      DrawPass::kSortMethodParamName) != NULL);
-}
+	TEST_F(DrawPassTest, Basic) {
+		DrawPass* draw_pass = pack()->Create<DrawPass>();
+		// Check that draw_pass got created.
+		EXPECT_TRUE(draw_pass != NULL);
+		// Check that the default parameters got created.
+		EXPECT_TRUE(draw_pass->GetParam<ParamDrawList>(
+		                DrawPass::kDrawListParamName) != NULL);
+		EXPECT_TRUE(draw_pass->GetParam<ParamInteger>(
+		                DrawPass::kSortMethodParamName) != NULL);
+	}
 }  // namespace o3d

@@ -43,37 +43,39 @@
 
 namespace o3d {
 
-bool SemanticNameToSemantic(
-    const std::string& name, Stream::Semantic* semantic, int* semantic_index) {
-  struct NameToSemantic {
-    const char* const name;
-    size_t length;
-    const Stream::Semantic semantic;
-  };
-  static const char kPosition[] = "POSITION";
-  static const char kNormal[] = "NORMAL";
-  static const char kTangent[] = "TANGENT";
-  static const char kBinormal[] = "BINORMAL";
-  static const char kColor[] = "COLOR";
-  static const char kTexcoord[] = "TEXCOORD";
+	bool SemanticNameToSemantic(
+	    const std::string& name, Stream::Semantic* semantic, int* semantic_index) {
+		struct NameToSemantic {
+			const char* const name;
+			size_t length;
+			const Stream::Semantic semantic;
+		};
+		static const char kPosition[] = "POSITION";
+		static const char kNormal[] = "NORMAL";
+		static const char kTangent[] = "TANGENT";
+		static const char kBinormal[] = "BINORMAL";
+		static const char kColor[] = "COLOR";
+		static const char kTexcoord[] = "TEXCOORD";
+		static const NameToSemantic lookup[] = {
+			{ kPosition, sizeof(kPosition) - 1, Stream::POSITION, },
+			{ kNormal, sizeof(kNormal) - 1, Stream::NORMAL, },
+			{ kTangent, sizeof(kTangent) - 1, Stream::TANGENT, },
+			{ kBinormal, sizeof(kBinormal) - 1, Stream::BINORMAL, },
+			{ kColor, sizeof(kColor) - 1, Stream::COLOR, },
+			{ kTexcoord, sizeof(kTexcoord) - 1, Stream::TEXCOORD, },
+		};
 
-  static const NameToSemantic lookup[] = {
-    { kPosition, sizeof(kPosition) - 1, Stream::POSITION, },
-    { kNormal, sizeof(kNormal) - 1, Stream::NORMAL, },
-    { kTangent, sizeof(kTangent) - 1, Stream::TANGENT, },
-    { kBinormal, sizeof(kBinormal) - 1, Stream::BINORMAL, },
-    { kColor, sizeof(kColor) - 1, Stream::COLOR, },
-    { kTexcoord, sizeof(kTexcoord) - 1, Stream::TEXCOORD, },
-  };
-  for (unsigned ii = 0; ii < 6; ++ii) {
-    const NameToSemantic& info = lookup[ii];
-    if (!base::strncasecmp(info.name, name.c_str(), info.length)) {
-      *semantic = info.semantic;
-      *semantic_index = atoi(name.c_str() + info.length);
-      return true;
-    }
-  }
-  return false;
-}
+		for(unsigned ii = 0; ii < 6; ++ii) {
+			const NameToSemantic& info = lookup[ii];
+
+			if(!base::strncasecmp(info.name, name.c_str(), info.length)) {
+				*semantic = info.semantic;
+				*semantic_index = atoi(name.c_str() + info.length);
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 }  // namespace o3d

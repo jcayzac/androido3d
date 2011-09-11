@@ -44,98 +44,108 @@ namespace o3d {
 
 // Loads the header information and raw RGB{A} data from an uncompressed
 // 24-bit or 32-bit TGA stream into the Bitmap object.
-bool Bitmap::LoadFromTGAStream(ServiceLocator* service_locator,
-                               MemoryReadStream *stream,
-                               const std::string &filename,
-                               BitmapRefArray* bitmaps) {
-  // Read the magic header.
-  uint8_t file_magic[12];
-  if (stream->Read(file_magic, sizeof(file_magic)) != sizeof(file_magic)) {
-    O3D_LOG(ERROR) << "Targa file magic not loaded \"" << filename << "\"";
-    return false;
-  }
-  // Match the first few bytes of the TGA header to confirm we can read this
-  // format. Multibyte values are stored little endian.
-  static const uint8_t kTargaMagic[12] = {
-    0,     // ID Length (0 = no ID string present)
-    0,     // Color Map Type ( 0 = no color map)
-    2,     // Image Type (2 = Uncompressed True Color)
-    0, 0,  // Color Map: First Entry Index (2 bytes)
-    0, 0,  // Color Map: Table Length (2 bytes)
-    0,     // Color Map: Entry Size
-    0, 0,  // X-origin of image
-    0, 0,  // Y-origin of image
-           // MATCHED LATER: Image Width  (2 bytes)
-           // MATCHED LATER: Image Height (2 bytes)
-           // MATCHED LATER: Pixel Depth (1 byte)
-           // MATCHED LATER: Image Descriptor (1 byte, alpha:4bit, origin:2bit)
-  };
+	bool Bitmap::LoadFromTGAStream(ServiceLocator* service_locator,
+	                               MemoryReadStream* stream,
+	                               const std::string& filename,
+	                               BitmapRefArray* bitmaps) {
+		// Read the magic header.
+		uint8_t file_magic[12];
 
-  // TODO(gman): The most common targa format is compressed! We should support
-  // that format or remove targa support completely. If we are keeping targa
-  // format we should also support grayscale, 8bit indexed and 16bit formats.
-  if (memcmp(kTargaMagic, file_magic, sizeof(kTargaMagic)) != 0) {
-    O3D_LOG(ERROR) << "Targa file subtype not recognized \"" << filename << "\"";
-    return false;
-  }
-  // Read the image header.
-  uint8_t header[6];
-  if (stream->Read(header, sizeof(header)) != sizeof(header)) {
-    O3D_LOG(ERROR) << "Targa file header not read \"" << filename << "\"";
-    return false;
-  }
-  // Calculate image width and height, stored as little endian.
-  unsigned int tga_width  = header[1] * 256 + header[0];
-  unsigned int tga_height = header[3] * 256 + header[2];
-  if (!image::CheckImageDimensions(tga_width, tga_height)) {
-    O3D_LOG(ERROR) << "Failed to load " << filename
-                << ": dimensions are too large (" << tga_width
-                << ", " << tga_height << ").";
-    return false;
-  }
-  unsigned int components = header[4] >> 3;
-  // NOTE: Image Descriptor byte is skipped.
-  if (components != 3 && components != 4) {
-    O3D_LOG(ERROR) << "Targa file  \"" << filename
-                << "\"has an unsupported number of components";
-    return false;
-  }
-  // pixels contained in the file.
-  unsigned int pixel_count = tga_width * tga_height;
-  // Allocate storage for the pixels.
-  Texture::Format format = components == 3 ? Texture::XRGB8 : Texture::ARGB8;
-  // Allocate storage for the pixels. Bitmap requires we allocate enough
-  // memory for all mips even if we don't use them.
-  size_t image_size = Bitmap::ComputeMaxSize(tga_width, tga_height, format);
-  ::o3d::base::scoped_array<uint8_t> image_data(new uint8_t[image_size]);
-  if (image_data.get() == NULL) {
-    O3D_LOG(ERROR) << "Targa file memory allocation error \"" << filename << "\"";
-    return false;
-  }
-  // Read in the bitmap data.
-  size_t bytes_to_read = pixel_count * components;
-  if (stream->Read(image_data.get(), bytes_to_read) != bytes_to_read) {
-    O3D_LOG(ERROR) << "Targa file read failed \"" << filename << "\"";
-    return false;
-  }
+		if(stream->Read(file_magic, sizeof(file_magic)) != sizeof(file_magic)) {
+			O3D_LOG(ERROR) << "Targa file magic not loaded \"" << filename << "\"";
+			return false;
+		}
 
-  if (components == 3) {
-    // Fixup the image by inserting an alpha value of 1 (BGR->BGRX).
-    image::XYZToXYZA(image_data.get(), pixel_count);
-  }
+		// Match the first few bytes of the TGA header to confirm we can read this
+		// format. Multibyte values are stored little endian.
+		static const uint8_t kTargaMagic[12] = {
+			0,     // ID Length (0 = no ID string present)
+			0,     // Color Map Type ( 0 = no color map)
+			2,     // Image Type (2 = Uncompressed True Color)
+			0, 0,  // Color Map: First Entry Index (2 bytes)
+			0, 0,  // Color Map: Table Length (2 bytes)
+			0,     // Color Map: Entry Size
+			0, 0,  // X-origin of image
+			0, 0,  // Y-origin of image
+			// MATCHED LATER: Image Width  (2 bytes)
+			// MATCHED LATER: Image Height (2 bytes)
+			// MATCHED LATER: Pixel Depth (1 byte)
+			// MATCHED LATER: Image Descriptor (1 byte, alpha:4bit, origin:2bit)
+		};
 
-  // Success.
-  Bitmap::Ref bitmap(new Bitmap(service_locator));
-  bitmap->SetContents(format, 1, tga_width, tga_height, IMAGE, &image_data);
-  bitmaps->push_back(bitmap);
+		// TODO(gman): The most common targa format is compressed! We should support
+		// that format or remove targa support completely. If we are keeping targa
+		// format we should also support grayscale, 8bit indexed and 16bit formats.
+		if(memcmp(kTargaMagic, file_magic, sizeof(kTargaMagic)) != 0) {
+			O3D_LOG(ERROR) << "Targa file subtype not recognized \"" << filename << "\"";
+			return false;
+		}
 
-  // Targas are generally bottom first in memory so flip it.
-  //
-  // TODO(gman): In truth a targa can be any orientation. We should check
-  // that orientation and flip or not flip accordingly.
-  bitmap->FlipVertically();
+		// Read the image header.
+		uint8_t header[6];
 
-  return true;
-}
+		if(stream->Read(header, sizeof(header)) != sizeof(header)) {
+			O3D_LOG(ERROR) << "Targa file header not read \"" << filename << "\"";
+			return false;
+		}
+
+		// Calculate image width and height, stored as little endian.
+		unsigned int tga_width  = header[1] * 256 + header[0];
+		unsigned int tga_height = header[3] * 256 + header[2];
+
+		if(!image::CheckImageDimensions(tga_width, tga_height)) {
+			O3D_LOG(ERROR) << "Failed to load " << filename
+			               << ": dimensions are too large (" << tga_width
+			               << ", " << tga_height << ").";
+			return false;
+		}
+
+		unsigned int components = header[4] >> 3;
+
+		// NOTE: Image Descriptor byte is skipped.
+		if(components != 3 && components != 4) {
+			O3D_LOG(ERROR) << "Targa file  \"" << filename
+			               << "\"has an unsupported number of components";
+			return false;
+		}
+
+		// pixels contained in the file.
+		unsigned int pixel_count = tga_width * tga_height;
+		// Allocate storage for the pixels.
+		Texture::Format format = components == 3 ? Texture::XRGB8 : Texture::ARGB8;
+		// Allocate storage for the pixels. Bitmap requires we allocate enough
+		// memory for all mips even if we don't use them.
+		size_t image_size = Bitmap::ComputeMaxSize(tga_width, tga_height, format);
+		::o3d::base::scoped_array<uint8_t> image_data(new uint8_t[image_size]);
+
+		if(image_data.get() == NULL) {
+			O3D_LOG(ERROR) << "Targa file memory allocation error \"" << filename << "\"";
+			return false;
+		}
+
+		// Read in the bitmap data.
+		size_t bytes_to_read = pixel_count * components;
+
+		if(stream->Read(image_data.get(), bytes_to_read) != bytes_to_read) {
+			O3D_LOG(ERROR) << "Targa file read failed \"" << filename << "\"";
+			return false;
+		}
+
+		if(components == 3) {
+			// Fixup the image by inserting an alpha value of 1 (BGR->BGRX).
+			image::XYZToXYZA(image_data.get(), pixel_count);
+		}
+
+		// Success.
+		Bitmap::Ref bitmap(new Bitmap(service_locator));
+		bitmap->SetContents(format, 1, tga_width, tga_height, IMAGE, &image_data);
+		bitmaps->push_back(bitmap);
+		// Targas are generally bottom first in memory so flip it.
+		//
+		// TODO(gman): In truth a targa can be any orientation. We should check
+		// that orientation and flip or not flip accordingly.
+		bitmap->FlipVertically();
+		return true;
+	}
 
 }  // namespace o3d

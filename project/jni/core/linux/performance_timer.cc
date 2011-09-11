@@ -45,36 +45,36 @@
 
 namespace o3d {
 
-static uint64_t GetCurrentTime() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000000ULL + tv.tv_usec;
-}
+	static uint64_t GetCurrentTime() {
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		return tv.tv_sec * 1000000ULL + tv.tv_usec;
+	}
 
-PerformanceTimer::PerformanceTimer(const char *name)
-    : name_(name),
-      start_time_(0),
-      accum_time_(0) {
-}
+	PerformanceTimer::PerformanceTimer(const char* name)
+		: name_(name),
+		  start_time_(0),
+		  accum_time_(0) {
+	}
 
-void PerformanceTimer::Start() {
-  start_time_ = GetCurrentTime();
-}
+	void PerformanceTimer::Start() {
+		start_time_ = GetCurrentTime();
+	}
 
-void PerformanceTimer::Stop() {
-  accum_time_ += GetCurrentTime() - start_time_;
-}
+	void PerformanceTimer::Stop() {
+		accum_time_ += GetCurrentTime() - start_time_;
+	}
 
-double PerformanceTimer::GetElapsedTime() {
-  return static_cast<double>(accum_time_) / 1.E6;
-}
+	double PerformanceTimer::GetElapsedTime() {
+		return static_cast<double>(accum_time_) / 1.E6;
+	}
 
-void PerformanceTimer::Print() {
-  O3D_LOG(INFO) << name_.c_str() << " " << GetElapsedTime() << " seconds";
-}
+	void PerformanceTimer::Print() {
+		O3D_LOG(INFO) << name_.c_str() << " " << GetElapsedTime() << " seconds";
+	}
 
-void PerformanceTimer::StopAndPrint() {
-  Stop();
-  Print();
-}
+	void PerformanceTimer::StopAndPrint() {
+		Stop();
+		Print();
+	}
 }

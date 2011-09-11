@@ -32,74 +32,78 @@
 #include "core/cross/gpu2d/path_cache.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
-unsigned int PathCache::num_vertices() const {
-  return vertices_.size() / 2;
-}
+		unsigned int PathCache::num_vertices() const {
+			return vertices_.size() / 2;
+		}
 
-const float* PathCache::vertices() const {
-  if (num_vertices() == 0)
-    return NULL;
-  return &vertices_.front();
-}
+		const float* PathCache::vertices() const {
+			if(num_vertices() == 0)
+				return NULL;
 
-const float* PathCache::texcoords() const {
-  if (num_vertices() == 0)
-    return NULL;
-  return &texcoords_.front();
-}
+			return &vertices_.front();
+		}
 
-void PathCache::AddVertex(float x, float y,
-                          float k, float l, float m) {
-  vertices_.push_back(x);
-  vertices_.push_back(y);
-  texcoords_.push_back(k);
-  texcoords_.push_back(l);
-  texcoords_.push_back(m);
-}
+		const float* PathCache::texcoords() const {
+			if(num_vertices() == 0)
+				return NULL;
 
-void PathCache::Clear() {
-  vertices_.clear();
-  texcoords_.clear();
-  interior_vertices_.clear();
+			return &texcoords_.front();
+		}
+
+		void PathCache::AddVertex(float x, float y,
+		                          float k, float l, float m) {
+			vertices_.push_back(x);
+			vertices_.push_back(y);
+			texcoords_.push_back(k);
+			texcoords_.push_back(l);
+			texcoords_.push_back(m);
+		}
+
+		void PathCache::Clear() {
+			vertices_.clear();
+			texcoords_.clear();
+			interior_vertices_.clear();
 #ifdef O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
-  interior_edge_vertices_.clear();
+			interior_edge_vertices_.clear();
 #endif  // O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
-}
+		}
 
-unsigned int PathCache::num_interior_vertices() const {
-  return interior_vertices_.size() / 2;
-}
+		unsigned int PathCache::num_interior_vertices() const {
+			return interior_vertices_.size() / 2;
+		}
 
-const float* PathCache::interior_vertices() const {
-  if (num_interior_vertices() == 0)
-    return NULL;
-  return &interior_vertices_.front();
-}
+		const float* PathCache::interior_vertices() const {
+			if(num_interior_vertices() == 0)
+				return NULL;
 
-void PathCache::AddInteriorVertex(float x, float y) {
-  interior_vertices_.push_back(x);
-  interior_vertices_.push_back(y);
-}
+			return &interior_vertices_.front();
+		}
+
+		void PathCache::AddInteriorVertex(float x, float y) {
+			interior_vertices_.push_back(x);
+			interior_vertices_.push_back(y);
+		}
 
 #ifdef O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
-unsigned int PathCache::num_interior_edge_vertices() const {
-  return interior_edge_vertices_.size() / 2;
-}
+		unsigned int PathCache::num_interior_edge_vertices() const {
+			return interior_edge_vertices_.size() / 2;
+		}
 
-const float* PathCache::interior_edge_vertices() const {
-  if (num_interior_edge_vertices() == 0)
-    return NULL;
-  return &interior_edge_vertices_.front();
-}
+		const float* PathCache::interior_edge_vertices() const {
+			if(num_interior_edge_vertices() == 0)
+				return NULL;
 
-void PathCache::AddInteriorEdgeVertex(float x, float y) {
-  interior_edge_vertices_.push_back(x);
-  interior_edge_vertices_.push_back(y);
-}
+			return &interior_edge_vertices_.front();
+		}
+
+		void PathCache::AddInteriorEdgeVertex(float x, float y) {
+			interior_edge_vertices_.push_back(x);
+			interior_edge_vertices_.push_back(y);
+		}
 #endif  // O3D_CORE_CROSS_GPU2D_PATH_CACHE_DEBUG_INTERIOR_EDGES
 
-}  // namespace gpu2d
+	}  // namespace gpu2d
 }  // namespace o3d
 

@@ -18,40 +18,42 @@
 #include "core/cross/transform.h"
 
 namespace o3d {
-namespace extra {
+	namespace extra {
 
-void updateBoundingBoxes(Transform& root) {
-  BoundingBox box;
+		void updateBoundingBoxes(Transform& root) {
+			BoundingBox box;
+			// Update children first, and add their bounding box to this
+			// entity's.
+			const TransformRefArray& children(root.GetChildrenRefs());
 
-  // Update children first, and add their bounding box to this
-  // entity's.
-  const TransformRefArray& children(root.GetChildrenRefs());
-  for (size_t i(0); i<children.size(); ++i) {
-    Transform& child(*children[i]);
-    updateBoundingBoxes(child);
-    BoundingBox childBox;
-    child.bounding_box().Mul(child.local_matrix(), &childBox);
-    childBox.Add(box, &box);
-  }
+			for(size_t i(0); i < children.size(); ++i) {
+				Transform& child(*children[i]);
+				updateBoundingBoxes(child);
+				BoundingBox childBox;
+				child.bounding_box().Mul(child.local_matrix(), &childBox);
+				childBox.Add(box, &box);
+			}
 
-  // Inflate this entity's bounding box with any geometry
-  // it might contain.
-  const ShapeRefArray& shapes(root.GetShapeRefs());
-  for (size_t i(0); i<shapes.size(); ++i) {
-    // TODO:
-    // if (isBillBoardShape(shapes[i])) continue;
-    Shape& shape(*shapes[i]);
-    const ElementRefArray& elements(shape.GetElementRefs());
-    for (size_t j(0); j<elements.size(); ++j) {
-      Element& element(*elements[j]);
-      element.bounding_box().Add(box, &box);
-    }
-  }
+			// Inflate this entity's bounding box with any geometry
+			// it might contain.
+			const ShapeRefArray& shapes(root.GetShapeRefs());
 
-  root.set_bounding_box(box);
-}
+			for(size_t i(0); i < shapes.size(); ++i) {
+				// TODO:
+				// if (isBillBoardShape(shapes[i])) continue;
+				Shape& shape(*shapes[i]);
+				const ElementRefArray& elements(shape.GetElementRefs());
 
-} // extra
+				for(size_t j(0); j < elements.size(); ++j) {
+					Element& element(*elements[j]);
+					element.bounding_box().Add(box, &box);
+				}
+			}
+
+			root.set_bounding_box(box);
+		}
+
+	} // extra
 } // o3d
 
 /* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */

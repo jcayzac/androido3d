@@ -38,76 +38,76 @@
 
 namespace o3d {
 
-class Field;
+	class Field;
 
 // This class is the link between the generic curve processing code in
 // this directory and O3D. It runs the PathProcessor on a set of
 // curves and returns the resulting triangles' vertices and texture
 // coordinates in Fields which can be incorporated into primitives in
 // the scene graph.
-class ProcessedPath : public ObjectBase {
- public:
-  typedef SmartPointer<ProcessedPath> Ref;
+	class ProcessedPath : public ObjectBase {
+	public:
+		typedef SmartPointer<ProcessedPath> Ref;
 
-  virtual ~ProcessedPath();
+		virtual ~ProcessedPath();
 
-  // Clears out all of the curve segments that have been added to this
-  // path.
-  void Clear();
+		// Clears out all of the curve segments that have been added to this
+		// path.
+		void Clear();
 
-  // Moves the pen to the given absolute X,Y coordinates. If a contour
-  // isn't currently open on this path, one is opened.
-  void MoveTo(float x, float y);
+		// Moves the pen to the given absolute X,Y coordinates. If a contour
+		// isn't currently open on this path, one is opened.
+		void MoveTo(float x, float y);
 
-  // Draws a line from the current coordinates to the given absolute
-  // X,Y coordinates.
-  void LineTo(float x, float y);
+		// Draws a line from the current coordinates to the given absolute
+		// X,Y coordinates.
+		void LineTo(float x, float y);
 
-  // Draws a quadratic curve from the current coordinates through the
-  // given control point and end point, specified in absolute
-  // coordinates.
-  void QuadraticTo(float cx, float cy, float x, float y);
+		// Draws a quadratic curve from the current coordinates through the
+		// given control point and end point, specified in absolute
+		// coordinates.
+		void QuadraticTo(float cx, float cy, float x, float y);
 
-  // Draws a cubic curve from the current coordinates through the
-  // given control points and end point, specified in absolute
-  // coordinates.
-  void CubicTo(float c0x, float c0y,
-               float c1x, float c1y,
-               float x, float y);
+		// Draws a cubic curve from the current coordinates through the
+		// given control points and end point, specified in absolute
+		// coordinates.
+		void CubicTo(float c0x, float c0y,
+		             float c1x, float c1y,
+		             float x, float y);
 
-  // Closes the currently open contour on this path.
-  void Close();
+		// Closes the currently open contour on this path.
+		void Close();
 
-  // Creates the triangle mesh which will render the given curve
-  // segments. There are two regions: exterior and interior. The
-  // exterior region covers the portions containing the curve
-  // segments. It has two associated fields: a 2D floating point field
-  // for the positions, and a 3D floating point field for the
-  // Loop/Blinn texture coordinates. The interior region has one 2D
-  // floating point field for the positions. The contents of the
-  // fields are organized for rendering as non-indexed triangles.
-  void CreateMesh(Field* exterior_positions,
-                  Field* exterior_texture_coordinates,
-                  Field* interior_positions);
+		// Creates the triangle mesh which will render the given curve
+		// segments. There are two regions: exterior and interior. The
+		// exterior region covers the portions containing the curve
+		// segments. It has two associated fields: a 2D floating point field
+		// for the positions, and a 3D floating point field for the
+		// Loop/Blinn texture coordinates. The interior region has one 2D
+		// floating point field for the positions. The contents of the
+		// fields are organized for rendering as non-indexed triangles.
+		void CreateMesh(Field* exterior_positions,
+		                Field* exterior_texture_coordinates,
+		                Field* interior_positions);
 
- private:
-  explicit ProcessedPath(ServiceLocator* service_locator);
+	private:
+		explicit ProcessedPath(ServiceLocator* service_locator);
 
-  void SetFields(const float* positions,
-                 Field* position_field,
-                 const float* texture_coordinates,
-                 Field* texture_coordinate_field,
-                 unsigned int num_vertices);
+		void SetFields(const float* positions,
+		               Field* position_field,
+		               const float* texture_coordinates,
+		               Field* texture_coordinate_field,
+		               unsigned int num_vertices);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  SkPath path;
-  gpu2d::PathCache cache;
+		SkPath path;
+		gpu2d::PathCache cache;
 
-  O3D_DECL_CLASS(ProcessedPath, ObjectBase);
-  O3D_DISALLOW_COPY_AND_ASSIGN(ProcessedPath);
-};
+		O3D_DECL_CLASS(ProcessedPath, ObjectBase);
+		O3D_DISALLOW_COPY_AND_ASSIGN(ProcessedPath);
+	};
 
 }  // namespace o3d
 

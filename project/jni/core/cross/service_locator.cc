@@ -35,46 +35,46 @@
 
 namespace o3d {
 
-void ServiceLocator::AddService(InterfaceId interfaceId, void* service) {
-  // Check service with this interface is not already installed first.
-  O3D_ASSERT(services_.end() == services_.find(interfaceId));
-  services_.insert(ServiceMap::value_type(interfaceId, service));
+	void ServiceLocator::AddService(InterfaceId interfaceId, void* service) {
+		// Check service with this interface is not already installed first.
+		O3D_ASSERT(services_.end() == services_.find(interfaceId));
+		services_.insert(ServiceMap::value_type(interfaceId, service));
+		DependencyList& existingDependencies = dependencies_[interfaceId];
 
-  DependencyList& existingDependencies = dependencies_[interfaceId];
-  for (DependencyList::iterator it = existingDependencies.begin();
-       it != existingDependencies.end(); ++it) {
-    (*it)->Update(service);
-  }
-}
+		for(DependencyList::iterator it = existingDependencies.begin();
+		        it != existingDependencies.end(); ++it) {
+			(*it)->Update(service);
+		}
+	}
 
-void ServiceLocator::RemoveService(InterfaceId interfaceId, void* service) {
-  // Remove the existing service, verifying that the caller identified
-  // one that is currently active.
-  ServiceMap::iterator serviceIt = services_.find(interfaceId);
-  O3D_ASSERT(service == serviceIt->second);
-  services_.erase(serviceIt);
+	void ServiceLocator::RemoveService(InterfaceId interfaceId, void* service) {
+		// Remove the existing service, verifying that the caller identified
+		// one that is currently active.
+		ServiceMap::iterator serviceIt = services_.find(interfaceId);
+		O3D_ASSERT(service == serviceIt->second);
+		services_.erase(serviceIt);
+		DependencyList& existingDependencies = dependencies_[interfaceId];
 
-  DependencyList& existingDependencies = dependencies_[interfaceId];
-  for (DependencyList::iterator it = existingDependencies.begin();
-       it != existingDependencies.end(); ++it) {
-    (*it)->Update(NULL);
-  }
-}
+		for(DependencyList::iterator it = existingDependencies.begin();
+		        it != existingDependencies.end(); ++it) {
+			(*it)->Update(NULL);
+		}
+	}
 
-void ServiceLocator::AddDependency(InterfaceId interfaceId,
-                                   IServiceDependency* dependency) {
-  dependencies_[interfaceId].push_back(dependency);
+	void ServiceLocator::AddDependency(InterfaceId interfaceId,
+	                                   IServiceDependency* dependency) {
+		dependencies_[interfaceId].push_back(dependency);
+		ServiceMap::const_iterator serviceIt = services_.find(interfaceId);
 
-  ServiceMap::const_iterator serviceIt = services_.find(interfaceId);
-  if (serviceIt != services_.end())
-    dependency->Update(serviceIt->second);
-  else
-    dependency->Update(NULL);
-}
+		if(serviceIt != services_.end())
+			dependency->Update(serviceIt->second);
+		else
+			dependency->Update(NULL);
+	}
 
-void ServiceLocator::RemoveDependency(InterfaceId interfaceId,
-                                      IServiceDependency* dependency) {
-  dependencies_[interfaceId].remove(dependency);
-  dependency->Update(NULL);
-}
+	void ServiceLocator::RemoveDependency(InterfaceId interfaceId,
+	                                      IServiceDependency* dependency) {
+		dependencies_[interfaceId].remove(dependency);
+		dependency->Update(NULL);
+	}
 }  // namespace o3d

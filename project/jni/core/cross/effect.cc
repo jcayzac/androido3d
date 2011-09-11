@@ -42,149 +42,166 @@
 
 namespace o3d {
 
-namespace {
-struct EffectToUpper {
-  char operator() (char c) const  { return std::toupper(c); }
-};
-}
+	namespace {
+		struct EffectToUpper {
+			char operator()(char c) const  { return std::toupper(c); }
+		};
+	}
 
-EffectParameterInfo::EffectParameterInfo(
-    const std::string& name,
-    const ObjectBase::Class* class_type,
-    int num_elements,
-    const std::string& semantic,
-    const ObjectBase::Class* sas_class_type)
-      : name_(name),
-        class_type_(class_type),
-        num_elements_(num_elements),
-        semantic_(semantic),
-        sas_class_type_(sas_class_type) {
-  // Apparently CG uppercases the semantics so we need to do the same
-  // in D3D.
-  std::transform(semantic_.begin(),
-                 semantic_.end(),
-                 semantic_.begin(),
-                 EffectToUpper());
-}
+	EffectParameterInfo::EffectParameterInfo(
+	    const std::string& name,
+	    const ObjectBase::Class* class_type,
+	    int num_elements,
+	    const std::string& semantic,
+	    const ObjectBase::Class* sas_class_type)
+		: name_(name),
+		  class_type_(class_type),
+		  num_elements_(num_elements),
+		  semantic_(semantic),
+		  sas_class_type_(sas_class_type) {
+		// Apparently CG uppercases the semantics so we need to do the same
+		// in D3D.
+		std::transform(semantic_.begin(),
+		               semantic_.end(),
+		               semantic_.begin(),
+		               EffectToUpper());
+	}
 
-O3D_DEFN_CLASS(Effect, ParamObject);
-O3D_DEFN_CLASS(ParamEffect, RefParamBase);
+	O3D_DEFN_CLASS(Effect, ParamObject);
+	O3D_DEFN_CLASS(ParamEffect, RefParamBase);
 
-const char* Effect::kVertexShaderEntryPointPrefix =
-    "// #o3d VertexShaderEntryPoint ";
-const char* Effect::kFragmentShaderEntryPointPrefix =
-    "// #o3d PixelShaderEntryPoint ";
-const char* Effect::kMatrixLoadOrderPrefix =
-    "// #o3d MatrixLoadOrder ";
+	const char* Effect::kVertexShaderEntryPointPrefix =
+	    "// #o3d VertexShaderEntryPoint ";
+	const char* Effect::kFragmentShaderEntryPointPrefix =
+	    "// #o3d PixelShaderEntryPoint ";
+	const char* Effect::kMatrixLoadOrderPrefix =
+	    "// #o3d MatrixLoadOrder ";
 
-Effect::Effect(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      weak_pointer_manager_(this),
-      matrix_load_order_(ROW_MAJOR) {
-}
+	Effect::Effect(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  weak_pointer_manager_(this),
+		  matrix_load_order_(ROW_MAJOR) {
+	}
 
-void Effect::CreateUniformParameters(ParamObject* param_object) {
-  CreateSpecifiedParameters(param_object, false);
-}
+	void Effect::CreateUniformParameters(ParamObject* param_object) {
+		CreateSpecifiedParameters(param_object, false);
+	}
 
-void Effect::CreateSASParameters(ParamObject* param_object) {
-  CreateSpecifiedParameters(param_object, true);
-}
+	void Effect::CreateSASParameters(ParamObject* param_object) {
+		CreateSpecifiedParameters(param_object, true);
+	}
 
 // Creates parameters on a ParamObject corresponding to the internal effect
 // parameters.
-void Effect::CreateSpecifiedParameters(ParamObject* param_object, bool sas) {
-  std::string errors;
-  EffectParameterInfoArray param_infos;
-  GetParameterInfo(&param_infos);
-  for (unsigned ii = 0; ii < param_infos.size(); ++ii) {
-    const EffectParameterInfo& param_info = param_infos[ii];
-    if ((param_info.sas_class_type() != NULL) == sas) {
-      Param* param = param_object->GetUntypedParam(param_info.name());
-      if (param) {
-        // Param exists. Is the the correct type?
-        if (!param->IsA(param_info.class_type())) {
-          // Remove it
-          if (!param_object->RemoveParam(param)) {
-            errors += "Could not remove param '" + param->name() +
-                      "' type '" + param->GetClassName() +
-                      "' on '" + param_object->name() +
-                      "' while trying to replace it with param of type '" +
-                      param_info.class_type()->name() + "' for Effect '" +
-                      name() + "'";
-          } else {
-            param = NULL;
-          }
-        }
-      }
-      if (!param) {
-        const ObjectBase::Class* type = param_info.class_type();
-        if (param_info.num_elements() == 0) {
-          // Non-array type
-          param = param_object->CreateParamByClass(
-              param_info.name(),
-              param_info.sas_class_type() ? param_info.sas_class_type() :
-                                            param_info.class_type());
-        } else {
-          // Array type
-          param =
-              param_object->CreateParam<ParamParamArray>(param_info.name());
-        }
-        if (!param) {
-          errors += std::string(errors.empty() ? "" : "\n") +
-                    std::string("Could not create Param '") + param_info.name() +
-                    std::string("' type '") + std::string(type->name()) +
-                    std::string(" for Effect '") + name() + "'";
-        }
-      }
-    }
-  }
-  if (errors.length()) {
-    O3D_ERROR(service_locator()) << errors;
-  }
-}
+	void Effect::CreateSpecifiedParameters(ParamObject* param_object, bool sas) {
+		std::string errors;
+		EffectParameterInfoArray param_infos;
+		GetParameterInfo(&param_infos);
 
-namespace {
+		for(unsigned ii = 0; ii < param_infos.size(); ++ii) {
+			const EffectParameterInfo& param_info = param_infos[ii];
 
-std::string::size_type GetEndOfIdentifier(const std::string& original,
-                                     std::string::size_type start) {
-  if (start < original.size()) {
-    // check that first character is alpha or '_'
-    if (isalpha(original[start]) || original[start] == '_') {
-      std::string::size_type end = original.size();
-      std::string::size_type position = start;
-      while (position < end) {
-        char c = original[position];
-        if (!isalnum(c) && c != '_') {
-          break;
-        }
-        ++position;
-      }
-      return position;
-    }
-  }
-  return std::string::npos;
-}
+			if((param_info.sas_class_type() != NULL) == sas) {
+				Param* param = param_object->GetUntypedParam(param_info.name());
 
-bool GetIdentifierAfterString(const std::string& original,
-                              const std::string& phrase,
-                              std::string* word) {
-  std::string::size_type position = original.find(phrase);
-  if (position == std::string::npos) {
-    return false;
-  }
+				if(param) {
+					// Param exists. Is the the correct type?
+					if(!param->IsA(param_info.class_type())) {
+						// Remove it
+						if(!param_object->RemoveParam(param)) {
+							errors += "Could not remove param '" + param->name() +
+							          "' type '" + param->GetClassName() +
+							          "' on '" + param_object->name() +
+							          "' while trying to replace it with param of type '" +
+							          param_info.class_type()->name() + "' for Effect '" +
+							          name() + "'";
+						}
+						else {
+							param = NULL;
+						}
+					}
+				}
 
-  // Find end of identifier
-  std::string::size_type start = position + phrase.size();
-  std::string::size_type end = GetEndOfIdentifier(original, start);
-  if (end != start && end != std::string::npos) {
-    *word = std::string(original, start, end - start);
-    return true;
-  }
-  return false;
-}
+				if(!param) {
+					const ObjectBase::Class* type = param_info.class_type();
 
-}  // anonymous namespace
+					if(param_info.num_elements() == 0) {
+						// Non-array type
+						param = param_object->CreateParamByClass(
+						            param_info.name(),
+						            param_info.sas_class_type() ? param_info.sas_class_type() :
+						            param_info.class_type());
+					}
+					else {
+						// Array type
+						param =
+						    param_object->CreateParam<ParamParamArray>(param_info.name());
+					}
+
+					if(!param) {
+						errors += std::string(errors.empty() ? "" : "\n") +
+						          std::string("Could not create Param '") + param_info.name() +
+						          std::string("' type '") + std::string(type->name()) +
+						          std::string(" for Effect '") + name() + "'";
+					}
+				}
+			}
+		}
+
+		if(errors.length()) {
+			O3D_ERROR(service_locator()) << errors;
+		}
+	}
+
+	namespace {
+
+		std::string::size_type GetEndOfIdentifier(const std::string& original,
+		        std::string::size_type start) {
+			if(start < original.size()) {
+				// check that first character is alpha or '_'
+				if(isalpha(original[start]) || original[start] == '_') {
+					std::string::size_type end = original.size();
+					std::string::size_type position = start;
+
+					while(position < end) {
+						char c = original[position];
+
+						if(!isalnum(c) && c != '_') {
+							break;
+						}
+
+						++position;
+					}
+
+					return position;
+				}
+			}
+
+			return std::string::npos;
+		}
+
+		bool GetIdentifierAfterString(const std::string& original,
+		                              const std::string& phrase,
+		                              std::string* word) {
+			std::string::size_type position = original.find(phrase);
+
+			if(position == std::string::npos) {
+				return false;
+			}
+
+			// Find end of identifier
+			std::string::size_type start = position + phrase.size();
+			std::string::size_type end = GetEndOfIdentifier(original, start);
+
+			if(end != start && end != std::string::npos) {
+				*word = std::string(original, start, end - start);
+				return true;
+			}
+
+			return false;
+		}
+
+	}  // anonymous namespace
 
 // TODO(gman): Replace this with the runtime shader parser.
 //    For now it's very stupid. It requires the word "techinque" not appear
@@ -195,51 +212,56 @@ bool GetIdentifierAfterString(const std::string& original,
 //
 //    with that exact syntax. No extra whitespace.
 //    If it doesn't find both it's a fails.
-bool Effect::ValidateFX(const std::string& effect,
-                        std::string* vertex_shader_entry_point,
-                        std::string* fragment_shader_entry_point,
-                        MatrixLoadOrder* matrix_load_order) {
-  if (!GetIdentifierAfterString(effect,
-                                kVertexShaderEntryPointPrefix,
-                                vertex_shader_entry_point)) {
-    O3D_ERROR(service_locator()) << "Failed to find \""
-                                 << kVertexShaderEntryPointPrefix
-                                 << "\" in Effect:" << effect;
-    return false;
-  }
-  if (!GetIdentifierAfterString(effect,
-                                kFragmentShaderEntryPointPrefix,
-                                fragment_shader_entry_point)) {
-    O3D_ERROR(service_locator()) << "Failed to find \""
-                                 << kFragmentShaderEntryPointPrefix
-                                 << "\" in Effect";
-    return false;
-  }
-  std::string matrix_load_order_str;
-  if (!GetIdentifierAfterString(effect,
-                                kMatrixLoadOrderPrefix,
-                                &matrix_load_order_str)) {
-    O3D_ERROR(service_locator()) << "Failed to find \""
-                                 << kMatrixLoadOrderPrefix
-                                 << "\" in Effect";
-    return false;
-  }
-  bool column_major = !strcmp(matrix_load_order_str.c_str(), "ColumnMajor");
-  *matrix_load_order = column_major ? COLUMN_MAJOR : ROW_MAJOR;
+	bool Effect::ValidateFX(const std::string& effect,
+	                        std::string* vertex_shader_entry_point,
+	                        std::string* fragment_shader_entry_point,
+	                        MatrixLoadOrder* matrix_load_order) {
+		if(!GetIdentifierAfterString(effect,
+		                             kVertexShaderEntryPointPrefix,
+		                             vertex_shader_entry_point)) {
+			O3D_ERROR(service_locator()) << "Failed to find \""
+			                             << kVertexShaderEntryPointPrefix
+			                             << "\" in Effect:" << effect;
+			return false;
+		}
 
-  return true;
-}
+		if(!GetIdentifierAfterString(effect,
+		                             kFragmentShaderEntryPointPrefix,
+		                             fragment_shader_entry_point)) {
+			O3D_ERROR(service_locator()) << "Failed to find \""
+			                             << kFragmentShaderEntryPointPrefix
+			                             << "\" in Effect";
+			return false;
+		}
 
-ObjectBase::Ref Effect::Create(ServiceLocator* service_locator) {
-  Renderer* renderer = service_locator->GetService<Renderer>();
-  if (NULL == renderer) {
-    O3D_ERROR(service_locator) << "No Render Device Available";
-    return ObjectBase::Ref();
-  }
-  return ObjectBase::Ref(renderer->CreateEffect());
-}
+		std::string matrix_load_order_str;
 
-ObjectBase::Ref ParamEffect::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new ParamEffect(service_locator, false, false));
-}
+		if(!GetIdentifierAfterString(effect,
+		                             kMatrixLoadOrderPrefix,
+		                             &matrix_load_order_str)) {
+			O3D_ERROR(service_locator()) << "Failed to find \""
+			                             << kMatrixLoadOrderPrefix
+			                             << "\" in Effect";
+			return false;
+		}
+
+		bool column_major = !strcmp(matrix_load_order_str.c_str(), "ColumnMajor");
+		*matrix_load_order = column_major ? COLUMN_MAJOR : ROW_MAJOR;
+		return true;
+	}
+
+	ObjectBase::Ref Effect::Create(ServiceLocator* service_locator) {
+		Renderer* renderer = service_locator->GetService<Renderer>();
+
+		if(NULL == renderer) {
+			O3D_ERROR(service_locator) << "No Render Device Available";
+			return ObjectBase::Ref();
+		}
+
+		return ObjectBase::Ref(renderer->CreateEffect());
+	}
+
+	ObjectBase::Ref ParamEffect::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new ParamEffect(service_locator, false, false));
+	}
 }  // namespace o3d

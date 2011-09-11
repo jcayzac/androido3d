@@ -35,9 +35,9 @@
 namespace o3d {
 
 // Initialize the first unique id
-Id IdManager::next_unique_id_ = 0;
+	Id IdManager::next_unique_id_ = 0;
 
-Id IdManager::CreateId() {
-  return next_unique_id_++;
-}
+	Id IdManager::CreateId() {
+		return next_unique_id_++;
+	}
 }  // namespace o3d

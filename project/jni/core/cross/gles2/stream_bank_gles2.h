@@ -42,32 +42,32 @@
 namespace o3d {
 
 // StreamBankGLES2 is the OpenGLES2 implementation of the StreamBank.
-class StreamBankGLES2 : public StreamBank {
- public:
-  explicit StreamBankGLES2(ServiceLocator* service_locator);
-  virtual ~StreamBankGLES2();
+	class StreamBankGLES2 : public StreamBank {
+	public:
+		explicit StreamBankGLES2(ServiceLocator* service_locator);
+		virtual ~StreamBankGLES2();
 
-  // Sets the streams for rendering.
-  // Parameter:
-  //   varying_map: Map of streams.
-  //   max_vertrices: pointer to variable to receive the maximum vertices
-  //     the streams can render.
-  // Returns:
-  //   true if all streams were bound.
-  bool BindStreamsForRendering(
-      const ParamCacheGLES2::VaryingParameterMap& varying_map,
-      GLuint gl_program,
-      unsigned int* max_vertices);
+		// Sets the streams for rendering.
+		// Parameter:
+		//   varying_map: Map of streams.
+		//   max_vertrices: pointer to variable to receive the maximum vertices
+		//     the streams can render.
+		// Returns:
+		//   true if all streams were bound.
+		bool BindStreamsForRendering(
+		    const ParamCacheGLES2::VaryingParameterMap& varying_map,
+		    GLuint gl_program,
+		    unsigned int* max_vertices);
 
-  // Checks for all required streams before rendering.
-  bool CheckForMissingVertexStreams(
-      ParamCacheGLES2::VaryingParameterMap& varying_map,
-      GLuint gl_program,
-      std::string* missing_stream);
+		// Checks for all required streams before rendering.
+		bool CheckForMissingVertexStreams(
+		    ParamCacheGLES2::VaryingParameterMap& varying_map,
+		    GLuint gl_program,
+		    std::string* missing_stream);
 
- private:
-  int FindVertexStream(Stream::Semantic semantic, int index);
-};
+	private:
+		int FindVertexStream(Stream::Semantic semantic, int index);
+	};
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_STREAM_BANK_GLES2_H_

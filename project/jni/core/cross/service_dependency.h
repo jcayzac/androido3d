@@ -42,42 +42,42 @@ namespace o3d {
 // Locates and provides access to a service through an interface class.
 // The dependency is located from a ServiceLocator, either immediately or as
 // soon as it is added to the ServiceLocator.
-template <typename Interface>
-class ServiceDependency : public IServiceDependency {
- public:
-  explicit ServiceDependency(ServiceLocator* service_locator)
-      : service_locator_(service_locator),
-        service_(NULL) {
-    service_locator_->AddDependency(Interface::kInterfaceId, this);
-  }
+	template <typename Interface>
+	class ServiceDependency : public IServiceDependency {
+	public:
+		explicit ServiceDependency(ServiceLocator* service_locator)
+			: service_locator_(service_locator),
+			  service_(NULL) {
+			service_locator_->AddDependency(Interface::kInterfaceId, this);
+		}
 
-  ~ServiceDependency() {
-    service_locator_->RemoveDependency(Interface::kInterfaceId, this);
-  }
+		~ServiceDependency() {
+			service_locator_->RemoveDependency(Interface::kInterfaceId, this);
+		}
 
-  Interface* Get() const {
-    O3D_ASSERT(NULL != service_);
-    return service_;
-  }
+		Interface* Get() const {
+			O3D_ASSERT(NULL != service_);
+			return service_;
+		}
 
-  Interface* operator->() const {
-    O3D_ASSERT(NULL != service_);
-    return service_;
-  }
+		Interface* operator->() const {
+			O3D_ASSERT(NULL != service_);
+			return service_;
+		}
 
-  bool IsAvailable() const {
-    return service_ != NULL;
-  }
+		bool IsAvailable() const {
+			return service_ != NULL;
+		}
 
- private:
-  virtual void Update(void* newService) {
-    service_ = static_cast<Interface*>(newService);
-  }
+	private:
+		virtual void Update(void* newService) {
+			service_ = static_cast<Interface*>(newService);
+		}
 
-  ServiceLocator* service_locator_;
-  Interface* service_;
-  O3D_DISALLOW_COPY_AND_ASSIGN(ServiceDependency);
-};
+		ServiceLocator* service_locator_;
+		Interface* service_;
+		O3D_DISALLOW_COPY_AND_ASSIGN(ServiceDependency);
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_SERVICE_DEPENDENCY_H_

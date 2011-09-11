@@ -19,52 +19,52 @@
 #include "core/cross/primitive.h"
 
 namespace o3d {
-namespace extra {
+	namespace extra {
 
-/** O3D ray/triangle intersection is broken. Here is a working and faster
- * implementation, used by the picking code.
- */
-class RayPrimitiveIntersectionFunctor: public Primitive::PolygonFunctor {
- private:
-  const Point3&  origin;    ///< Ray origin, in world space.
-  const Vector3& direction; ///< Ray direction, in world space.
-  float distances[2];       ///< First distance is the minimum. Second one is the current one.
-  bool  hasIntersection;    ///< Set to <code>true</code> when an intersection is found.
- public:
+		/** O3D ray/triangle intersection is broken. Here is a working and faster
+		 * implementation, used by the picking code.
+		 */
+		class RayPrimitiveIntersectionFunctor: public Primitive::PolygonFunctor {
+		private:
+			const Point3&  origin;    ///< Ray origin, in world space.
+			const Vector3& direction; ///< Ray direction, in world space.
+			float distances[2];       ///< First distance is the minimum. Second one is the current one.
+			bool  hasIntersection;    ///< Set to <code>true</code> when an intersection is found.
+		public:
 
-  /** Functor constructor.
-   *
-   * @param origin    Ray origin, in world space.
-   * @param direction  Ray direction, in world space.
-   */
-  RayPrimitiveIntersectionFunctor(const Point3& origin, const Vector3& direction);
+			/** Functor constructor.
+			 *
+			 * @param origin    Ray origin, in world space.
+			 * @param direction  Ray direction, in world space.
+			 */
+			RayPrimitiveIntersectionFunctor(const Point3& origin, const Vector3& direction);
 
-  /// @return true if an intersection was found, false otherwise.
-  bool intersected() const {
-    return hasIntersection;
-  }
+			/// @return true if an intersection was found, false otherwise.
+			bool intersected() const {
+				return hasIntersection;
+			}
 
-  /// @return the intersection point (undefined if none was found)
-  Point3 intersection() const {
-    return Point3(origin + direction*(*distances));
-  }
+			/// @return the intersection point (undefined if none was found)
+			Point3 intersection() const {
+				return Point3(origin + direction * (*distances));
+			}
 
-  /// @return distance between ray's origin and intersection point, or FLT_MAX if none was found.
-  const float& distance() const {
-    return *distances;
-  }
+			/// @return distance between ray's origin and intersection point, or FLT_MAX if none was found.
+			const float& distance() const {
+				return *distances;
+			}
 
- private:
-  // From Primitive::PolygonFunctor
-  void ProcessTriangle(unsigned,const Point3&,const Point3&,const Point3&);
-  void ProcessLine(unsigned, const Point3&, const Point3&) {
-    /* nothing to do here */
-  }
-  void ProcessPoint(unsigned, const Point3&) {
-    /* nothing to do here */
-  }
-};
-} // extra
+		private:
+			// From Primitive::PolygonFunctor
+			void ProcessTriangle(unsigned, const Point3&, const Point3&, const Point3&);
+			void ProcessLine(unsigned, const Point3&, const Point3&) {
+				/* nothing to do here */
+			}
+			void ProcessPoint(unsigned, const Point3&) {
+				/* nothing to do here */
+			}
+		};
+	} // extra
 } // o3d
 
 /* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */

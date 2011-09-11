@@ -42,86 +42,85 @@
 namespace o3d {
 
 // Names of Params that get created for every Sampler.
-const char* Sampler::kAddressUModeParamName =
-    O3D_STRING_CONSTANT("addressModeU");
-const char* Sampler::kAddressVModeParamName =
-    O3D_STRING_CONSTANT("addressModeV");
-const char* Sampler::kAddressWModeParamName =
-    O3D_STRING_CONSTANT("addressModeW");
-const char* Sampler::kMagFilterParamName =
-    O3D_STRING_CONSTANT("magFilter");
-const char* Sampler::kMinFilterParamName =
-    O3D_STRING_CONSTANT("minFilter");
-const char* Sampler::kMipFilterParamName =
-    O3D_STRING_CONSTANT("mipFilter");
-const char* Sampler::kBorderColorParamName =
-    O3D_STRING_CONSTANT("borderColor");
-const char* Sampler::kMaxAnisotropyParamName =
-    O3D_STRING_CONSTANT("maxAnisotropy");
+	const char* Sampler::kAddressUModeParamName =
+	    O3D_STRING_CONSTANT("addressModeU");
+	const char* Sampler::kAddressVModeParamName =
+	    O3D_STRING_CONSTANT("addressModeV");
+	const char* Sampler::kAddressWModeParamName =
+	    O3D_STRING_CONSTANT("addressModeW");
+	const char* Sampler::kMagFilterParamName =
+	    O3D_STRING_CONSTANT("magFilter");
+	const char* Sampler::kMinFilterParamName =
+	    O3D_STRING_CONSTANT("minFilter");
+	const char* Sampler::kMipFilterParamName =
+	    O3D_STRING_CONSTANT("mipFilter");
+	const char* Sampler::kBorderColorParamName =
+	    O3D_STRING_CONSTANT("borderColor");
+	const char* Sampler::kMaxAnisotropyParamName =
+	    O3D_STRING_CONSTANT("maxAnisotropy");
 
-const char* Sampler::kTextureParamName =
-    O3D_STRING_CONSTANT("texture");
+	const char* Sampler::kTextureParamName =
+	    O3D_STRING_CONSTANT("texture");
 
-O3D_DEFN_CLASS(Sampler, ParamObject);
-O3D_DEFN_CLASS(ParamSampler, RefParamBase);
+	O3D_DEFN_CLASS(Sampler, ParamObject);
+	O3D_DEFN_CLASS(ParamSampler, RefParamBase);
 
 
-Sampler::Sampler(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      weak_pointer_manager_(this) {
-  // Create all the Params for the Sampler, register them and set their initial
-  // values to their defaults.
-  RegisterAndSetParam(kAddressUModeParamName,
-                      WRAP,
-                      &address_mode_u_param_ref_);
-  RegisterAndSetParam(kAddressVModeParamName,
-                      WRAP,
-                      &address_mode_v_param_ref_);
-  RegisterAndSetParam(kAddressWModeParamName,
-                      WRAP,
-                      &address_mode_w_param_ref_);
-  RegisterAndSetParam(kMagFilterParamName,
-                      LINEAR,
-                      &mag_filter_param_ref_);
-  RegisterAndSetParam(kMinFilterParamName,
-                      LINEAR,
-                      &min_filter_param_ref_);
-  RegisterAndSetParam(kMipFilterParamName,
-                      LINEAR,
-                      &mip_filter_param_ref_);
-
-  RegisterParamRef(kBorderColorParamName, &border_color_param_ref_);
-  border_color_param_ref_.Get()->set_value(Float4(0, 0, 0, 0));
-
-  RegisterAndSetParam(kMaxAnisotropyParamName, 1, &max_anisotropy_param_ref_);
-
-  RegisterParamRef(kTextureParamName, &texture_param_ref_);
-  texture_param_ref_.Get()->set_value(NULL);
-}
+	Sampler::Sampler(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  weak_pointer_manager_(this) {
+		// Create all the Params for the Sampler, register them and set their initial
+		// values to their defaults.
+		RegisterAndSetParam(kAddressUModeParamName,
+		                    WRAP,
+		                    &address_mode_u_param_ref_);
+		RegisterAndSetParam(kAddressVModeParamName,
+		                    WRAP,
+		                    &address_mode_v_param_ref_);
+		RegisterAndSetParam(kAddressWModeParamName,
+		                    WRAP,
+		                    &address_mode_w_param_ref_);
+		RegisterAndSetParam(kMagFilterParamName,
+		                    LINEAR,
+		                    &mag_filter_param_ref_);
+		RegisterAndSetParam(kMinFilterParamName,
+		                    LINEAR,
+		                    &min_filter_param_ref_);
+		RegisterAndSetParam(kMipFilterParamName,
+		                    LINEAR,
+		                    &mip_filter_param_ref_);
+		RegisterParamRef(kBorderColorParamName, &border_color_param_ref_);
+		border_color_param_ref_.Get()->set_value(Float4(0, 0, 0, 0));
+		RegisterAndSetParam(kMaxAnisotropyParamName, 1, &max_anisotropy_param_ref_);
+		RegisterParamRef(kTextureParamName, &texture_param_ref_);
+		texture_param_ref_.Get()->set_value(NULL);
+	}
 
 // Creates (if it doesn't already exist) and registers a Param in the
 // ParamObject and sets its value to the default_value.
-template<typename T>
-void Sampler::RegisterAndSetParam(const std::string& param_name,
-                                  unsigned int default_value,
-                                  T* typed_param_ref_pointer) {
-  RegisterParamRef(param_name, typed_param_ref_pointer);
-  typed_param_ref_pointer->Get()->set_value(default_value);
-}
+	template<typename T>
+	void Sampler::RegisterAndSetParam(const std::string& param_name,
+	                                  unsigned int default_value,
+	                                  T* typed_param_ref_pointer) {
+		RegisterParamRef(param_name, typed_param_ref_pointer);
+		typed_param_ref_pointer->Get()->set_value(default_value);
+	}
 
 
-ObjectBase::Ref Sampler::Create(ServiceLocator* service_locator) {
-  Renderer* renderer = service_locator->GetService<Renderer>();
-  if (NULL == renderer) {
-    O3D_ERROR(service_locator) << "No Render Device Available";
-    return ObjectBase::Ref();
-  }
-  return ObjectBase::Ref(renderer->CreateSampler());
-}
+	ObjectBase::Ref Sampler::Create(ServiceLocator* service_locator) {
+		Renderer* renderer = service_locator->GetService<Renderer>();
+
+		if(NULL == renderer) {
+			O3D_ERROR(service_locator) << "No Render Device Available";
+			return ObjectBase::Ref();
+		}
+
+		return ObjectBase::Ref(renderer->CreateSampler());
+	}
 
 
-ObjectBase::Ref ParamSampler::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new ParamSampler(service_locator, false, false));
-}
+	ObjectBase::Ref ParamSampler::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new ParamSampler(service_locator, false, false));
+	}
 
 }  // namespace o3d

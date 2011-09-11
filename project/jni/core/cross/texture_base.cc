@@ -38,27 +38,27 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Texture, ParamObject);
-O3D_DEFN_CLASS(ParamTexture, RefParamBase);
+	O3D_DEFN_CLASS(Texture, ParamObject);
+	O3D_DEFN_CLASS(ParamTexture, RefParamBase);
 
-const char* Texture::kLevelsParamName =
-    O3D_STRING_CONSTANT("levels");
+	const char* Texture::kLevelsParamName =
+	    O3D_STRING_CONSTANT("levels");
 
-Texture::Texture(ServiceLocator* service_locator,
-                 Format format,
-                 int levels,
-                 bool enable_render_surfaces)
-    : ParamObject(service_locator),
-      alpha_is_one_(false),
-      format_(format),
-      weak_pointer_manager_(this),
-      render_surfaces_enabled_(enable_render_surfaces) {
-  RegisterReadOnlyParamRef(kLevelsParamName, &levels_param_);
-  levels_param_->set_read_only_value(levels);
-}
+	Texture::Texture(ServiceLocator* service_locator,
+	                 Format format,
+	                 int levels,
+	                 bool enable_render_surfaces)
+		: ParamObject(service_locator),
+		  alpha_is_one_(false),
+		  format_(format),
+		  weak_pointer_manager_(this),
+		  render_surfaces_enabled_(enable_render_surfaces) {
+		RegisterReadOnlyParamRef(kLevelsParamName, &levels_param_);
+		levels_param_->set_read_only_value(levels);
+	}
 
-ObjectBase::Ref ParamTexture::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new ParamTexture(service_locator, false, false));
-}
+	ObjectBase::Ref ParamTexture::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new ParamTexture(service_locator, false, false));
+	}
 
 }  // namespace o3d

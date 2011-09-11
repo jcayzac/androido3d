@@ -21,32 +21,35 @@
 
 namespace o3d {
 
-FileResource::FileResource(const std::string& path)
-: mFD(-1), mData(0), mSize(0) {
-  mName=path;
-  mFD = open(path.c_str(), O_RDONLY);
-  if (mFD>=0) {
-    off_t start, end;
-    start = lseek(mFD, 0L, SEEK_CUR);
-    end = lseek(mFD, 0L, SEEK_END);
-    lseek(mFD, start, SEEK_SET);
-    mSize = (size_t) (end-start);
-    mData = (uint8_t*) mmap(0, mSize, PROT_READ, MAP_FILE|MAP_SHARED, mFD, 0);
-    if (mData==MAP_FAILED) {
-      mData = 0;
-      mSize = 0;
-    }
-  }
-}
+	FileResource::FileResource(const std::string& path)
+		: mFD(-1), mData(0), mSize(0) {
+		mName = path;
+		mFD = open(path.c_str(), O_RDONLY);
 
-FileResource::~FileResource() {
-  if (mData) {
-    munmap(mData, mSize);
-  }
-  if (mFD>=0) {
-    close(mFD);
-  }
-}
+		if(mFD >= 0) {
+			off_t start, end;
+			start = lseek(mFD, 0L, SEEK_CUR);
+			end = lseek(mFD, 0L, SEEK_END);
+			lseek(mFD, start, SEEK_SET);
+			mSize = (size_t)(end - start);
+			mData = (uint8_t*) mmap(0, mSize, PROT_READ, MAP_FILE | MAP_SHARED, mFD, 0);
+
+			if(mData == MAP_FAILED) {
+				mData = 0;
+				mSize = 0;
+			}
+		}
+	}
+
+	FileResource::~FileResource() {
+		if(mData) {
+			munmap(mData, mSize);
+		}
+
+		if(mFD >= 0) {
+			close(mFD);
+		}
+	}
 
 } // namespace o3d
 

@@ -41,186 +41,186 @@
 
 namespace o3d {
 
-class Effect;
-class State;
+	class Effect;
+	class State;
 
 // The base class for all nodes that live in the render graph It sorts all its
 // children by priority (lower priority first) and renders them in that order.
-class RenderNode : public ParamObject {
-  friend class Client;
- public:
-  typedef SmartPointer<RenderNode> Ref;
+	class RenderNode : public ParamObject {
+		friend class Client;
+	public:
+		typedef SmartPointer<RenderNode> Ref;
 
-  typedef std::vector<RenderNode::Ref> RenderNodeRefArray;
+		typedef std::vector<RenderNode::Ref> RenderNodeRefArray;
 
-  static const char* kPriorityParamName;
-  static const char* kActiveParamName;
+		static const char* kPriorityParamName;
+		static const char* kActiveParamName;
 
-  virtual ~RenderNode();
+		virtual ~RenderNode();
 
-  // Renders ourself when called and our children if active.
-  virtual void Render(RenderContext* render_context) { }
+		// Renders ourself when called and our children if active.
+		virtual void Render(RenderContext* render_context) { }
 
-  // Renders this render node and all children.
-  virtual void RenderTree(RenderContext* render_context);
+		// Renders this render node and all children.
+		virtual void RenderTree(RenderContext* render_context);
 
-  // Called after render and rendering children.
-  virtual void PostRender(RenderContext* render_context) { }
+		// Called after render and rendering children.
+		virtual void PostRender(RenderContext* render_context) { }
 
-  // Gets the priority.
-  float priority() const {
-    return priority_param_->value();
-  }
+		// Gets the priority.
+		float priority() const {
+			return priority_param_->value();
+		}
 
-  // Sets the priority.
-  void set_priority(float value) {
-    priority_param_->set_value(value);
-  }
+		// Sets the priority.
+		void set_priority(float value) {
+			priority_param_->set_value(value);
+		}
 
-  // Gets the draw context.
-  bool active() const {
-    return active_param_->value();
-  }
+		// Gets the draw context.
+		bool active() const {
+			return active_param_->value();
+		}
 
-  // Sets the draw context.
-  void set_active(bool value) {
-    active_param_->set_value(value);
-  }
+		// Sets the draw context.
+		void set_active(bool value) {
+			active_param_->set_value(value);
+		}
 
-  // The actual array of children.
-  const RenderNodeRefArray& children() const {
-    return child_array_;
-  }
+		// The actual array of children.
+		const RenderNodeRefArray& children() const {
+			return child_array_;
+		}
 
-  // Sets the parent of the render node by re-parenting the node under
-  // parent_render_node. Setting parent_render_node to NULL removes the
-  // render node and the entire subtree below it from the render graph.
-  // The routine will fail if assigning the parent creates a cycle in the
-  // parent-child RenderNode graph.
-  //
-  // NOTE!: When setting the parent to NULL, if results in there being no more
-  // references to this render node then this render node will be deleted.
-  //
-  // Paremeters:
-  //  parent_render_node: The new parent for the render node or NULL to
-  //                      un-parent the render node.
-  void SetParent(RenderNode *parent_render_node);
+		// Sets the parent of the render node by re-parenting the node under
+		// parent_render_node. Setting parent_render_node to NULL removes the
+		// render node and the entire subtree below it from the render graph.
+		// The routine will fail if assigning the parent creates a cycle in the
+		// parent-child RenderNode graph.
+		//
+		// NOTE!: When setting the parent to NULL, if results in there being no more
+		// references to this render node then this render node will be deleted.
+		//
+		// Paremeters:
+		//  parent_render_node: The new parent for the render node or NULL to
+		//                      un-parent the render node.
+		void SetParent(RenderNode* parent_render_node);
 
-  // Returns the render node's parent.
-  // Parameters:
-  //  None.
-  // Returns
-  //  Pointer to the parent of the rende rnode.
-  inline RenderNode* parent() const;
+		// Returns the render node's parent.
+		// Parameters:
+		//  None.
+		// Returns
+		//  Pointer to the parent of the rende rnode.
+		inline RenderNode* parent() const;
 
-  // Returns the immediate children of the render node.
-  RenderNodeArray GetChildren() const;
+		// Returns the immediate children of the render node.
+		RenderNodeArray GetChildren() const;
 
-  // Returns all the rendernodes in a subtree.
-  // Returns this rendernode and all its descendants. Note that this rendernode
-  // does not have to be in the rendergraph.
-  // Parameters:
-  //  RenderNodeArray to receive list of nodes. If anything is in
-  //                the array it will be cleared.
-  void GetRenderNodesInTreeFast(RenderNodeArray* render_nodes) const;
+		// Returns all the rendernodes in a subtree.
+		// Returns this rendernode and all its descendants. Note that this rendernode
+		// does not have to be in the rendergraph.
+		// Parameters:
+		//  RenderNodeArray to receive list of nodes. If anything is in
+		//                the array it will be cleared.
+		void GetRenderNodesInTreeFast(RenderNodeArray* render_nodes) const;
 
-  // Returns all the rendernodes in a subtree.
-  // Returns this rendernode and all its descendants. Note that this
-  // rendernode does not have to be in the rendergraph.
-  //
-  // This is a slower version for javascript. If you are using C++ prefer the
-  // version above. This one creates the array on the stack and passes it back
-  // by value which means the entire array will get copied twice and in making
-  // the copies memory is allocated and deallocated twice.
-  //
-  // Returns:
-  //  An array containing pointers to the rendernodes of the subtree.
-  RenderNodeArray GetRenderNodesInTree() const;
+		// Returns all the rendernodes in a subtree.
+		// Returns this rendernode and all its descendants. Note that this
+		// rendernode does not have to be in the rendergraph.
+		//
+		// This is a slower version for javascript. If you are using C++ prefer the
+		// version above. This one creates the array on the stack and passes it back
+		// by value which means the entire array will get copied twice and in making
+		// the copies memory is allocated and deallocated twice.
+		//
+		// Returns:
+		//  An array containing pointers to the rendernodes of the subtree.
+		RenderNodeArray GetRenderNodesInTree() const;
 
-  // Searches for rendernodes that match the given name in the hierarchy under
-  // and including this node. Since there can be more than one rendernode with a
-  // given name the results are returned in an array.
-  // Parameters:
-  //  name: Rendernode name to look for.
-  //  render_nodes: RenderNodeArray to receive list of nodes. If anything is in
-  //                the array it will be cleared.
-  void GetRenderNodesByNameInTreeFast(const std::string& name,
-                                      RenderNodeArray* render_nodes) const;
+		// Searches for rendernodes that match the given name in the hierarchy under
+		// and including this node. Since there can be more than one rendernode with a
+		// given name the results are returned in an array.
+		// Parameters:
+		//  name: Rendernode name to look for.
+		//  render_nodes: RenderNodeArray to receive list of nodes. If anything is in
+		//                the array it will be cleared.
+		void GetRenderNodesByNameInTreeFast(const std::string& name,
+		                                    RenderNodeArray* render_nodes) const;
 
-  // Searches for rendernodes that match the given name in the hierarchy under
-  // and including this render node. Since there can be more than one rendernode
-  // with a given name, results are returned in an array.
-  //
-  // This is a slower version for javascript. If you are using C++ prefer the
-  // version above. This one creates the array on the stack and passes it back
-  // by value which means the entire array will get copied twice and in making
-  // the copies memory is allocated and deallocated twice.
-  //
-  // Parameters:
-  //  name: Rendernode name to look for.
-  // Returns:
-  //  An array of pointers to render nodes matching the given name.
-  RenderNodeArray GetRenderNodesByNameInTree(const std::string& name) const;
+		// Searches for rendernodes that match the given name in the hierarchy under
+		// and including this render node. Since there can be more than one rendernode
+		// with a given name, results are returned in an array.
+		//
+		// This is a slower version for javascript. If you are using C++ prefer the
+		// version above. This one creates the array on the stack and passes it back
+		// by value which means the entire array will get copied twice and in making
+		// the copies memory is allocated and deallocated twice.
+		//
+		// Parameters:
+		//  name: Rendernode name to look for.
+		// Returns:
+		//  An array of pointers to render nodes matching the given name.
+		RenderNodeArray GetRenderNodesByNameInTree(const std::string& name) const;
 
-  // Searches for render nodes that match the given class in the hierarchy under
-  // and including this render node.
-  // Parameters:
-  //  class_type: class to look for.
-  // Returns:
-  //  An array of pointers to render nodes matching the given class
-  RenderNodeArray GetRenderNodesByClassInTree(
-      const ObjectBase::Class* class_type) const;
+		// Searches for render nodes that match the given class in the hierarchy under
+		// and including this render node.
+		// Parameters:
+		//  class_type: class to look for.
+		// Returns:
+		//  An array of pointers to render nodes matching the given class
+		RenderNodeArray GetRenderNodesByClassInTree(
+		    const ObjectBase::Class* class_type) const;
 
-  // Searches for render nodes that match the given class name in the hierarchy
-  // under and including this render node.
-  // Parameters:
-  //  class_type_name: name of class to look for
-  // Returns:
-  //  An array of pointers to render nodes matching the given class name
-  RenderNodeArray GetRenderNodesByClassNameInTree(
-      const std::string& class_type_name) const;
+		// Searches for render nodes that match the given class name in the hierarchy
+		// under and including this render node.
+		// Parameters:
+		//  class_type_name: name of class to look for
+		// Returns:
+		//  An array of pointers to render nodes matching the given class name
+		RenderNodeArray GetRenderNodesByClassNameInTree(
+		    const std::string& class_type_name) const;
 
- protected:
-  explicit RenderNode(ServiceLocator* service_locator);
+	protected:
+		explicit RenderNode(ServiceLocator* service_locator);
 
-  // Removes a child render node from the rendernode child list. It does not
-  // update the parent of child_node. Note this method is protected and not
-  // exposed to the external API as it should not be used to change
-  // parent-child relationships. The proper way to re-parent a node is to call
-  // RenderNode::SetParent().
-  virtual bool RemoveChild(RenderNode *child_node);
+		// Removes a child render node from the rendernode child list. It does not
+		// update the parent of child_node. Note this method is protected and not
+		// exposed to the external API as it should not be used to change
+		// parent-child relationships. The proper way to re-parent a node is to call
+		// RenderNode::SetParent().
+		virtual bool RemoveChild(RenderNode* child_node);
 
-  // Adds a child render node to the rendernode child list. It does not update
-  // the parent of the child. This method is not exposed to the external API and
-  // should not be used to change parent-child relationships.  The proper way to
-  // re-parent a node is to call RenderNode::SetParent().
-  virtual bool AddChild(RenderNode *child_node);
+		// Adds a child render node to the rendernode child list. It does not update
+		// the parent of the child. This method is not exposed to the external API and
+		// should not be used to change parent-child relationships.  The proper way to
+		// re-parent a node is to call RenderNode::SetParent().
+		virtual bool AddChild(RenderNode* child_node);
 
- private:
-  // Renders the children of this render node.
-  void RenderChildren(RenderContext* render_context);
+	private:
+		// Renders the children of this render node.
+		void RenderChildren(RenderContext* render_context);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  ParamFloat::Ref priority_param_;  // For priority sorting.
-  ParamBoolean::Ref active_param_;  // Should this RenderNode be processed.
+		ParamFloat::Ref priority_param_;  // For priority sorting.
+		ParamBoolean::Ref active_param_;  // Should this RenderNode be processed.
 
-  RenderNodeRefArray  child_array_;  // Array of children.
-  RenderNode*         parent_;
+		RenderNodeRefArray  child_array_;  // Array of children.
+		RenderNode*         parent_;
 
-  O3D_DECL_CLASS(RenderNode, ParamObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(RenderNode);
-};
+		O3D_DECL_CLASS(RenderNode, ParamObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(RenderNode);
+	};
 
-inline RenderNode* RenderNode::parent() const {
-  return parent_;
-}
+	inline RenderNode* RenderNode::parent() const {
+		return parent_;
+	}
 
-typedef RenderNode::RenderNodeRefArray RenderNodeRefArray;
+	typedef RenderNode::RenderNodeRefArray RenderNodeRefArray;
 
-typedef RenderNodeRefArray::const_iterator RenderNodeRefArrayConstIterator;
-typedef RenderNodeRefArray::iterator RenderNodeRefArrayIterator;
+	typedef RenderNodeRefArray::const_iterator RenderNodeRefArrayConstIterator;
+	typedef RenderNodeRefArray::iterator RenderNodeRefArrayIterator;
 
 }  // namespace o3d
 

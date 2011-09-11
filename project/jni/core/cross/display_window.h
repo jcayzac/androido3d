@@ -39,17 +39,17 @@
 #include "base/cross/config.h"
 
 namespace o3d {
-class DisplayWindow {
- public:
-  // Only subclasses can be instantiated.
-  virtual ~DisplayWindow() = 0;
- protected:
-  DisplayWindow() {}
- private:
-  O3D_DISALLOW_COPY_AND_ASSIGN(DisplayWindow);
-};
+	class DisplayWindow {
+	public:
+		// Only subclasses can be instantiated.
+		virtual ~DisplayWindow() = 0;
+	protected:
+		DisplayWindow() {}
+	private:
+		O3D_DISALLOW_COPY_AND_ASSIGN(DisplayWindow);
+	};
 
-inline DisplayWindow::~DisplayWindow() {}
+	inline DisplayWindow::~DisplayWindow() {}
 
 }  // end namespace o3d
 

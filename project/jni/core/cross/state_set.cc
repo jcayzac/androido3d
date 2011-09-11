@@ -37,26 +37,26 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(StateSet, RenderNode);
+	O3D_DEFN_CLASS(StateSet, RenderNode);
 
-const char* StateSet::kStateParamName =
-    O3D_STRING_CONSTANT("state");
+	const char* StateSet::kStateParamName =
+	    O3D_STRING_CONSTANT("state");
 
-StateSet::StateSet(ServiceLocator* service_locator)
-    : RenderNode(service_locator) {
-  RegisterParamRef(kStateParamName, &state_param_);
-}
+	StateSet::StateSet(ServiceLocator* service_locator)
+		: RenderNode(service_locator) {
+		RegisterParamRef(kStateParamName, &state_param_);
+	}
 
-ObjectBase::Ref StateSet::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new StateSet(service_locator));
-}
+	ObjectBase::Ref StateSet::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new StateSet(service_locator));
+	}
 
-void StateSet::Render(RenderContext* render_context) {
-  render_context->renderer()->PushRenderStates(state());
-}
+	void StateSet::Render(RenderContext* render_context) {
+		render_context->renderer()->PushRenderStates(state());
+	}
 
-void StateSet::PostRender(RenderContext* render_context) {
-  render_context->renderer()->PopRenderStates();
-}
+	void StateSet::PostRender(RenderContext* render_context) {
+		render_context->renderer()->PopRenderStates();
+	}
 
 }  // namespace o3d

@@ -40,63 +40,58 @@
 
 namespace o3d {
 
-class StateTest : public testing::Test {
- protected:
+	class StateTest : public testing::Test {
+	protected:
 
-  StateTest()
-      : object_manager_(g_service_locator) {}
+		StateTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack *pack_;
-};
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+	};
 
-void StateTest::SetUp() {
-  pack_ = object_manager_->CreatePack();
-}
+	void StateTest::SetUp() {
+		pack_ = object_manager_->CreatePack();
+	}
 
-void StateTest::TearDown() {
-  pack_->Destroy();
-}
+	void StateTest::TearDown() {
+		pack_->Destroy();
+	}
 
-TEST_F(StateTest, Basic) {
-  State* state = pack()->Create<State>();
-  // Check that state_set got created.
-  ASSERT_TRUE(state != NULL);
+	TEST_F(StateTest, Basic) {
+		State* state = pack()->Create<State>();
+		// Check that state_set got created.
+		ASSERT_TRUE(state != NULL);
+		// Check that we can't create a param of the wrong type.
+		EXPECT_TRUE(
+		    state->CreateParam<ParamMatrix4>(State::kFillModeParamName) == NULL);
+	}
 
-  // Check that we can't create a param of the wrong type.
-  EXPECT_TRUE(
-      state->CreateParam<ParamMatrix4>(State::kFillModeParamName) == NULL);
-}
-
-TEST_F(StateTest, GetStateParam) {
-  State* state = pack()->Create<State>();
-  // Check that state_set got created.
-  ASSERT_TRUE(state != NULL);
-
-  // Check that we can get a state param by name.
-  ParamBoolean* alpha_param = state->GetStateParam<ParamBoolean>(
-      State::kAlphaBlendEnableParamName);
-  EXPECT_TRUE(alpha_param != NULL);
-
-  // Check that a name of a state that does not exist fails.
-  EXPECT_TRUE(state->GetStateParam<ParamBoolean>("foobar") == NULL);
-
-  // Check that a mis-matched state fails.
-  EXPECT_TRUE(state->GetStateParam<ParamFloat>(
-      State::kAlphaComparisonFunctionParamName) == NULL);
-
-  // Check that if we create one by hand GetStateParam gets the same one.
-  ParamBoolean* z_param = state->CreateParam<ParamBoolean>(
-      State::kZEnableParamName);
-  EXPECT_TRUE(z_param != NULL);
-  EXPECT_EQ(z_param, state->GetStateParam<ParamBoolean>(
-      State::kZEnableParamName));
-}
+	TEST_F(StateTest, GetStateParam) {
+		State* state = pack()->Create<State>();
+		// Check that state_set got created.
+		ASSERT_TRUE(state != NULL);
+		// Check that we can get a state param by name.
+		ParamBoolean* alpha_param = state->GetStateParam<ParamBoolean>(
+		                                State::kAlphaBlendEnableParamName);
+		EXPECT_TRUE(alpha_param != NULL);
+		// Check that a name of a state that does not exist fails.
+		EXPECT_TRUE(state->GetStateParam<ParamBoolean>("foobar") == NULL);
+		// Check that a mis-matched state fails.
+		EXPECT_TRUE(state->GetStateParam<ParamFloat>(
+		                State::kAlphaComparisonFunctionParamName) == NULL);
+		// Check that if we create one by hand GetStateParam gets the same one.
+		ParamBoolean* z_param = state->CreateParam<ParamBoolean>(
+		                            State::kZEnableParamName);
+		EXPECT_TRUE(z_param != NULL);
+		EXPECT_EQ(z_param, state->GetStateParam<ParamBoolean>(
+		              State::kZEnableParamName));
+	}
 
 }  // namespace o3d

@@ -41,141 +41,124 @@
 
 namespace o3d {
 
-class PackTest : public testing::Test {
- public:
+	class PackTest : public testing::Test {
+	public:
 
-  PackTest()
-      : object_manager_(g_service_locator),
-        error_status_(g_service_locator) {
-  }
+		PackTest()
+			: object_manager_(g_service_locator),
+			  error_status_(g_service_locator) {
+		}
 
-  ObjectManager* object_manager() { return object_manager_.Get(); }
+		ObjectManager* object_manager() { return object_manager_.Get(); }
 
-  // Checks if an error has occured on the client then clears the error.
-  bool CheckErrorExists() {
-    bool have_error = !error_status_.GetLastError().empty();
-    error_status_.ClearLastError();
-    return have_error;
-  }
+		// Checks if an error has occured on the client then clears the error.
+		bool CheckErrorExists() {
+			bool have_error = !error_status_.GetLastError().empty();
+			error_status_.ClearLastError();
+			return have_error;
+		}
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-  ErrorStatus error_status_;
-};
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+		ErrorStatus error_status_;
+	};
 
 // Test basic Pack creation and destruction.
-TEST_F(PackTest, Basic) {
-  Pack* pack = object_manager()->CreatePack();
-  pack->set_name("PackTest Basic");
-  ASSERT_FALSE(pack == NULL);
-
-  EXPECT_EQ(pack->name(), "PackTest Basic");
-  EXPECT_TRUE(pack->Destroy());
-}
+	TEST_F(PackTest, Basic) {
+		Pack* pack = object_manager()->CreatePack();
+		pack->set_name("PackTest Basic");
+		ASSERT_FALSE(pack == NULL);
+		EXPECT_EQ(pack->name(), "PackTest Basic");
+		EXPECT_TRUE(pack->Destroy());
+	}
 
 // Test Pack object look-up by name and Id.
-TEST_F(PackTest, ClientLookUp) {
-  Pack* pack = object_manager()->CreatePack();
-  pack->set_name("PackTest Basic");
-  EXPECT_TRUE(object_manager()->GetById<Pack>(pack->id()) == pack);
-  EXPECT_TRUE(pack->Destroy());
-}
+	TEST_F(PackTest, ClientLookUp) {
+		Pack* pack = object_manager()->CreatePack();
+		pack->set_name("PackTest Basic");
+		EXPECT_TRUE(object_manager()->GetById<Pack>(pack->id()) == pack);
+		EXPECT_TRUE(pack->Destroy());
+	}
 
 // Validate the lifetime behaviour for obects in a single pack.
-TEST_F(PackTest, BasicLifetimeScope) {
-  Pack* pack = object_manager()->CreatePack();
-  Transform* transform1 = pack->Create<Transform>();
-  Transform* transform2 = pack->Create<Transform>();
-  Id id1 = transform1->id();
-  Id id2 = transform2->id();
-
-  // Remove all references to the pack.
-  ASSERT_TRUE(pack->Destroy());
-
-  // Upon removal of all references, the transforms should be destroyed.
-  EXPECT_TRUE(object_manager()->GetById<Transform>(id1) == NULL);
-  EXPECT_TRUE(object_manager()->GetById<Transform>(id2) == NULL);
-}
+	TEST_F(PackTest, BasicLifetimeScope) {
+		Pack* pack = object_manager()->CreatePack();
+		Transform* transform1 = pack->Create<Transform>();
+		Transform* transform2 = pack->Create<Transform>();
+		Id id1 = transform1->id();
+		Id id2 = transform2->id();
+		// Remove all references to the pack.
+		ASSERT_TRUE(pack->Destroy());
+		// Upon removal of all references, the transforms should be destroyed.
+		EXPECT_TRUE(object_manager()->GetById<Transform>(id1) == NULL);
+		EXPECT_TRUE(object_manager()->GetById<Transform>(id2) == NULL);
+	}
 
 // Validate the Pack object look-up routines.
-TEST_F(PackTest, PackLookup) {
-  Pack* pack1 = object_manager()->CreatePack();
-  Pack* pack2 = object_manager()->CreatePack();
-  Transform* transform1 = pack1->Create<Transform>();
-  transform1->set_name("Transform1");
-  Transform* transform2 = pack2->Create<Transform>();
-  transform2->set_name("Transform2");
-
-  EXPECT_TRUE(pack1->Get<Transform>("Transform1")[0] == transform1);
-  EXPECT_TRUE(pack2->Get<Transform>("Transform2")[0] == transform2);
-
-  // Validate that Pack look-ups are confined to the contents of the Pack.
-  EXPECT_TRUE(pack1->Get<Transform>("Transform2").empty());
-  EXPECT_TRUE(pack2->Get<Transform>("Transform1").empty());
-
-  EXPECT_TRUE(pack1->GetById<Transform>(transform1->id()) == transform1);
-  EXPECT_TRUE(pack2->GetById<Transform>(transform2->id()) == transform2);
-
-  EXPECT_TRUE(pack1->GetById<Transform>(transform2->id()) == NULL);
-  EXPECT_TRUE(pack2->GetById<Transform>(transform1->id()) == NULL);
-
-  EXPECT_TRUE(pack1->Destroy());
-  EXPECT_TRUE(pack2->Destroy());
-}
+	TEST_F(PackTest, PackLookup) {
+		Pack* pack1 = object_manager()->CreatePack();
+		Pack* pack2 = object_manager()->CreatePack();
+		Transform* transform1 = pack1->Create<Transform>();
+		transform1->set_name("Transform1");
+		Transform* transform2 = pack2->Create<Transform>();
+		transform2->set_name("Transform2");
+		EXPECT_TRUE(pack1->Get<Transform>("Transform1")[0] == transform1);
+		EXPECT_TRUE(pack2->Get<Transform>("Transform2")[0] == transform2);
+		// Validate that Pack look-ups are confined to the contents of the Pack.
+		EXPECT_TRUE(pack1->Get<Transform>("Transform2").empty());
+		EXPECT_TRUE(pack2->Get<Transform>("Transform1").empty());
+		EXPECT_TRUE(pack1->GetById<Transform>(transform1->id()) == transform1);
+		EXPECT_TRUE(pack2->GetById<Transform>(transform2->id()) == transform2);
+		EXPECT_TRUE(pack1->GetById<Transform>(transform2->id()) == NULL);
+		EXPECT_TRUE(pack2->GetById<Transform>(transform1->id()) == NULL);
+		EXPECT_TRUE(pack1->Destroy());
+		EXPECT_TRUE(pack2->Destroy());
+	}
 
 // Validate the semantics of removal of objects from a Pack.
-TEST_F(PackTest, RemoveObject) {
-  Pack* pack = object_manager()->CreatePack();
-  ASSERT_TRUE(pack != NULL);
-  Transform* transform = pack->Create<Transform>();
-  ASSERT_TRUE(transform != NULL);
-  transform->set_name("Transform");
-  Transform* transform2 = pack->Create<Transform>();
-  ASSERT_TRUE(transform2 != NULL);
+	TEST_F(PackTest, RemoveObject) {
+		Pack* pack = object_manager()->CreatePack();
+		ASSERT_TRUE(pack != NULL);
+		Transform* transform = pack->Create<Transform>();
+		ASSERT_TRUE(transform != NULL);
+		transform->set_name("Transform");
+		Transform* transform2 = pack->Create<Transform>();
+		ASSERT_TRUE(transform2 != NULL);
+		const std::string transform_name(transform->name());
+		const Id id(transform->id());
+		pack->RemoveObject(transform);
+		// The removed transform should not be accessible through the pack.
+		EXPECT_TRUE(pack->GetById<Transform>(id) == NULL);
+		EXPECT_TRUE(pack->Get<Transform>(transform_name).empty());
+		// Existing transforms should remain untouched.
+		EXPECT_TRUE(pack->GetById<Transform>(
+		                transform2->id()) == transform2);
+		EXPECT_TRUE(pack->Get<Transform>(
+		                transform2->name())[0] == transform2);
+		Pack* pack2 = object_manager()->CreatePack();
+		ASSERT_TRUE(pack2 != NULL);
+		Transform* transform3 = pack2->Create<Transform>();
+		ASSERT_TRUE(transform3 != NULL);
+		// Check that trying to remove something not in the pack returns false but
+		// does NOT generate an error.
+		EXPECT_FALSE(pack->RemoveObject(transform3));
+		EXPECT_FALSE(CheckErrorExists());
+		EXPECT_TRUE(pack2->Destroy());
+		EXPECT_TRUE(pack->Destroy());
+	}
 
-  const std::string transform_name(transform->name());
-  const Id id(transform->id());
+	TEST_F(PackTest, CreateRawDataFromDataURL) {
+		Pack* pack = object_manager()->CreatePack();
+		RawData* raw_data = pack->CreateRawDataFromDataURL("data:;base64,YWJj");
+		EXPECT_FALSE(raw_data == NULL);
+		EXPECT_FALSE(CheckErrorExists());
+	}
 
-  pack->RemoveObject(transform);
-
-  // The removed transform should not be accessible through the pack.
-  EXPECT_TRUE(pack->GetById<Transform>(id) == NULL);
-  EXPECT_TRUE(pack->Get<Transform>(transform_name).empty());
-
-  // Existing transforms should remain untouched.
-  EXPECT_TRUE(pack->GetById<Transform>(
-      transform2->id()) == transform2);
-  EXPECT_TRUE(pack->Get<Transform>(
-      transform2->name())[0] == transform2);
-
-  Pack* pack2 = object_manager()->CreatePack();
-  ASSERT_TRUE(pack2 != NULL);
-  Transform* transform3 = pack2->Create<Transform>();
-  ASSERT_TRUE(transform3 != NULL);
-
-  // Check that trying to remove something not in the pack returns false but
-  // does NOT generate an error.
-  EXPECT_FALSE(pack->RemoveObject(transform3));
-  EXPECT_FALSE(CheckErrorExists());
-
-  EXPECT_TRUE(pack2->Destroy());
-  EXPECT_TRUE(pack->Destroy());
-}
-
-TEST_F(PackTest, CreateRawDataFromDataURL) {
-  Pack* pack = object_manager()->CreatePack();
-  RawData* raw_data = pack->CreateRawDataFromDataURL("data:;base64,YWJj");
-
-  EXPECT_FALSE(raw_data == NULL);
-  EXPECT_FALSE(CheckErrorExists());
-}
-
-TEST_F(PackTest, CreateRawDataFromDataURLFail) {
-  Pack* pack = object_manager()->CreatePack();
-  RawData* raw_data = pack->CreateRawDataFromDataURL("data:;base64,Y");
-
-  EXPECT_TRUE(raw_data == NULL);
-  EXPECT_TRUE(CheckErrorExists());
-}
+	TEST_F(PackTest, CreateRawDataFromDataURLFail) {
+		Pack* pack = object_manager()->CreatePack();
+		RawData* raw_data = pack->CreateRawDataFromDataURL("data:;base64,Y");
+		EXPECT_TRUE(raw_data == NULL);
+		EXPECT_TRUE(CheckErrorExists());
+	}
 
 }  // namespace o3d

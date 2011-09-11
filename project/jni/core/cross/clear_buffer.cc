@@ -37,53 +37,52 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(ClearBuffer, RenderNode)
+	O3D_DEFN_CLASS(ClearBuffer, RenderNode)
 
-const char* ClearBuffer::kClearColorParamName =
-    O3D_STRING_CONSTANT("clearColor");
-const char* ClearBuffer::kClearColorFlagParamName =
-    O3D_STRING_CONSTANT("clearColorFlag");
-const char* ClearBuffer::kClearDepthParamName =
-    O3D_STRING_CONSTANT("clearDepth");
-const char* ClearBuffer::kClearDepthFlagParamName =
-    O3D_STRING_CONSTANT("clearDepthFlag");
-const char* ClearBuffer::kClearStencilParamName =
-    O3D_STRING_CONSTANT("clearStencil");
-const char* ClearBuffer::kClearStencilFlagParamName =
-    O3D_STRING_CONSTANT("clearStencilFlag");
+	const char* ClearBuffer::kClearColorParamName =
+	    O3D_STRING_CONSTANT("clearColor");
+	const char* ClearBuffer::kClearColorFlagParamName =
+	    O3D_STRING_CONSTANT("clearColorFlag");
+	const char* ClearBuffer::kClearDepthParamName =
+	    O3D_STRING_CONSTANT("clearDepth");
+	const char* ClearBuffer::kClearDepthFlagParamName =
+	    O3D_STRING_CONSTANT("clearDepthFlag");
+	const char* ClearBuffer::kClearStencilParamName =
+	    O3D_STRING_CONSTANT("clearStencil");
+	const char* ClearBuffer::kClearStencilFlagParamName =
+	    O3D_STRING_CONSTANT("clearStencilFlag");
 
-ClearBuffer::ClearBuffer(ServiceLocator* service_locator)
-    : RenderNode(service_locator) {
-  RegisterParamRef(kClearColorParamName, &color_param_ref_);
-  RegisterParamRef(kClearColorFlagParamName, &color_flag_param_ref_);
-  RegisterParamRef(kClearDepthParamName, &depth_param_ref_);
-  RegisterParamRef(kClearDepthFlagParamName, &depth_flag_param_ref_);
-  RegisterParamRef(kClearStencilParamName, &stencil_param_ref_);
-  RegisterParamRef(kClearStencilFlagParamName, &stencil_flag_param_ref_);
+	ClearBuffer::ClearBuffer(ServiceLocator* service_locator)
+		: RenderNode(service_locator) {
+		RegisterParamRef(kClearColorParamName, &color_param_ref_);
+		RegisterParamRef(kClearColorFlagParamName, &color_flag_param_ref_);
+		RegisterParamRef(kClearDepthParamName, &depth_param_ref_);
+		RegisterParamRef(kClearDepthFlagParamName, &depth_flag_param_ref_);
+		RegisterParamRef(kClearStencilParamName, &stencil_param_ref_);
+		RegisterParamRef(kClearStencilFlagParamName, &stencil_flag_param_ref_);
+		set_clear_color(Float4(0.0f, 0.0f, 0.0f, 1.0f));
+		set_clear_color_flag(true);
+		set_clear_depth(1.0f);
+		set_clear_depth_flag(true);
+		set_clear_stencil(0);
+		set_clear_stencil_flag(true);
+	}
 
-  set_clear_color(Float4(0.0f, 0.0f, 0.0f, 1.0f));
-  set_clear_color_flag(true);
-  set_clear_depth(1.0f);
-  set_clear_depth_flag(true);
-  set_clear_stencil(0);
-  set_clear_stencil_flag(true);
-}
+	ClearBuffer::~ClearBuffer() {
+	}
 
-ClearBuffer::~ClearBuffer() {
-}
+	ObjectBase::Ref ClearBuffer::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new ClearBuffer(service_locator));
+	}
 
-ObjectBase::Ref ClearBuffer::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new ClearBuffer(service_locator));
-}
-
-void ClearBuffer::Render(RenderContext* render_context) {
-  render_context->renderer()->Clear(
-      clear_color(),
-      clear_color_flag(),
-      clear_depth(),
-      clear_depth_flag(),
-      clear_stencil(),
-      clear_stencil_flag());
-}
+	void ClearBuffer::Render(RenderContext* render_context) {
+		render_context->renderer()->Clear(
+		    clear_color(),
+		    clear_color_flag(),
+		    clear_depth(),
+		    clear_depth_flag(),
+		    clear_stencil(),
+		    clear_stencil_flag());
+	}
 
 }  // namespace o3d

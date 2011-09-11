@@ -40,158 +40,152 @@
 
 namespace o3d {
 
-class FunctionTest : public testing::Test {
- protected:
+	class FunctionTest : public testing::Test {
+	protected:
 
-  FunctionTest()
-      : object_manager_(g_service_locator),
-        error_status_(g_service_locator) {
-  }
+		FunctionTest()
+			: object_manager_(g_service_locator),
+			  error_status_(g_service_locator) {
+		}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
+	private:
 
-  ServiceDependency<ObjectManager> object_manager_;
-  ErrorStatus error_status_;
-  Pack* pack_;
-};
+		ServiceDependency<ObjectManager> object_manager_;
+		ErrorStatus error_status_;
+		Pack* pack_;
+	};
 
-void FunctionTest::SetUp() {
-  pack_ = object_manager_->CreatePack();
-}
+	void FunctionTest::SetUp() {
+		pack_ = object_manager_->CreatePack();
+	}
 
-void FunctionTest::TearDown() {
-  pack_->Destroy();
-}
+	void FunctionTest::TearDown() {
+		pack_->Destroy();
+	}
 
-namespace {
+	namespace {
 
 // Just multiplies the input by 2.0f
-class TestFunction : public Function {
- public:
-  explicit TestFunction(ServiceLocator* service_locator)
-      : Function(service_locator) {
-  }
+		class TestFunction : public Function {
+		public:
+			explicit TestFunction(ServiceLocator* service_locator)
+				: Function(service_locator) {
+			}
 
-  // overridden from Function
-  virtual float Evaluate(float input, FunctionContext* context) const {
-    return input * 2.0f;
-  }
+			// overridden from Function
+			virtual float Evaluate(float input, FunctionContext* context) const {
+				return input * 2.0f;
+			}
 
-  // overridden from Function
-  virtual FunctionContext* CreateFunctionContext() const {
-    return NULL;
-  }
+			// overridden from Function
+			virtual FunctionContext* CreateFunctionContext() const {
+				return NULL;
+			}
 
-  // overridden from Function
-  virtual const ObjectBase::Class* GetFunctionContextClass() const {
-    return NULL;
-  }
+			// overridden from Function
+			virtual const ObjectBase::Class* GetFunctionContextClass() const {
+				return NULL;
+			}
 
- private:
-  O3D_DECL_CLASS(TestFunction, Function);
-  O3D_DISALLOW_COPY_AND_ASSIGN(TestFunction);
-};
+		private:
+			O3D_DECL_CLASS(TestFunction, Function);
+			O3D_DISALLOW_COPY_AND_ASSIGN(TestFunction);
+		};
 
-O3D_DEFN_CLASS(TestFunction, Function);
+		O3D_DEFN_CLASS(TestFunction, Function);
 
-}  // anonymous namespace.
+	}  // anonymous namespace.
 
 // Tests Function.
-TEST_F(FunctionTest, Basic) {
-  Function::Ref function = Function::Ref(new TestFunction(g_service_locator));
-  // Check that it got created.
-  ASSERT_FALSE(function.IsNull());
-  // Check that it derives from NamedObject
-  EXPECT_TRUE(function->IsA(NamedObject::GetApparentClass()));
-}
+	TEST_F(FunctionTest, Basic) {
+		Function::Ref function = Function::Ref(new TestFunction(g_service_locator));
+		// Check that it got created.
+		ASSERT_FALSE(function.IsNull());
+		// Check that it derives from NamedObject
+		EXPECT_TRUE(function->IsA(NamedObject::GetApparentClass()));
+	}
 
 // Tests Evaluate.
-TEST_F(FunctionTest, Evaluate) {
-  Function::Ref function = Function::Ref(new TestFunction(g_service_locator));
-  // Check that it got created.
-  ASSERT_FALSE(function.IsNull());
+	TEST_F(FunctionTest, Evaluate) {
+		Function::Ref function = Function::Ref(new TestFunction(g_service_locator));
+		// Check that it got created.
+		ASSERT_FALSE(function.IsNull());
+		EXPECT_EQ(function->Evaluate(2.0f, NULL), 2.0f * 2.0f);
+		EXPECT_EQ(function->Evaluate(4.0f, NULL), 4.0f * 2.0f);
+		EXPECT_EQ(function->Evaluate(-4.0f, NULL), -4.0f * 2.0f);
+	}
 
-  EXPECT_EQ(function->Evaluate(2.0f, NULL), 2.0f * 2.0f);
-  EXPECT_EQ(function->Evaluate(4.0f, NULL), 4.0f * 2.0f);
-  EXPECT_EQ(function->Evaluate(-4.0f, NULL), -4.0f * 2.0f);
-}
+	class FunctionEvalTest : public testing::Test {
+	protected:
 
-class FunctionEvalTest : public testing::Test {
- protected:
+		FunctionEvalTest()
+			: object_manager_(g_service_locator),
+			  error_status_(g_service_locator) {
+		}
 
-  FunctionEvalTest()
-      : object_manager_(g_service_locator),
-        error_status_(g_service_locator) {
-  }
+		virtual void SetUp();
+		virtual void TearDown();
 
-  virtual void SetUp();
-  virtual void TearDown();
+		Pack* pack() { return pack_; }
 
-  Pack* pack() { return pack_; }
+	private:
 
- private:
+		ServiceDependency<ObjectManager> object_manager_;
+		ErrorStatus error_status_;
+		Pack* pack_;
+	};
 
-  ServiceDependency<ObjectManager> object_manager_;
-  ErrorStatus error_status_;
-  Pack* pack_;
-};
+	void FunctionEvalTest::SetUp() {
+		pack_ = object_manager_->CreatePack();
+	}
 
-void FunctionEvalTest::SetUp() {
-  pack_ = object_manager_->CreatePack();
-}
-
-void FunctionEvalTest::TearDown() {
-  pack_->Destroy();
-}
+	void FunctionEvalTest::TearDown() {
+		pack_->Destroy();
+	}
 
 // Tests FunctionEval.
-TEST_F(FunctionEvalTest, Basic) {
-  FunctionEval* function_eval = pack()->Create<FunctionEval>();
-  // Check that it got created.
-  ASSERT_TRUE(function_eval != NULL);
-  // Check that it derives from ParamObject
-  EXPECT_TRUE(function_eval->IsA(ParamObject::GetApparentClass()));
-}
+	TEST_F(FunctionEvalTest, Basic) {
+		FunctionEval* function_eval = pack()->Create<FunctionEval>();
+		// Check that it got created.
+		ASSERT_TRUE(function_eval != NULL);
+		// Check that it derives from ParamObject
+		EXPECT_TRUE(function_eval->IsA(ParamObject::GetApparentClass()));
+	}
 
 // Tests UpdateOutputs (indirectly)
-TEST_F(FunctionEvalTest, Evaluate) {
-  FunctionEval* function_eval = pack()->Create<FunctionEval>();
-  // Check that it got created.
-  ASSERT_TRUE(function_eval != NULL);
-
-  // Check that the correct params got created.
-  EXPECT_TRUE(function_eval->GetParam<ParamFloat>(
-                  FunctionEval::kInputParamName) != NULL);
-  EXPECT_TRUE(function_eval->GetParam<ParamFunction>(
-                  FunctionEval::kFunctionObjectParamName) != NULL);
-  EXPECT_TRUE(function_eval->GetParam<ParamFloat>(
-                  FunctionEval::kOutputParamName) != NULL);
-
-  // Check that with no function the input just gets passed through.
-  function_eval->set_input(2.0f);
-  EXPECT_EQ(function_eval->input(), 2.0f);
-  EXPECT_EQ(function_eval->output(), 2.0f);
-  function_eval->set_input(4.0f);
-  EXPECT_EQ(function_eval->input(), 4.0f);
-  EXPECT_EQ(function_eval->output(), 4.0f);
-
-  // Attach a function
-  Function::Ref function = Function::Ref(new TestFunction(g_service_locator));
-  // Check that it got created.
-  ASSERT_FALSE(function.IsNull());
-
-  function_eval->set_function_object(function);
-  EXPECT_EQ(function_eval->function_object(), function);
-
-  function_eval->set_input(2.0f);
-  EXPECT_EQ(function_eval->output(), 4.0f);
-  function_eval->set_input(4.0f);
-  EXPECT_EQ(function_eval->output(), 8.0f);
-}
+	TEST_F(FunctionEvalTest, Evaluate) {
+		FunctionEval* function_eval = pack()->Create<FunctionEval>();
+		// Check that it got created.
+		ASSERT_TRUE(function_eval != NULL);
+		// Check that the correct params got created.
+		EXPECT_TRUE(function_eval->GetParam<ParamFloat>(
+		                FunctionEval::kInputParamName) != NULL);
+		EXPECT_TRUE(function_eval->GetParam<ParamFunction>(
+		                FunctionEval::kFunctionObjectParamName) != NULL);
+		EXPECT_TRUE(function_eval->GetParam<ParamFloat>(
+		                FunctionEval::kOutputParamName) != NULL);
+		// Check that with no function the input just gets passed through.
+		function_eval->set_input(2.0f);
+		EXPECT_EQ(function_eval->input(), 2.0f);
+		EXPECT_EQ(function_eval->output(), 2.0f);
+		function_eval->set_input(4.0f);
+		EXPECT_EQ(function_eval->input(), 4.0f);
+		EXPECT_EQ(function_eval->output(), 4.0f);
+		// Attach a function
+		Function::Ref function = Function::Ref(new TestFunction(g_service_locator));
+		// Check that it got created.
+		ASSERT_FALSE(function.IsNull());
+		function_eval->set_function_object(function);
+		EXPECT_EQ(function_eval->function_object(), function);
+		function_eval->set_input(2.0f);
+		EXPECT_EQ(function_eval->output(), 4.0f);
+		function_eval->set_input(4.0f);
+		EXPECT_EQ(function_eval->output(), 8.0f);
+	}
 
 }  // namespace o3d

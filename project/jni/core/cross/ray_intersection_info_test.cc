@@ -40,91 +40,83 @@
 
 namespace o3d {
 
-class RayIntersectionInfoTest : public testing::Test {
- protected:
+	class RayIntersectionInfoTest : public testing::Test {
+	protected:
 
-  RayIntersectionInfoTest()
-      : object_manager_(g_service_locator) {}
+		RayIntersectionInfoTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- private:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack *pack_;
-};
+	private:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+	};
 
-void RayIntersectionInfoTest::SetUp() {
-  pack_ = object_manager_->CreatePack();
-}
+	void RayIntersectionInfoTest::SetUp() {
+		pack_ = object_manager_->CreatePack();
+	}
 
-void RayIntersectionInfoTest::TearDown() {
-  pack_->Destroy();
-}
+	void RayIntersectionInfoTest::TearDown() {
+		pack_->Destroy();
+	}
 
-TEST_F(RayIntersectionInfoTest, Basic) {
-  RayIntersectionInfo ray_intersection_info;
+	TEST_F(RayIntersectionInfoTest, Basic) {
+		RayIntersectionInfo ray_intersection_info;
+		// Check that it defaults to NOT valid.
+		EXPECT_FALSE(ray_intersection_info.valid());
+		// Check that it defaults to NOT intersected.
+		EXPECT_FALSE(ray_intersection_info.intersected());
+	}
 
-  // Check that it defaults to NOT valid.
-  EXPECT_FALSE(ray_intersection_info.valid());
-
-  // Check that it defaults to NOT intersected.
-  EXPECT_FALSE(ray_intersection_info.intersected());
-}
-
-TEST_F(RayIntersectionInfoTest, IntersectTriangle) {
-  RayIntersectionInfo ray_intersection_info;
-
-  Point3 point1(0.0f, 0.0f, 0.0f);
-  Point3 point2(0.0f, 1.0f, 0.0f);
-  Point3 point3(1.0f, 0.0f, 0.0f);
-
-  // Check that a ray intersects a triangle.
-  Point3 result;
-  EXPECT_TRUE(RayIntersectionInfo::IntersectTriangle(
-     Point3(0.25f, 0.25f, -1.0f),
-     Point3(0.25f, 0.25f,  1.0f),
-     point1,
-     point2,
-     point3,
-     &result));
-  EXPECT_EQ(result.getX(), 0.25f);
-  EXPECT_EQ(result.getY(), 0.25f);
-  EXPECT_EQ(result.getZ(), 0.0f);
-
-  // Check that a ray does NOT intersects a triangle.
-  EXPECT_FALSE(RayIntersectionInfo::IntersectTriangle(
-     Point3(1.25f, 0.25f, -1.0f),
-     Point3(1.25f, 0.25f,  1.0f),
-     point1,
-     point2,
-     point3,
-     &result));
-
-  // Check opposite winding of points.
-
-  // Check that a ray intersects a triangle.
-  EXPECT_FALSE(RayIntersectionInfo::IntersectTriangle(
-     Point3(0.25f, 0.25f, -1.0f),
-     Point3(0.25f, 0.25f,  1.0f),
-     point1,
-     point3,
-     point2,
-     &result));
-  EXPECT_EQ(result.getX(), 0.25f);
-  EXPECT_EQ(result.getY(), 0.25f);
-  EXPECT_EQ(result.getZ(), 0.0f);
-
-  // Check that a ray does NOT intersects a triangle.
-  EXPECT_FALSE(RayIntersectionInfo::IntersectTriangle(
-     Point3(1.25f, 0.25f, -1.0f),
-     Point3(1.25f, 0.25f,  1.0f),
-     point1,
-     point3,
-     point2,
-     &result));
-}
+	TEST_F(RayIntersectionInfoTest, IntersectTriangle) {
+		RayIntersectionInfo ray_intersection_info;
+		Point3 point1(0.0f, 0.0f, 0.0f);
+		Point3 point2(0.0f, 1.0f, 0.0f);
+		Point3 point3(1.0f, 0.0f, 0.0f);
+		// Check that a ray intersects a triangle.
+		Point3 result;
+		EXPECT_TRUE(RayIntersectionInfo::IntersectTriangle(
+		                Point3(0.25f, 0.25f, -1.0f),
+		                Point3(0.25f, 0.25f,  1.0f),
+		                point1,
+		                point2,
+		                point3,
+		                &result));
+		EXPECT_EQ(result.getX(), 0.25f);
+		EXPECT_EQ(result.getY(), 0.25f);
+		EXPECT_EQ(result.getZ(), 0.0f);
+		// Check that a ray does NOT intersects a triangle.
+		EXPECT_FALSE(RayIntersectionInfo::IntersectTriangle(
+		                 Point3(1.25f, 0.25f, -1.0f),
+		                 Point3(1.25f, 0.25f,  1.0f),
+		                 point1,
+		                 point2,
+		                 point3,
+		                 &result));
+		// Check opposite winding of points.
+		// Check that a ray intersects a triangle.
+		EXPECT_FALSE(RayIntersectionInfo::IntersectTriangle(
+		                 Point3(0.25f, 0.25f, -1.0f),
+		                 Point3(0.25f, 0.25f,  1.0f),
+		                 point1,
+		                 point3,
+		                 point2,
+		                 &result));
+		EXPECT_EQ(result.getX(), 0.25f);
+		EXPECT_EQ(result.getY(), 0.25f);
+		EXPECT_EQ(result.getZ(), 0.0f);
+		// Check that a ray does NOT intersects a triangle.
+		EXPECT_FALSE(RayIntersectionInfo::IntersectTriangle(
+		                 Point3(1.25f, 0.25f, -1.0f),
+		                 Point3(1.25f, 0.25f,  1.0f),
+		                 point1,
+		                 point3,
+		                 point2,
+		                 &result));
+	}
 
 }  // namespace o3d

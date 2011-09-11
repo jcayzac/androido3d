@@ -42,62 +42,62 @@
 
 namespace o3d {
 
-class ParamTexture;
-class SemanticManager;
+	class ParamTexture;
+	class SemanticManager;
 
-class ParamCacheGL : public ParamCache {
- public:
-  ParamCacheGL(SemanticManager* semantic_manager, Renderer* renderer);
+	class ParamCacheGL : public ParamCache {
+	public:
+		ParamCacheGL(SemanticManager* semantic_manager, Renderer* renderer);
 
-  typedef std::map<CGparameter, int> VaryingParameterMap;
-  typedef std::map<CGparameter, EffectParamHandlerGL::Ref> UniformParameterMap;
-  typedef std::map<CGparameter, ParamTexture*> SamplerParameterMap;
+		typedef std::map<CGparameter, int> VaryingParameterMap;
+		typedef std::map<CGparameter, EffectParamHandlerGL::Ref> UniformParameterMap;
+		typedef std::map<CGparameter, ParamTexture*> SamplerParameterMap;
 
-  // Overridden from ParamCache.
-  virtual void UpdateCache(Effect* effect,
-                           DrawElement* draw_element,
-                           Element* element,
-                           Material* material,
-                           ParamObject* override);
+		// Overridden from ParamCache.
+		virtual void UpdateCache(Effect* effect,
+		                         DrawElement* draw_element,
+		                         Element* element,
+		                         Material* material,
+		                         ParamObject* override);
 
-  VaryingParameterMap& varying_map() { return varying_map_; }
-  UniformParameterMap& uniform_map() { return uniform_map_; }
-  SamplerParameterMap& sampler_map() { return sampler_map_; }
+		VaryingParameterMap& varying_map() { return varying_map_; }
+		UniformParameterMap& uniform_map() { return uniform_map_; }
+		SamplerParameterMap& sampler_map() { return sampler_map_; }
 
- protected:
-  // Overridden from ParamCache
-  // Validates platform specific information about the effect.
-  virtual bool ValidateEffect(Effect* effect);
+	protected:
+		// Overridden from ParamCache
+		// Validates platform specific information about the effect.
+		virtual bool ValidateEffect(Effect* effect);
 
- private:
+	private:
 
-  SemanticManager* semantic_manager_;
-  Renderer* renderer_;
+		SemanticManager* semantic_manager_;
+		Renderer* renderer_;
 
-  // Records the last two shaders used on this cache, allowing us to rescan the
-  // shader parameters if the user changes the shader on an active cache.
-  CGprogram last_vertex_program_;
-  CGprogram last_fragment_program_;
+		// Records the last two shaders used on this cache, allowing us to rescan the
+		// shader parameters if the user changes the shader on an active cache.
+		CGprogram last_vertex_program_;
+		CGprogram last_fragment_program_;
 
-  // Search the leaf parameters of a CGeffect and it's shaders for
-  // parameters using cgGetFirstEffectParameter() /
-  // cgGetFirstLeafParameter() / cgGetNextLeafParameter(). Add the
-  // CGparameters found to the parameter maps on the DrawElement.
-  void ScanCgEffectParameters(CGprogram cg_vertex,
-                              CGprogram fragment,
-                              ParamObject* draw_element,
-                              ParamObject* element,
-                              Material* material,
-                              ParamObject* override);
+		// Search the leaf parameters of a CGeffect and it's shaders for
+		// parameters using cgGetFirstEffectParameter() /
+		// cgGetFirstLeafParameter() / cgGetNextLeafParameter(). Add the
+		// CGparameters found to the parameter maps on the DrawElement.
+		void ScanCgEffectParameters(CGprogram cg_vertex,
+		                            CGprogram fragment,
+		                            ParamObject* draw_element,
+		                            ParamObject* element,
+		                            Material* material,
+		                            ParamObject* override);
 
-  // A map of varying CGparameter to Stream index.
-  VaryingParameterMap varying_map_;
-  // A map of uniform CGparameter to Param objects.
-  UniformParameterMap uniform_map_;
-  // A map of uniform CG_SAMPLER CGparameters to ParamTexture objects.
-  // TODO: remove this (OLD path for textures).
-  SamplerParameterMap sampler_map_;
-};
+		// A map of varying CGparameter to Stream index.
+		VaryingParameterMap varying_map_;
+		// A map of uniform CGparameter to Param objects.
+		UniformParameterMap uniform_map_;
+		// A map of uniform CG_SAMPLER CGparameters to ParamTexture objects.
+		// TODO: remove this (OLD path for textures).
+		SamplerParameterMap sampler_map_;
+	};
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GL_PARAM_CACHE_GL_H_

@@ -49,55 +49,55 @@ namespace o3d {
 // client area. In other words, (0.5, 0.0, 1.0, 1.0) would describe an area that
 // is 1/2 off right side of the screen. That is an invalid value and will be
 // clipped to (0.5, 0.0, 0.5, 1.0).
-class Viewport : public RenderNode {
- public:
-  typedef SmartPointer<Viewport> Ref;
+	class Viewport : public RenderNode {
+	public:
+		typedef SmartPointer<Viewport> Ref;
 
-  // Gets the viewport.
-  const Float4 viewport() const {
-    return viewport_param_->value();
-  }
+		// Gets the viewport.
+		const Float4 viewport() const {
+			return viewport_param_->value();
+		}
 
-  // Sets the viewport.
-  void set_viewport(const Float4& value) {
-    viewport_param_->set_value(value);
-  }
+		// Sets the viewport.
+		void set_viewport(const Float4& value) {
+			viewport_param_->set_value(value);
+		}
 
-  // Gets the depth range.
-  const Float2 depth_range() const {
-    return depth_range_param_->value();
-  }
+		// Gets the depth range.
+		const Float2 depth_range() const {
+			return depth_range_param_->value();
+		}
 
-  // Sets the depth range.
-  void set_depth_range(const Float2& value) {
-    depth_range_param_->set_value(value);
-  }
+		// Sets the depth range.
+		void set_depth_range(const Float2& value) {
+			depth_range_param_->set_value(value);
+		}
 
-  // Names of Viewport Params.
-  static const char* kViewportParamName;
-  static const char* kDepthRangeParamName;
+		// Names of Viewport Params.
+		static const char* kViewportParamName;
+		static const char* kDepthRangeParamName;
 
-  // Overridden from RenderNode. Sets the viewport.
-  virtual void Render(RenderContext* render_context);
+		// Overridden from RenderNode. Sets the viewport.
+		virtual void Render(RenderContext* render_context);
 
-  // Overridden from RenderNode. Restores the viewport.
-  virtual void PostRender(RenderContext* render_context);
+		// Overridden from RenderNode. Restores the viewport.
+		virtual void PostRender(RenderContext* render_context);
 
- private:
-  explicit Viewport(ServiceLocator* service_locator);
+	private:
+		explicit Viewport(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  ParamFloat4::Ref viewport_param_;  // viewport (left, top, width, height)
-  ParamFloat2::Ref depth_range_param_;  // minZ (def. 0.0), maxZ (def. 1.0)
+		ParamFloat4::Ref viewport_param_;  // viewport (left, top, width, height)
+		ParamFloat2::Ref depth_range_param_;  // minZ (def. 0.0), maxZ (def. 1.0)
 
-  Float4 old_viewport_;
-  Float2 old_depth_range_;
+		Float4 old_viewport_;
+		Float2 old_depth_range_;
 
-  O3D_DECL_CLASS(Viewport, RenderNode);
-  O3D_DISALLOW_COPY_AND_ASSIGN(Viewport);
-};
+		O3D_DECL_CLASS(Viewport, RenderNode);
+		O3D_DISALLOW_COPY_AND_ASSIGN(Viewport);
+	};
 
 }  // namespace o3d
 

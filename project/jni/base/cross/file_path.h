@@ -92,106 +92,106 @@
 // An abstraction to isolate users from the differences between native
 // pathnames on different platforms.
 class FilePath {
- public:
-  // Null-terminated array of separators used to separate components in
-  // hierarchical paths.  Each character in this array is a valid separator,
-  // but kSeparators[0] is treated as the canonical separator and will be used
-  // when composing pathnames.
-  static const char kSeparators[];
+public:
+	// Null-terminated array of separators used to separate components in
+	// hierarchical paths.  Each character in this array is a valid separator,
+	// but kSeparators[0] is treated as the canonical separator and will be used
+	// when composing pathnames.
+	static const char kSeparators[];
 
-  // A special path component meaning "this directory."
-  static const char kCurrentDirectory[];
+	// A special path component meaning "this directory."
+	static const char kCurrentDirectory[];
 
-  FilePath() {}
-  FilePath(const FilePath& that) : path_(that.path_) {}
-  explicit FilePath(const std::string& path) : path_(path) {}
+	FilePath() {}
+	FilePath(const FilePath& that) : path_(that.path_) {}
+	explicit FilePath(const std::string& path) : path_(path) {}
 
-  FilePath& operator=(const FilePath& that) {
-    path_ = that.path_;
-    return *this;
-  }
+	FilePath& operator=(const FilePath& that) {
+		path_ = that.path_;
+		return *this;
+	}
 
-  bool operator==(const FilePath& that) const;
+	bool operator==(const FilePath& that) const;
 
-  bool operator!=(const FilePath& that) const;
+	bool operator!=(const FilePath& that) const;
 
-  // Required for some STL containers and operations
-  bool operator<(const FilePath& that) const {
-    return path_ < that.path_;
-  }
+	// Required for some STL containers and operations
+	bool operator<(const FilePath& that) const {
+		return path_ < that.path_;
+	}
 
-  const std::string& value() const { return path_; }
+	const std::string& value() const { return path_; }
 
-  bool empty() const { return path_.empty(); }
+	bool empty() const { return path_.empty(); }
 
-  // Returns true if |character| is in kSeparators.
-  static bool IsSeparator(char character);
+	// Returns true if |character| is in kSeparators.
+	static bool IsSeparator(char character);
 
-  // Returns a vector of all of the components of the provided path. It is
-  // equivalent to calling DirName().value() on the path's root component,
-  // and BaseName().value() on each child component.
-  void GetComponents(std::vector<std::string>* components) const;
+	// Returns a vector of all of the components of the provided path. It is
+	// equivalent to calling DirName().value() on the path's root component,
+	// and BaseName().value() on each child component.
+	void GetComponents(std::vector<std::string>* components) const;
 
-  // Returns a FilePath corresponding to the directory containing the path
-  // named by this object, stripping away the file component.  If this object
-  // only contains one component, returns a FilePath identifying
-  // kCurrentDirectory.  If this object already refers to the root directory,
-  // returns a FilePath identifying the root directory.
-  FilePath DirName() const;
+	// Returns a FilePath corresponding to the directory containing the path
+	// named by this object, stripping away the file component.  If this object
+	// only contains one component, returns a FilePath identifying
+	// kCurrentDirectory.  If this object already refers to the root directory,
+	// returns a FilePath identifying the root directory.
+	FilePath DirName() const;
 
-  // Returns a FilePath corresponding to the last path component of this
-  // object, either a file or a directory.  If this object already refers to
-  // the root directory, returns a FilePath identifying the root directory;
-  // this is the only situation in which BaseName will return an absolute path.
-  FilePath BaseName() const;
+	// Returns a FilePath corresponding to the last path component of this
+	// object, either a file or a directory.  If this object already refers to
+	// the root directory, returns a FilePath identifying the root directory;
+	// this is the only situation in which BaseName will return an absolute path.
+	FilePath BaseName() const;
 
-  // Returns a FilePath by appending a separator and the supplied path
-  // component to this object's path.  Append takes care to avoid adding
-  // excessive separators if this object's path already ends with a separator.
-  // If this object's path is kCurrentDirectory, a new FilePath corresponding
-  // only to |component| is returned.  |component| must be a relative path;
-  // it is an error to pass an absolute path.
-  FilePath Append(const std::string& component) const O3D_WARN_UNUSED_RESULT;
-  FilePath Append(const FilePath& component) const O3D_WARN_UNUSED_RESULT;
+	// Returns a FilePath by appending a separator and the supplied path
+	// component to this object's path.  Append takes care to avoid adding
+	// excessive separators if this object's path already ends with a separator.
+	// If this object's path is kCurrentDirectory, a new FilePath corresponding
+	// only to |component| is returned.  |component| must be a relative path;
+	// it is an error to pass an absolute path.
+	FilePath Append(const std::string& component) const O3D_WARN_UNUSED_RESULT;
+	FilePath Append(const FilePath& component) const O3D_WARN_UNUSED_RESULT;
 
-  // Mac uses UTF8, and since ASCII is a subset of that, it works there as well.
-  // On Linux, although it can use any 8-bit encoding for paths, we assume that
-  // ASCII is a valid subset, regardless of the encoding, since many operating
-  // system paths will always be ASCII.
-  FilePath AppendASCII(const std::string& component) const O3D_WARN_UNUSED_RESULT;
+	// Mac uses UTF8, and since ASCII is a subset of that, it works there as well.
+	// On Linux, although it can use any 8-bit encoding for paths, we assume that
+	// ASCII is a valid subset, regardless of the encoding, since many operating
+	// system paths will always be ASCII.
+	FilePath AppendASCII(const std::string& component) const O3D_WARN_UNUSED_RESULT;
 
-  // Returns true if this FilePath contains an absolute path.  On Windows, an
-  // absolute path begins with either a drive letter specification followed by
-  // a separator character, or with two separator characters.  On POSIX
-  // platforms, an absolute path begins with a separator character.
-  bool IsAbsolute() const;
+	// Returns true if this FilePath contains an absolute path.  On Windows, an
+	// absolute path begins with either a drive letter specification followed by
+	// a separator character, or with two separator characters.  On POSIX
+	// platforms, an absolute path begins with a separator character.
+	bool IsAbsolute() const;
 
-  // Returns a copy of this FilePath that does not end with a trailing
-  // separator.
-  FilePath StripTrailingSeparators() const;
+	// Returns a copy of this FilePath that does not end with a trailing
+	// separator.
+	FilePath StripTrailingSeparators() const;
 
- private:
-  // Remove trailing separators from this object.  If the path is absolute, it
-  // will never be stripped any more than to refer to the absolute root
-  // directory, so "////" will become "/", not "".  A leading pair of
-  // separators is never stripped, to support alternate roots.  This is used to
-  // support UNC paths on Windows.
-  void StripTrailingSeparatorsInternal();
+private:
+	// Remove trailing separators from this object.  If the path is absolute, it
+	// will never be stripped any more than to refer to the absolute root
+	// directory, so "////" will become "/", not "".  A leading pair of
+	// separators is never stripped, to support alternate roots.  This is used to
+	// support UNC paths on Windows.
+	void StripTrailingSeparatorsInternal();
 
-  std::string path_;
+	std::string path_;
 };
 
 namespace std {
-namespace tr1 {
+	namespace tr1 {
 
-template<>
-struct hash<FilePath> {
-  std::size_t operator()(const FilePath& f) const {
-    return hash<std::string>()(f.value());
-  }
-};
+		template<>
+		struct hash<FilePath> {
+			std::size_t operator()(const FilePath& f) const {
+				return hash<std::string>()(f.value());
+			}
+		};
 
-} // namespace tr1
+	} // namespace tr1
 } // namespace std
 
 #endif  // BASE_FILE_PATH_H_

@@ -39,43 +39,43 @@
 
 namespace o3d {
 
-class Matrix4ScaleTest : public testing::Test {
- protected:
-  Matrix4ScaleTest()
-      : object_manager_(g_service_locator),
-        pack_(NULL),
-        scale_(NULL) {
-  }
+	class Matrix4ScaleTest : public testing::Test {
+	protected:
+		Matrix4ScaleTest()
+			: object_manager_(g_service_locator),
+			  pack_(NULL),
+			  scale_(NULL) {
+		}
 
-  virtual void SetUp() {
-    pack_ = object_manager_->CreatePack();
-    scale_ = pack_->Create<Matrix4Scale>();
-  }
+		virtual void SetUp() {
+			pack_ = object_manager_->CreatePack();
+			scale_ = pack_->Create<Matrix4Scale>();
+		}
 
-  virtual void TearDown() {
-    pack_->Destroy();
-  }
+		virtual void TearDown() {
+			pack_->Destroy();
+		}
 
- protected:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack* pack_;
-  Matrix4Scale* scale_;
-};
+	protected:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+		Matrix4Scale* scale_;
+	};
 
-TEST_F(Matrix4ScaleTest, OutputsInputScaleAsMatrixIfNoParent) {
-  scale_->set_scale(Float3(1, 2, 3));
-  Matrix4 output_matrix = scale_->output_matrix();
-  Matrix4 expected(Vector4(1, 0, 0, 0), Vector4(0, 2, 0, 0),
-                   Vector4(0, 0, 3, 0), Vector4(0, 0, 0, 1));
-  ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
-}
+	TEST_F(Matrix4ScaleTest, OutputsInputScaleAsMatrixIfNoParent) {
+		scale_->set_scale(Float3(1, 2, 3));
+		Matrix4 output_matrix = scale_->output_matrix();
+		Matrix4 expected(Vector4(1, 0, 0, 0), Vector4(0, 2, 0, 0),
+		                 Vector4(0, 0, 3, 0), Vector4(0, 0, 0, 1));
+		ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
+	}
 
-TEST_F(Matrix4ScaleTest, ComposesInputScaleWithParentMatrix) {
-  scale_->set_scale(Float3(1, 2, 3));
-  Matrix4 parent = Matrix4::scale(Vector3(3, 4, 5));
-  scale_->set_input_matrix(parent);
-  Matrix4 output_matrix = scale_->output_matrix();
-  Matrix4 expected = Matrix4::scale(Vector3(3, 8, 15));
-  ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
-}
+	TEST_F(Matrix4ScaleTest, ComposesInputScaleWithParentMatrix) {
+		scale_->set_scale(Float3(1, 2, 3));
+		Matrix4 parent = Matrix4::scale(Vector3(3, 4, 5));
+		scale_->set_input_matrix(parent);
+		Matrix4 output_matrix = scale_->output_matrix();
+		Matrix4 expected = Matrix4::scale(Vector3(3, 8, 15));
+		ASSERT_NEAR(0.0f, FrobeniusNorm(expected - output_matrix), 0.001f);
+	}
 }  // namespace o3d

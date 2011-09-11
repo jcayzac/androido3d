@@ -44,28 +44,28 @@ namespace o3d {
 // the ServiceLocator for as long as the ServiceImplementation is instantiated
 // A service implementing multiple interfaces may be registered with multiple
 // ServiceImplementation objects.
-template <typename Interface>
-class ServiceImplementation {
- public:
-  ServiceImplementation(ServiceLocator* service_locator, Interface* service)
-      : service_locator_(service_locator),
-        service_(service) {
-    service_locator_->AddService(Interface::kInterfaceId, service_);
-  }
+	template <typename Interface>
+	class ServiceImplementation {
+	public:
+		ServiceImplementation(ServiceLocator* service_locator, Interface* service)
+			: service_locator_(service_locator),
+			  service_(service) {
+			service_locator_->AddService(Interface::kInterfaceId, service_);
+		}
 
-  ~ServiceImplementation() {
-    service_locator_->RemoveService(Interface::kInterfaceId, service_);
-  }
+		~ServiceImplementation() {
+			service_locator_->RemoveService(Interface::kInterfaceId, service_);
+		}
 
-  ServiceLocator* service_locator() const {
-    return service_locator_;
-  }
+		ServiceLocator* service_locator() const {
+			return service_locator_;
+		}
 
- private:
-  ServiceLocator* service_locator_;
-  Interface* service_;
-  O3D_DISALLOW_COPY_AND_ASSIGN(ServiceImplementation);
-};
+	private:
+		ServiceLocator* service_locator_;
+		Interface* service_;
+		O3D_DISALLOW_COPY_AND_ASSIGN(ServiceImplementation);
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_SERVICE_IMPLEMENTATION_H_

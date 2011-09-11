@@ -40,18 +40,18 @@
 
 namespace o3d {
 
-class Element;
+	class Element;
 
 // DrawElementGLES2 is the OpenGLES2 implementation of the DrawElement. It
 // provides a place for the renderer to store platform specific cache
 // information.
-class DrawElementGLES2 : public DrawElement {
- public:
-  explicit DrawElementGLES2(ServiceLocator* service_locator);
-  ~DrawElementGLES2();
+	class DrawElementGLES2 : public DrawElement {
+	public:
+		explicit DrawElementGLES2(ServiceLocator* service_locator);
+		~DrawElementGLES2();
 
- private:
-};
+	private:
+	};
 }  // o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_DRAW_ELEMENT_GLES2_H_

@@ -42,32 +42,32 @@ namespace o3d {
 // We create a new ErrorStreamManager with each instantiation of the
 // O3D_ERROR macro. That way we can call stuff based on the destruction
 // of the manager.
-class ErrorStreamManager {
- public:
-  // Constructs an ErrorStreamManager which on destruction will copy the
-  // contents of the stream to the client's error_string.
-  // Parameters:
-  //   client: The client whose error message to set.
+	class ErrorStreamManager {
+	public:
+		// Constructs an ErrorStreamManager which on destruction will copy the
+		// contents of the stream to the client's error_string.
+		// Parameters:
+		//   client: The client whose error message to set.
 #ifdef NDEBUG
-  explicit ErrorStreamManager(ServiceLocator *service_locator);
+		explicit ErrorStreamManager(ServiceLocator* service_locator);
 #else
-  ErrorStreamManager(ServiceLocator* service_locator,
-                     const char* file,
-                     int line);
+		ErrorStreamManager(ServiceLocator* service_locator,
+		                   const char* file,
+		                   int line);
 #endif
-  ~ErrorStreamManager();
+		~ErrorStreamManager();
 
-  std::ostream& stream() {
-    return stream_;
-  }
- private:
-  std::ostringstream stream_;
-  IErrorStatus* error_status_;
+		std::ostream& stream() {
+			return stream_;
+		}
+	private:
+		std::ostringstream stream_;
+		IErrorStatus* error_status_;
 #ifndef NDEBUG
-  const char* file_;
-  int line_;
+		const char* file_;
+		int line_;
 #endif
-};
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_ERROR_STREAM_MANAGER_H_

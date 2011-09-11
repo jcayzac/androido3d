@@ -17,17 +17,17 @@
 #pragma once
 
 namespace o3d {
-class Transform;
+	class Transform;
 
-namespace extra {
+	namespace extra {
 
-/** @brief Update the bounding boxes inside a tree, recursively.
- *
- * @param root The root of the tree.
- */
-void updateBoundingBoxes(Transform& root);
+		/** @brief Update the bounding boxes inside a tree, recursively.
+		 *
+		 * @param root The root of the tree.
+		 */
+		void updateBoundingBoxes(Transform& root);
 
-} // extra
+	} // extra
 } // o3d
 
 /* vim: set sw=2 ts=2 sts=2 expandtab ff=unix: */

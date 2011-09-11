@@ -36,11 +36,11 @@
 
 namespace o3d {
 
-DrawElementGLES2::DrawElementGLES2(ServiceLocator* service_locator)
-    : DrawElement(service_locator) {
-}
+	DrawElementGLES2::DrawElementGLES2(ServiceLocator* service_locator)
+		: DrawElement(service_locator) {
+	}
 
-DrawElementGLES2::~DrawElementGLES2() {
-}
+	DrawElementGLES2::~DrawElementGLES2() {
+	}
 }  // namespace o3d
 

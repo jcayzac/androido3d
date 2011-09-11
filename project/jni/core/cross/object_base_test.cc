@@ -40,44 +40,44 @@
 
 namespace o3d {
 
-class ObjectBaseTest : public testing::Test {
- protected:
-  ObjectBaseTest()
-      : object_manager_(g_service_locator) {}
+	class ObjectBaseTest : public testing::Test {
+	protected:
+		ObjectBaseTest()
+			: object_manager_(g_service_locator) {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+		virtual void SetUp();
+		virtual void TearDown();
 
-  Pack* pack() { return pack_; }
+		Pack* pack() { return pack_; }
 
- protected:
-  ServiceDependency<ObjectManager> object_manager_;
-  Pack* pack_;
-};
+	protected:
+		ServiceDependency<ObjectManager> object_manager_;
+		Pack* pack_;
+	};
 
-void ObjectBaseTest::SetUp() {
-  pack_ = object_manager_->CreatePack();
-}
+	void ObjectBaseTest::SetUp() {
+		pack_ = object_manager_->CreatePack();
+	}
 
-void ObjectBaseTest::TearDown() {
-  object_manager_->DestroyPack(pack_);
-}
+	void ObjectBaseTest::TearDown() {
+		object_manager_->DestroyPack(pack_);
+	}
 
-TEST_F(ObjectBaseTest, ObjectIdOfNullIsZero) {
-  ASSERT_EQ(0U, GetObjectId(NULL));
-}
+	TEST_F(ObjectBaseTest, ObjectIdOfNullIsZero) {
+		ASSERT_EQ(0U, GetObjectId(NULL));
+	}
 
-TEST_F(ObjectBaseTest, ObjectIdOfObjectIsReturned) {
-  ASSERT_EQ(pack_->id(), GetObjectId(pack_));
-}
+	TEST_F(ObjectBaseTest, ObjectIdOfObjectIsReturned) {
+		ASSERT_EQ(pack_->id(), GetObjectId(pack_));
+	}
 
-TEST_F(ObjectBaseTest, ObjectClassName) {
-  ASSERT_EQ(0,
-            strcmp(ObjectBase::GetApparentClass()->name(),
-                   "o3d.ObjectBase"));
-  ASSERT_EQ(0,
-            strcmp(ObjectBase::GetApparentClass()->unqualified_name(),
-                   "ObjectBase"));
-}
+	TEST_F(ObjectBaseTest, ObjectClassName) {
+		ASSERT_EQ(0,
+		          strcmp(ObjectBase::GetApparentClass()->name(),
+		                 "o3d.ObjectBase"));
+		ASSERT_EQ(0,
+		          strcmp(ObjectBase::GetApparentClass()->unqualified_name(),
+		                 "ObjectBase"));
+	}
 
 }  // namespace o3d

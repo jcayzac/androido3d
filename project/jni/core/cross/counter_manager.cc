@@ -35,108 +35,110 @@
 
 namespace o3d {
 
-const InterfaceId CounterManager::kInterfaceId =
-    InterfaceTraits<CounterManager>::kInterfaceId;
+	const InterfaceId CounterManager::kInterfaceId =
+	    InterfaceTraits<CounterManager>::kInterfaceId;
 
-CounterManager::CounterManager(ServiceLocator* service_locator)
-    : service_(service_locator, this),
-      profiler_(service_locator) {
-}
+	CounterManager::CounterManager(ServiceLocator* service_locator)
+		: service_(service_locator, this),
+		  profiler_(service_locator) {
+	}
 
-void CounterManager::RegisterSecondCounter(SecondCounter* counter) {
-  O3D_ASSERT(std::find(second_counters_.begin(),
-                   second_counters_.end(),
-                   counter) == second_counters_.end());
-  second_counters_.push_back(counter);
-}
+	void CounterManager::RegisterSecondCounter(SecondCounter* counter) {
+		O3D_ASSERT(std::find(second_counters_.begin(),
+		                     second_counters_.end(),
+		                     counter) == second_counters_.end());
+		second_counters_.push_back(counter);
+	}
 
-void CounterManager::UnregisterSecondCounter(SecondCounter* counter) {
-  SecondCounterArray::iterator last = std::remove(second_counters_.begin(),
-                                                  second_counters_.end(),
-                                                  counter);
-  O3D_ASSERT(last != second_counters_.end());
-  second_counters_.erase(last, second_counters_.end());
-}
+	void CounterManager::UnregisterSecondCounter(SecondCounter* counter) {
+		SecondCounterArray::iterator last = std::remove(second_counters_.begin(),
+		                                    second_counters_.end(),
+		                                    counter);
+		O3D_ASSERT(last != second_counters_.end());
+		second_counters_.erase(last, second_counters_.end());
+	}
 
-void CounterManager::RegisterTickCounter(TickCounter* counter) {
-  O3D_ASSERT(std::find(tick_counters_.begin(),
-                   tick_counters_.end(),
-                   counter) == tick_counters_.end());
-  tick_counters_.push_back(counter);
-}
+	void CounterManager::RegisterTickCounter(TickCounter* counter) {
+		O3D_ASSERT(std::find(tick_counters_.begin(),
+		                     tick_counters_.end(),
+		                     counter) == tick_counters_.end());
+		tick_counters_.push_back(counter);
+	}
 
-void CounterManager::UnregisterTickCounter(TickCounter* counter) {
-  TickCounterArray::iterator last = std::remove(tick_counters_.begin(),
-                                                tick_counters_.end(),
-                                                counter);
-  O3D_ASSERT(last != tick_counters_.end());
-  tick_counters_.erase(last, tick_counters_.end());
-}
+	void CounterManager::UnregisterTickCounter(TickCounter* counter) {
+		TickCounterArray::iterator last = std::remove(tick_counters_.begin(),
+		                                  tick_counters_.end(),
+		                                  counter);
+		O3D_ASSERT(last != tick_counters_.end());
+		tick_counters_.erase(last, tick_counters_.end());
+	}
 
-void CounterManager::RegisterRenderFrameCounter(RenderFrameCounter* counter) {
-  O3D_ASSERT(std::find(render_frame_counters_.begin(),
-                   render_frame_counters_.end(),
-                   counter) == render_frame_counters_.end());
-  render_frame_counters_.push_back(counter);
-}
+	void CounterManager::RegisterRenderFrameCounter(RenderFrameCounter* counter) {
+		O3D_ASSERT(std::find(render_frame_counters_.begin(),
+		                     render_frame_counters_.end(),
+		                     counter) == render_frame_counters_.end());
+		render_frame_counters_.push_back(counter);
+	}
 
-void CounterManager::UnregisterRenderFrameCounter(RenderFrameCounter* counter) {
-  RenderFrameCounterArray::iterator last =
-      std::remove(render_frame_counters_.begin(),
-                  render_frame_counters_.end(),
-                  counter);
-  O3D_ASSERT(last != render_frame_counters_.end());
-  render_frame_counters_.erase(last, render_frame_counters_.end());
-}
+	void CounterManager::UnregisterRenderFrameCounter(RenderFrameCounter* counter) {
+		RenderFrameCounterArray::iterator last =
+		    std::remove(render_frame_counters_.begin(),
+		                render_frame_counters_.end(),
+		                counter);
+		O3D_ASSERT(last != render_frame_counters_.end());
+		render_frame_counters_.erase(last, render_frame_counters_.end());
+	}
 
-void CounterManager::AdvanceCounters(float advance_amount,
-                                     float seconds_elapsed) {
-  Counter::CounterCallbackQueue queue;
+	void CounterManager::AdvanceCounters(float advance_amount,
+	                                     float seconds_elapsed) {
+		Counter::CounterCallbackQueue queue;
 
-  // Update any tick counters.
-  for (unsigned ii = 0; ii < tick_counters_.size(); ++ii) {
-    if (tick_counters_[ii]->running()) {
-      tick_counters_[ii]->Advance(advance_amount, &queue);
-    }
-  }
+		// Update any tick counters.
+		for(unsigned ii = 0; ii < tick_counters_.size(); ++ii) {
+			if(tick_counters_[ii]->running()) {
+				tick_counters_[ii]->Advance(advance_amount, &queue);
+			}
+		}
 
-  // Update any second counters.
-  for (unsigned ii = 0; ii < second_counters_.size(); ++ii) {
-    if (second_counters_[ii]->running()) {
-      second_counters_[ii]->Advance(seconds_elapsed, &queue);
-    }
-  }
+		// Update any second counters.
+		for(unsigned ii = 0; ii < second_counters_.size(); ++ii) {
+			if(second_counters_[ii]->running()) {
+				second_counters_[ii]->Advance(seconds_elapsed, &queue);
+			}
+		}
 
-  profiler_->ProfileStart("Tick Counter callbacks");
-  queue.CallCounterCallbacks();
-  profiler_->ProfileStop("Tick Counter callbacks");
-}
+		profiler_->ProfileStart("Tick Counter callbacks");
+		queue.CallCounterCallbacks();
+		profiler_->ProfileStop("Tick Counter callbacks");
+	}
 
-void CounterManager::AdvanceRenderFrameCounters(float advance_amnount) {
-  Counter::CounterCallbackQueue queue;
+	void CounterManager::AdvanceRenderFrameCounters(float advance_amnount) {
+		Counter::CounterCallbackQueue queue;
 
-  // Update any render frame counters.
-  for (unsigned ii = 0; ii < render_frame_counters_.size(); ++ii) {
-    if (render_frame_counters_[ii]->running()) {
-      render_frame_counters_[ii]->Advance(advance_amnount, &queue);
-    }
-  }
+		// Update any render frame counters.
+		for(unsigned ii = 0; ii < render_frame_counters_.size(); ++ii) {
+			if(render_frame_counters_[ii]->running()) {
+				render_frame_counters_[ii]->Advance(advance_amnount, &queue);
+			}
+		}
 
-  profiler_->ProfileStart("PrepareForFrame Counter callbacks");
-  queue.CallCounterCallbacks();
-  profiler_->ProfileStop("PrepareForFrame Counter callbacks");
-}
+		profiler_->ProfileStart("PrepareForFrame Counter callbacks");
+		queue.CallCounterCallbacks();
+		profiler_->ProfileStop("PrepareForFrame Counter callbacks");
+	}
 
-void CounterManager::ClearAllCallbacks() {
-  for (unsigned ii = 0; ii < tick_counters_.size(); ++ii) {
-    tick_counters_[ii]->RemoveAllCallbacks();
-  }
-  for (unsigned ii = 0; ii < render_frame_counters_.size(); ++ii) {
-    render_frame_counters_[ii]->RemoveAllCallbacks();
-  }
-  for (unsigned ii = 0; ii < second_counters_.size(); ++ii) {
-    second_counters_[ii]->RemoveAllCallbacks();
-  }
-}
+	void CounterManager::ClearAllCallbacks() {
+		for(unsigned ii = 0; ii < tick_counters_.size(); ++ii) {
+			tick_counters_[ii]->RemoveAllCallbacks();
+		}
+
+		for(unsigned ii = 0; ii < render_frame_counters_.size(); ++ii) {
+			render_frame_counters_[ii]->RemoveAllCallbacks();
+		}
+
+		for(unsigned ii = 0; ii < second_counters_.size(); ++ii) {
+			second_counters_[ii]->RemoveAllCallbacks();
+		}
+	}
 
 }  // namespace o3d

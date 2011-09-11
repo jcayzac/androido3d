@@ -44,97 +44,97 @@
 
 namespace o3d {
 
-class DrawElementGL;
-class ParamCacheGL;
-class ParamObject;
-class Param;
-class ParamTexture;
-class RendererGL;
-class SemanticManager;
+	class DrawElementGL;
+	class ParamCacheGL;
+	class ParamObject;
+	class Param;
+	class ParamTexture;
+	class RendererGL;
+	class SemanticManager;
 
 // A class to set an effect parameter from an O3D parameter.
-class EffectParamHandlerGL : public RefCounted {
- public:
-  typedef SmartPointer<EffectParamHandlerGL> Ref;
-  virtual ~EffectParamHandlerGL() { }
+	class EffectParamHandlerGL : public RefCounted {
+	public:
+		typedef SmartPointer<EffectParamHandlerGL> Ref;
+		virtual ~EffectParamHandlerGL() { }
 
-  // Sets a GL/Cg Effect Parameter by an O3D Param.
-  virtual void SetEffectParam(RendererGL* renderer, CGparameter cg_param) = 0;
+		// Sets a GL/Cg Effect Parameter by an O3D Param.
+		virtual void SetEffectParam(RendererGL* renderer, CGparameter cg_param) = 0;
 
-  // Resets a GL/Cg Effect parameter to default (currently only
-  // unbinds textures contained in Sampler params).
-  virtual void ResetEffectParam(RendererGL* renderer, CGparameter cg_param) {}
-};
+		// Resets a GL/Cg Effect parameter to default (currently only
+		// unbinds textures contained in Sampler params).
+		virtual void ResetEffectParam(RendererGL* renderer, CGparameter cg_param) {}
+	};
 
 // EffectGL is an implementation of the Effect object for OpenGL.  It
 // provides the API for setting the vertex and framgent shaders for the
 // Effect using the Cg Runtime.  Currently the two shaders can either be
 // provided separately as shader code or together in an FX file.
-class EffectGL : public Effect {
- public:
-  EffectGL(ServiceLocator* service_locator, CGcontext cg_context);
-  virtual ~EffectGL();
+	class EffectGL : public Effect {
+	public:
+		EffectGL(ServiceLocator* service_locator, CGcontext cg_context);
+		virtual ~EffectGL();
 
-  // Reads the vertex and fragment shaders from string in the FX format.
-  // It returns true if the shaders were successfully compiled.
-  virtual bool LoadFromFXString(const std::string& effect);
+		// Reads the vertex and fragment shaders from string in the FX format.
+		// It returns true if the shaders were successfully compiled.
+		virtual bool LoadFromFXString(const std::string& effect);
 
-  // Binds the shaders to the device and sets up all the shader parameters using
-  // the values from the matching Param's of the param_object.
-  void PrepareForDraw(ParamCacheGL* param_cache_gl);
+		// Binds the shaders to the device and sets up all the shader parameters using
+		// the values from the matching Param's of the param_object.
+		void PrepareForDraw(ParamCacheGL* param_cache_gl);
 
-  // Removes any pipeline state-changes installed during a draw.
-  void PostDraw(ParamCacheGL* param_cache_gl);
+		// Removes any pipeline state-changes installed during a draw.
+		void PostDraw(ParamCacheGL* param_cache_gl);
 
-  // Gets info about the parameters this effect needs.
-  // Overriden from Effect.
-  virtual void GetParameterInfo(EffectParameterInfoArray* info_array);
+		// Gets info about the parameters this effect needs.
+		// Overriden from Effect.
+		virtual void GetParameterInfo(EffectParameterInfoArray* info_array);
 
-  // Gets info about the streams this effect needs.
-  // Overriden from Effect.
-  virtual void GetStreamInfo(
-      EffectStreamInfoArray* info_array);
+		// Gets info about the streams this effect needs.
+		// Overriden from Effect.
+		virtual void GetStreamInfo(
+		    EffectStreamInfoArray* info_array);
 
-  // Given a CG_SAMPLER parameter, find the corresponding CG_TEXTURE
-  // parameterand from this CG_TEXTURE, find a matching Param by name in a list
-  // of ParamObject.
-  // TODO: remove this (OLD path for textures).
-  ParamTexture* GetTextureParamFromCgSampler(
-      CGparameter cg_sampler,
-      const std::vector<ParamObject*> &param_objects);
+		// Given a CG_SAMPLER parameter, find the corresponding CG_TEXTURE
+		// parameterand from this CG_TEXTURE, find a matching Param by name in a list
+		// of ParamObject.
+		// TODO: remove this (OLD path for textures).
+		ParamTexture* GetTextureParamFromCgSampler(
+		    CGparameter cg_sampler,
+		    const std::vector<ParamObject*> &param_objects);
 
-  CGprogram cg_vertex_program() { return cg_vertex_; }
-  CGprogram cg_fragment_program() { return cg_fragment_; }
+		CGprogram cg_vertex_program() { return cg_vertex_; }
+		CGprogram cg_fragment_program() { return cg_fragment_; }
 
- private:
-  // Loops through all the parameters in the ShapeDataGL and updates the
-  // corresponding parameter EffectGL object
-  void UpdateShaderUniformsFromEffect(ParamCacheGL* param_cache_gl);
-  // Undoes the effect of the above.  For now, this unbinds textures.
-  void ResetShaderUniforms(ParamCacheGL* param_cache_gl);
-  void GetShaderParamInfo(CGprogram program,
-                          CGenum name_space,
-                          std::map<std::string, EffectParameterInfo>* info_map);
-  void GetVaryingVertexShaderParamInfo(
-      CGprogram program,
-      CGenum name_space,
-      std::vector<EffectStreamInfo>* info_array);
+	private:
+		// Loops through all the parameters in the ShapeDataGL and updates the
+		// corresponding parameter EffectGL object
+		void UpdateShaderUniformsFromEffect(ParamCacheGL* param_cache_gl);
+		// Undoes the effect of the above.  For now, this unbinds textures.
+		void ResetShaderUniforms(ParamCacheGL* param_cache_gl);
+		void GetShaderParamInfo(CGprogram program,
+		                        CGenum name_space,
+		                        std::map<std::string, EffectParameterInfo>* info_map);
+		void GetVaryingVertexShaderParamInfo(
+		    CGprogram program,
+		    CGenum name_space,
+		    std::vector<EffectStreamInfo>* info_array);
 
-  // TODO: remove these (OLD path for textures).
-  void SetTexturesFromEffect(ParamCacheGL* param_cache_gl);
-  void FillSamplerToTextureMap(const std::string &effect);
-  std::string GetTextureNameFromSamplerParamName(const std::string &sampler_name);
+		// TODO: remove these (OLD path for textures).
+		void SetTexturesFromEffect(ParamCacheGL* param_cache_gl);
+		void FillSamplerToTextureMap(const std::string& effect);
+		std::string GetTextureNameFromSamplerParamName(const std::string& sampler_name);
 
-  SemanticManager* semantic_manager_;
-  RendererGL* renderer_;
+		SemanticManager* semantic_manager_;
+		RendererGL* renderer_;
 
-  CGcontext cg_context_;
-  CGprogram cg_vertex_;
-  CGprogram cg_fragment_;
+		CGcontext cg_context_;
+		CGprogram cg_vertex_;
+		CGprogram cg_fragment_;
 
-  // TODO: remove this (OLD path for textures).
-  std::map<std::string, std::string> sampler_to_texture_map_;
-};
+		// TODO: remove this (OLD path for textures).
+		std::map<std::string, std::string> sampler_to_texture_map_;
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GL_EFFECT_GL_H_

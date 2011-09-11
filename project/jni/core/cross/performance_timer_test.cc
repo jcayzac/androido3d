@@ -38,42 +38,44 @@
 
 namespace o3d {
 
-const char* kTimerName = "MyGroovyTimer";
+	const char* kTimerName = "MyGroovyTimer";
 
-class PerformanceTimerTest : public testing::Test {
- protected:
-  virtual void SetUp();
-  virtual void TearDown();
-  PerformanceTimer* timer() { return timer_; }
+	class PerformanceTimerTest : public testing::Test {
+	protected:
+		virtual void SetUp();
+		virtual void TearDown();
+		PerformanceTimer* timer() { return timer_; }
 
- private:
-  PerformanceTimer* timer_;
-};
+	private:
+		PerformanceTimer* timer_;
+	};
 
-void PerformanceTimerTest::SetUp() {
-  timer_ = new PerformanceTimer(kTimerName);
-}
+	void PerformanceTimerTest::SetUp() {
+		timer_ = new PerformanceTimer(kTimerName);
+	}
 
-void PerformanceTimerTest::TearDown() {
-  delete timer_;
-}
+	void PerformanceTimerTest::TearDown() {
+		delete timer_;
+	}
 
-TEST_F(PerformanceTimerTest, Name) {
-  EXPECT_TRUE(!strcmp(timer()->name(), kTimerName));
-}
+	TEST_F(PerformanceTimerTest, Name) {
+		EXPECT_TRUE(!strcmp(timer()->name(), kTimerName));
+	}
 
-TEST_F(PerformanceTimerTest, StartStop) {
-  ASSERT_TRUE(timer() != NULL);
-  EXPECT_TRUE(timer()->GetElapsedTime() < 0.00001);
-  timer()->Start();
-  timer()->Stop();
-  EXPECT_TRUE(timer()->GetElapsedTime() < 1.0);
-  volatile float a = 0.0f;
-  timer()->Start();
-  for (int i = 0; i < 1000000; ++i) {
-    a += 1;
-  }
-  timer()->StopAndPrint();
-  EXPECT_TRUE(timer()->GetElapsedTime() > 0.0);
-}
+	TEST_F(PerformanceTimerTest, StartStop) {
+		ASSERT_TRUE(timer() != NULL);
+		EXPECT_TRUE(timer()->GetElapsedTime() < 0.00001);
+		timer()->Start();
+		timer()->Stop();
+		EXPECT_TRUE(timer()->GetElapsedTime() < 1.0);
+		volatile float a = 0.0f;
+		timer()->Start();
+
+		for(int i = 0; i < 1000000; ++i) {
+			a += 1;
+		}
+
+		timer()->StopAndPrint();
+		EXPECT_TRUE(timer()->GetElapsedTime() > 0.0);
+	}
 };

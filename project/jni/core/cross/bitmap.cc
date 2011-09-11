@@ -49,399 +49,420 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Bitmap, ParamObject);
+	O3D_DEFN_CLASS(Bitmap, ParamObject);
 
-Bitmap::Bitmap(ServiceLocator* service_locator)
-    : ParamObject(service_locator),
-      image_data_(NULL),
-      format_(Texture::UNKNOWN_FORMAT),
-      width_(0),
-      height_(0),
-      num_mipmaps_(0),
-      semantic_(IMAGE) {
-}
+	Bitmap::Bitmap(ServiceLocator* service_locator)
+		: ParamObject(service_locator),
+		  image_data_(NULL),
+		  format_(Texture::UNKNOWN_FORMAT),
+		  width_(0),
+		  height_(0),
+		  num_mipmaps_(0),
+		  semantic_(IMAGE) {
+	}
 
-size_t Bitmap::GetMipSize(unsigned int level) const {
-  unsigned int mip_width = std::max(1U, width() >> level);
-  unsigned int mip_height = std::max(1U, height() >> level);
-  return image::ComputeMipChainSize(mip_width, mip_height, format(), 1);
-}
+	size_t Bitmap::GetMipSize(unsigned int level) const {
+		unsigned int mip_width = std::max(1U, width() >> level);
+		unsigned int mip_height = std::max(1U, height() >> level);
+		return image::ComputeMipChainSize(mip_width, mip_height, format(), 1);
+	}
 
-size_t Bitmap::ComputeMaxSize(
-    unsigned width, unsigned height, Texture::Format format) {
-  return image::ComputeMipChainSize(
-      width, height, format,
-      image::ComputeMipMapCount(width, height));
-}
+	size_t Bitmap::ComputeMaxSize(
+	    unsigned width, unsigned height, Texture::Format format) {
+		return image::ComputeMipChainSize(
+		           width, height, format,
+		           image::ComputeMipMapCount(width, height));
+	}
 
-void Bitmap::SetContents(Texture::Format format,
-                         unsigned int num_mipmaps,
-                         unsigned int width,
-                         unsigned int height,
-                         Bitmap::Semantic semantic,
-                         ::o3d::base::scoped_array<uint8_t>* image_data) {
-  O3D_ASSERT(image_data);
-  image_data_.reset();
-  format_ = format;
-  num_mipmaps_ = num_mipmaps;
-  width_ = width;
-  height_ = height;
-  semantic_ = semantic;
-  image_data_.swap(*image_data);
-}
+	void Bitmap::SetContents(Texture::Format format,
+	                         unsigned int num_mipmaps,
+	                         unsigned int width,
+	                         unsigned int height,
+	                         Bitmap::Semantic semantic,
+	                         ::o3d::base::scoped_array<uint8_t>* image_data) {
+		O3D_ASSERT(image_data);
+		image_data_.reset();
+		format_ = format;
+		num_mipmaps_ = num_mipmaps;
+		width_ = width;
+		height_ = height;
+		semantic_ = semantic;
+		image_data_.swap(*image_data);
+	}
 
-void Bitmap::SetFrom(Bitmap *source) {
-  O3D_ASSERT(source);
-  SetContents(source->format(),
-              source->num_mipmaps(),
-              source->width(),
-              source->height(),
-              source->semantic(),
-              &source->image_data_);
-}
+	void Bitmap::SetFrom(Bitmap* source) {
+		O3D_ASSERT(source);
+		SetContents(source->format(),
+		            source->num_mipmaps(),
+		            source->width(),
+		            source->height(),
+		            source->semantic(),
+		            &source->image_data_);
+	}
 
-void Bitmap::Allocate(Texture::Format format,
-                      unsigned int width,
-                      unsigned int height,
-                      unsigned int num_mipmaps,
-                      Bitmap::Semantic semantic) {
-  O3D_ASSERT(image::CheckImageDimensions(width, height));
-  switch (format) {
-    case Texture::XRGB8:
-    case Texture::ARGB8:
-	case Texture::RGBX8:
-	case Texture::RGBA8:
-    case Texture::ABGR16F:
-    case Texture::R32F:
-    case Texture::ABGR32F:
-    case Texture::DXT1:
-    case Texture::DXT3:
-    case Texture::DXT5:
-      break;
-    default:
-      O3D_LOG(FATAL) << "Trying to allocate a bitmap with invalid format";
-      break;
-  }
-  O3D_ASSERT(num_mipmaps <= image::ComputeMipMapCount(width, height));
-  O3D_ASSERT(num_mipmaps > 0u);
+	void Bitmap::Allocate(Texture::Format format,
+	                      unsigned int width,
+	                      unsigned int height,
+	                      unsigned int num_mipmaps,
+	                      Bitmap::Semantic semantic) {
+		O3D_ASSERT(image::CheckImageDimensions(width, height));
 
-  format_ = format;
-  width_ = width;
-  height_ = height;
-  num_mipmaps_ = num_mipmaps;
-  semantic_ = semantic;
-  AllocateData();
-}
+		switch(format) {
+		case Texture::XRGB8:
+		case Texture::ARGB8:
+		case Texture::RGBX8:
+		case Texture::RGBA8:
+		case Texture::ABGR16F:
+		case Texture::R32F:
+		case Texture::ABGR32F:
+		case Texture::DXT1:
+		case Texture::DXT3:
+		case Texture::DXT5:
+			break;
+		default:
+			O3D_LOG(FATAL) << "Trying to allocate a bitmap with invalid format";
+			break;
+		}
 
-uint8_t *Bitmap::GetMipData(unsigned int level) const {
-  O3D_ASSERT(level < num_mipmaps_);
-  if (!image_data_.get()) return NULL;
-  uint8_t *data = image_data_.get();
-  return data + GetMipChainSize(level);
-}
+		O3D_ASSERT(num_mipmaps <= image::ComputeMipMapCount(width, height));
+		O3D_ASSERT(num_mipmaps > 0u);
+		format_ = format;
+		width_ = width;
+		height_ = height;
+		num_mipmaps_ = num_mipmaps;
+		semantic_ = semantic;
+		AllocateData();
+	}
 
-uint8_t *Bitmap::GetPixelData(
-    unsigned int level, unsigned int x, unsigned int y) const {
-  uint8_t* data = GetMipData(level);
-  if (data) {
-    data += GetMipPitch(level) * y + image::ComputePitch(format(), 1) * x;
-  }
-  return data;
-}
+	uint8_t* Bitmap::GetMipData(unsigned int level) const {
+		O3D_ASSERT(level < num_mipmaps_);
 
-void Bitmap::SetRect(
-    int level,
-    unsigned dst_left,
-    unsigned dst_top,
-    unsigned src_width,
-    unsigned src_height,
-    const void* src_data,
-    int src_pitch) {
-  O3D_ASSERT(src_data);
-  O3D_ASSERT(level < static_cast<int>(num_mipmaps()) && level >= 0);
-  unsigned mip_width = image::ComputeMipDimension(level, width());
-  unsigned mip_height = image::ComputeMipDimension(level, height());
-  O3D_ASSERT(dst_left + src_width <= mip_width &&
-         dst_top + src_height <= mip_height);
-  bool compressed = Texture::IsCompressedFormat(format());
-  O3D_ASSERT(!compressed || (dst_left == 0 && dst_top == 0 &&
-                     src_width == mip_width && src_height == mip_height));
+		if(!image_data_.get()) return NULL;
 
-  uint8_t* restrict dst = GetPixelData(level, dst_left, dst_top);
+		uint8_t* data = image_data_.get();
+		return data + GetMipChainSize(level);
+	}
 
-  const uint8_t* restrict src = static_cast<const uint8_t*>(src_data);
-  if (!compressed) {
-    unsigned bytes_per_line = image::ComputePitch(format(), src_width);
-    int dst_pitch = image::ComputePitch(format(), mip_width);
-    for (unsigned yy = 0; yy < src_height; ++yy) {
-      memcpy(dst, src, bytes_per_line);
-      src += src_pitch;
-      dst += dst_pitch;
-    }
-  } else {
-    memcpy(dst, src,
-           image::ComputeMipChainSize(mip_width, mip_height, format(), 1));
-  }
-}
+	uint8_t* Bitmap::GetPixelData(
+	    unsigned int level, unsigned int x, unsigned int y) const {
+		uint8_t* data = GetMipData(level);
 
-bool Bitmap::LoadFromStream(ServiceLocator* service_locator,
-                            MemoryReadStream *stream,
-                            const std::string &filename,
-                            image::ImageFileType file_type,
-                            BitmapRefArray* bitmaps) {
-  O3D_ASSERT(stream);
-  O3D_ASSERT(bitmaps);
-  BitmapRefArray::size_type first = bitmaps->size();
-  bool success = false;
-  // If we don't know what type to load, try to detect it based on the file
-  // name.
-  if (file_type == image::UNKNOWN) {
-    file_type = image::GetFileTypeFromFilename(filename.c_str());
-  }
+		if(data) {
+			data += GetMipPitch(level) * y + image::ComputePitch(format(), 1) * x;
+		}
 
-  switch (file_type) {
-    case image::TGA:
-      success = LoadFromTGAStream(service_locator, stream, filename, bitmaps);
-      break;
-    case image::DDS:
-      success = LoadFromDDSStream(service_locator, stream, filename, bitmaps);
-      break;
-    case image::PNG:
-      success = LoadFromPNGStream(service_locator, stream, filename, bitmaps);
-      break;
-    case image::JPEG:
-      success = LoadFromJPEGStream(service_locator, stream, filename, bitmaps);
-      break;
-    case image::UNKNOWN:
-    default:
-      break;
-  }
+		return data;
+	}
 
-  if (!success) {
-    // At this point we either could not detect the filetype, or possibly
-    // the file extension was incorrect (eg. a JPEG image with a .png suffix)
-    O3D_LOG(INFO) << "Could not detect file type from filename \""
-               << filename << "\". Trying all the loaders.";
-    // We will try all the loaders, one by one, starting by the ones that can
-    // have an early detect based on magic strings.  We Seek(0) after each try
-    // since each attempt changes the stream read position.
-    success = LoadFromDDSStream(service_locator, stream, filename, bitmaps);
-    if (!success) {
-      stream->Seek(0);
-      success = LoadFromPNGStream(service_locator, stream, filename, bitmaps);
-    }
+	void Bitmap::SetRect(
+	    int level,
+	    unsigned dst_left,
+	    unsigned dst_top,
+	    unsigned src_width,
+	    unsigned src_height,
+	    const void* src_data,
+	    int src_pitch) {
+		O3D_ASSERT(src_data);
+		O3D_ASSERT(level < static_cast<int>(num_mipmaps()) && level >= 0);
+		unsigned mip_width = image::ComputeMipDimension(level, width());
+		unsigned mip_height = image::ComputeMipDimension(level, height());
+		O3D_ASSERT(dst_left + src_width <= mip_width &&
+		           dst_top + src_height <= mip_height);
+		bool compressed = Texture::IsCompressedFormat(format());
+		O3D_ASSERT(!compressed || (dst_left == 0 && dst_top == 0 &&
+		                           src_width == mip_width && src_height == mip_height));
+		uint8_t* restrict dst = GetPixelData(level, dst_left, dst_top);
+		const uint8_t* restrict src = static_cast<const uint8_t*>(src_data);
 
-    if (!success) {
-      stream->Seek(0);
-      success = LoadFromJPEGStream(service_locator, stream, filename, bitmaps);
-    }
+		if(!compressed) {
+			unsigned bytes_per_line = image::ComputePitch(format(), src_width);
+			int dst_pitch = image::ComputePitch(format(), mip_width);
 
-    if (!success) {
-      stream->Seek(0);
-      success = LoadFromTGAStream(service_locator, stream, filename, bitmaps);
-    }
-  }
+			for(unsigned yy = 0; yy < src_height; ++yy) {
+				memcpy(dst, src, bytes_per_line);
+				src += src_pitch;
+				dst += dst_pitch;
+			}
+		}
+		else {
+			memcpy(dst, src,
+			       image::ComputeMipChainSize(mip_width, mip_height, format(), 1));
+		}
+	}
 
-  if (success) {
-    Features* features = service_locator->GetService<Features>();
-    O3D_ASSERT(features);
-    if (features->flip_textures()) {
-      // Only flip the bitmaps we added.
-      for (BitmapRefArray::size_type ii = first; ii < bitmaps->size(); ++ii) {
-        Bitmap* bitmap = (*bitmaps)[ii].Get();
-        if (bitmap->semantic() == IMAGE) {
-          bitmap->FlipVertically();
-        }
-      }
-    }
-  } else {
-    O3D_LOG(ERROR) << "Failed to load image \"" << filename
-                << "\": unknown file type";
-  }
-  return success;
-}
+	bool Bitmap::LoadFromStream(ServiceLocator* service_locator,
+	                            MemoryReadStream* stream,
+	                            const std::string& filename,
+	                            image::ImageFileType file_type,
+	                            BitmapRefArray* bitmaps) {
+		O3D_ASSERT(stream);
+		O3D_ASSERT(bitmaps);
+		BitmapRefArray::size_type first = bitmaps->size();
+		bool success = false;
+
+		// If we don't know what type to load, try to detect it based on the file
+		// name.
+		if(file_type == image::UNKNOWN) {
+			file_type = image::GetFileTypeFromFilename(filename.c_str());
+		}
+
+		switch(file_type) {
+		case image::TGA:
+			success = LoadFromTGAStream(service_locator, stream, filename, bitmaps);
+			break;
+		case image::DDS:
+			success = LoadFromDDSStream(service_locator, stream, filename, bitmaps);
+			break;
+		case image::PNG:
+			success = LoadFromPNGStream(service_locator, stream, filename, bitmaps);
+			break;
+		case image::JPEG:
+			success = LoadFromJPEGStream(service_locator, stream, filename, bitmaps);
+			break;
+		case image::UNKNOWN:
+		default:
+			break;
+		}
+
+		if(!success) {
+			// At this point we either could not detect the filetype, or possibly
+			// the file extension was incorrect (eg. a JPEG image with a .png suffix)
+			O3D_LOG(INFO) << "Could not detect file type from filename \""
+			              << filename << "\". Trying all the loaders.";
+			// We will try all the loaders, one by one, starting by the ones that can
+			// have an early detect based on magic strings.  We Seek(0) after each try
+			// since each attempt changes the stream read position.
+			success = LoadFromDDSStream(service_locator, stream, filename, bitmaps);
+
+			if(!success) {
+				stream->Seek(0);
+				success = LoadFromPNGStream(service_locator, stream, filename, bitmaps);
+			}
+
+			if(!success) {
+				stream->Seek(0);
+				success = LoadFromJPEGStream(service_locator, stream, filename, bitmaps);
+			}
+
+			if(!success) {
+				stream->Seek(0);
+				success = LoadFromTGAStream(service_locator, stream, filename, bitmaps);
+			}
+		}
+
+		if(success) {
+			Features* features = service_locator->GetService<Features>();
+			O3D_ASSERT(features);
+
+			if(features->flip_textures()) {
+				// Only flip the bitmaps we added.
+				for(BitmapRefArray::size_type ii = first; ii < bitmaps->size(); ++ii) {
+					Bitmap* bitmap = (*bitmaps)[ii].Get();
+
+					if(bitmap->semantic() == IMAGE) {
+						bitmap->FlipVertically();
+					}
+				}
+			}
+		}
+		else {
+			O3D_LOG(ERROR) << "Failed to load image \"" << filename
+			               << "\": unknown file type";
+		}
+
+		return success;
+	}
 
 // Given an arbitrary bitmap file, load it all into memory and then call our
 // stream loader
-bool Bitmap::LoadFromExternalResource(ServiceLocator* service_locator,
-                          const ExternalResource& resource,
-                          image::ImageFileType file_type,
-                          BitmapRefArray* bitmaps) {
-  O3D_ASSERT(bitmaps);
-  bool result = false;
-  if (resource) {
-    MemoryReadStream stream(resource.data(), resource.size());
-    result = LoadFromStream(service_locator,
-                            &stream, resource.name(), file_type, bitmaps);
-  }
-  return result;
-}
+	bool Bitmap::LoadFromExternalResource(ServiceLocator* service_locator,
+	                                      const ExternalResource& resource,
+	                                      image::ImageFileType file_type,
+	                                      BitmapRefArray* bitmaps) {
+		O3D_ASSERT(bitmaps);
+		bool result = false;
+
+		if(resource) {
+			MemoryReadStream stream(resource.data(), resource.size());
+			result = LoadFromStream(service_locator,
+			                        &stream, resource.name(), file_type, bitmaps);
+		}
+
+		return result;
+	}
 
 // Given a RawData object containing image data in one of our known formats,
 // decide which image format it is and call the correct loading function.
-bool Bitmap::LoadFromRawData(RawData *raw_data,
-                             image::ImageFileType file_type,
-                             BitmapRefArray* bitmaps) {
-  O3D_ASSERT(raw_data);
-  O3D_ASSERT(bitmaps);
-  std::string filename = raw_data->uri();
+	bool Bitmap::LoadFromRawData(RawData* raw_data,
+	                             image::ImageFileType file_type,
+	                             BitmapRefArray* bitmaps) {
+		O3D_ASSERT(raw_data);
+		O3D_ASSERT(bitmaps);
+		std::string filename = raw_data->uri();
+		// GetData() returns NULL if it, for example, cannot open the temporary data
+		// file. In that case, it invokes the error callback. We just have to be
+		// careful not to dereference it.
+		const uint8_t* data = raw_data->GetData();
 
-  // GetData() returns NULL if it, for example, cannot open the temporary data
-  // file. In that case, it invokes the error callback. We just have to be
-  // careful not to dereference it.
-  const uint8_t* data = raw_data->GetData();
-  if (!data) {
-    return false;
-  }
+		if(!data) {
+			return false;
+		}
 
-  MemoryReadStream stream(data, raw_data->GetLength());
+		MemoryReadStream stream(data, raw_data->GetLength());
+		return LoadFromStream(raw_data->service_locator(),
+		                      &stream, filename, file_type, bitmaps);
+	}
 
-  return LoadFromStream(raw_data->service_locator(),
-                        &stream, filename, file_type, bitmaps);
-}
+	void Bitmap::DrawImage(const Bitmap& src_img,
+	                       int src_level,
+	                       int src_x, int src_y,
+	                       int src_width, int src_height,
+	                       int dst_level,
+	                       int dst_x, int dst_y,
+	                       int dst_width, int dst_height) {
+		O3D_ASSERT(src_img.image_data());
+		O3D_ASSERT(image_data());
 
-void Bitmap::DrawImage(const Bitmap& src_img,
-                       int src_level,
-                       int src_x, int src_y,
-                       int src_width, int src_height,
-                       int dst_level,
-                       int dst_x, int dst_y,
-                       int dst_width, int dst_height) {
-  O3D_ASSERT(src_img.image_data());
-  O3D_ASSERT(image_data());
+		if(dst_level < 0 || dst_level >= static_cast<int>(num_mipmaps())) {
+			O3D_ERROR(service_locator()) << "Destination Mip out of range";
+		}
 
-  if (dst_level < 0 || dst_level >= static_cast<int>(num_mipmaps())) {
-    O3D_ERROR(service_locator()) << "Destination Mip out of range";
-  }
+		if(src_level < 0 || src_level >= static_cast<int>(src_img.num_mipmaps())) {
+			O3D_ERROR(service_locator()) << "Source Mip out of range";
+		}
 
-  if (src_level < 0 || src_level >= static_cast<int>(src_img.num_mipmaps())) {
-    O3D_ERROR(service_locator()) << "Source Mip out of range";
-  }
+		// Clip source and destination rectangles to
+		// source and destination bitmaps.
+		// if src or dest rectangle is out of boundary,
+		// do nothing and return.
+		if(!image::AdjustDrawImageBoundary(&src_x, &src_y,
+		                                   &src_width, &src_height,
+		                                   src_level,
+		                                   src_img.width_, src_img.height_,
+		                                   &dst_x, &dst_y,
+		                                   &dst_width, &dst_height,
+		                                   dst_level,
+		                                   width_, height_))
+			return;
 
-  // Clip source and destination rectangles to
-  // source and destination bitmaps.
-  // if src or dest rectangle is out of boundary,
-  // do nothing and return.
-  if (!image::AdjustDrawImageBoundary(&src_x, &src_y,
-                                      &src_width, &src_height,
-                                      src_level,
-                                      src_img.width_, src_img.height_,
-                                      &dst_x, &dst_y,
-                                      &dst_width, &dst_height,
-                                      dst_level,
-                                      width_, height_))
-    return;
+		// check formats of source and dest images.
+		// format of source and dest should be the same.
+		if(src_img.format_ != format_) {
+			O3D_ERROR(service_locator()) << "DrawImage does not support "
+			                             << "different formats.";
+			return;
+		}
 
-  // check formats of source and dest images.
-  // format of source and dest should be the same.
-  if (src_img.format_ != format_) {
-    O3D_ERROR(service_locator()) << "DrawImage does not support "
-                                 << "different formats.";
-    return;
-  }
-  // if src and dest are in the same size and drawImage is copying
-  // the entire bitmap on dest image, just perform memcpy.
-  if (src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
-      src_img.width_ == width_ && src_img.height_ == height_ &&
-      src_width == src_img.width_ && src_height == src_img.height_ &&
-      dst_width == width_ && dst_height == height_) {
-    SetRect(dst_level, 0, 0, dst_width, dst_height,
-            src_img.GetMipData(src_level), src_img.GetMipPitch(src_level));
-    return;
-  }
+		// if src and dest are in the same size and drawImage is copying
+		// the entire bitmap on dest image, just perform memcpy.
+		if(src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
+		        src_img.width_ == width_ && src_img.height_ == height_ &&
+		        src_width == src_img.width_ && src_height == src_img.height_ &&
+		        dst_width == width_ && dst_height == height_) {
+			SetRect(dst_level, 0, 0, dst_width, dst_height,
+			        src_img.GetMipData(src_level), src_img.GetMipPitch(src_level));
+			return;
+		}
 
-  unsigned int components = image::GetNumComponentsForFormat(format_);
-  if (components == 0) {
-    O3D_ERROR(service_locator()) << "DrawImage does not support format: "
-                                 << src_img.format_ << " unless src and "
-                                 << "dest images are in the same size and "
-                                 << "copying the entire bitmap";
-    return;
-  }
+		unsigned int components = image::GetNumComponentsForFormat(format_);
 
-  int src_pitch = src_img.GetMipPitch(src_level);
-  if (image::AdjustForSetRect(&src_y, src_width, src_height, &src_pitch,
-                              &dst_y, dst_width, &dst_height)) {
-    SetRect(dst_level, dst_x, dst_y, dst_width, dst_height,
-            src_img.GetPixelData(src_level, src_x, src_y),
-            src_pitch);
-    return;
-  }
+		if(components == 0) {
+			O3D_ERROR(service_locator()) << "DrawImage does not support format: "
+			                             << src_img.format_ << " unless src and "
+			                             << "dest images are in the same size and "
+			                             << "copying the entire bitmap";
+			return;
+		}
 
-  // crop part of image from src img, scale it in
-  // bilinear interpolation fashion, and paste it
-  // on dst img.
-  image::LanczosScale(src_img.format_,
-                      src_img.GetMipData(src_level),
-                      src_img.GetMipPitch(src_level),
-                      src_x, src_y,
-                      src_width, src_height,
-                      GetMipData(dst_level),
-                      GetMipPitch(dst_level),
-                      dst_x, dst_y,
-                      dst_width, dst_height,
-                      components);
-}
+		int src_pitch = src_img.GetMipPitch(src_level);
 
-void Bitmap::GenerateMips(int source_level, int num_levels) {
-  if (source_level >= static_cast<int>(num_mipmaps()) || source_level < 0) {
-    O3D_ERROR(service_locator()) << "source level out of range.";
-    return;
-  }
-  unsigned int max_mips = image::ComputeMipMapCount(width(), height());
-  if (source_level + num_levels >=
-      static_cast<int>(max_mips) || num_levels < 0) {
-    O3D_ERROR(service_locator()) << "num levels out of range.";
-    return;
-  }
+		if(image::AdjustForSetRect(&src_y, src_width, src_height, &src_pitch,
+		                           &dst_y, dst_width, &dst_height)) {
+			SetRect(dst_level, dst_x, dst_y, dst_width, dst_height,
+			        src_img.GetPixelData(src_level, src_x, src_y),
+			        src_pitch);
+			return;
+		}
 
-  if (GenerateMipmaps(image::ComputeMipDimension(source_level, width()),
-                      image::ComputeMipDimension(source_level, height()),
-                      format(),
-                      num_levels,
-                      GetMipData(source_level))) {
-    num_mipmaps_ = std::max(
-        num_mipmaps_,
-        static_cast<unsigned>(source_level + num_levels + 1));
-  }
-}
+		// crop part of image from src img, scale it in
+		// bilinear interpolation fashion, and paste it
+		// on dst img.
+		image::LanczosScale(src_img.format_,
+		                    src_img.GetMipData(src_level),
+		                    src_img.GetMipPitch(src_level),
+		                    src_x, src_y,
+		                    src_width, src_height,
+		                    GetMipData(dst_level),
+		                    GetMipPitch(dst_level),
+		                    dst_x, dst_y,
+		                    dst_width, dst_height,
+		                    components);
+	}
+
+	void Bitmap::GenerateMips(int source_level, int num_levels) {
+		if(source_level >= static_cast<int>(num_mipmaps()) || source_level < 0) {
+			O3D_ERROR(service_locator()) << "source level out of range.";
+			return;
+		}
+
+		unsigned int max_mips = image::ComputeMipMapCount(width(), height());
+
+		if(source_level + num_levels >=
+		        static_cast<int>(max_mips) || num_levels < 0) {
+			O3D_ERROR(service_locator()) << "num levels out of range.";
+			return;
+		}
+
+		if(GenerateMipmaps(image::ComputeMipDimension(source_level, width()),
+		                   image::ComputeMipDimension(source_level, height()),
+		                   format(),
+		                   num_levels,
+		                   GetMipData(source_level))) {
+			num_mipmaps_ = std::max(
+			                   num_mipmaps_,
+			                   static_cast<unsigned>(source_level + num_levels + 1));
+		}
+	}
 
 // NOTE: This only works for Bitmap since Bitmap knows the pitch.
-bool Bitmap::GenerateMipmaps(unsigned int base_width,
-                             unsigned int base_height,
-                             Texture::Format format,
-                             unsigned int num_mipmaps,
-                             uint8_t *data) {
-  O3D_ASSERT(image::CheckImageDimensions(base_width, base_height));
-  unsigned int components = image::GetNumComponentsForFormat(format);
-  if (components == 0) {
-    O3D_LOG(ERROR) << "Mip-map generation not supported for format: " << format;
-    return false;
-  }
-  O3D_ASSERT((std::max(base_width, base_height) >> (num_mipmaps - 1)) >= 1u);
-  uint8_t *mip_data = data;
-  unsigned int mip_width = base_width;
-  unsigned int mip_height = base_height;
-  for (unsigned int level = 1; level < num_mipmaps; ++level) {
-    unsigned int prev_width = mip_width;
-    unsigned int prev_height = mip_height;
-    uint8_t *prev_data = mip_data;
-    mip_data += components * mip_width * mip_height;
-    O3D_ASSERT(mip_data == (data + image::ComputeMipChainSize(
-                  base_width, base_height, format, level)));
-    mip_width = std::max(1U, mip_width >> 1);
-    mip_height = std::max(1U, mip_height >> 1);
-    image::GenerateMipmap(
-        prev_width, prev_height, format,
-        prev_data, image::ComputePitch(format, prev_width),
-        mip_data, image::ComputePitch(format, mip_width));
-  }
+	bool Bitmap::GenerateMipmaps(unsigned int base_width,
+	                             unsigned int base_height,
+	                             Texture::Format format,
+	                             unsigned int num_mipmaps,
+	                             uint8_t* data) {
+		O3D_ASSERT(image::CheckImageDimensions(base_width, base_height));
+		unsigned int components = image::GetNumComponentsForFormat(format);
 
-  return true;
-}
+		if(components == 0) {
+			O3D_LOG(ERROR) << "Mip-map generation not supported for format: " << format;
+			return false;
+		}
 
-ObjectBase::Ref Bitmap::Create(ServiceLocator* service_locator) {
-  return ObjectBase::Ref(new Bitmap(service_locator));
-}
+		O3D_ASSERT((std::max(base_width, base_height) >> (num_mipmaps - 1)) >= 1u);
+		uint8_t* mip_data = data;
+		unsigned int mip_width = base_width;
+		unsigned int mip_height = base_height;
+
+		for(unsigned int level = 1; level < num_mipmaps; ++level) {
+			unsigned int prev_width = mip_width;
+			unsigned int prev_height = mip_height;
+			uint8_t* prev_data = mip_data;
+			mip_data += components * mip_width * mip_height;
+			O3D_ASSERT(mip_data == (data + image::ComputeMipChainSize(
+			                            base_width, base_height, format, level)));
+			mip_width = std::max(1U, mip_width >> 1);
+			mip_height = std::max(1U, mip_height >> 1);
+			image::GenerateMipmap(
+			    prev_width, prev_height, format,
+			    prev_data, image::ComputePitch(format, prev_width),
+			    mip_data, image::ComputePitch(format, mip_width));
+		}
+
+		return true;
+	}
+
+	ObjectBase::Ref Bitmap::Create(ServiceLocator* service_locator) {
+		return ObjectBase::Ref(new Bitmap(service_locator));
+	}
 
 }  // namespace o3d

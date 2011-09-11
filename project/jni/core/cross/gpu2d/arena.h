@@ -46,170 +46,174 @@
 #include "core/cross/types.h"
 
 namespace o3d {
-namespace gpu2d {
+	namespace gpu2d {
 
-class Arena {
- public:
-  // The arena is configured with an allocator, which is responsible
-  // for allocating and freeing chunks of memory at a time.
-  class Allocator {
-   public:
-    virtual ~Allocator() {}
-    virtual void* Allocate(size_t size) = 0;
-    virtual void Free(void* ptr) = 0;
-   protected:
-    Allocator() {}
-    O3D_DISALLOW_COPY_AND_ASSIGN(Allocator);
-  };
+		class Arena {
+		public:
+			// The arena is configured with an allocator, which is responsible
+			// for allocating and freeing chunks of memory at a time.
+			class Allocator {
+			public:
+				virtual ~Allocator() {}
+				virtual void* Allocate(size_t size) = 0;
+				virtual void Free(void* ptr) = 0;
+			protected:
+				Allocator() {}
+				O3D_DISALLOW_COPY_AND_ASSIGN(Allocator);
+			};
 
-  // The Arena's default allocator, which uses malloc and free to
-  // allocate chunks of storage.
-  class MallocAllocator : public Allocator {
-   public:
-    virtual void* Allocate(size_t size) {
-      return ::malloc(size);
-    }
+			// The Arena's default allocator, which uses malloc and free to
+			// allocate chunks of storage.
+			class MallocAllocator : public Allocator {
+			public:
+				virtual void* Allocate(size_t size) {
+					return ::malloc(size);
+				}
 
-    virtual void Free(void* ptr) {
-      ::free(ptr);
-    }
-  };
+				virtual void Free(void* ptr) {
+					::free(ptr);
+				}
+			};
 
-  // Creates a new Arena configured with a MallocAllocator, which is
-  // deleted when the arena is.
-  Arena()
-      : allocator_(new MallocAllocator),
-        should_delete_allocator_(true),
-        current_(NULL),
-        current_chunk_size_(kDefaultChunkSize) {
-  }
+			// Creates a new Arena configured with a MallocAllocator, which is
+			// deleted when the arena is.
+			Arena()
+				: allocator_(new MallocAllocator),
+				  should_delete_allocator_(true),
+				  current_(NULL),
+				  current_chunk_size_(kDefaultChunkSize) {
+			}
 
-  // Creates a new Arena configured with the given Allocator. The
-  // Allocator is not deleted when the arena is.
-  explicit Arena(Allocator* allocator)
-      : allocator_(allocator),
-        should_delete_allocator_(false),
-        current_(NULL),
-        current_chunk_size_(kDefaultChunkSize) {
-  }
+			// Creates a new Arena configured with the given Allocator. The
+			// Allocator is not deleted when the arena is.
+			explicit Arena(Allocator* allocator)
+				: allocator_(allocator),
+				  should_delete_allocator_(false),
+				  current_(NULL),
+				  current_chunk_size_(kDefaultChunkSize) {
+			}
 
-  // Deletes this arena.
-  ~Arena() {
-    for_each(chunks_.begin(), chunks_.end(), &Arena::DeleteChunk);
-    if (should_delete_allocator_) {
-      delete allocator_;
-    }
-  }
+			// Deletes this arena.
+			~Arena() {
+				for_each(chunks_.begin(), chunks_.end(), &Arena::DeleteChunk);
 
-  // Allocates an object from the arena.
-  template<class T>
-  T* Alloc() {
-    void* ptr = NULL;
-    size_t rounded_size = RoundUp(sizeof(T), MinAlignment());
-    if (current_ != NULL)
-      ptr = current_->Allocate(rounded_size);
+				if(should_delete_allocator_) {
+					delete allocator_;
+				}
+			}
 
-    if (ptr == NULL) {
-      if (rounded_size > current_chunk_size_)
-        current_chunk_size_ = rounded_size;
-      current_ = new Chunk(allocator_, current_chunk_size_);
-      chunks_.push_back(current_);
-      ptr = current_->Allocate(rounded_size);
-    }
+			// Allocates an object from the arena.
+			template<class T>
+			T* Alloc() {
+				void* ptr = NULL;
+				size_t rounded_size = RoundUp(sizeof(T), MinAlignment());
 
-    if (ptr != NULL) {
-      // Allocate a T at this spot
-      new(ptr) T();
-    }
+				if(current_ != NULL)
+					ptr = current_->Allocate(rounded_size);
 
-    return static_cast<T*>(ptr);
-  }
+				if(ptr == NULL) {
+					if(rounded_size > current_chunk_size_)
+						current_chunk_size_ = rounded_size;
 
- private:
-  enum {
-    kDefaultChunkSize = 16384
-  };
+					current_ = new Chunk(allocator_, current_chunk_size_);
+					chunks_.push_back(current_);
+					ptr = current_->Allocate(rounded_size);
+				}
 
-  // The following two structures are intended to automatically
-  // determine the platform's alignment constraint for structures.
-  struct AlignmentInner {
-    int64_t x;
-  };
-  struct AlignmentStruct {
-    char f1;
-    AlignmentInner f2;
-  };
+				if(ptr != NULL) {
+					// Allocate a T at this spot
+					new(ptr) T();
+				}
 
-  // Returns the alignment requirement for classes and structs on the
-  // current platform.
-  static size_t MinAlignment() {
-    return offsetof(AlignmentStruct, f2);
-  }
+				return static_cast<T*>(ptr);
+			}
 
-  // Rounds up the given allocation size to the specified alignment.
-  size_t RoundUp(size_t size, size_t alignment) {
-    O3D_ASSERT(alignment % 2 == 0);
-    return (size + alignment - 1) & ~(alignment - 1);
-  }
+		private:
+			enum {
+				kDefaultChunkSize = 16384
+			};
 
-  Allocator* allocator_;
-  bool should_delete_allocator_;
+			// The following two structures are intended to automatically
+			// determine the platform's alignment constraint for structures.
+			struct AlignmentInner {
+				int64_t x;
+			};
+			struct AlignmentStruct {
+				char f1;
+				AlignmentInner f2;
+			};
 
-  // Manages a chunk of memory and individual allocations out of it.
-  class Chunk {
-   public:
-    // Allocates a block of memory of the given size from the passed
-    // Allocator.
-    Chunk(Allocator* allocator, size_t size)
-        : allocator_(allocator),
-          size_(size) {
-      base_ = static_cast<uint8_t*>(allocator_->Allocate(size));
-      current_offset_ = 0;
-    }
+			// Returns the alignment requirement for classes and structs on the
+			// current platform.
+			static size_t MinAlignment() {
+				return offsetof(AlignmentStruct, f2);
+			}
 
-    // Frees the memory allocated from the Allocator in the
-    // constructor.
-    ~Chunk() {
-      allocator_->Free(base_);
-    }
+			// Rounds up the given allocation size to the specified alignment.
+			size_t RoundUp(size_t size, size_t alignment) {
+				O3D_ASSERT(alignment % 2 == 0);
+				return (size + alignment - 1) & ~(alignment - 1);
+			}
 
-    // Returns a pointer to "size" bytes of storage, or NULL if this
-    // Chunk could not satisfy the allocation.
-    void* Allocate(size_t size) {
-      // Check for overflow
-      if (current_offset_ + size < current_offset_) {
-        return NULL;
-      }
+			Allocator* allocator_;
+			bool should_delete_allocator_;
 
-      if (current_offset_ + size > size_) {
-        return NULL;
-      }
-      void* result = base_ + current_offset_;
-      current_offset_ += size;
-      return result;
-    }
+			// Manages a chunk of memory and individual allocations out of it.
+			class Chunk {
+			public:
+				// Allocates a block of memory of the given size from the passed
+				// Allocator.
+				Chunk(Allocator* allocator, size_t size)
+					: allocator_(allocator),
+					  size_(size) {
+					base_ = static_cast<uint8_t*>(allocator_->Allocate(size));
+					current_offset_ = 0;
+				}
 
-   private:
-    Allocator* allocator_;
-    uint8_t* base_;
-    size_t size_;
-    size_t current_offset_;
-    O3D_DISALLOW_COPY_AND_ASSIGN(Chunk);
-  };
+				// Frees the memory allocated from the Allocator in the
+				// constructor.
+				~Chunk() {
+					allocator_->Free(base_);
+				}
 
-  // Callback used to delete an individual chunk.
-  static void DeleteChunk(Chunk* chunk) {
-    delete chunk;
-  }
+				// Returns a pointer to "size" bytes of storage, or NULL if this
+				// Chunk could not satisfy the allocation.
+				void* Allocate(size_t size) {
+					// Check for overflow
+					if(current_offset_ + size < current_offset_) {
+						return NULL;
+					}
 
-  Chunk* current_;
-  std::list<Chunk*> chunks_;
-  size_t current_chunk_size_;
+					if(current_offset_ + size > size_) {
+						return NULL;
+					}
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(Arena);
-};
+					void* result = base_ + current_offset_;
+					current_offset_ += size;
+					return result;
+				}
 
-}  // namespace gpu2d
+			private:
+				Allocator* allocator_;
+				uint8_t* base_;
+				size_t size_;
+				size_t current_offset_;
+				O3D_DISALLOW_COPY_AND_ASSIGN(Chunk);
+			};
+
+			// Callback used to delete an individual chunk.
+			static void DeleteChunk(Chunk* chunk) {
+				delete chunk;
+			}
+
+			Chunk* current_;
+			std::list<Chunk*> chunks_;
+			size_t current_chunk_size_;
+
+			O3D_DISALLOW_COPY_AND_ASSIGN(Arena);
+		};
+
+	}  // namespace gpu2d
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GPU2D_ARENA_H_

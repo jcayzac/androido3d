@@ -43,68 +43,71 @@ namespace o3d {
 //  usually used in [or when transitioning into] fullscreen mode.  The id is a
 //  platform-specific opaque identifier used to identify the mode when
 //  requesting a fullscreen transition.
-class DisplayMode {
- public:
-  DisplayMode()
-      : width_(0),
-        height_(0),
-        refresh_rate_(0),
-        id_(-1),   // Since this is platform-specific, -1 may well be valid.
-        valid_(false) {
-  }
-  void Set(int w, int h, int r, int i) {
-    width_ = w;
-    height_ = h;
-    refresh_rate_ = r;
-    id_ = i;
-    valid_ = true;
-  }
-  DisplayMode(int w, int h, int r, int i) {
-    Set(w, h, r, i);
-  }
-  DisplayMode(const DisplayMode& mode) {
-    if (mode.valid()) {
-      Set(mode.width(), mode.height(), mode.refresh_rate(), mode.id());
-    } else {
-      valid_ = false;
-    }
-  }
-  DisplayMode& operator=(const DisplayMode& mode) {
-    if (&mode != this) {
-      if (mode.valid()) {
-        Set(mode.width(), mode.height(), mode.refresh_rate(), mode.id());
-      } else {
-        valid_ = false;
-      }
-    }
-    return *this;
-  }
+	class DisplayMode {
+	public:
+		DisplayMode()
+			: width_(0),
+			  height_(0),
+			  refresh_rate_(0),
+			  id_(-1),   // Since this is platform-specific, -1 may well be valid.
+			  valid_(false) {
+		}
+		void Set(int w, int h, int r, int i) {
+			width_ = w;
+			height_ = h;
+			refresh_rate_ = r;
+			id_ = i;
+			valid_ = true;
+		}
+		DisplayMode(int w, int h, int r, int i) {
+			Set(w, h, r, i);
+		}
+		DisplayMode(const DisplayMode& mode) {
+			if(mode.valid()) {
+				Set(mode.width(), mode.height(), mode.refresh_rate(), mode.id());
+			}
+			else {
+				valid_ = false;
+			}
+		}
+		DisplayMode& operator=(const DisplayMode& mode) {
+			if(&mode != this) {
+				if(mode.valid()) {
+					Set(mode.width(), mode.height(), mode.refresh_rate(), mode.id());
+				}
+				else {
+					valid_ = false;
+				}
+			}
 
-  int width() const {
-    O3D_ASSERT(valid_);
-    return width_;
-  }
-  int height() const {
-    O3D_ASSERT(valid_);
-    return height_;
-  }
-  int refresh_rate() const {
-    O3D_ASSERT(valid_);
-    return refresh_rate_;
-  }
-  int id() const {
-    O3D_ASSERT(valid_);
-    return id_;
-  }
-  bool valid() const { return valid_; }
+			return *this;
+		}
 
- private:
-  int width_;
-  int height_;
-  int refresh_rate_;
-  int id_;
-  bool valid_;
-};
+		int width() const {
+			O3D_ASSERT(valid_);
+			return width_;
+		}
+		int height() const {
+			O3D_ASSERT(valid_);
+			return height_;
+		}
+		int refresh_rate() const {
+			O3D_ASSERT(valid_);
+			return refresh_rate_;
+		}
+		int id() const {
+			O3D_ASSERT(valid_);
+			return id_;
+		}
+		bool valid() const { return valid_; }
+
+	private:
+		int width_;
+		int height_;
+		int refresh_rate_;
+		int id_;
+		bool valid_;
+	};
 
 }  // namespace o3d
 

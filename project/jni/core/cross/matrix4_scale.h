@@ -44,52 +44,52 @@ namespace o3d {
 
 // Operation to build a rotation matrix from an axis vector and a rotation
 // around that axis and an input transformation matrix.
-class Matrix4Scale : public ParamObject {
- public:
-  typedef SmartPointer<Matrix4Scale> Ref;
-  typedef WeakPointer<Matrix4Scale> WeakPointerType;
+	class Matrix4Scale : public ParamObject {
+	public:
+		typedef SmartPointer<Matrix4Scale> Ref;
+		typedef WeakPointer<Matrix4Scale> WeakPointerType;
 
-  static const char* kInputMatrixParamName;
-  static const char* kScaleParamName;
-  static const char* kOutputMatrixParamName;
+		static const char* kInputMatrixParamName;
+		static const char* kScaleParamName;
+		static const char* kOutputMatrixParamName;
 
-  Matrix4 input_matrix() const {
-    return input_matrix_param_->value();
-  }
+		Matrix4 input_matrix() const {
+			return input_matrix_param_->value();
+		}
 
-  void set_input_matrix(const Matrix4& input_matrix) {
-    input_matrix_param_->set_value(input_matrix);
-  }
+		void set_input_matrix(const Matrix4& input_matrix) {
+			input_matrix_param_->set_value(input_matrix);
+		}
 
-  Float3 scale() const {
-    return scale_param_->value();
-  }
+		Float3 scale() const {
+			return scale_param_->value();
+		}
 
-  void set_scale(const Float3& axis) {
-    scale_param_->set_value(axis);
-  }
+		void set_scale(const Float3& axis) {
+			scale_param_->set_value(axis);
+		}
 
-  Matrix4 output_matrix() const {
-    return output_matrix_param_->value();
-  }
+		Matrix4 output_matrix() const {
+			return output_matrix_param_->value();
+		}
 
-  void UpdateOutputs();
+		void UpdateOutputs();
 
- private:
-  typedef SlaveParam<ParamMatrix4, Matrix4Scale> SlaveParamMatrix4;
+	private:
+		typedef SlaveParam<ParamMatrix4, Matrix4Scale> SlaveParamMatrix4;
 
-  explicit Matrix4Scale(ServiceLocator* service_locator);
+		explicit Matrix4Scale(ServiceLocator* service_locator);
 
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+		friend class IClassManager;
+		static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  ParamMatrix4::Ref input_matrix_param_;
-  ParamFloat3::Ref scale_param_;
-  SlaveParamMatrix4::Ref output_matrix_param_;
+		ParamMatrix4::Ref input_matrix_param_;
+		ParamFloat3::Ref scale_param_;
+		SlaveParamMatrix4::Ref output_matrix_param_;
 
-  O3D_DECL_CLASS(Matrix4Scale, ParamObject);
-  O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4Scale);
-};
+		O3D_DECL_CLASS(Matrix4Scale, ParamObject);
+		O3D_DISALLOW_COPY_AND_ASSIGN(Matrix4Scale);
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_MATRIX4_SCALE_H_

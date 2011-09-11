@@ -39,19 +39,19 @@
 namespace o3d {
 
 // Allows tasks to be posted from one thread to the main thread.
-class IMainThreadTaskPoster {
- public:
-  static const InterfaceId kInterfaceId;
+	class IMainThreadTaskPoster {
+	public:
+		static const InterfaceId kInterfaceId;
 
-  IMainThreadTaskPoster() {}
-  virtual ~IMainThreadTaskPoster() {}
+		IMainThreadTaskPoster() {}
+		virtual ~IMainThreadTaskPoster() {}
 
-  virtual bool IsSupported() = 0;
-  virtual void PostTask(Task* task) = 0;
+		virtual bool IsSupported() = 0;
+		virtual void PostTask(Task* task) = 0;
 
- private:
-  O3D_DISALLOW_COPY_AND_ASSIGN(IMainThreadTaskPoster);
-};
+	private:
+		O3D_DISALLOW_COPY_AND_ASSIGN(IMainThreadTaskPoster);
+	};
 }
 
 #endif  // O3D_CORE_CROSS_IMAIN_THREAD_TASK_POSTER_H_

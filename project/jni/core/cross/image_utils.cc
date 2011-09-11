@@ -42,410 +42,450 @@
 #include <cctype>
 
 namespace o3d {
-namespace image {
+	namespace image {
 
 // Computes the size of the buffer containing a an image, given its width,
 // height and format.
-size_t ComputeBufferSize(unsigned int width,
-                         unsigned int height,
-                         Texture::Format format) {
-  O3D_ASSERT(CheckImageDimensions(width, height));
-  unsigned int pixels = width * height;
-  switch (format) {
-    case Texture::XRGB8:
-    case Texture::ARGB8:
-    case Texture::RGBX8:
-    case Texture::RGBA8:
-      return 4 * sizeof(uint8_t) * pixels;  // NOLINT
-    case Texture::ABGR16F:
-      return 4 * sizeof(uint16_t) * pixels;  // NOLINT
-    case Texture::R32F:
-      return sizeof(float) * pixels;  // NOLINT
-    case Texture::ABGR32F:
-      return 4 * sizeof(float) * pixels;  // NOLINT
-    case Texture::DXT1:
-    case Texture::DXT3:
-    case Texture::DXT5: {
-      unsigned int blocks = ((width + 3) / 4) * ((height + 3) / 4);
-      unsigned int bytes_per_block = format == Texture::DXT1 ? 8 : 16;
-      return blocks * bytes_per_block;
-    }
-    case Texture::UNKNOWN_FORMAT:
-      break;
-  }
-  // failed to find a matching format
-  O3D_LOG(ERROR) << "Unrecognized Texture format type.";
-  return 0;
-}
+		size_t ComputeBufferSize(unsigned int width,
+		                         unsigned int height,
+		                         Texture::Format format) {
+			O3D_ASSERT(CheckImageDimensions(width, height));
+			unsigned int pixels = width * height;
+
+			switch(format) {
+			case Texture::XRGB8:
+			case Texture::ARGB8:
+			case Texture::RGBX8:
+			case Texture::RGBA8:
+				return 4 * sizeof(uint8_t) * pixels;  // NOLINT
+			case Texture::ABGR16F:
+				return 4 * sizeof(uint16_t) * pixels;  // NOLINT
+			case Texture::R32F:
+				return sizeof(float) * pixels;  // NOLINT
+			case Texture::ABGR32F:
+				return 4 * sizeof(float) * pixels;  // NOLINT
+			case Texture::DXT1:
+			case Texture::DXT3:
+			case Texture::DXT5: {
+					unsigned int blocks = ((width + 3) / 4) * ((height + 3) / 4);
+					unsigned int bytes_per_block = format == Texture::DXT1 ? 8 : 16;
+					return blocks * bytes_per_block;
+				}
+			case Texture::UNKNOWN_FORMAT:
+				break;
+			}
+
+			// failed to find a matching format
+			O3D_LOG(ERROR) << "Unrecognized Texture format type.";
+			return 0;
+		}
 
 // Gets the size of the buffer containing a mip-map chain, given its base
 // width, height, format and number of mip-map levels.
-size_t ComputeMipChainSize(unsigned int base_width,
-                           unsigned int base_height,
-                           Texture::Format format,
-                           unsigned int num_mipmaps) {
-  O3D_ASSERT(CheckImageDimensions(base_width, base_height));
-  size_t total_size = 0;
-  unsigned int mip_width = base_width;
-  unsigned int mip_height = base_height;
-  for (unsigned int i = 0; i < num_mipmaps; ++i) {
-    total_size += ComputeBufferSize(mip_width, mip_height, format);
-    mip_width = std::max(1U, mip_width >> 1);
-    mip_height = std::max(1U, mip_height >> 1);
-  }
-  return total_size;
-}
+		size_t ComputeMipChainSize(unsigned int base_width,
+		                           unsigned int base_height,
+		                           Texture::Format format,
+		                           unsigned int num_mipmaps) {
+			O3D_ASSERT(CheckImageDimensions(base_width, base_height));
+			size_t total_size = 0;
+			unsigned int mip_width = base_width;
+			unsigned int mip_height = base_height;
+
+			for(unsigned int i = 0; i < num_mipmaps; ++i) {
+				total_size += ComputeBufferSize(mip_width, mip_height, format);
+				mip_width = std::max(1U, mip_width >> 1);
+				mip_height = std::max(1U, mip_height >> 1);
+			}
+
+			return total_size;
+		}
 
 // Scales the image using basic point filtering.
-bool ScaleUpToPOT(unsigned int width,
-                  unsigned int height,
-                  Texture::Format format,
-                  const void * restrict src,
-                  void * restrict dst,
-                  int dst_pitch) {
-  O3D_ASSERT(CheckImageDimensions(width, height));
-  switch (format) {
-    case Texture::XRGB8:
-    case Texture::ARGB8:
-    case Texture::RGBX8:
-    case Texture::RGBA8:
-    case Texture::ABGR16F:
-    case Texture::R32F:
-    case Texture::ABGR32F:
-      break;
-    case Texture::DXT1:
-    case Texture::DXT3:
-    case Texture::DXT5:
-    case Texture::UNKNOWN_FORMAT:
-      O3D_ASSERT(false);
-      return false;
-  }
-  unsigned int pot_width = ComputePOTSize(width);
-  unsigned int pot_height = ComputePOTSize(height);
-  if (pot_width == width && pot_height == height && src == dst)
-    return true;
-  return Scale(
-      width, height, format, src, pot_width, pot_height, dst, dst_pitch);
-}
+		bool ScaleUpToPOT(unsigned int width,
+		                  unsigned int height,
+		                  Texture::Format format,
+		                  const void* restrict src,
+		                  void* restrict dst,
+		                  int dst_pitch) {
+			O3D_ASSERT(CheckImageDimensions(width, height));
 
-unsigned int GetNumComponentsForFormat(o3d::Texture::Format format) {
-  switch (format) {
-    case o3d::Texture::XRGB8:
-    case o3d::Texture::ARGB8:
-    case o3d::Texture::RGBX8:
-    case o3d::Texture::RGBA8:
-    case o3d::Texture::ABGR16F:
-    case o3d::Texture::ABGR32F:
-      return 4;
-    case o3d::Texture::R32F:
-      return 1;
-    case o3d::Texture::DXT1:
-    case o3d::Texture::DXT3:
-    case o3d::Texture::DXT5:
-    case o3d::Texture::UNKNOWN_FORMAT:
-      break;
-  }
-  return 0;
-}
+			switch(format) {
+			case Texture::XRGB8:
+			case Texture::ARGB8:
+			case Texture::RGBX8:
+			case Texture::RGBA8:
+			case Texture::ABGR16F:
+			case Texture::R32F:
+			case Texture::ABGR32F:
+				break;
+			case Texture::DXT1:
+			case Texture::DXT3:
+			case Texture::DXT5:
+			case Texture::UNKNOWN_FORMAT:
+				O3D_ASSERT(false);
+				return false;
+			}
 
-bool CanMakeMips(o3d::Texture::Format format) {
-  return GetNumComponentsForFormat(format) != 0;
-}
+			unsigned int pot_width = ComputePOTSize(width);
+			unsigned int pot_height = ComputePOTSize(height);
 
-namespace {
+			if(pot_width == width && pot_height == height && src == dst)
+				return true;
 
-static const float kEpsilon = 0.0001f;
-static const float kPi = 3.14159265358979f;
-static const int kFilterSize = 3;
+			return Scale(
+			           width, height, format, src, pot_width, pot_height, dst, dst_pitch);
+		}
+
+		unsigned int GetNumComponentsForFormat(o3d::Texture::Format format) {
+			switch(format) {
+			case o3d::Texture::XRGB8:
+			case o3d::Texture::ARGB8:
+			case o3d::Texture::RGBX8:
+			case o3d::Texture::RGBA8:
+			case o3d::Texture::ABGR16F:
+			case o3d::Texture::ABGR32F:
+				return 4;
+			case o3d::Texture::R32F:
+				return 1;
+			case o3d::Texture::DXT1:
+			case o3d::Texture::DXT3:
+			case o3d::Texture::DXT5:
+			case o3d::Texture::UNKNOWN_FORMAT:
+				break;
+			}
+
+			return 0;
+		}
+
+		bool CanMakeMips(o3d::Texture::Format format) {
+			return GetNumComponentsForFormat(format) != 0;
+		}
+
+		namespace {
+
+			static const float kEpsilon = 0.0001f;
+			static const float kPi = 3.14159265358979f;
+			static const int kFilterSize = 3;
 
 // utility function, round float numbers into 0 to 255 integers.
-uint8_t Safe8Round(float f) {
-  f += 0.5f;
-  if (f < 0.0f) {
-    return 0;
-  } else if (!(f < 255.0f)) {
-    return 255;
-  }
-  return static_cast<uint8_t>(f);
-}
+			uint8_t Safe8Round(float f) {
+				f += 0.5f;
 
-template <typename T>
-void PointScale(
-    unsigned components,
-    const void* restrict src,
-    unsigned src_width,
-    unsigned src_height,
-    void* restrict dst,
-    int dst_pitch,
-    unsigned dst_width,
-    unsigned dst_height) {
-  const T* restrict use_src = reinterpret_cast<const T*>(src);
-  T* restrict use_dst = reinterpret_cast<T*>(dst);
-  int pitch = dst_pitch / sizeof(*use_src) / components;
-  // Start from the end to be able to do it in place.
-  for (unsigned int y = dst_height - 1; y < dst_height; --y) {
-    // max value for y is dst_height - 1, which makes :
-    // base_y = (2*dst_height - 1) * src_height / (2 * dst_height)
-    // which is < src_height.
-    unsigned int base_y = ((y * 2 + 1) * src_height) / (dst_height * 2);
-    O3D_ASSERT(base_y < src_height);
-    for (unsigned int x = dst_width - 1; x < dst_width; --x) {
-      unsigned int base_x = ((x * 2 + 1) * src_width) / (dst_width * 2);
-      O3D_ASSERT(base_x < src_width);
-      for (unsigned int c = 0; c < components; ++c) {
-        use_dst[(y * pitch + x) * components + c] =
-            use_src[(base_y * src_width + base_x) * components + c];
-      }
-    }
-  }
-}
+				if(f < 0.0f) {
+					return 0;
+				}
+				else if(!(f < 255.0f)) {
+					return 255;
+				}
 
-}  // anonymous namespace
+				return static_cast<uint8_t>(f);
+			}
+
+			template <typename T>
+			void PointScale(
+			    unsigned components,
+			    const void* restrict src,
+			    unsigned src_width,
+			    unsigned src_height,
+			    void* restrict dst,
+			    int dst_pitch,
+			    unsigned dst_width,
+			    unsigned dst_height) {
+				const T* restrict use_src = reinterpret_cast<const T*>(src);
+				T* restrict use_dst = reinterpret_cast<T*>(dst);
+				int pitch = dst_pitch / sizeof(*use_src) / components;
+
+				// Start from the end to be able to do it in place.
+				for(unsigned int y = dst_height - 1; y < dst_height; --y) {
+					// max value for y is dst_height - 1, which makes :
+					// base_y = (2*dst_height - 1) * src_height / (2 * dst_height)
+					// which is < src_height.
+					unsigned int base_y = ((y * 2 + 1) * src_height) / (dst_height * 2);
+					O3D_ASSERT(base_y < src_height);
+
+					for(unsigned int x = dst_width - 1; x < dst_width; --x) {
+						unsigned int base_x = ((x * 2 + 1) * src_width) / (dst_width * 2);
+						O3D_ASSERT(base_x < src_width);
+
+						for(unsigned int c = 0; c < components; ++c) {
+							use_dst[(y * pitch + x) * components + c] =
+							    use_src[(base_y * src_width + base_x) * components + c];
+						}
+					}
+				}
+			}
+
+		}  // anonymous namespace
 
 // Scales the image using basic point filtering.
-bool Scale(unsigned int src_width,
-           unsigned int src_height,
-           Texture::Format format,
-           const void * restrict src,
-           unsigned int dst_width,
-           unsigned int dst_height,
-           void * restrict dst,
-           int dst_pitch) {
-  O3D_ASSERT(CheckImageDimensions(src_width, src_height));
-  O3D_ASSERT(CheckImageDimensions(dst_width, dst_height));
-  switch (format) {
-    case Texture::XRGB8:
-    case Texture::ARGB8:
-    case Texture::RGBX8:
-    case Texture::RGBA8: {
-      PointScale<uint8_t>(4, src, src_width, src_height,
-                        dst, dst_pitch, dst_width, dst_height);
-      break;
-    }
-    case Texture::ABGR16F: {
-      PointScale<uint16_t>(4, src, src_width, src_height,
-                         dst, dst_pitch, dst_width, dst_height);
-      break;
-    }
-    case Texture::R32F:
-    case Texture::ABGR32F: {
-      PointScale<float>(format == Texture::R32F ? 1 : 4,
-                        src, src_width, src_height,
-                        dst, dst_pitch, dst_width, dst_height);
-      break;
-    }
-    case Texture::DXT1:
-    case Texture::DXT3:
-    case Texture::DXT5:
-    case Texture::UNKNOWN_FORMAT:
-      O3D_ASSERT(false);
-      return false;
-  }
-  return true;
-}
+		bool Scale(unsigned int src_width,
+		           unsigned int src_height,
+		           Texture::Format format,
+		           const void* restrict src,
+		           unsigned int dst_width,
+		           unsigned int dst_height,
+		           void* restrict dst,
+		           int dst_pitch) {
+			O3D_ASSERT(CheckImageDimensions(src_width, src_height));
+			O3D_ASSERT(CheckImageDimensions(dst_width, dst_height));
+
+			switch(format) {
+			case Texture::XRGB8:
+			case Texture::ARGB8:
+			case Texture::RGBX8:
+			case Texture::RGBA8: {
+					PointScale<uint8_t>(4, src, src_width, src_height,
+					                    dst, dst_pitch, dst_width, dst_height);
+					break;
+				}
+			case Texture::ABGR16F: {
+					PointScale<uint16_t>(4, src, src_width, src_height,
+					                     dst, dst_pitch, dst_width, dst_height);
+					break;
+				}
+			case Texture::R32F:
+			case Texture::ABGR32F: {
+					PointScale<float>(format == Texture::R32F ? 1 : 4,
+					                  src, src_width, src_height,
+					                  dst, dst_pitch, dst_width, dst_height);
+					break;
+				}
+			case Texture::DXT1:
+			case Texture::DXT3:
+			case Texture::DXT5:
+			case Texture::UNKNOWN_FORMAT:
+				O3D_ASSERT(false);
+				return false;
+			}
+
+			return true;
+		}
 
 
-namespace  {
+		namespace  {
 
 // utility function called in AdjustDrawImageBoundary.
 // help to adjust a specific dimension,
 // if start point or ending point is out of boundary.
-bool AdjustDrawImageBoundHelper(int* restrict src_a, int* restrict dest_a,
-                                int* restrict src_length, int* restrict dest_length,
-                                int src_bmp_length) {
-  if (*src_length == 0 || *dest_length == 0) {
-    return false;
-  }
+			bool AdjustDrawImageBoundHelper(int* restrict src_a, int* restrict dest_a,
+			                                int* restrict src_length, int* restrict dest_length,
+			                                int src_bmp_length) {
+				if(*src_length == 0 || *dest_length == 0) {
+					return false;
+				}
 
-  // check if start point is out of boundary.
-  // if src_a < 0, src_length must be positive.
-  if (*src_a < 0) {
-    int src_length_delta = 0 - *src_a;
-    *dest_a = *dest_a + (*dest_length) * src_length_delta / (*src_length);
-    *dest_length = *dest_length - (*dest_length) *
-                   src_length_delta / (*src_length);
-    *src_length = *src_length - src_length_delta;
-    *src_a = 0;
-  }
-  // if src_a >= src_bmp_width, src_length must be negative.
-  if (*src_a >= src_bmp_length) {
-    int src_length_delta = *src_a - (src_bmp_length - 1);
-    *dest_a = *dest_a - (*dest_length) * src_length_delta / (*src_length);
-    *dest_length = *dest_length - (*dest_length) *
-                   src_length_delta / *src_length;
-    *src_length = *src_length - src_length_delta;
-    *src_a = src_bmp_length - 1;
-  }
+				// check if start point is out of boundary.
+				// if src_a < 0, src_length must be positive.
+				if(*src_a < 0) {
+					int src_length_delta = 0 - *src_a;
+					*dest_a = *dest_a + (*dest_length) * src_length_delta / (*src_length);
+					*dest_length = *dest_length - (*dest_length) *
+					               src_length_delta / (*src_length);
+					*src_length = *src_length - src_length_delta;
+					*src_a = 0;
+				}
 
-  if (*src_length == 0 || *dest_length == 0) {
-    return false;
-  }
-  // check whether start point + related length is out of boundary.
-  // if src_a + src_length > src_bmp_length, src_length must be positive.
-  if (*src_a + *src_length > src_bmp_length) {
-    int src_length_delta = *src_length - (src_bmp_length - *src_a);
-    *dest_length = *dest_length - (*dest_length) *
-                   src_length_delta / (*src_length);
-    *src_length = *src_length - src_length_delta;
-  }
-  // if src_a + src_length < -1, src_length must be negative.
-  if (*src_a + *src_length < -1) {
-    int src_length_delta = 0 - (*src_a + *src_length);
-    *dest_length = *dest_length + (*dest_length) *
-                   src_length_delta / (*src_length);
-    *src_length = *src_length + src_length_delta;
-  }
+				// if src_a >= src_bmp_width, src_length must be negative.
+				if(*src_a >= src_bmp_length) {
+					int src_length_delta = *src_a - (src_bmp_length - 1);
+					*dest_a = *dest_a - (*dest_length) * src_length_delta / (*src_length);
+					*dest_length = *dest_length - (*dest_length) *
+					               src_length_delta / *src_length;
+					*src_length = *src_length - src_length_delta;
+					*src_a = src_bmp_length - 1;
+				}
 
-  return true;
-}
+				if(*src_length == 0 || *dest_length == 0) {
+					return false;
+				}
 
-template <typename OriginalType,
-          float convert_to_float(OriginalType value),
-          OriginalType convert_to_original(float)>
-void LanczosResize1D(const void* restrict src_data, int src_pitch,
-                     int src_x, int src_y,
-                     int width, int height,
-                     void* restrict dest_data, int dest_pitch,
-                     int dest_x, int dest_y,
-                     int nwidth,
-                     bool is_width, int components) {
-  // calculate scale factor and init the weight array for lanczos filter.
-  float scale = fabs(static_cast<float>(width) / nwidth);
-  float support = kFilterSize * scale;
-  ::o3d::base::scoped_array<float> weight(new float[static_cast<int>(support * 2) + 4]);
-  // we assume width is the dimension we are scaling, and height stays
-  // the same.
-  for (int i = 0; i < abs(nwidth); ++i) {
-    // center is the corresponding coordinate of i in original img.
-    float center = (i + 0.5f) * scale;
-    // boundary of weight array in original img.
-    int xmin = static_cast<int>(floorf(center - support));
-    if (xmin < 0) {
-      xmin = 0;
-    }
-    int xmax = static_cast<int>(ceilf(center + support));
-    if (xmax >= abs(width)) {
-      xmax = abs(width) - 1;
-    }
+				// check whether start point + related length is out of boundary.
+				// if src_a + src_length > src_bmp_length, src_length must be positive.
+				if(*src_a + *src_length > src_bmp_length) {
+					int src_length_delta = *src_length - (src_bmp_length - *src_a);
+					*dest_length = *dest_length - (*dest_length) *
+					               src_length_delta / (*src_length);
+					*src_length = *src_length - src_length_delta;
+				}
 
-    // fill up weight array by lanczos filter.
-    float wsum = 0.0;
-    for (int ox = xmin; ox <= xmax; ++ox) {
-      float wtemp;
-      float dx = ox + 0.5f - center;
-      // lanczos filter
-      if (dx <= -kFilterSize || dx >= kFilterSize) {
-        wtemp = 0.0f;
-      } else if (std::equal_to<float>()(dx, 0.0f)) {
-        wtemp = 1.0f;
-      } else {
-        wtemp = kFilterSize * sinf(kPi * dx) * sinf(kPi / kFilterSize * dx) /
-                (kPi * kPi * dx * dx);
-      }
+				// if src_a + src_length < -1, src_length must be negative.
+				if(*src_a + *src_length < -1) {
+					int src_length_delta = 0 - (*src_a + *src_length);
+					*dest_length = *dest_length + (*dest_length) *
+					               src_length_delta / (*src_length);
+					*src_length = *src_length + src_length_delta;
+				}
 
-      weight[ox - xmin] = wtemp;
-      wsum += wtemp;
-    }
-    int wcount = xmax - xmin + 1;
+				return true;
+			}
 
-    // Normalize the weights.
-    if (fabs(wsum) > kEpsilon) {
-      for (int k = 0; k < wcount; ++k) {
-        weight[k] /= wsum;
-      }
-    }
-    // Now that we've computed the filter weights for this x-position
-    // of the image, we can apply that filter to all pixels in that
-    // column.
-    // calculate coordinate in new img.
-    int x = nwidth >= 0 ? i : -i;
-    // lower bound of coordinate in original img.
-    if (width < 0) {
-      xmin = -1 * xmin;
-    }
-    for (int j = 0; j < abs(height); ++j) {
-      // coordinate in height, same in src and dest img.
-      int base_y = height >= 0 ? j : -j;
-      // TODO(yux): fix the vertical flip problem and merge this if-else
-      // statement coz at that time, there would be no need to check
-      // which measure we are scaling.
-      if (is_width) {
-        const OriginalType* restrict inrow = PointerFromVoidPointer<const OriginalType*>(
-            src_data, (src_y + base_y) * src_pitch) +
-            (src_x + xmin) * components;
-        OriginalType* restrict outpix = PointerFromVoidPointer<OriginalType*>(
-            dest_data, (dest_y + base_y) * dest_pitch) +
-            (dest_x + x) * components;
-        int step = width >= 0 ? components : -components;
-        for (int b = 0; b < components; ++b) {
-          float sum = 0.0;
-          for (int k = 0, xk = b; k < wcount; ++k, xk += step) {
-            sum += weight[k] * convert_to_float(inrow[xk]);
-          }
-          outpix[b] = convert_to_original(sum);
-        }
-      } else {
-        const OriginalType* restrict inrow = PointerFromVoidPointer<const OriginalType*>(
-            src_data,
-            (src_y + xmin) * src_pitch) +
-            (src_x + base_y) * components;
-        OriginalType* restrict outpix = PointerFromVoidPointer<OriginalType*>(
-            dest_data,
-            (dest_y + x) * dest_pitch) +
-            (dest_x + base_y) * components;
-        int step = width >= 0 ? src_pitch : -src_pitch;
-        for (int b = 0; b < components; ++b) {
-          float sum = 0.0;
-          const OriginalType* work = inrow + b;
-          for (int k = 0; k < wcount; ++k) {
-            sum += weight[k] * convert_to_float(*work);
-            work = AddPointerOffset<const OriginalType*>(work, step);
-          }
-          outpix[b] = convert_to_original(sum);
-        }
-      }
-    }
-  }
-}
+			template < typename OriginalType,
+			         float convert_to_float(OriginalType value),
+			         OriginalType convert_to_original(float) >
+			void LanczosResize1D(const void* restrict src_data, int src_pitch,
+			                     int src_x, int src_y,
+			                     int width, int height,
+			                     void* restrict dest_data, int dest_pitch,
+			                     int dest_x, int dest_y,
+			                     int nwidth,
+			                     bool is_width, int components) {
+				// calculate scale factor and init the weight array for lanczos filter.
+				float scale = fabs(static_cast<float>(width) / nwidth);
+				float support = kFilterSize * scale;
+				::o3d::base::scoped_array<float> weight(new float[static_cast<int>(support * 2) + 4]);
 
-template <typename OriginalType,
-          float convert_to_float(OriginalType value),
-          OriginalType convert_to_original(float)>
-void TypedLanczosScale(const void* restrict src, int src_pitch,
-                       int src_x, int src_y,
-                       int src_width, int src_height,
-                       void* restrict dest, int dest_pitch,
-                       int dest_x, int dest_y,
-                       int dest_width, int dest_height,
-                       int components) {
-  // Scale the image horizontally to a temp buffer.
-  int temp_img_width = abs(dest_width);
-  int temp_img_height = abs(src_height);
-  int temp_width = dest_width;
-  int temp_height = src_height;
-  int temp_x = 0, temp_y = 0;
-  if (temp_width < 0)
-    temp_x = abs(temp_width) - 1;
-  if (temp_height < 0)
-    temp_y = abs(temp_height) - 1;
+				// we assume width is the dimension we are scaling, and height stays
+				// the same.
+				for(int i = 0; i < abs(nwidth); ++i) {
+					// center is the corresponding coordinate of i in original img.
+					float center = (i + 0.5f) * scale;
+					// boundary of weight array in original img.
+					int xmin = static_cast<int>(floorf(center - support));
 
-  ::o3d::base::scoped_array<OriginalType> temp(
-      new OriginalType[temp_img_width * temp_img_height * components]);
+					if(xmin < 0) {
+						xmin = 0;
+					}
 
-  LanczosResize1D<OriginalType, convert_to_float, convert_to_original>(
-      src, src_pitch, src_x, src_y, src_width, src_height,
-      temp.get(), temp_img_width * components * sizeof(OriginalType),
-      temp_x, temp_y, temp_width,
-      true, components);
+					int xmax = static_cast<int>(ceilf(center + support));
 
-  // Scale the temp buffer vertically to get the final result.
-  LanczosResize1D<OriginalType, convert_to_float, convert_to_original>(
-      temp.get(), temp_img_width * components * sizeof(OriginalType),
-      temp_x, temp_y, temp_height, temp_width,
-      dest, dest_pitch,
-      dest_x, dest_y, dest_height,
-      false, components);
-}
+					if(xmax >= abs(width)) {
+						xmax = abs(width) - 1;
+					}
+
+					// fill up weight array by lanczos filter.
+					float wsum = 0.0;
+
+					for(int ox = xmin; ox <= xmax; ++ox) {
+						float wtemp;
+						float dx = ox + 0.5f - center;
+
+						// lanczos filter
+						if(dx <= -kFilterSize || dx >= kFilterSize) {
+							wtemp = 0.0f;
+						}
+						else if(std::equal_to<float>()(dx, 0.0f)) {
+							wtemp = 1.0f;
+						}
+						else {
+							wtemp = kFilterSize * sinf(kPi * dx) * sinf(kPi / kFilterSize * dx) /
+							        (kPi * kPi * dx * dx);
+						}
+
+						weight[ox - xmin] = wtemp;
+						wsum += wtemp;
+					}
+
+					int wcount = xmax - xmin + 1;
+
+					// Normalize the weights.
+					if(fabs(wsum) > kEpsilon) {
+						for(int k = 0; k < wcount; ++k) {
+							weight[k] /= wsum;
+						}
+					}
+
+					// Now that we've computed the filter weights for this x-position
+					// of the image, we can apply that filter to all pixels in that
+					// column.
+					// calculate coordinate in new img.
+					int x = nwidth >= 0 ? i : -i;
+
+					// lower bound of coordinate in original img.
+					if(width < 0) {
+						xmin = -1 * xmin;
+					}
+
+					for(int j = 0; j < abs(height); ++j) {
+						// coordinate in height, same in src and dest img.
+						int base_y = height >= 0 ? j : -j;
+
+						// TODO(yux): fix the vertical flip problem and merge this if-else
+						// statement coz at that time, there would be no need to check
+						// which measure we are scaling.
+						if(is_width) {
+							const OriginalType* restrict inrow = PointerFromVoidPointer<const OriginalType*>(
+							        src_data, (src_y + base_y) * src_pitch) +
+							                                     (src_x + xmin) * components;
+							OriginalType* restrict outpix = PointerFromVoidPointer<OriginalType*>(
+							                                    dest_data, (dest_y + base_y) * dest_pitch) +
+							                                (dest_x + x) * components;
+							int step = width >= 0 ? components : -components;
+
+							for(int b = 0; b < components; ++b) {
+								float sum = 0.0;
+
+								for(int k = 0, xk = b; k < wcount; ++k, xk += step) {
+									sum += weight[k] * convert_to_float(inrow[xk]);
+								}
+
+								outpix[b] = convert_to_original(sum);
+							}
+						}
+						else {
+							const OriginalType* restrict inrow = PointerFromVoidPointer<const OriginalType*>(
+							        src_data,
+							        (src_y + xmin) * src_pitch) +
+							                                     (src_x + base_y) * components;
+							OriginalType* restrict outpix = PointerFromVoidPointer<OriginalType*>(
+							                                    dest_data,
+							                                    (dest_y + x) * dest_pitch) +
+							                                (dest_x + base_y) * components;
+							int step = width >= 0 ? src_pitch : -src_pitch;
+
+							for(int b = 0; b < components; ++b) {
+								float sum = 0.0;
+								const OriginalType* work = inrow + b;
+
+								for(int k = 0; k < wcount; ++k) {
+									sum += weight[k] * convert_to_float(*work);
+									work = AddPointerOffset<const OriginalType*>(work, step);
+								}
+
+								outpix[b] = convert_to_original(sum);
+							}
+						}
+					}
+				}
+			}
+
+			template < typename OriginalType,
+			         float convert_to_float(OriginalType value),
+			         OriginalType convert_to_original(float) >
+			void TypedLanczosScale(const void* restrict src, int src_pitch,
+			                       int src_x, int src_y,
+			                       int src_width, int src_height,
+			                       void* restrict dest, int dest_pitch,
+			                       int dest_x, int dest_y,
+			                       int dest_width, int dest_height,
+			                       int components) {
+				// Scale the image horizontally to a temp buffer.
+				int temp_img_width = abs(dest_width);
+				int temp_img_height = abs(src_height);
+				int temp_width = dest_width;
+				int temp_height = src_height;
+				int temp_x = 0, temp_y = 0;
+
+				if(temp_width < 0)
+					temp_x = abs(temp_width) - 1;
+
+				if(temp_height < 0)
+					temp_y = abs(temp_height) - 1;
+
+				::o3d::base::scoped_array<OriginalType> temp(
+				    new OriginalType[temp_img_width * temp_img_height * components]);
+				LanczosResize1D<OriginalType, convert_to_float, convert_to_original>(
+				    src, src_pitch, src_x, src_y, src_width, src_height,
+				    temp.get(), temp_img_width * components * sizeof(OriginalType),
+				    temp_x, temp_y, temp_width,
+				    true, components);
+				// Scale the temp buffer vertically to get the final result.
+				LanczosResize1D<OriginalType, convert_to_float, convert_to_original>(
+				    temp.get(), temp_img_width * components * sizeof(OriginalType),
+				    temp_x, temp_y, temp_height, temp_width,
+				    dest, dest_pitch,
+				    dest_x, dest_y, dest_height,
+				    false, components);
+			}
 
 // Compute a texel, filtered from several source texels. This function assumes
 // minification.
@@ -461,460 +501,482 @@ void TypedLanczosScale(const void* restrict src, int src_pitch,
 //   src_data: address of the source image data
 //   src_pitch: the number of bytes per row of the source.
 //   components: number of components in the image.
-template <typename OriginalType,
-          typename WorkType,
-          WorkType convert_to_work(OriginalType value),
-          OriginalType convert_to_original(WorkType)>
-void FilterTexel(unsigned int x,
-                 unsigned int y,
-                 unsigned int dst_width,
-                 unsigned int dst_height,
-                 void * restrict dst_data,
-                 int dst_pitch,
-                 unsigned int src_width,
-                 unsigned int src_height,
-                 const void * restrict src_data,
-                 int src_pitch,
-                 unsigned int components) {
-  O3D_ASSERT(image::CheckImageDimensions(src_width, src_height));
-  O3D_ASSERT(image::CheckImageDimensions(dst_width, dst_height));
-  O3D_ASSERT(dst_width <= src_width);
-  O3D_ASSERT(dst_height <= src_height);
-  O3D_ASSERT(x <= dst_width);
-  O3D_ASSERT(y <= dst_height);
-  O3D_ASSERT(static_cast<int>(src_width) <= src_pitch);
-  O3D_ASSERT(static_cast<int>(dst_width) <= dst_pitch);
+			template < typename OriginalType,
+			         typename WorkType,
+			         WorkType convert_to_work(OriginalType value),
+			         OriginalType convert_to_original(WorkType) >
+			void FilterTexel(unsigned int x,
+			                 unsigned int y,
+			                 unsigned int dst_width,
+			                 unsigned int dst_height,
+			                 void* restrict dst_data,
+			                 int dst_pitch,
+			                 unsigned int src_width,
+			                 unsigned int src_height,
+			                 const void* restrict src_data,
+			                 int src_pitch,
+			                 unsigned int components) {
+				O3D_ASSERT(image::CheckImageDimensions(src_width, src_height));
+				O3D_ASSERT(image::CheckImageDimensions(dst_width, dst_height));
+				O3D_ASSERT(dst_width <= src_width);
+				O3D_ASSERT(dst_height <= src_height);
+				O3D_ASSERT(x <= dst_width);
+				O3D_ASSERT(y <= dst_height);
+				O3D_ASSERT(static_cast<int>(src_width) <= src_pitch);
+				O3D_ASSERT(static_cast<int>(dst_width) <= dst_pitch);
+				// the texel at (x, y) represents the square of texture coordinates
+				// [x/dst_w, (x+1)/dst_w) x [y/dst_h, (y+1)/dst_h).
+				// This takes contributions from the texels:
+				// [floor(x*src_w/dst_w), ceil((x+1)*src_w/dst_w)-1]
+				// x
+				// [floor(y*src_h/dst_h), ceil((y+1)*src_h/dst_h)-1]
+				// from the previous level.
+				unsigned int src_min_x = (x * src_width) / dst_width;
+				unsigned int src_max_x =
+				    ((x + 1) * src_width + dst_width - 1) / dst_width - 1;
+				unsigned int src_min_y = (y * src_height) / dst_height;
+				unsigned int src_max_y =
+				    ((y + 1) * src_height + dst_height - 1) / dst_height - 1;
+				// Find the contribution of source each texel, by computing the coverage of
+				// the destination texel on the source texel. We do all the computations in
+				// fixed point, at a src_height*src_width factor to be able to use ints,
+				// but keep all the precision.
+				// Accumulators need to be 64 bits though, because src_height*src_width can
+				// be 24 bits for a 4kx4k base, to which we need to multiply the component
+				// value which is another 8 bits (and we need to accumulate several of them).
+				// NOTE: all of our formats use at most 4 components per pixel.
+				// Instead of dynamically allocating a buffer for each pixel on the heap,
+				// just allocate the worst case on the stack.
+				O3D_ASSERT(components <= 4u);
+				WorkType accum[4] = {0};
 
-  // the texel at (x, y) represents the square of texture coordinates
-  // [x/dst_w, (x+1)/dst_w) x [y/dst_h, (y+1)/dst_h).
-  // This takes contributions from the texels:
-  // [floor(x*src_w/dst_w), ceil((x+1)*src_w/dst_w)-1]
-  // x
-  // [floor(y*src_h/dst_h), ceil((y+1)*src_h/dst_h)-1]
-  // from the previous level.
-  unsigned int src_min_x = (x * src_width) / dst_width;
-  unsigned int src_max_x =
-      ((x + 1) * src_width + dst_width - 1) / dst_width - 1;
-  unsigned int src_min_y = (y * src_height) / dst_height;
-  unsigned int src_max_y =
-      ((y + 1) * src_height + dst_height - 1) / dst_height - 1;
+				for(unsigned int src_x = src_min_x; src_x <= src_max_x; ++src_x) {
+					for(unsigned int src_y = src_min_y; src_y <= src_max_y; ++src_y) {
+						// The contribution of a fully covered texel is 1/(m_x*m_y) where m_x is
+						// the x-dimension minification factor (src_width/dst_width) and m_y is
+						// the y-dimenstion minification factor (src_height/dst_height).
+						// If the texel is partially covered (on a border), the contribution is
+						// proportional to the covered area. We compute it as the product of the
+						// covered x-length by the covered y-length.
+						unsigned int x_contrib = dst_width;
 
-  // Find the contribution of source each texel, by computing the coverage of
-  // the destination texel on the source texel. We do all the computations in
-  // fixed point, at a src_height*src_width factor to be able to use ints,
-  // but keep all the precision.
-  // Accumulators need to be 64 bits though, because src_height*src_width can
-  // be 24 bits for a 4kx4k base, to which we need to multiply the component
-  // value which is another 8 bits (and we need to accumulate several of them).
+						if(src_x * dst_width < x * src_width) {
+							// source texel is across the left border of the footprint of the
+							// destination texel.
+							x_contrib = (src_x + 1) * dst_width - x * src_width;
+						}
+						else if((src_x + 1) * dst_width > (x + 1) * src_width) {
+							// source texel is across the right border of the footprint of the
+							// destination texel.
+							x_contrib = (x + 1) * src_width - src_x * dst_width;
+						}
 
-  // NOTE: all of our formats use at most 4 components per pixel.
-  // Instead of dynamically allocating a buffer for each pixel on the heap,
-  // just allocate the worst case on the stack.
-  O3D_ASSERT(components <= 4u);
-  WorkType accum[4] = {0};
-  for (unsigned int src_x = src_min_x; src_x <= src_max_x; ++src_x) {
-    for (unsigned int src_y = src_min_y; src_y <= src_max_y; ++src_y) {
-      // The contribution of a fully covered texel is 1/(m_x*m_y) where m_x is
-      // the x-dimension minification factor (src_width/dst_width) and m_y is
-      // the y-dimenstion minification factor (src_height/dst_height).
-      // If the texel is partially covered (on a border), the contribution is
-      // proportional to the covered area. We compute it as the product of the
-      // covered x-length by the covered y-length.
+						O3D_ASSERT(x_contrib > 0);
+						O3D_ASSERT(x_contrib <= dst_width);
+						unsigned int y_contrib = dst_height;
 
-      unsigned int x_contrib = dst_width;
-      if (src_x * dst_width < x * src_width) {
-        // source texel is across the left border of the footprint of the
-        // destination texel.
-        x_contrib = (src_x + 1) * dst_width - x * src_width;
-      } else if ((src_x + 1) * dst_width > (x + 1) * src_width) {
-        // source texel is across the right border of the footprint of the
-        // destination texel.
-        x_contrib = (x+1) * src_width - src_x * dst_width;
-      }
-      O3D_ASSERT(x_contrib > 0);
-      O3D_ASSERT(x_contrib <= dst_width);
-      unsigned int y_contrib = dst_height;
-      if (src_y * dst_height < y * src_height) {
-        // source texel is across the top border of the footprint of the
-        // destination texel.
-        y_contrib = (src_y + 1) * dst_height - y * src_height;
-      } else if ((src_y + 1) * dst_height > (y + 1) * src_height) {
-        // source texel is across the bottom border of the footprint of the
-        // destination texel.
-        y_contrib = (y + 1) * src_height - src_y * dst_height;
-      }
-      O3D_ASSERT(y_contrib > 0);
-      O3D_ASSERT(y_contrib <= dst_height);
-      WorkType contrib = static_cast<WorkType>(x_contrib * y_contrib);
-      const OriginalType* restrict src = PointerFromVoidPointer<const OriginalType*>(
-          src_data, src_y * src_pitch);
-      for (unsigned int c = 0; c < components; ++c) {
-        accum[c] += contrib *
-          convert_to_work(src[src_x * components + c]);
-      }
-    }
-  }
-  OriginalType* restrict dst = PointerFromVoidPointer<OriginalType*>(
-      dst_data, y * dst_pitch);
-  for (unsigned int c = 0; c < components; ++c) {
-    WorkType value = accum[c] / static_cast<WorkType>(src_height * src_width);
-    dst[x * components + c] = convert_to_original(value);
-  }
-}
+						if(src_y * dst_height < y * src_height) {
+							// source texel is across the top border of the footprint of the
+							// destination texel.
+							y_contrib = (src_y + 1) * dst_height - y * src_height;
+						}
+						else if((src_y + 1) * dst_height > (y + 1) * src_height) {
+							// source texel is across the bottom border of the footprint of the
+							// destination texel.
+							y_contrib = (y + 1) * src_height - src_y * dst_height;
+						}
 
-template <typename OriginalType,
-          typename WorkType,
-          typename FilterType,
-          WorkType convert_to_work(OriginalType value),
-          OriginalType convert_from_work(WorkType),
-          FilterType convert_to_filter(OriginalType value),
-          OriginalType convert_from_filter(FilterType)>
-void GenerateMip(unsigned int components,
-                 unsigned int src_width,
-                 unsigned int src_height,
-                 const void * restrict src_data,
-                 int src_pitch,
-                 void * restrict dst_data,
-                 int dst_pitch) {
-  unsigned int mip_width = std::max(1U, src_width >> 1);
-  unsigned int mip_height = std::max(1U, src_height >> 1);
+						O3D_ASSERT(y_contrib > 0);
+						O3D_ASSERT(y_contrib <= dst_height);
+						WorkType contrib = static_cast<WorkType>(x_contrib * y_contrib);
+						const OriginalType* restrict src = PointerFromVoidPointer<const OriginalType*>(
+						                                       src_data, src_y * src_pitch);
 
-  if (mip_width * 2 == src_width && mip_height * 2 == src_height) {
-    // Easy case: every texel maps to exactly 4 texels in the previous level.
-    for (unsigned int y = 0; y < mip_height; ++y) {
-      const OriginalType* restrict src0 = PointerFromVoidPointer<const OriginalType*>(
-          src_data, y * 2 * src_pitch);
-      const OriginalType* restrict src1 =
-          AddPointerOffset<const OriginalType*>(src0, src_pitch);
-      OriginalType* restrict dst = PointerFromVoidPointer<OriginalType*>(
-          dst_data, y * dst_pitch);
-      for (unsigned int x = 0; x < mip_width; ++x) {
-        for (unsigned int c = 0; c < components; ++c) {
-          // Average the 4 texels.
-          unsigned int offset = x * 2 * components + c;
-          WorkType value = convert_to_work(src0[offset]);       // (2x, 2y)
-          value += convert_to_work(src0[offset + components]);  // (2x+1, 2y)
-          value += convert_to_work(src1[offset]);               // (2x, 2y+1)
-          value += convert_to_work(src1[offset + components]);  // (2x+1, 2y+1)
-          dst[x * components + c] =
-              convert_from_work(value / static_cast<WorkType>(4));
-        }
-      }
-    }
-  } else {
-    for (unsigned int y = 0; y < mip_height; ++y) {
-      for (unsigned int x = 0; x < mip_width; ++x) {
-        FilterTexel<OriginalType,
-                    FilterType,
-                    convert_to_filter,
-                    convert_from_filter>(
-            x, y, mip_width, mip_height, dst_data, dst_pitch,
-            src_width, src_height, src_data, src_pitch, components);
-      }
-    }
-  }
-}
+						for(unsigned int c = 0; c < components; ++c) {
+							accum[c] += contrib *
+							            convert_to_work(src[src_x * components + c]);
+						}
+					}
+				}
 
-uint32_t UInt8ToUInt32(uint8_t value) {
-  return static_cast<uint32_t>(value);
-};
+				OriginalType* restrict dst = PointerFromVoidPointer<OriginalType*>(
+				                                 dst_data, y * dst_pitch);
 
-uint8_t UInt32ToUInt8(uint32_t value) {
-  return static_cast<uint8_t>(value);
-};
+				for(unsigned int c = 0; c < components; ++c) {
+					WorkType value = accum[c] / static_cast<WorkType>(src_height * src_width);
+					dst[x * components + c] = convert_to_original(value);
+				}
+			}
 
-uint64_t UInt8ToUInt64(uint8_t value) {
-  return static_cast<uint64_t>(value);
-};
+			template < typename OriginalType,
+			         typename WorkType,
+			         typename FilterType,
+			         WorkType convert_to_work(OriginalType value),
+			         OriginalType convert_from_work(WorkType),
+			         FilterType convert_to_filter(OriginalType value),
+			         OriginalType convert_from_filter(FilterType) >
+			void GenerateMip(unsigned int components,
+			                 unsigned int src_width,
+			                 unsigned int src_height,
+			                 const void* restrict src_data,
+			                 int src_pitch,
+			                 void* restrict dst_data,
+			                 int dst_pitch) {
+				unsigned int mip_width = std::max(1U, src_width >> 1);
+				unsigned int mip_height = std::max(1U, src_height >> 1);
 
-uint8_t UInt64ToUInt8(uint64_t value) {
-  return static_cast<uint8_t>(value);
-};
+				if(mip_width * 2 == src_width && mip_height * 2 == src_height) {
+					// Easy case: every texel maps to exactly 4 texels in the previous level.
+					for(unsigned int y = 0; y < mip_height; ++y) {
+						const OriginalType* restrict src0 = PointerFromVoidPointer<const OriginalType*>(
+						                                        src_data, y * 2 * src_pitch);
+						const OriginalType* restrict src1 =
+						    AddPointerOffset<const OriginalType*>(src0, src_pitch);
+						OriginalType* restrict dst = PointerFromVoidPointer<OriginalType*>(
+						                                 dst_data, y * dst_pitch);
 
-float UInt8ToFloat(uint8_t value) {
-  return static_cast<float>(value);
-};
+						for(unsigned int x = 0; x < mip_width; ++x) {
+							for(unsigned int c = 0; c < components; ++c) {
+								// Average the 4 texels.
+								unsigned int offset = x * 2 * components + c;
+								WorkType value = convert_to_work(src0[offset]);       // (2x, 2y)
+								value += convert_to_work(src0[offset + components]);  // (2x+1, 2y)
+								value += convert_to_work(src1[offset]);               // (2x, 2y+1)
+								value += convert_to_work(src1[offset + components]);  // (2x+1, 2y+1)
+								dst[x * components + c] =
+								    convert_from_work(value / static_cast<WorkType>(4));
+							}
+						}
+					}
+				}
+				else {
+					for(unsigned int y = 0; y < mip_height; ++y) {
+						for(unsigned int x = 0; x < mip_width; ++x) {
+							FilterTexel < OriginalType,
+							            FilterType,
+							            convert_to_filter,
+							            convert_from_filter > (
+							                x, y, mip_width, mip_height, dst_data, dst_pitch,
+							                src_width, src_height, src_data, src_pitch, components);
+						}
+					}
+				}
+			}
 
-float FloatToFloat(float value) {
-  return value;
-}
+			uint32_t UInt8ToUInt32(uint8_t value) {
+				return static_cast<uint32_t>(value);
+			};
 
-double FloatToDouble(float value) {
-  return static_cast<double>(value);
-}
+			uint8_t UInt32ToUInt8(uint32_t value) {
+				return static_cast<uint8_t>(value);
+			};
 
-float DoubleToFloat(double value) {
-  return static_cast<float>(value);
-}
+			uint64_t UInt8ToUInt64(uint8_t value) {
+				return static_cast<uint64_t>(value);
+			};
 
-float HalfToFloat(uint16_t value) {
-    return Vectormath::Aos::HalfToFloat(value);
-}
+			uint8_t UInt64ToUInt8(uint64_t value) {
+				return static_cast<uint8_t>(value);
+			};
 
-uint16_t FloatToHalf(float value) {
-    return Vectormath::Aos::FloatToHalf(value);
-}
+			float UInt8ToFloat(uint8_t value) {
+				return static_cast<float>(value);
+			};
 
-double HalfToDouble(uint16_t value) {
-    return static_cast<double>(Vectormath::Aos::HalfToFloat(value));
-}
+			float FloatToFloat(float value) {
+				return value;
+			}
 
-uint16_t DoubleToHalf(double value) {
-    return Vectormath::Aos::FloatToHalf(static_cast<float>(value));
-}
+			double FloatToDouble(float value) {
+				return static_cast<double>(value);
+			}
 
-}  // anonymous namespace
+			float DoubleToFloat(double value) {
+				return static_cast<float>(value);
+			}
 
-bool AdjustForSetRect(int* restrict src_y,
-                      int src_width,
-                      int src_height,
-                      int* restrict src_pitch,
-                      int* restrict dst_y,
-                      int dst_width,
-                      int* restrict dst_height) {
-  if (src_width != dst_width || abs(src_height) != abs(*dst_height) ||
-      src_width < 0) {
-    return false;
-  }
+			float HalfToFloat(uint16_t value) {
+				return Vectormath::Aos::HalfToFloat(value);
+			}
 
-  if (*dst_height < 0) {
-    *dst_y = *dst_y + *dst_height + 1;
-    *dst_height = -*dst_height;
-    if (src_height < 0) {
-      *src_y = *src_y + src_height + 1;
-    } else {
-      *src_y = *src_y + src_height - 1;
-      *src_pitch = -*src_pitch;
-    }
-  } else {
-    if (src_height < 0) {
-      *src_pitch = -*src_pitch;
-    }
-  }
+			uint16_t FloatToHalf(float value) {
+				return Vectormath::Aos::FloatToHalf(value);
+			}
 
-  return true;
-}
+			double HalfToDouble(uint16_t value) {
+				return static_cast<double>(Vectormath::Aos::HalfToFloat(value));
+			}
+
+			uint16_t DoubleToHalf(double value) {
+				return Vectormath::Aos::FloatToHalf(static_cast<float>(value));
+			}
+
+		}  // anonymous namespace
+
+		bool AdjustForSetRect(int* restrict src_y,
+		                      int src_width,
+		                      int src_height,
+		                      int* restrict src_pitch,
+		                      int* restrict dst_y,
+		                      int dst_width,
+		                      int* restrict dst_height) {
+			if(src_width != dst_width || abs(src_height) != abs(*dst_height) ||
+			        src_width < 0) {
+				return false;
+			}
+
+			if(*dst_height < 0) {
+				*dst_y = *dst_y + *dst_height + 1;
+				*dst_height = -*dst_height;
+
+				if(src_height < 0) {
+					*src_y = *src_y + src_height + 1;
+				}
+				else {
+					*src_y = *src_y + src_height - 1;
+					*src_pitch = -*src_pitch;
+				}
+			}
+			else {
+				if(src_height < 0) {
+					*src_pitch = -*src_pitch;
+				}
+			}
+
+			return true;
+		}
 
 // Adjust boundaries when using DrawImage function in bitmap or texture.
-bool AdjustDrawImageBoundary(int* restrict src_x, int* restrict src_y,
-                             int* restrict src_width, int* restrict src_height,
-                             int src_bmp_level,
-                             int src_bmp_width, int src_bmp_height,
-                             int* restrict dest_x, int* restrict dest_y,
-                             int* restrict dest_width, int* restrict dest_height,
-                             int dest_bmp_level,
-                             int dest_bmp_width, int dest_bmp_height) {
-  // if src or dest rectangle is out of boundaries, do nothing.
-  if ((*src_x < 0 && *src_x + *src_width <= 0) ||
-      (*src_y < 0 && *src_y + *src_height <= 0) ||
-      (*dest_x < 0 && *dest_x + *dest_width <= 0) ||
-      (*dest_y < 0 && *dest_y + *dest_height <= 0) ||
-      (*src_x >= src_bmp_width &&
-       *src_x + *src_width >= src_bmp_width - 1) ||
-      (*src_y >= src_bmp_height &&
-       *src_y + *src_height >= src_bmp_height - 1) ||
-      (*dest_x >= dest_bmp_width &&
-       *dest_x + *dest_width >= dest_bmp_width - 1) ||
-      (*dest_y >= dest_bmp_height &&
-       *dest_y + *dest_height >= dest_bmp_height - 1) ||
-      (src_bmp_level < 0) || (dest_bmp_level < 0))
-    return false;
+		bool AdjustDrawImageBoundary(int* restrict src_x, int* restrict src_y,
+		                             int* restrict src_width, int* restrict src_height,
+		                             int src_bmp_level,
+		                             int src_bmp_width, int src_bmp_height,
+		                             int* restrict dest_x, int* restrict dest_y,
+		                             int* restrict dest_width, int* restrict dest_height,
+		                             int dest_bmp_level,
+		                             int dest_bmp_width, int dest_bmp_height) {
+			// if src or dest rectangle is out of boundaries, do nothing.
+			if((*src_x < 0 && *src_x + *src_width <= 0) ||
+			        (*src_y < 0 && *src_y + *src_height <= 0) ||
+			        (*dest_x < 0 && *dest_x + *dest_width <= 0) ||
+			        (*dest_y < 0 && *dest_y + *dest_height <= 0) ||
+			        (*src_x >= src_bmp_width &&
+			         *src_x + *src_width >= src_bmp_width - 1) ||
+			        (*src_y >= src_bmp_height &&
+			         *src_y + *src_height >= src_bmp_height - 1) ||
+			        (*dest_x >= dest_bmp_width &&
+			         *dest_x + *dest_width >= dest_bmp_width - 1) ||
+			        (*dest_y >= dest_bmp_height &&
+			         *dest_y + *dest_height >= dest_bmp_height - 1) ||
+			        (src_bmp_level < 0) || (dest_bmp_level < 0))
+				return false;
 
-  int src_mip_width = static_cast<int>(
-      image::ComputeMipDimension(src_bmp_level, src_bmp_width));
-  int src_mip_height = static_cast<int>(
-      image::ComputeMipDimension(src_bmp_level, src_bmp_height));
-  int dest_mip_width = static_cast<int>(
-      image::ComputeMipDimension(dest_bmp_level, dest_bmp_width));
-  int dest_mip_height = static_cast<int>(
-      image::ComputeMipDimension(dest_bmp_level, dest_bmp_height));
+			int src_mip_width = static_cast<int>(
+			                        image::ComputeMipDimension(src_bmp_level, src_bmp_width));
+			int src_mip_height = static_cast<int>(
+			                         image::ComputeMipDimension(src_bmp_level, src_bmp_height));
+			int dest_mip_width = static_cast<int>(
+			                         image::ComputeMipDimension(dest_bmp_level, dest_bmp_width));
+			int dest_mip_height = static_cast<int>(
+			                          image::ComputeMipDimension(dest_bmp_level, dest_bmp_height));
 
-  // if start points are negative.
-  // check whether src_x is negative.
-  if (!AdjustDrawImageBoundHelper(src_x, dest_x,
-                                  src_width, dest_width, src_mip_width))
-    return false;
-  // check whether dest_x is negative.
-  if (!AdjustDrawImageBoundHelper(dest_x, src_x,
-                                  dest_width, src_width, dest_mip_width))
-    return false;
-  // check whether src_y is negative.
-  if (!AdjustDrawImageBoundHelper(src_y, dest_y,
-                                  src_height, dest_height, src_mip_height))
-    return false;
-  // check whether dest_y is negative.
-  if (!AdjustDrawImageBoundHelper(dest_y, src_y,
-                                  dest_height, src_height, dest_mip_height))
-    return false;
+			// if start points are negative.
+			// check whether src_x is negative.
+			if(!AdjustDrawImageBoundHelper(src_x, dest_x,
+			                               src_width, dest_width, src_mip_width))
+				return false;
 
-  // check any width or height becomes negative after adjustment.
-  if (*src_width == 0 || *src_height == 0 ||
-      *dest_width == 0 || *dest_height == 0) {
-    return false;
-  }
+			// check whether dest_x is negative.
+			if(!AdjustDrawImageBoundHelper(dest_x, src_x,
+			                               dest_width, src_width, dest_mip_width))
+				return false;
 
-  return true;
-}
+			// check whether src_y is negative.
+			if(!AdjustDrawImageBoundHelper(src_y, dest_y,
+			                               src_height, dest_height, src_mip_height))
+				return false;
 
-void LanczosScale(Texture::Format format, const void* restrict src, int src_pitch,
-                  int src_x, int src_y,
-                  int src_width, int src_height,
-                  void* restrict dest, int dest_pitch,
-                  int dest_x, int dest_y,
-                  int dest_width, int dest_height,
-                  int components) {
-  switch (format) {
-    case Texture::ARGB8:
-    case Texture::XRGB8:
-    case Texture::RGBA8:
-    case Texture::RGBX8:
-      TypedLanczosScale<uint8_t, UInt8ToFloat, Safe8Round>(
-          src, src_pitch, src_x, src_y, src_width, src_height,
-          dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
-          components);
-      break;
-    case Texture::ABGR16F:
-      TypedLanczosScale<uint16_t, HalfToFloat, FloatToHalf>(
-          src, src_pitch, src_x, src_y, src_width, src_height,
-          dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
-          components);
-      break;
-    case Texture::ABGR32F:
-    case Texture::R32F:
-      TypedLanczosScale<float, FloatToFloat, FloatToFloat>(
-          src, src_pitch, src_x, src_y, src_width, src_height,
-          dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
-          components);
-      break;
-    default:
-      O3D_LOG(ERROR) << "Mip-map generation not supported for format: " << format;
-      return;
-  }
-}
+			// check whether dest_y is negative.
+			if(!AdjustDrawImageBoundHelper(dest_y, src_y,
+			                               dest_height, src_height, dest_mip_height))
+				return false;
 
-bool GenerateMipmap(unsigned int src_width,
-                    unsigned int src_height,
-                    Texture::Format format,
-                    const void * restrict src_data,
-                    int src_pitch,
-                    void * restrict dst_data,
-                    int dst_pitch) {
-  unsigned int components = GetNumComponentsForFormat(format);
-  if (components == 0) {
-    O3D_LOG(ERROR) << "Mip-map generation not supported for format: " << format;
-    return false;
-  }
+			// check any width or height becomes negative after adjustment.
+			if(*src_width == 0 || *src_height == 0 ||
+			        *dest_width == 0 || *dest_height == 0) {
+				return false;
+			}
 
-  switch (format) {
-    case Texture::ARGB8:
-    case Texture::XRGB8:
-    case Texture::RGBA8:
-    case Texture::RGBX8:
-      GenerateMip<uint8_t, uint32_t, uint64_t,
-                  UInt8ToUInt32, UInt32ToUInt8,
-                  UInt8ToUInt64, UInt64ToUInt8>(
-        components, src_width, src_height, src_data, src_pitch,
-        dst_data, dst_pitch);
-      break;
-    case Texture::ABGR16F:
-      GenerateMip<uint16_t, float, double,
-                  HalfToFloat, FloatToHalf,
-                  HalfToDouble, DoubleToHalf>(
-        components, src_width, src_height, src_data, src_pitch,
-        dst_data, dst_pitch);
-      break;
-    case Texture::ABGR32F:
-    case Texture::R32F:
-      GenerateMip<float, float, double,
-                  FloatToFloat, FloatToFloat,
-                  FloatToDouble, DoubleToFloat>(
-        components, src_width, src_height, src_data, src_pitch,
-        dst_data, dst_pitch);
-      break;
-    default:
-      O3D_LOG(ERROR) << "Mip-map generation not supported for format: " << format;
-      return false;
-  }
-  return true;
-}
+			return true;
+		}
 
-ImageFileType GetFileTypeFromFilename(const char *filename) {
-  // Convert the filename to lower case for matching.
-  // NOTE: Surprisingly, "tolower" is not in the std namespace.
-  std::string name(filename);
-  std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+		void LanczosScale(Texture::Format format, const void* restrict src, int src_pitch,
+		                  int src_x, int src_y,
+		                  int src_width, int src_height,
+		                  void* restrict dest, int dest_pitch,
+		                  int dest_x, int dest_y,
+		                  int dest_width, int dest_height,
+		                  int components) {
+			switch(format) {
+			case Texture::ARGB8:
+			case Texture::XRGB8:
+			case Texture::RGBA8:
+			case Texture::RGBX8:
+				TypedLanczosScale<uint8_t, UInt8ToFloat, Safe8Round>(
+				    src, src_pitch, src_x, src_y, src_width, src_height,
+				    dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
+				    components);
+				break;
+			case Texture::ABGR16F:
+				TypedLanczosScale<uint16_t, HalfToFloat, FloatToHalf>(
+				    src, src_pitch, src_x, src_y, src_width, src_height,
+				    dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
+				    components);
+				break;
+			case Texture::ABGR32F:
+			case Texture::R32F:
+				TypedLanczosScale<float, FloatToFloat, FloatToFloat>(
+				    src, src_pitch, src_x, src_y, src_width, src_height,
+				    dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
+				    components);
+				break;
+			default:
+				O3D_LOG(ERROR) << "Mip-map generation not supported for format: " << format;
+				return;
+			}
+		}
 
-  // Dispatch loading functions based on filename extensions.
-  std::string::size_type i = name.rfind(".");
-  if (i == std::string::npos) {
-    O3D_LOG(INFO) << "Could not detect file type for image \""
-               << filename << "\": no extension.";
-    return UNKNOWN;
-  }
+		bool GenerateMipmap(unsigned int src_width,
+		                    unsigned int src_height,
+		                    Texture::Format format,
+		                    const void* restrict src_data,
+		                    int src_pitch,
+		                    void* restrict dst_data,
+		                    int dst_pitch) {
+			unsigned int components = GetNumComponentsForFormat(format);
 
-  std::string extension = name.substr(i);
-  if (extension == ".tga") {
-    O3D_LOG(INFO) << "Bitmap Found a TGA file : " << filename;
-    return TGA;
-  } else if (extension == ".dds") {
-    O3D_LOG(INFO) << "Bitmap Found a DDS file : " << filename;
-    return DDS;
-  } else if (extension == ".png") {
-    O3D_LOG(INFO) << "Bitmap Found a PNG file : " << filename;
-    return PNG;
-  } else if (extension == ".jpg" ||
-             extension == ".jpeg" ||
-             extension == ".jpe") {
-    O3D_LOG(INFO) << "Bitmap Found a JPEG file : " << filename;
-    return JPEG;
-  } else {
-    return UNKNOWN;
-  }
-}
+			if(components == 0) {
+				O3D_LOG(ERROR) << "Mip-map generation not supported for format: " << format;
+				return false;
+			}
 
-namespace {
+			switch(format) {
+			case Texture::ARGB8:
+			case Texture::XRGB8:
+			case Texture::RGBA8:
+			case Texture::RGBX8:
+				GenerateMip < uint8_t, uint32_t, uint64_t,
+				            UInt8ToUInt32, UInt32ToUInt8,
+				            UInt8ToUInt64, UInt64ToUInt8 > (
+				                components, src_width, src_height, src_data, src_pitch,
+				                dst_data, dst_pitch);
+				break;
+			case Texture::ABGR16F:
+				GenerateMip < uint16_t, float, double,
+				            HalfToFloat, FloatToHalf,
+				            HalfToDouble, DoubleToHalf > (
+				                components, src_width, src_height, src_data, src_pitch,
+				                dst_data, dst_pitch);
+				break;
+			case Texture::ABGR32F:
+			case Texture::R32F:
+				GenerateMip < float, float, double,
+				            FloatToFloat, FloatToFloat,
+				            FloatToDouble, DoubleToFloat > (
+				                components, src_width, src_height, src_data, src_pitch,
+				                dst_data, dst_pitch);
+				break;
+			default:
+				O3D_LOG(ERROR) << "Mip-map generation not supported for format: " << format;
+				return false;
+			}
 
-struct MimeTypeToFileType {
-  const char *mime_type;
-  ImageFileType file_type;
-};
+			return true;
+		}
 
-const MimeTypeToFileType mime_type_map[] = {
-  {"image/png", PNG},
-  {"image/jpeg", JPEG},
-  // No official MIME type for TGA or DDS.
-};
+		ImageFileType GetFileTypeFromFilename(const char* filename) {
+			// Convert the filename to lower case for matching.
+			// NOTE: Surprisingly, "tolower" is not in the std namespace.
+			std::string name(filename);
+			std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+			// Dispatch loading functions based on filename extensions.
+			std::string::size_type i = name.rfind(".");
 
-}  // anonymous namespace
+			if(i == std::string::npos) {
+				O3D_LOG(INFO) << "Could not detect file type for image \""
+				              << filename << "\": no extension.";
+				return UNKNOWN;
+			}
 
-ImageFileType GetFileTypeFromMimeType(const char *mime_type) {
-  for (unsigned int i = 0u; i < o3d_arraysize(mime_type_map); ++i) {
-    if (!strcmp(mime_type, mime_type_map[i].mime_type))
-      return mime_type_map[i].file_type;
-  }
-  return UNKNOWN;
-}
+			std::string extension = name.substr(i);
 
-void XYZToXYZA(uint8_t *image_data, int pixel_count) {
-  // We do this pixel by pixel, starting from the end to avoid overlapping
-  // problems.
-  for (int i = pixel_count - 1; i >= 0; --i) {
-    image_data[i * 4 + 3] = 0xff;
-    image_data[i * 4 + 2] = image_data[i * 3 + 2];
-    image_data[i * 4 + 1] = image_data[i * 3 + 1];
-    image_data[i * 4 + 0] = image_data[i * 3 + 0];
-  }
-}
+			if(extension == ".tga") {
+				O3D_LOG(INFO) << "Bitmap Found a TGA file : " << filename;
+				return TGA;
+			}
+			else if(extension == ".dds") {
+				O3D_LOG(INFO) << "Bitmap Found a DDS file : " << filename;
+				return DDS;
+			}
+			else if(extension == ".png") {
+				O3D_LOG(INFO) << "Bitmap Found a PNG file : " << filename;
+				return PNG;
+			}
+			else if(extension == ".jpg" ||
+			        extension == ".jpeg" ||
+			        extension == ".jpe") {
+				O3D_LOG(INFO) << "Bitmap Found a JPEG file : " << filename;
+				return JPEG;
+			}
+			else {
+				return UNKNOWN;
+			}
+		}
 
-void RGBAToBGRA(uint8_t *image_data, int pixel_count) {
-  for (int i = 0; i < pixel_count; ++i) {
-    uint8_t c = image_data[i * 4 + 0];
-    image_data[i * 4 + 0] = image_data[i * 4 + 2];
-    image_data[i * 4 + 2] = c;
-  }
-}
+		namespace {
 
-}  // namespace image
+			struct MimeTypeToFileType {
+				const char* mime_type;
+				ImageFileType file_type;
+			};
+
+			const MimeTypeToFileType mime_type_map[] = {
+				{"image/png", PNG},
+				{"image/jpeg", JPEG},
+				// No official MIME type for TGA or DDS.
+			};
+
+		}  // anonymous namespace
+
+		ImageFileType GetFileTypeFromMimeType(const char* mime_type) {
+			for(unsigned int i = 0u; i < o3d_arraysize(mime_type_map); ++i) {
+				if(!strcmp(mime_type, mime_type_map[i].mime_type))
+					return mime_type_map[i].file_type;
+			}
+
+			return UNKNOWN;
+		}
+
+		void XYZToXYZA(uint8_t* image_data, int pixel_count) {
+			// We do this pixel by pixel, starting from the end to avoid overlapping
+			// problems.
+			for(int i = pixel_count - 1; i >= 0; --i) {
+				image_data[i * 4 + 3] = 0xff;
+				image_data[i * 4 + 2] = image_data[i * 3 + 2];
+				image_data[i * 4 + 1] = image_data[i * 3 + 1];
+				image_data[i * 4 + 0] = image_data[i * 3 + 0];
+			}
+		}
+
+		void RGBAToBGRA(uint8_t* image_data, int pixel_count) {
+			for(int i = 0; i < pixel_count; ++i) {
+				uint8_t c = image_data[i * 4 + 0];
+				image_data[i * 4 + 0] = image_data[i * 4 + 2];
+				image_data[i * 4 + 2] = c;
+			}
+		}
+
+	}  // namespace image
 }  // namespace o3d
 
 

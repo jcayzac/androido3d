@@ -40,54 +40,54 @@
 
 namespace o3d {
 
-class StructuredWriter;
+	class StructuredWriter;
 
 // Provides support for profiling sections of code.
-class Profiler {
- public:
-  static const InterfaceId kInterfaceId;
+	class Profiler {
+	public:
+		static const InterfaceId kInterfaceId;
 
-  explicit Profiler(ServiceLocator* service_locator);
+		explicit Profiler(ServiceLocator* service_locator);
 
 #ifdef O3D_PROFILE_CLIENT
-  // Starts the timer ticking for the code range identified by key.
-  inline void ProfileStart(const std::string& key) {
-    timing_table_.Start(key);
-  }
+		// Starts the timer ticking for the code range identified by key.
+		inline void ProfileStart(const std::string& key) {
+			timing_table_.Start(key);
+		}
 
-  // Stops the timer for the code range identified by key.
-  inline void ProfileStop(const std::string& key) {
-    timing_table_.Stop(key);
-  }
+		// Stops the timer for the code range identified by key.
+		inline void ProfileStop(const std::string& key) {
+			timing_table_.Stop(key);
+		}
 
-  // Resets the profiler, clearing out all data.
-  inline void ProfileReset() {
-    timing_table_.Reset();
-  }
+		// Resets the profiler, clearing out all data.
+		inline void ProfileReset() {
+			timing_table_.Reset();
+		}
 
-  // Dumps all profiler state to a string.
-  void Write(StructuredWriter* writer);
+		// Dumps all profiler state to a string.
+		void Write(StructuredWriter* writer);
 
 #else  // O3D_PROFILE_CLIENT
-  inline void ProfileStart(const std::string& key) { }
+		inline void ProfileStart(const std::string& key) { }
 
-  inline void ProfileStop(const std::string& key) { }
+		inline void ProfileStop(const std::string& key) { }
 
-  inline void ProfileReset() { }
+		inline void ProfileReset() { }
 
-  inline void Write(StructuredWriter* writer) {
-  }
+		inline void Write(StructuredWriter* writer) {
+		}
 #endif  // O3D_PROFILE_CLIENT
 
- private:
-  ServiceImplementation<Profiler> service_;
+	private:
+		ServiceImplementation<Profiler> service_;
 
 #ifdef O3D_PROFILE_CLIENT
-  TimingTable timing_table_;
+		TimingTable timing_table_;
 #endif  // O3D_PROFILE_CLIENT
 
-  O3D_DISALLOW_COPY_AND_ASSIGN(Profiler);
-};
+		O3D_DISALLOW_COPY_AND_ASSIGN(Profiler);
+	};
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_PROFILER_H_

@@ -37,66 +37,66 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(Stream, ObjectBase);
-O3D_DEFN_CLASS(ParamVertexBufferStream, RefParamBase);
+	O3D_DEFN_CLASS(Stream, ObjectBase);
+	O3D_DEFN_CLASS(ParamVertexBufferStream, RefParamBase);
 
-Stream::Stream(ServiceLocator* service_locator,
-               Field *field,
-               unsigned int start_index,
-               Semantic semantic,
-               int semantic_index)
-    : ObjectBase(service_locator),
-      field_(field),
-      last_field_change_count_(0),
-      start_index_(start_index),
-      semantic_(semantic),
-      semantic_index_(semantic_index) {
-  O3D_ASSERT(field);
-}
+	Stream::Stream(ServiceLocator* service_locator,
+	               Field* field,
+	               unsigned int start_index,
+	               Semantic semantic,
+	               int semantic_index)
+		: ObjectBase(service_locator),
+		  field_(field),
+		  last_field_change_count_(0),
+		  start_index_(start_index),
+		  semantic_(semantic),
+		  semantic_index_(semantic_index) {
+		O3D_ASSERT(field);
+	}
 
-unsigned Stream::GetMaxVertices() const {
-  Buffer* buffer = field_->buffer();
+	unsigned Stream::GetMaxVertices() const {
+		Buffer* buffer = field_->buffer();
 
-  if (!field_->buffer()) {
-    return 0;
-  }
+		if(!field_->buffer()) {
+			return 0;
+		}
 
-  unsigned int num_elements = buffer->num_elements();
-  if (start_index_ > num_elements) {
-    return 0;
-  }
+		unsigned int num_elements = buffer->num_elements();
 
-  // TODO: If the number of elements is 1 we assume we want to repeat the
-  // value (ie, use a stride of 0). We can't do this yet because it's hard to
-  // implement in GL.
-  // if (num_elements == 1) {
-  //   return UINT_MAX;
-  // }
+		if(start_index_ > num_elements) {
+			return 0;
+		}
 
-  return num_elements - start_index_;
-}
+		// TODO: If the number of elements is 1 we assume we want to repeat the
+		// value (ie, use a stride of 0). We can't do this yet because it's hard to
+		// implement in GL.
+		// if (num_elements == 1) {
+		//   return UINT_MAX;
+		// }
+		return num_elements - start_index_;
+	}
 
-const char* Stream::GetSemanticDescription(Stream::Semantic semantic) {
-  switch (semantic) {
-    case POSITION:
-      return "POSITION";
-    case NORMAL:
-      return "NORMAL";
-    case TANGENT:
-      return "TANGENT";
-    case BINORMAL:
-      return "BINORMAL";
-    case COLOR:
-      return "COLOR";
-    case TEXCOORD:
-      return "TEXCOORD";
-    default:
-      return "UNKNOWN";
-  }
-}
+	const char* Stream::GetSemanticDescription(Stream::Semantic semantic) {
+		switch(semantic) {
+		case POSITION:
+			return "POSITION";
+		case NORMAL:
+			return "NORMAL";
+		case TANGENT:
+			return "TANGENT";
+		case BINORMAL:
+			return "BINORMAL";
+		case COLOR:
+			return "COLOR";
+		case TEXCOORD:
+			return "TEXCOORD";
+		default:
+			return "UNKNOWN";
+		}
+	}
 
-void ParamVertexBufferStream::CopyDataFromParam(Param *source_param) {
-  O3D_ASSERT(false);  // this should never get called.
-}
+	void ParamVertexBufferStream::CopyDataFromParam(Param* source_param) {
+		O3D_ASSERT(false);  // this should never get called.
+	}
 
 }  // namespace o3d

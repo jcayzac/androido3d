@@ -44,117 +44,106 @@ extern o3d::DisplayWindow* g_display_window;
 
 namespace o3d {
 
-class RendererTest : public testing::Test {
- public:
-  ServiceLocator* service_locator() {
-    return service_locator_;
-  }
+	class RendererTest : public testing::Test {
+	public:
+		ServiceLocator* service_locator() {
+			return service_locator_;
+		}
 
- protected:
-  virtual void SetUp() {
-    service_locator_ = new ServiceLocator;
-    features_ = new Features(service_locator_);
-    client_info_manager_ = new ClientInfoManager(service_locator_);
-  }
+	protected:
+		virtual void SetUp() {
+			service_locator_ = new ServiceLocator;
+			features_ = new Features(service_locator_);
+			client_info_manager_ = new ClientInfoManager(service_locator_);
+		}
 
-  virtual void TearDown() {
-    delete client_info_manager_;
-    delete features_;
-    delete service_locator_;
-  }
+		virtual void TearDown() {
+			delete client_info_manager_;
+			delete features_;
+			delete service_locator_;
+		}
 
-  ServiceLocator* service_locator_;
-  Features* features_;
-  ClientInfoManager* client_info_manager_;
-};
+		ServiceLocator* service_locator_;
+		Features* features_;
+		ClientInfoManager* client_info_manager_;
+	};
 
 // This tests that a default Renderer can be created.
-TEST_F(RendererTest, CreateDefaultRenderer) {
-  ::o3d::base::scoped_ptr<Renderer> renderer(
-      Renderer::CreateDefaultRenderer(service_locator()));
-  EXPECT_TRUE(renderer != NULL);
-}
+	TEST_F(RendererTest, CreateDefaultRenderer) {
+		::o3d::base::scoped_ptr<Renderer> renderer(
+		    Renderer::CreateDefaultRenderer(service_locator()));
+		EXPECT_TRUE(renderer != NULL);
+	}
 
 
 
-TEST_F(RendererTest, InitAndDestroyRenderer) {
+	TEST_F(RendererTest, InitAndDestroyRenderer) {
 // TODO(apatrick): This test will not work as is with command buffers because
 //     it attempts to create a Renderer using the same ring buffer as the
 //     Renderer created in main.
-  ::o3d::base::scoped_ptr<Renderer> renderer(
-      Renderer::CreateDefaultRenderer(service_locator()));
-  EXPECT_TRUE(renderer->Init(*g_display_window, false));
+		::o3d::base::scoped_ptr<Renderer> renderer(
+		    Renderer::CreateDefaultRenderer(service_locator()));
+		EXPECT_TRUE(renderer->Init(*g_display_window, false));
 #if defined(O3D_RENDERER_GL)
-  // test that the Cg Context was correctly created
-  RendererGL* gl_renderer = down_cast<RendererGL*>(renderer.get());
-  EXPECT_TRUE(gl_renderer->cg_context() != NULL);
+		// test that the Cg Context was correctly created
+		RendererGL* gl_renderer = down_cast<RendererGL*>(renderer.get());
+		EXPECT_TRUE(gl_renderer->cg_context() != NULL);
 #elif defined(O3D_RENDERER_GLES2)
-  RendererGLES2* gles2_renderer = down_cast<RendererGLES2*>(renderer.get());
+		RendererGLES2* gles2_renderer = down_cast<RendererGLES2*>(renderer.get());
 #endif
-  // destroy the renderer
-  renderer->Destroy();
-
+		// destroy the renderer
+		renderer->Destroy();
 #if defined(O3D_RENDERER_GL)
-  // check that the renderer no longer has a Cg Context.
-  EXPECT_FALSE(gl_renderer->cg_context() != NULL);
+		// check that the renderer no longer has a Cg Context.
+		EXPECT_FALSE(gl_renderer->cg_context() != NULL);
 #elif defined(O3D_RENDERER_GLES2)
 #endif
-}
+	}
 
 // Tests SetViewport
-TEST_F(RendererTest, SetViewport) {
-  ErrorStatus error_status(g_service_locator);
-
-  // Test that we can call it.
-  EXPECT_TRUE(error_status.GetLastError().empty());
-  g_renderer->SetViewport(Float4(0.0f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
-  EXPECT_TRUE(error_status.GetLastError().empty());
-
-  // Test zero width
-  g_renderer->SetViewport(Float4(0.0f, 0.0f, 0.0f, 0.0f), Float2(0.0f, 1.0f));
-  EXPECT_TRUE(error_status.GetLastError().empty());
-
-  // Test that it fails with invalid values
-  error_status.ClearLastError();
-  // width off right
-  g_renderer->SetViewport(Float4(0.5f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
-  EXPECT_FALSE(error_status.GetLastError().empty());
-
-  // height off bottom
-  error_status.ClearLastError();
-  g_renderer->SetViewport(Float4(0.0f, 0.5f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
-  EXPECT_FALSE(error_status.GetLastError().empty());
-
-  // left off right
-  error_status.ClearLastError();
-  g_renderer->SetViewport(Float4(2.0f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
-  EXPECT_FALSE(error_status.GetLastError().empty());
-
-  // top off bottom
-  error_status.ClearLastError();
-  g_renderer->SetViewport(Float4(0.0f, 2.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
-  EXPECT_FALSE(error_status.GetLastError().empty());
-
-  // negative width
-  error_status.ClearLastError();
-  g_renderer->SetViewport(Float4(0.0f, 0.0f, -1.0f, 1.0f), Float2(0.0f, 1.0f));
-  EXPECT_FALSE(error_status.GetLastError().empty());
-
-  // negative height
-  error_status.ClearLastError();
-  g_renderer->SetViewport(Float4(0.0f, 0.0f, 1.0f, -1.0f), Float2(0.0f, 1.0f));
-  EXPECT_FALSE(error_status.GetLastError().empty());
-
-  // left off left
-  error_status.ClearLastError();
-  g_renderer->SetViewport(Float4(-0.1f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
-  EXPECT_FALSE(error_status.GetLastError().empty());
-
-  // top off top
-  error_status.ClearLastError();
-  g_renderer->SetViewport(Float4(0.0f, -0.1f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
-  EXPECT_FALSE(error_status.GetLastError().empty());
-}
+	TEST_F(RendererTest, SetViewport) {
+		ErrorStatus error_status(g_service_locator);
+		// Test that we can call it.
+		EXPECT_TRUE(error_status.GetLastError().empty());
+		g_renderer->SetViewport(Float4(0.0f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
+		EXPECT_TRUE(error_status.GetLastError().empty());
+		// Test zero width
+		g_renderer->SetViewport(Float4(0.0f, 0.0f, 0.0f, 0.0f), Float2(0.0f, 1.0f));
+		EXPECT_TRUE(error_status.GetLastError().empty());
+		// Test that it fails with invalid values
+		error_status.ClearLastError();
+		// width off right
+		g_renderer->SetViewport(Float4(0.5f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
+		EXPECT_FALSE(error_status.GetLastError().empty());
+		// height off bottom
+		error_status.ClearLastError();
+		g_renderer->SetViewport(Float4(0.0f, 0.5f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
+		EXPECT_FALSE(error_status.GetLastError().empty());
+		// left off right
+		error_status.ClearLastError();
+		g_renderer->SetViewport(Float4(2.0f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
+		EXPECT_FALSE(error_status.GetLastError().empty());
+		// top off bottom
+		error_status.ClearLastError();
+		g_renderer->SetViewport(Float4(0.0f, 2.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
+		EXPECT_FALSE(error_status.GetLastError().empty());
+		// negative width
+		error_status.ClearLastError();
+		g_renderer->SetViewport(Float4(0.0f, 0.0f, -1.0f, 1.0f), Float2(0.0f, 1.0f));
+		EXPECT_FALSE(error_status.GetLastError().empty());
+		// negative height
+		error_status.ClearLastError();
+		g_renderer->SetViewport(Float4(0.0f, 0.0f, 1.0f, -1.0f), Float2(0.0f, 1.0f));
+		EXPECT_FALSE(error_status.GetLastError().empty());
+		// left off left
+		error_status.ClearLastError();
+		g_renderer->SetViewport(Float4(-0.1f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
+		EXPECT_FALSE(error_status.GetLastError().empty());
+		// top off top
+		error_status.ClearLastError();
+		g_renderer->SetViewport(Float4(0.0f, -0.1f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
+		EXPECT_FALSE(error_status.GetLastError().empty());
+	}
 
 }  // namespace o3d
 

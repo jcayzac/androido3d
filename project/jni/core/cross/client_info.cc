@@ -41,26 +41,26 @@
 
 namespace o3d {
 
-ClientInfo::ClientInfo()
-    : num_objects_(0),
-      texture_memory_used_(0),
-      buffer_memory_used_(0),
-      software_renderer_(false),
-      non_power_of_two_textures_(false),
-      version_(O3D_LIBRARY_VERSION) {
-}
+	ClientInfo::ClientInfo()
+		: num_objects_(0),
+		  texture_memory_used_(0),
+		  buffer_memory_used_(0),
+		  software_renderer_(false),
+		  non_power_of_two_textures_(false),
+		  version_(O3D_LIBRARY_VERSION) {
+	}
 
-const InterfaceId ClientInfoManager::kInterfaceId =
-    InterfaceTraits<ClientInfoManager>::kInterfaceId;
+	const InterfaceId ClientInfoManager::kInterfaceId =
+	    InterfaceTraits<ClientInfoManager>::kInterfaceId;
 
-ClientInfoManager::ClientInfoManager(ServiceLocator* service_locator)
-    : service_(service_locator, this) {
-}
+	ClientInfoManager::ClientInfoManager(ServiceLocator* service_locator)
+		: service_(service_locator, this) {
+	}
 
-const ClientInfo& ClientInfoManager::client_info() {
-  ServiceDependency<ObjectManager> object_manager_(service_.service_locator());
-  client_info_.num_objects_ = object_manager_->GetNumObjects();
-  return client_info_;
-}
+	const ClientInfo& ClientInfoManager::client_info() {
+		ServiceDependency<ObjectManager> object_manager_(service_.service_locator());
+		client_info_.num_objects_ = object_manager_->GetNumObjects();
+		return client_info_;
+	}
 
 }  // namespace o3d

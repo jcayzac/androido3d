@@ -39,194 +39,208 @@
 
 namespace o3d {
 
-SamplerGLES2::SamplerGLES2(ServiceLocator* service_locator)
-    : Sampler(service_locator),
-      renderer_(static_cast<RendererGLES2*>(
-          service_locator->GetService<Renderer>())),
-      texture_unit_group_set_count_(renderer_->GetTextureGroupSetCount() - 1),
-      texture_unit_(0) {
-}
+	SamplerGLES2::SamplerGLES2(ServiceLocator* service_locator)
+		: Sampler(service_locator),
+		  renderer_(static_cast<RendererGLES2*>(
+		                service_locator->GetService<Renderer>())),
+		  texture_unit_group_set_count_(renderer_->GetTextureGroupSetCount() - 1),
+		  texture_unit_(0) {
+	}
 
-SamplerGLES2::~SamplerGLES2() {
-}
+	SamplerGLES2::~SamplerGLES2() {
+	}
 
-namespace {
+	namespace {
 
-unsigned int GLAddressMode(Sampler::AddressMode o3d_mode,
-                           unsigned int default_mode) {
-  unsigned int gl_mode = default_mode;
-  switch (o3d_mode) {
-    case Sampler::WRAP:
-      gl_mode = GL_REPEAT;
-      break;
-    case Sampler::MIRROR:
-      gl_mode = GL_MIRRORED_REPEAT;
-      break;
-    case Sampler::CLAMP:
-      gl_mode = GL_CLAMP_TO_EDGE;
-      break;
-    case Sampler::BORDER:
+		unsigned int GLAddressMode(Sampler::AddressMode o3d_mode,
+		                           unsigned int default_mode) {
+			unsigned int gl_mode = default_mode;
+
+			switch(o3d_mode) {
+			case Sampler::WRAP:
+				gl_mode = GL_REPEAT;
+				break;
+			case Sampler::MIRROR:
+				gl_mode = GL_MIRRORED_REPEAT;
+				break;
+			case Sampler::CLAMP:
+				gl_mode = GL_CLAMP_TO_EDGE;
+				break;
+			case Sampler::BORDER:
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-      gl_mode = GL_CLAMP_TO_BORDER;
+				gl_mode = GL_CLAMP_TO_BORDER;
 #else
-      O3D_NOTIMPLEMENTED() << "Sampler::BORDER";
-      gl_mode = GL_CLAMP_TO_EDGE;
+				O3D_NOTIMPLEMENTED() << "Sampler::BORDER";
+				gl_mode = GL_CLAMP_TO_EDGE;
 #endif
-      break;
-    default:
-      O3D_LOG(ERROR) << "Unknown Address mode " << static_cast<int>(o3d_mode);
-      break;
-  }
-  return gl_mode;
-}
+				break;
+			default:
+				O3D_LOG(ERROR) << "Unknown Address mode " << static_cast<int>(o3d_mode);
+				break;
+			}
 
-unsigned int GLMinFilter(Sampler::FilterType o3d_filter,
-                         Sampler::FilterType mip_filter) {
-  switch (o3d_filter) {
-    case Sampler::NONE:
-      return GL_NEAREST;
-    case Sampler::POINT:
-      if (mip_filter == Sampler::NONE)
-        return GL_NEAREST;
-      else if (mip_filter == Sampler::POINT)
-        return GL_NEAREST_MIPMAP_NEAREST;
-      else if (mip_filter == Sampler::LINEAR)
-        return GL_NEAREST_MIPMAP_LINEAR;
-      else if (mip_filter == Sampler::ANISOTROPIC)
-        return GL_NEAREST_MIPMAP_LINEAR;
-    case Sampler::ANISOTROPIC:  // Anisotropy is handled in SetTextureAndStates
-    case Sampler::LINEAR:
-      if (mip_filter == Sampler::NONE)
-        return GL_LINEAR;
-      else if (mip_filter == Sampler::POINT)
-        return GL_LINEAR_MIPMAP_NEAREST;
-      else if (mip_filter == Sampler::LINEAR)
-        return GL_LINEAR_MIPMAP_LINEAR;
-      else if (mip_filter == Sampler::ANISOTROPIC)
-        return GL_LINEAR_MIPMAP_LINEAR;
-  }
-  // fall through
-  O3D_LOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
-  O3D_ASSERT(false);
-  return GL_NONE;
-}
+			return gl_mode;
+		}
 
-unsigned int GLMagFilter(Sampler::FilterType o3d_filter) {
-  switch (o3d_filter) {
-    case Sampler::NONE:
-    case Sampler::POINT:
-      return GL_NEAREST;
-    case Sampler::LINEAR:
-    case Sampler::ANISOTROPIC:
-      return GL_LINEAR;
-    default:
-      O3D_LOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
-      return GL_LINEAR;
-  }
-}
+		unsigned int GLMinFilter(Sampler::FilterType o3d_filter,
+		                         Sampler::FilterType mip_filter) {
+			switch(o3d_filter) {
+			case Sampler::NONE:
+				return GL_NEAREST;
+			case Sampler::POINT:
 
-GLenum GLTextureTarget(Texture* texture) {
-  if (texture->IsA(Texture2D::GetApparentClass())) {
-    return GL_TEXTURE_2D;
-  } else if (texture->IsA(TextureCUBE::GetApparentClass())) {
-    return GL_TEXTURE_CUBE_MAP;
-  } else {
-    O3D_LOG(ERROR) << "Unknown texture target";
-    return 0;
-  }
-}
+				if(mip_filter == Sampler::NONE)
+					return GL_NEAREST;
+				else if(mip_filter == Sampler::POINT)
+					return GL_NEAREST_MIPMAP_NEAREST;
+				else if(mip_filter == Sampler::LINEAR)
+					return GL_NEAREST_MIPMAP_LINEAR;
+				else if(mip_filter == Sampler::ANISOTROPIC)
+					return GL_NEAREST_MIPMAP_LINEAR;
 
-}  // namespace
+			case Sampler::ANISOTROPIC:  // Anisotropy is handled in SetTextureAndStates
+			case Sampler::LINEAR:
 
-GLint SamplerGLES2::SetTextureAndStates(GLES2Parameter gl_param) {
-  // Get the texture object associated with this sampler.
-  Texture* texture_object = texture();
+				if(mip_filter == Sampler::NONE)
+					return GL_LINEAR;
+				else if(mip_filter == Sampler::POINT)
+					return GL_LINEAR_MIPMAP_NEAREST;
+				else if(mip_filter == Sampler::LINEAR)
+					return GL_LINEAR_MIPMAP_LINEAR;
+				else if(mip_filter == Sampler::ANISOTROPIC)
+					return GL_LINEAR_MIPMAP_LINEAR;
+			}
 
-  if (!texture_object) {
-    texture_object = renderer_->error_texture();
-    if (!texture_object) {
-      O3D_ERROR(service_locator())
-          << "Missing texture for sampler " << name();
-      texture_object = renderer_->fallback_error_texture();
-    }
-  }
+			// fall through
+			O3D_LOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
+			O3D_ASSERT(false);
+			return GL_NONE;
+		}
 
-  if (!renderer_->SafeToBindTexture(texture_object)) {
-    O3D_ERROR(renderer_->service_locator())
-        << "Attempt to bind texture, " << texture_object->name()
-        << " when drawing to same texture as a RenderSurface";
-    texture_object = renderer_->error_texture();
-  }
+		unsigned int GLMagFilter(Sampler::FilterType o3d_filter) {
+			switch(o3d_filter) {
+			case Sampler::NONE:
+			case Sampler::POINT:
+				return GL_NEAREST;
+			case Sampler::LINEAR:
+			case Sampler::ANISOTROPIC:
+				return GL_LINEAR;
+			default:
+				O3D_LOG(ERROR) << "Unknown filter " << static_cast<int>(o3d_filter);
+				return GL_LINEAR;
+			}
+		}
 
-  GLint handle = static_cast<GLint>(reinterpret_cast<intptr_t>(
-      texture_object->GetTextureHandle()));
-  if (handle) {
-    // TODO(o3d): this is a slow check and needs to be moved to initialization
-    //     time.
-    GLenum target = GLTextureTarget(texture_object);
-    if (target) {
-      int renderer_texture_unit_group_set_count =
-          renderer_->GetTextureGroupSetCount();
-      if (renderer_texture_unit_group_set_count !=
-          texture_unit_group_set_count_) {
-        texture_unit_group_set_count_ = renderer_texture_unit_group_set_count;
-        texture_unit_ = renderer_->GetNextTextureUnit();
-      }
-      ::glActiveTexture(GL_TEXTURE0 + texture_unit_);
-      glBindTexture(target, handle);
-      glTexParameteri(target,
-                      GL_TEXTURE_WRAP_S,
-                      GLAddressMode(address_mode_u(), GL_REPEAT));
-      glTexParameteri(target,
-                      GL_TEXTURE_WRAP_T,
-                      GLAddressMode(address_mode_v(), GL_REPEAT));
-      // disable mipmapping if we have only one level.
-      FilterType clamped_mip_filter =
-          texture_object->levels() == 1 ? NONE : mip_filter();
-      glTexParameteri(target,
-                      GL_TEXTURE_MIN_FILTER,
-                      GLMinFilter(min_filter(), clamped_mip_filter));
-      glTexParameteri(target,
-                      GL_TEXTURE_MAG_FILTER,
-                      GLMagFilter(mag_filter()));
+		GLenum GLTextureTarget(Texture* texture) {
+			if(texture->IsA(Texture2D::GetApparentClass())) {
+				return GL_TEXTURE_2D;
+			}
+			else if(texture->IsA(TextureCUBE::GetApparentClass())) {
+				return GL_TEXTURE_CUBE_MAP;
+			}
+			else {
+				O3D_LOG(ERROR) << "Unknown texture target";
+				return 0;
+			}
+		}
 
+	}  // namespace
+
+	GLint SamplerGLES2::SetTextureAndStates(GLES2Parameter gl_param) {
+		// Get the texture object associated with this sampler.
+		Texture* texture_object = texture();
+
+		if(!texture_object) {
+			texture_object = renderer_->error_texture();
+
+			if(!texture_object) {
+				O3D_ERROR(service_locator())
+				        << "Missing texture for sampler " << name();
+				texture_object = renderer_->fallback_error_texture();
+			}
+		}
+
+		if(!renderer_->SafeToBindTexture(texture_object)) {
+			O3D_ERROR(renderer_->service_locator())
+			        << "Attempt to bind texture, " << texture_object->name()
+			        << " when drawing to same texture as a RenderSurface";
+			texture_object = renderer_->error_texture();
+		}
+
+		GLint handle = static_cast<GLint>(reinterpret_cast<intptr_t>(
+		                                      texture_object->GetTextureHandle()));
+
+		if(handle) {
+			// TODO(o3d): this is a slow check and needs to be moved to initialization
+			//     time.
+			GLenum target = GLTextureTarget(texture_object);
+
+			if(target) {
+				int renderer_texture_unit_group_set_count =
+				    renderer_->GetTextureGroupSetCount();
+
+				if(renderer_texture_unit_group_set_count !=
+				        texture_unit_group_set_count_) {
+					texture_unit_group_set_count_ = renderer_texture_unit_group_set_count;
+					texture_unit_ = renderer_->GetNextTextureUnit();
+				}
+
+				::glActiveTexture(GL_TEXTURE0 + texture_unit_);
+				glBindTexture(target, handle);
+				glTexParameteri(target,
+				                GL_TEXTURE_WRAP_S,
+				                GLAddressMode(address_mode_u(), GL_REPEAT));
+				glTexParameteri(target,
+				                GL_TEXTURE_WRAP_T,
+				                GLAddressMode(address_mode_v(), GL_REPEAT));
+				// disable mipmapping if we have only one level.
+				FilterType clamped_mip_filter =
+				    texture_object->levels() == 1 ? NONE : mip_filter();
+				glTexParameteri(target,
+				                GL_TEXTURE_MIN_FILTER,
+				                GLMinFilter(min_filter(), clamped_mip_filter));
+				glTexParameteri(target,
+				                GL_TEXTURE_MAG_FILTER,
+				                GLMagFilter(mag_filter()));
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-      Float4 color = border_color();
-      GLfloat gl_color[4] = {color[0], color[1], color[2], color[3]};
-      glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, gl_color);
+				Float4 color = border_color();
+				GLfloat gl_color[4] = {color[0], color[1], color[2], color[3]};
+				glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, gl_color);
 #else
-      // Not implemented
+				// Not implemented
 #endif
-
-
 #if defined(GLES2_BACKEND_DESKTOP_GL)
-      // Check for anisotropic texture filtering.
-      if (GLEW_EXT_texture_filter_anisotropic) {
-        int gl_max_anisotropy =
-            (min_filter() == ANISOTROPIC) ? max_anisotropy() : 1;
-        glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                        gl_max_anisotropy);
-      }
+
+				// Check for anisotropic texture filtering.
+				if(GLEW_EXT_texture_filter_anisotropic) {
+					int gl_max_anisotropy =
+					    (min_filter() == ANISOTROPIC) ? max_anisotropy() : 1;
+					glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+					                gl_max_anisotropy);
+				}
+
 #else
-      // TODO(piman): test for GL_EXT_texture_filter_anisotropic and implement
-      // as above.
+				// TODO(piman): test for GL_EXT_texture_filter_anisotropic and implement
+				// as above.
 #endif
-    }
-  }
+			}
+		}
 
-  return texture_unit_;
-}
+		return texture_unit_;
+	}
 
-void SamplerGLES2::ResetTexture(GLES2Parameter gl_param) {
-  Texture* the_texture = texture();
-  if (the_texture) {
-    // TODO(o3d): this is a slow check and needs to be moved to initialization
-    //     time.
-    GLenum target = GLTextureTarget(the_texture);
-    if (target) {
-      glActiveTexture(GL_TEXTURE0 + texture_unit_);
-      glBindTexture(target, 0);
-    }
-  }
-}
+	void SamplerGLES2::ResetTexture(GLES2Parameter gl_param) {
+		Texture* the_texture = texture();
+
+		if(the_texture) {
+			// TODO(o3d): this is a slow check and needs to be moved to initialization
+			//     time.
+			GLenum target = GLTextureTarget(the_texture);
+
+			if(target) {
+				glActiveTexture(GL_TEXTURE0 + texture_unit_);
+				glBindTexture(target, 0);
+			}
+		}
+	}
 }  // namespace o3d

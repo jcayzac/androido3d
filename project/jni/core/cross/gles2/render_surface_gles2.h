@@ -42,75 +42,75 @@
 
 namespace o3d {
 
-class RenderSurfaceGLES2 : public RenderSurface {
- public:
-  typedef SmartPointer<RenderSurfaceGLES2> Ref;
+	class RenderSurfaceGLES2 : public RenderSurface {
+	public:
+		typedef SmartPointer<RenderSurfaceGLES2> Ref;
 
-  // Constructs a RenderSurfaceGLES2 instance associated with the texture
-  // argument.
-  // Parameters:
-  //  service_locator:  Service locator for the instance.
-  //  width:  The width of the surface, in pixels.
-  //  height:  The height of the surface, in pixels.
-  //  cube_face:  The face of the cube texture to which the surface is to be
-  //    associated.  NOTE: If the texture is a 2d texture, then the value of
-  //    this argument is irrelevent.
-  //  mip_level:  The mip-level of the texture to associate with the surface.
-  //  texture:  The texture to associate with the surface.
-  RenderSurfaceGLES2(ServiceLocator *service_locator,
-                     int width,
-                     int height,
-                     GLenum cube_face,
-                     int mip_level,
-                     Texture *texture);
-  virtual ~RenderSurfaceGLES2();
+		// Constructs a RenderSurfaceGLES2 instance associated with the texture
+		// argument.
+		// Parameters:
+		//  service_locator:  Service locator for the instance.
+		//  width:  The width of the surface, in pixels.
+		//  height:  The height of the surface, in pixels.
+		//  cube_face:  The face of the cube texture to which the surface is to be
+		//    associated.  NOTE: If the texture is a 2d texture, then the value of
+		//    this argument is irrelevent.
+		//  mip_level:  The mip-level of the texture to associate with the surface.
+		//  texture:  The texture to associate with the surface.
+		RenderSurfaceGLES2(ServiceLocator* service_locator,
+		                   int width,
+		                   int height,
+		                   GLenum cube_face,
+		                   int mip_level,
+		                   Texture* texture);
+		virtual ~RenderSurfaceGLES2();
 
-  GLenum cube_face() const {
-    return cube_face_;
-  }
+		GLenum cube_face() const {
+			return cube_face_;
+		}
 
-  int mip_level() const {
-    return mip_level_;
-  }
+		int mip_level() const {
+			return mip_level_;
+		}
 
-  // Handler for a new context.
-  bool OnContextRestored();
+		// Handler for a new context.
+		bool OnContextRestored();
 
- protected:
-  // The platform specific part of GetBitmap.
-  virtual bool PlatformSpecificGetIntoBitmap(Bitmap::Ref bitmap) const;
+	protected:
+		// The platform specific part of GetBitmap.
+		virtual bool PlatformSpecificGetIntoBitmap(Bitmap::Ref bitmap) const;
 
- private:
-  GLenum cube_face_;
-  int mip_level_;
-  O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceGLES2);
-};
+	private:
+		GLenum cube_face_;
+		int mip_level_;
+		O3D_DISALLOW_COPY_AND_ASSIGN(RenderSurfaceGLES2);
+	};
 
-class RenderDepthStencilSurfaceGLES2 : public RenderDepthStencilSurface {
- public:
-  typedef SmartPointer<RenderDepthStencilSurfaceGLES2> Ref;
+	class RenderDepthStencilSurfaceGLES2 : public RenderDepthStencilSurface {
+	public:
+		typedef SmartPointer<RenderDepthStencilSurfaceGLES2> Ref;
 
-  RenderDepthStencilSurfaceGLES2(ServiceLocator *service_locator,
-                                 int width,
-                                 int height);
-  virtual ~RenderDepthStencilSurfaceGLES2();
+		RenderDepthStencilSurfaceGLES2(ServiceLocator* service_locator,
+		                               int width,
+		                               int height);
+		virtual ~RenderDepthStencilSurfaceGLES2();
 
-  GLuint depth_buffer() const {
-    return render_buffers_[0];
-  }
+		GLuint depth_buffer() const {
+			return render_buffers_[0];
+		}
 
-  GLuint stencil_buffer() const {
-    return render_buffers_[1];
-  }
+		GLuint stencil_buffer() const {
+			return render_buffers_[1];
+		}
 
-  // Handler for a new context.
-  bool OnContextRestored();
+		// Handler for a new context.
+		bool OnContextRestored();
 
- private:
-  // Handles to the depth and stencil render-buffers, respectively.
-  GLuint render_buffers_[2];
-  O3D_DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceGLES2);
-};
+	private:
+		// Handles to the depth and stencil render-buffers, respectively.
+		GLuint render_buffers_[2];
+		O3D_DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceGLES2);
+	};
 
 }  // namespace o3d
 
