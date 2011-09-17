@@ -1,0 +1,1105 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		544C3ED914246C1800D9B790 /* c14n.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EB214246C1800D9B790 /* c14n.c */; };
+		544C3EDA14246C1800D9B790 /* catalog.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EB314246C1800D9B790 /* catalog.c */; };
+		544C3EDB14246C1800D9B790 /* chvalid.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EB414246C1800D9B790 /* chvalid.c */; };
+		544C3EDC14246C1800D9B790 /* debugXML.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EB514246C1800D9B790 /* debugXML.c */; };
+		544C3EDD14246C1800D9B790 /* dict.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EB614246C1800D9B790 /* dict.c */; };
+		544C3EDE14246C1800D9B790 /* DOCBparser.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EB714246C1800D9B790 /* DOCBparser.c */; };
+		544C3EDF14246C1800D9B790 /* encoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EB814246C1800D9B790 /* encoding.c */; };
+		544C3EE014246C1800D9B790 /* entities.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EB914246C1800D9B790 /* entities.c */; };
+		544C3EE114246C1800D9B790 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EBA14246C1800D9B790 /* error.c */; };
+		544C3EE214246C1800D9B790 /* globals.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EBB14246C1800D9B790 /* globals.c */; };
+		544C3EE314246C1800D9B790 /* hash.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EBC14246C1800D9B790 /* hash.c */; };
+		544C3EE414246C1800D9B790 /* HTMLparser.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EBD14246C1800D9B790 /* HTMLparser.c */; };
+		544C3EE514246C1800D9B790 /* HTMLtree.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EBE14246C1800D9B790 /* HTMLtree.c */; };
+		544C3EE614246C1800D9B790 /* legacy.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EBF14246C1800D9B790 /* legacy.c */; };
+		544C3EE714246C1800D9B790 /* list.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC014246C1800D9B790 /* list.c */; };
+		544C3EE814246C1800D9B790 /* nanoftp.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC114246C1800D9B790 /* nanoftp.c */; };
+		544C3EE914246C1800D9B790 /* nanohttp.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC214246C1800D9B790 /* nanohttp.c */; };
+		544C3EEA14246C1800D9B790 /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC314246C1800D9B790 /* parser.c */; };
+		544C3EEB14246C1800D9B790 /* parserInternals.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC414246C1800D9B790 /* parserInternals.c */; };
+		544C3EEC14246C1800D9B790 /* pattern.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC514246C1800D9B790 /* pattern.c */; };
+		544C3EED14246C1800D9B790 /* relaxng.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC614246C1800D9B790 /* relaxng.c */; };
+		544C3EEE14246C1800D9B790 /* SAX.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC714246C1800D9B790 /* SAX.c */; };
+		544C3EEF14246C1800D9B790 /* SAX2.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC814246C1800D9B790 /* SAX2.c */; };
+		544C3EF014246C1800D9B790 /* threads.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3EC914246C1800D9B790 /* threads.c */; };
+		544C3EF114246C1800D9B790 /* tree.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ECA14246C1800D9B790 /* tree.c */; };
+		544C3EF214246C1800D9B790 /* uri.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ECB14246C1800D9B790 /* uri.c */; };
+		544C3EF314246C1800D9B790 /* valid.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ECC14246C1800D9B790 /* valid.c */; };
+		544C3EF414246C1800D9B790 /* xinclude.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ECD14246C1800D9B790 /* xinclude.c */; };
+		544C3EF514246C1800D9B790 /* xlink.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ECE14246C1800D9B790 /* xlink.c */; };
+		544C3EF614246C1800D9B790 /* xmlcatalog.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ECF14246C1800D9B790 /* xmlcatalog.c */; };
+		544C3EF714246C1800D9B790 /* xmlIO.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ED014246C1800D9B790 /* xmlIO.c */; };
+		544C3EF814246C1800D9B790 /* xmlmemory.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ED114246C1800D9B790 /* xmlmemory.c */; };
+		544C3EF914246C1800D9B790 /* xmlmodule.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ED214246C1800D9B790 /* xmlmodule.c */; };
+		544C3EFA14246C1800D9B790 /* xmlreader.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ED314246C1800D9B790 /* xmlreader.c */; };
+		544C3EFB14246C1800D9B790 /* xmlregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ED414246C1800D9B790 /* xmlregexp.c */; };
+		544C3EFC14246C1800D9B790 /* xmlsave.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ED514246C1800D9B790 /* xmlsave.c */; };
+		544C3EFD14246C1800D9B790 /* xmlstring.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ED614246C1800D9B790 /* xmlstring.c */; };
+		544C3EFE14246C1800D9B790 /* xmlunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ED714246C1800D9B790 /* xmlunicode.c */; };
+		544C3EFF14246C1800D9B790 /* xmlwriter.c in Sources */ = {isa = PBXBuildFile; fileRef = 544C3ED814246C1800D9B790 /* xmlwriter.c */; };
+		544C3F1E14246F0400D9B790 /* FArchiveXML.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0114246F0400D9B790 /* FArchiveXML.cpp */; };
+		544C3F1F14246F0400D9B790 /* FAXAnimationExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0214246F0400D9B790 /* FAXAnimationExport.cpp */; };
+		544C3F2014246F0400D9B790 /* FAXAnimationImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0314246F0400D9B790 /* FAXAnimationImport.cpp */; };
+		544C3F2114246F0400D9B790 /* FAXCameraExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0414246F0400D9B790 /* FAXCameraExport.cpp */; };
+		544C3F2214246F0400D9B790 /* FAXCameraImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0514246F0400D9B790 /* FAXCameraImport.cpp */; };
+		544C3F2314246F0400D9B790 /* FAXColladaParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0614246F0400D9B790 /* FAXColladaParser.cpp */; };
+		544C3F2414246F0400D9B790 /* FAXColladaWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0714246F0400D9B790 /* FAXColladaWriter.cpp */; };
+		544C3F2514246F0400D9B790 /* FAXControllerExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0814246F0400D9B790 /* FAXControllerExport.cpp */; };
+		544C3F2614246F0400D9B790 /* FAXControllerImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0914246F0400D9B790 /* FAXControllerImport.cpp */; };
+		544C3F2714246F0400D9B790 /* FAXEmitterExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0A14246F0400D9B790 /* FAXEmitterExport.cpp */; };
+		544C3F2814246F0400D9B790 /* FAXEmitterImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0B14246F0400D9B790 /* FAXEmitterImport.cpp */; };
+		544C3F2914246F0400D9B790 /* FAXEntityExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0C14246F0400D9B790 /* FAXEntityExport.cpp */; };
+		544C3F2A14246F0400D9B790 /* FAXEntityImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0D14246F0400D9B790 /* FAXEntityImport.cpp */; };
+		544C3F2B14246F0400D9B790 /* FAXForceFieldExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0E14246F0400D9B790 /* FAXForceFieldExport.cpp */; };
+		544C3F2C14246F0400D9B790 /* FAXForceFieldImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F0F14246F0400D9B790 /* FAXForceFieldImport.cpp */; };
+		544C3F2D14246F0400D9B790 /* FAXGeometryExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1014246F0400D9B790 /* FAXGeometryExport.cpp */; };
+		544C3F2E14246F0400D9B790 /* FAXGeometryImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1114246F0400D9B790 /* FAXGeometryImport.cpp */; };
+		544C3F2F14246F0400D9B790 /* FAXImportLinking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1214246F0400D9B790 /* FAXImportLinking.cpp */; };
+		544C3F3014246F0400D9B790 /* FAXInstanceExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1314246F0400D9B790 /* FAXInstanceExport.cpp */; };
+		544C3F3114246F0400D9B790 /* FAXInstanceImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1414246F0400D9B790 /* FAXInstanceImport.cpp */; };
+		544C3F3214246F0400D9B790 /* FAXLightExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1514246F0400D9B790 /* FAXLightExport.cpp */; };
+		544C3F3314246F0400D9B790 /* FAXLightImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1614246F0400D9B790 /* FAXLightImport.cpp */; };
+		544C3F3414246F0400D9B790 /* FAXMaterialExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1714246F0400D9B790 /* FAXMaterialExport.cpp */; };
+		544C3F3514246F0400D9B790 /* FAXMaterialImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1814246F0400D9B790 /* FAXMaterialImport.cpp */; };
+		544C3F3614246F0400D9B790 /* FAXPhysicsExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1914246F0400D9B790 /* FAXPhysicsExport.cpp */; };
+		544C3F3714246F0400D9B790 /* FAXPhysicsImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1A14246F0400D9B790 /* FAXPhysicsImport.cpp */; };
+		544C3F3814246F0400D9B790 /* FAXSceneExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1B14246F0400D9B790 /* FAXSceneExport.cpp */; };
+		544C3F3914246F0400D9B790 /* FAXSceneImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1C14246F0400D9B790 /* FAXSceneImport.cpp */; };
+		544C3F3A14246F0400D9B790 /* StdAfx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F1D14246F0400D9B790 /* StdAfx.cpp */; };
+		544C3F3C14246F1300D9B790 /* StdAfx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F3B14246F1300D9B790 /* StdAfx.cpp */; };
+		544C3F94142470FE00D9B790 /* FCDAnimated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F3E142470FE00D9B790 /* FCDAnimated.cpp */; };
+		544C3F95142470FE00D9B790 /* FCDAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F3F142470FE00D9B790 /* FCDAnimation.cpp */; };
+		544C3F96142470FE00D9B790 /* FCDAnimationChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F40142470FE00D9B790 /* FCDAnimationChannel.cpp */; };
+		544C3F97142470FE00D9B790 /* FCDAnimationClip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F41142470FE00D9B790 /* FCDAnimationClip.cpp */; };
+		544C3F98142470FE00D9B790 /* FCDAnimationClipTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F42142470FE00D9B790 /* FCDAnimationClipTools.cpp */; };
+		544C3F99142470FE00D9B790 /* FCDAnimationCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F43142470FE00D9B790 /* FCDAnimationCurve.cpp */; };
+		544C3F9A142470FE00D9B790 /* FCDAnimationCurveTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F44142470FE00D9B790 /* FCDAnimationCurveTools.cpp */; };
+		544C3F9B142470FE00D9B790 /* FCDAnimationKey.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F45142470FE00D9B790 /* FCDAnimationKey.cpp */; };
+		544C3F9C142470FE00D9B790 /* FCDAnimationMultiCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F46142470FE00D9B790 /* FCDAnimationMultiCurve.cpp */; };
+		544C3F9D142470FE00D9B790 /* FCDAsset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F47142470FE00D9B790 /* FCDAsset.cpp */; };
+		544C3F9E142470FE00D9B790 /* FCDCamera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F48142470FE00D9B790 /* FCDCamera.cpp */; };
+		544C3F9F142470FE00D9B790 /* FCDController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F49142470FE00D9B790 /* FCDController.cpp */; };
+		544C3FA0142470FE00D9B790 /* FCDControllerInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F4A142470FE00D9B790 /* FCDControllerInstance.cpp */; };
+		544C3FA1142470FE00D9B790 /* FCDControllerTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F4B142470FE00D9B790 /* FCDControllerTools.cpp */; };
+		544C3FA2142470FE00D9B790 /* FCDEffect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F4C142470FE00D9B790 /* FCDEffect.cpp */; };
+		544C3FA3142470FE00D9B790 /* FCDEffectCode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F4D142470FE00D9B790 /* FCDEffectCode.cpp */; };
+		544C3FA4142470FE00D9B790 /* FCDEffectParameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F4E142470FE00D9B790 /* FCDEffectParameter.cpp */; };
+		544C3FA5142470FE00D9B790 /* FCDEffectParameterFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F4F142470FE00D9B790 /* FCDEffectParameterFactory.cpp */; };
+		544C3FA6142470FE00D9B790 /* FCDEffectParameterSampler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F50142470FE00D9B790 /* FCDEffectParameterSampler.cpp */; };
+		544C3FA7142470FE00D9B790 /* FCDEffectParameterSurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F51142470FE00D9B790 /* FCDEffectParameterSurface.cpp */; };
+		544C3FA8142470FE00D9B790 /* FCDEffectPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F52142470FE00D9B790 /* FCDEffectPass.cpp */; };
+		544C3FA9142470FE00D9B790 /* FCDEffectPassShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F53142470FE00D9B790 /* FCDEffectPassShader.cpp */; };
+		544C3FAA142470FE00D9B790 /* FCDEffectPassState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F54142470FE00D9B790 /* FCDEffectPassState.cpp */; };
+		544C3FAB142470FE00D9B790 /* FCDEffectProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F55142470FE00D9B790 /* FCDEffectProfile.cpp */; };
+		544C3FAC142470FE00D9B790 /* FCDEffectProfileFX.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F56142470FE00D9B790 /* FCDEffectProfileFX.cpp */; };
+		544C3FAD142470FE00D9B790 /* FCDEffectStandard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F57142470FE00D9B790 /* FCDEffectStandard.cpp */; };
+		544C3FAE142470FE00D9B790 /* FCDEffectTechnique.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F58142470FE00D9B790 /* FCDEffectTechnique.cpp */; };
+		544C3FAF142470FE00D9B790 /* FCDEffectTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F59142470FE00D9B790 /* FCDEffectTools.cpp */; };
+		544C3FB0142470FE00D9B790 /* FCDEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F5A142470FE00D9B790 /* FCDEmitter.cpp */; };
+		544C3FB1142470FE00D9B790 /* FCDEmitterInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F5B142470FE00D9B790 /* FCDEmitterInstance.cpp */; };
+		544C3FB2142470FE00D9B790 /* FCDEmitterObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F5C142470FE00D9B790 /* FCDEmitterObject.cpp */; };
+		544C3FB3142470FE00D9B790 /* FCDEmitterParticle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F5D142470FE00D9B790 /* FCDEmitterParticle.cpp */; };
+		544C3FB4142470FE00D9B790 /* FCDEntity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F5E142470FE00D9B790 /* FCDEntity.cpp */; };
+		544C3FB5142470FE00D9B790 /* FCDEntityInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F5F142470FE00D9B790 /* FCDEntityInstance.cpp */; };
+		544C3FB6142470FE00D9B790 /* FCDEntityReference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F60142470FE00D9B790 /* FCDEntityReference.cpp */; };
+		544C3FB7142470FE00D9B790 /* FCDExternalReferenceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F61142470FE00D9B790 /* FCDExternalReferenceManager.cpp */; };
+		544C3FB8142470FE00D9B790 /* FCDExtra.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F62142470FE00D9B790 /* FCDExtra.cpp */; };
+		544C3FB9142470FE00D9B790 /* FCDForceDeflector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F63142470FE00D9B790 /* FCDForceDeflector.cpp */; };
+		544C3FBA142470FE00D9B790 /* FCDForceDrag.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F64142470FE00D9B790 /* FCDForceDrag.cpp */; };
+		544C3FBB142470FE00D9B790 /* FCDForceField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F65142470FE00D9B790 /* FCDForceField.cpp */; };
+		544C3FBC142470FE00D9B790 /* FCDForceGravity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F66142470FE00D9B790 /* FCDForceGravity.cpp */; };
+		544C3FBD142470FE00D9B790 /* FCDForcePBomb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F67142470FE00D9B790 /* FCDForcePBomb.cpp */; };
+		544C3FBE142470FE00D9B790 /* FCDForceWind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F68142470FE00D9B790 /* FCDForceWind.cpp */; };
+		544C3FBF142470FE00D9B790 /* FCDGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F69142470FE00D9B790 /* FCDGeometry.cpp */; };
+		544C3FC0142470FE00D9B790 /* FCDGeometryInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F6A142470FE00D9B790 /* FCDGeometryInstance.cpp */; };
+		544C3FC1142470FE00D9B790 /* FCDGeometryMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F6B142470FE00D9B790 /* FCDGeometryMesh.cpp */; };
+		544C3FC2142470FE00D9B790 /* FCDGeometryNURBSSurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F6C142470FE00D9B790 /* FCDGeometryNURBSSurface.cpp */; };
+		544C3FC3142470FE00D9B790 /* FCDGeometryPolygons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F6D142470FE00D9B790 /* FCDGeometryPolygons.cpp */; };
+		544C3FC4142470FE00D9B790 /* FCDGeometryPolygonsInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F6E142470FE00D9B790 /* FCDGeometryPolygonsInput.cpp */; };
+		544C3FC5142470FE00D9B790 /* FCDGeometryPolygonsTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F6F142470FE00D9B790 /* FCDGeometryPolygonsTools.cpp */; };
+		544C3FC6142470FE00D9B790 /* FCDGeometrySource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F70142470FE00D9B790 /* FCDGeometrySource.cpp */; };
+		544C3FC7142470FE00D9B790 /* FCDGeometrySpline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F71142470FE00D9B790 /* FCDGeometrySpline.cpp */; };
+		544C3FC8142470FE00D9B790 /* FCDImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F72142470FE00D9B790 /* FCDImage.cpp */; };
+		544C3FC9142470FE00D9B790 /* FCDLibrary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F73142470FE00D9B790 /* FCDLibrary.cpp */; };
+		544C3FCA142470FE00D9B790 /* FCDLight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F74142470FE00D9B790 /* FCDLight.cpp */; };
+		544C3FCB142470FE00D9B790 /* FCDLightTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F75142470FE00D9B790 /* FCDLightTools.cpp */; };
+		544C3FCC142470FE00D9B790 /* FCDMaterial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F76142470FE00D9B790 /* FCDMaterial.cpp */; };
+		544C3FCD142470FE00D9B790 /* FCDMaterialInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F77142470FE00D9B790 /* FCDMaterialInstance.cpp */; };
+		544C3FCE142470FE00D9B790 /* FCDMorphController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F78142470FE00D9B790 /* FCDMorphController.cpp */; };
+		544C3FCF142470FE00D9B790 /* FCDObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F79142470FE00D9B790 /* FCDObject.cpp */; };
+		544C3FD0142470FE00D9B790 /* FCDObjectWithId.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F7A142470FE00D9B790 /* FCDObjectWithId.cpp */; };
+		544C3FD1142470FE00D9B790 /* FCDocument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F7B142470FE00D9B790 /* FCDocument.cpp */; };
+		544C3FD2142470FE00D9B790 /* FCDocumentTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F7C142470FE00D9B790 /* FCDocumentTools.cpp */; };
+		544C3FD3142470FE00D9B790 /* FCDParameterAnimatable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F7D142470FE00D9B790 /* FCDParameterAnimatable.cpp */; };
+		544C3FD4142470FE00D9B790 /* FCDParticleModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F7E142470FE00D9B790 /* FCDParticleModifier.cpp */; };
+		544C3FD5142470FE00D9B790 /* FCDPhysicsAnalyticalGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F7F142470FE00D9B790 /* FCDPhysicsAnalyticalGeometry.cpp */; };
+		544C3FD6142470FE00D9B790 /* FCDPhysicsForceFieldInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F80142470FE00D9B790 /* FCDPhysicsForceFieldInstance.cpp */; };
+		544C3FD7142470FE00D9B790 /* FCDPhysicsMaterial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F81142470FE00D9B790 /* FCDPhysicsMaterial.cpp */; };
+		544C3FD8142470FE00D9B790 /* FCDPhysicsModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F82142470FE00D9B790 /* FCDPhysicsModel.cpp */; };
+		544C3FD9142470FE00D9B790 /* FCDPhysicsModelInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F83142470FE00D9B790 /* FCDPhysicsModelInstance.cpp */; };
+		544C3FDA142470FE00D9B790 /* FCDPhysicsRigidBody.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F84142470FE00D9B790 /* FCDPhysicsRigidBody.cpp */; };
+		544C3FDB142470FE00D9B790 /* FCDPhysicsRigidBodyInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F85142470FE00D9B790 /* FCDPhysicsRigidBodyInstance.cpp */; };
+		544C3FDC142470FE00D9B790 /* FCDPhysicsRigidBodyParameters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F86142470FE00D9B790 /* FCDPhysicsRigidBodyParameters.cpp */; };
+		544C3FDD142470FE00D9B790 /* FCDPhysicsRigidConstraint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F87142470FE00D9B790 /* FCDPhysicsRigidConstraint.cpp */; };
+		544C3FDE142470FE00D9B790 /* FCDPhysicsRigidConstraintInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F88142470FE00D9B790 /* FCDPhysicsRigidConstraintInstance.cpp */; };
+		544C3FDF142470FE00D9B790 /* FCDPhysicsScene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F89142470FE00D9B790 /* FCDPhysicsScene.cpp */; };
+		544C3FE0142470FE00D9B790 /* FCDPhysicsShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F8A142470FE00D9B790 /* FCDPhysicsShape.cpp */; };
+		544C3FE1142470FE00D9B790 /* FCDPlaceHolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F8B142470FE00D9B790 /* FCDPlaceHolder.cpp */; };
+		544C3FE2142470FE00D9B790 /* FCDSceneNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F8C142470FE00D9B790 /* FCDSceneNode.cpp */; };
+		544C3FE3142470FE00D9B790 /* FCDSceneNodeIterator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F8D142470FE00D9B790 /* FCDSceneNodeIterator.cpp */; };
+		544C3FE4142470FE00D9B790 /* FCDSceneNodeTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F8E142470FE00D9B790 /* FCDSceneNodeTools.cpp */; };
+		544C3FE5142470FE00D9B790 /* FCDSkinController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F8F142470FE00D9B790 /* FCDSkinController.cpp */; };
+		544C3FE6142470FE00D9B790 /* FCDTargetedEntity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F90142470FE00D9B790 /* FCDTargetedEntity.cpp */; };
+		544C3FE7142470FE00D9B790 /* FCDTexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F91142470FE00D9B790 /* FCDTexture.cpp */; };
+		544C3FE8142470FE00D9B790 /* FCDTransform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F92142470FE00D9B790 /* FCDTransform.cpp */; };
+		544C3FE9142470FE00D9B790 /* FCDVersion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3F93142470FE00D9B790 /* FCDVersion.cpp */; };
+		544C3FEC14249F1F00D9B790 /* FCollada.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FEA14249F1F00D9B790 /* FCollada.cpp */; };
+		544C3FED14249F1F00D9B790 /* FColladaPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FEB14249F1F00D9B790 /* FColladaPlugin.cpp */; };
+		544C3FFC14249F6900D9B790 /* FMAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FEF14249F6900D9B790 /* FMAllocator.cpp */; };
+		544C3FFD14249F6900D9B790 /* FMAngleAxis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF014249F6900D9B790 /* FMAngleAxis.cpp */; };
+		544C3FFE14249F6900D9B790 /* FMColor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF114249F6900D9B790 /* FMColor.cpp */; };
+		544C3FFF14249F6900D9B790 /* FMInterpolation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF214249F6900D9B790 /* FMInterpolation.cpp */; };
+		544C400014249F6900D9B790 /* FMLookAt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF314249F6900D9B790 /* FMLookAt.cpp */; };
+		544C400114249F6900D9B790 /* FMMatrix33.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF414249F6900D9B790 /* FMMatrix33.cpp */; };
+		544C400214249F6900D9B790 /* FMMatrix44.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF514249F6900D9B790 /* FMMatrix44.cpp */; };
+		544C400314249F6900D9B790 /* FMQuaternion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF614249F6900D9B790 /* FMQuaternion.cpp */; };
+		544C400414249F6900D9B790 /* FMRandom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF714249F6900D9B790 /* FMRandom.cpp */; };
+		544C400514249F6900D9B790 /* FMSkew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF814249F6900D9B790 /* FMSkew.cpp */; };
+		544C400614249F6900D9B790 /* FMVector3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FF914249F6900D9B790 /* FMVector3.cpp */; };
+		544C400714249F6900D9B790 /* FMVolume.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FFA14249F6900D9B790 /* FMVolume.cpp */; };
+		544C400814249F6900D9B790 /* StdAfx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C3FFB14249F6900D9B790 /* StdAfx.cpp */; };
+		544C40291424A01B00D9B790 /* FUAssert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C400A1424A01B00D9B790 /* FUAssert.cpp */; };
+		544C402A1424A01B00D9B790 /* FUBase64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C400B1424A01B00D9B790 /* FUBase64.cpp */; };
+		544C402B1424A01B00D9B790 /* FUBoundingBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C400C1424A01B00D9B790 /* FUBoundingBox.cpp */; };
+		544C402C1424A01B00D9B790 /* FUBoundingSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C400D1424A01B00D9B790 /* FUBoundingSphere.cpp */; };
+		544C402D1424A01B00D9B790 /* FUCrc32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C400E1424A01B00D9B790 /* FUCrc32.cpp */; };
+		544C402E1424A01B00D9B790 /* FUCriticalSection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C400F1424A01B00D9B790 /* FUCriticalSection.cpp */; };
+		544C402F1424A01B00D9B790 /* FUDaeEnum.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40101424A01B00D9B790 /* FUDaeEnum.cpp */; };
+		544C40301424A01B00D9B790 /* FUDateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40111424A01B00D9B790 /* FUDateTime.cpp */; };
+		544C40311424A01B00D9B790 /* FUDebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40121424A01B00D9B790 /* FUDebug.cpp */; };
+		544C40321424A01B00D9B790 /* FUError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40131424A01B00D9B790 /* FUError.cpp */; };
+		544C40331424A01B00D9B790 /* FUErrorLog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40141424A01B00D9B790 /* FUErrorLog.cpp */; };
+		544C40341424A01B00D9B790 /* FUFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40151424A01B00D9B790 /* FUFile.cpp */; };
+		544C40351424A01B00D9B790 /* FUFileManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40161424A01B00D9B790 /* FUFileManager.cpp */; };
+		544C40361424A01B00D9B790 /* FULogFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40171424A01B00D9B790 /* FULogFile.cpp */; };
+		544C40371424A01B00D9B790 /* FUObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40181424A01B00D9B790 /* FUObject.cpp */; };
+		544C40381424A01B00D9B790 /* FUObjectType.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40191424A01B00D9B790 /* FUObjectType.cpp */; };
+		544C40391424A01B00D9B790 /* FUParameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C401A1424A01B00D9B790 /* FUParameter.cpp */; };
+		544C403A1424A01B00D9B790 /* FUParameterizable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C401B1424A01B00D9B790 /* FUParameterizable.cpp */; };
+		544C403B1424A01B00D9B790 /* FUPluginManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C401C1424A01B00D9B790 /* FUPluginManager.cpp */; };
+		544C403C1424A01B00D9B790 /* FUSemaphore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C401D1424A01B00D9B790 /* FUSemaphore.cpp */; };
+		544C403D1424A01B00D9B790 /* FUStringBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C401E1424A01B00D9B790 /* FUStringBuilder.cpp */; };
+		544C403E1424A01B00D9B790 /* FUStringConversion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C401F1424A01B00D9B790 /* FUStringConversion.cpp */; };
+		544C403F1424A01B00D9B790 /* FUSynchronizableObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40201424A01B00D9B790 /* FUSynchronizableObject.cpp */; };
+		544C40401424A01B00D9B790 /* FUThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40211424A01B00D9B790 /* FUThread.cpp */; };
+		544C40411424A01B00D9B790 /* FUTracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40221424A01B00D9B790 /* FUTracker.cpp */; };
+		544C40421424A01B00D9B790 /* FUUniqueStringMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40231424A01B00D9B790 /* FUUniqueStringMap.cpp */; };
+		544C40431424A01B00D9B790 /* FUUri.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40241424A01B00D9B790 /* FUUri.cpp */; };
+		544C40441424A01B00D9B790 /* FUXmlDocument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40251424A01B00D9B790 /* FUXmlDocument.cpp */; };
+		544C40451424A01B00D9B790 /* FUXmlParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40261424A01B00D9B790 /* FUXmlParser.cpp */; };
+		544C40461424A01B00D9B790 /* FUXmlWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40271424A01B00D9B790 /* FUXmlWriter.cpp */; };
+		544C40471424A01B00D9B790 /* StdAfx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544C40281424A01B00D9B790 /* StdAfx.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		544C3E9D1424699D00D9B790 /* libFCollada.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFCollada.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		544C3EB214246C1800D9B790 /* c14n.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = c14n.c; path = FCollada_FREE_3.05B/FCollada/LibXML/c14n.c; sourceTree = "<group>"; };
+		544C3EB314246C1800D9B790 /* catalog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = catalog.c; path = FCollada_FREE_3.05B/FCollada/LibXML/catalog.c; sourceTree = "<group>"; };
+		544C3EB414246C1800D9B790 /* chvalid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = chvalid.c; path = FCollada_FREE_3.05B/FCollada/LibXML/chvalid.c; sourceTree = "<group>"; };
+		544C3EB514246C1800D9B790 /* debugXML.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = debugXML.c; path = FCollada_FREE_3.05B/FCollada/LibXML/debugXML.c; sourceTree = "<group>"; };
+		544C3EB614246C1800D9B790 /* dict.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dict.c; path = FCollada_FREE_3.05B/FCollada/LibXML/dict.c; sourceTree = "<group>"; };
+		544C3EB714246C1800D9B790 /* DOCBparser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = DOCBparser.c; path = FCollada_FREE_3.05B/FCollada/LibXML/DOCBparser.c; sourceTree = "<group>"; };
+		544C3EB814246C1800D9B790 /* encoding.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = encoding.c; path = FCollada_FREE_3.05B/FCollada/LibXML/encoding.c; sourceTree = "<group>"; };
+		544C3EB914246C1800D9B790 /* entities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = entities.c; path = FCollada_FREE_3.05B/FCollada/LibXML/entities.c; sourceTree = "<group>"; };
+		544C3EBA14246C1800D9B790 /* error.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = error.c; path = FCollada_FREE_3.05B/FCollada/LibXML/error.c; sourceTree = "<group>"; };
+		544C3EBB14246C1800D9B790 /* globals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = globals.c; path = FCollada_FREE_3.05B/FCollada/LibXML/globals.c; sourceTree = "<group>"; };
+		544C3EBC14246C1800D9B790 /* hash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hash.c; path = FCollada_FREE_3.05B/FCollada/LibXML/hash.c; sourceTree = "<group>"; };
+		544C3EBD14246C1800D9B790 /* HTMLparser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = HTMLparser.c; path = FCollada_FREE_3.05B/FCollada/LibXML/HTMLparser.c; sourceTree = "<group>"; };
+		544C3EBE14246C1800D9B790 /* HTMLtree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = HTMLtree.c; path = FCollada_FREE_3.05B/FCollada/LibXML/HTMLtree.c; sourceTree = "<group>"; };
+		544C3EBF14246C1800D9B790 /* legacy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = legacy.c; path = FCollada_FREE_3.05B/FCollada/LibXML/legacy.c; sourceTree = "<group>"; };
+		544C3EC014246C1800D9B790 /* list.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = list.c; path = FCollada_FREE_3.05B/FCollada/LibXML/list.c; sourceTree = "<group>"; };
+		544C3EC114246C1800D9B790 /* nanoftp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nanoftp.c; path = FCollada_FREE_3.05B/FCollada/LibXML/nanoftp.c; sourceTree = "<group>"; };
+		544C3EC214246C1800D9B790 /* nanohttp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nanohttp.c; path = FCollada_FREE_3.05B/FCollada/LibXML/nanohttp.c; sourceTree = "<group>"; };
+		544C3EC314246C1800D9B790 /* parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = parser.c; path = FCollada_FREE_3.05B/FCollada/LibXML/parser.c; sourceTree = "<group>"; };
+		544C3EC414246C1800D9B790 /* parserInternals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = parserInternals.c; path = FCollada_FREE_3.05B/FCollada/LibXML/parserInternals.c; sourceTree = "<group>"; };
+		544C3EC514246C1800D9B790 /* pattern.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pattern.c; path = FCollada_FREE_3.05B/FCollada/LibXML/pattern.c; sourceTree = "<group>"; };
+		544C3EC614246C1800D9B790 /* relaxng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = relaxng.c; path = FCollada_FREE_3.05B/FCollada/LibXML/relaxng.c; sourceTree = "<group>"; };
+		544C3EC714246C1800D9B790 /* SAX.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SAX.c; path = FCollada_FREE_3.05B/FCollada/LibXML/SAX.c; sourceTree = "<group>"; };
+		544C3EC814246C1800D9B790 /* SAX2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SAX2.c; path = FCollada_FREE_3.05B/FCollada/LibXML/SAX2.c; sourceTree = "<group>"; };
+		544C3EC914246C1800D9B790 /* threads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = threads.c; path = FCollada_FREE_3.05B/FCollada/LibXML/threads.c; sourceTree = "<group>"; };
+		544C3ECA14246C1800D9B790 /* tree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = tree.c; path = FCollada_FREE_3.05B/FCollada/LibXML/tree.c; sourceTree = "<group>"; };
+		544C3ECB14246C1800D9B790 /* uri.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = uri.c; path = FCollada_FREE_3.05B/FCollada/LibXML/uri.c; sourceTree = "<group>"; };
+		544C3ECC14246C1800D9B790 /* valid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = valid.c; path = FCollada_FREE_3.05B/FCollada/LibXML/valid.c; sourceTree = "<group>"; };
+		544C3ECD14246C1800D9B790 /* xinclude.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xinclude.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xinclude.c; sourceTree = "<group>"; };
+		544C3ECE14246C1800D9B790 /* xlink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xlink.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xlink.c; sourceTree = "<group>"; };
+		544C3ECF14246C1800D9B790 /* xmlcatalog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlcatalog.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlcatalog.c; sourceTree = "<group>"; };
+		544C3ED014246C1800D9B790 /* xmlIO.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlIO.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlIO.c; sourceTree = "<group>"; };
+		544C3ED114246C1800D9B790 /* xmlmemory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlmemory.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlmemory.c; sourceTree = "<group>"; };
+		544C3ED214246C1800D9B790 /* xmlmodule.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlmodule.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlmodule.c; sourceTree = "<group>"; };
+		544C3ED314246C1800D9B790 /* xmlreader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlreader.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlreader.c; sourceTree = "<group>"; };
+		544C3ED414246C1800D9B790 /* xmlregexp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlregexp.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlregexp.c; sourceTree = "<group>"; };
+		544C3ED514246C1800D9B790 /* xmlsave.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlsave.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlsave.c; sourceTree = "<group>"; };
+		544C3ED614246C1800D9B790 /* xmlstring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlstring.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlstring.c; sourceTree = "<group>"; };
+		544C3ED714246C1800D9B790 /* xmlunicode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlunicode.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlunicode.c; sourceTree = "<group>"; };
+		544C3ED814246C1800D9B790 /* xmlwriter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlwriter.c; path = FCollada_FREE_3.05B/FCollada/LibXML/xmlwriter.c; sourceTree = "<group>"; };
+		544C3F0114246F0400D9B790 /* FArchiveXML.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FArchiveXML.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FArchiveXML.cpp; sourceTree = "<group>"; };
+		544C3F0214246F0400D9B790 /* FAXAnimationExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXAnimationExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXAnimationExport.cpp; sourceTree = "<group>"; };
+		544C3F0314246F0400D9B790 /* FAXAnimationImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXAnimationImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXAnimationImport.cpp; sourceTree = "<group>"; };
+		544C3F0414246F0400D9B790 /* FAXCameraExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXCameraExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXCameraExport.cpp; sourceTree = "<group>"; };
+		544C3F0514246F0400D9B790 /* FAXCameraImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXCameraImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXCameraImport.cpp; sourceTree = "<group>"; };
+		544C3F0614246F0400D9B790 /* FAXColladaParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXColladaParser.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXColladaParser.cpp; sourceTree = "<group>"; };
+		544C3F0714246F0400D9B790 /* FAXColladaWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXColladaWriter.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXColladaWriter.cpp; sourceTree = "<group>"; };
+		544C3F0814246F0400D9B790 /* FAXControllerExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXControllerExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXControllerExport.cpp; sourceTree = "<group>"; };
+		544C3F0914246F0400D9B790 /* FAXControllerImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXControllerImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXControllerImport.cpp; sourceTree = "<group>"; };
+		544C3F0A14246F0400D9B790 /* FAXEmitterExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXEmitterExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXEmitterExport.cpp; sourceTree = "<group>"; };
+		544C3F0B14246F0400D9B790 /* FAXEmitterImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXEmitterImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXEmitterImport.cpp; sourceTree = "<group>"; };
+		544C3F0C14246F0400D9B790 /* FAXEntityExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXEntityExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXEntityExport.cpp; sourceTree = "<group>"; };
+		544C3F0D14246F0400D9B790 /* FAXEntityImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXEntityImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXEntityImport.cpp; sourceTree = "<group>"; };
+		544C3F0E14246F0400D9B790 /* FAXForceFieldExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXForceFieldExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXForceFieldExport.cpp; sourceTree = "<group>"; };
+		544C3F0F14246F0400D9B790 /* FAXForceFieldImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXForceFieldImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXForceFieldImport.cpp; sourceTree = "<group>"; };
+		544C3F1014246F0400D9B790 /* FAXGeometryExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXGeometryExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXGeometryExport.cpp; sourceTree = "<group>"; };
+		544C3F1114246F0400D9B790 /* FAXGeometryImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXGeometryImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXGeometryImport.cpp; sourceTree = "<group>"; };
+		544C3F1214246F0400D9B790 /* FAXImportLinking.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXImportLinking.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXImportLinking.cpp; sourceTree = "<group>"; };
+		544C3F1314246F0400D9B790 /* FAXInstanceExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXInstanceExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXInstanceExport.cpp; sourceTree = "<group>"; };
+		544C3F1414246F0400D9B790 /* FAXInstanceImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXInstanceImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXInstanceImport.cpp; sourceTree = "<group>"; };
+		544C3F1514246F0400D9B790 /* FAXLightExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXLightExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXLightExport.cpp; sourceTree = "<group>"; };
+		544C3F1614246F0400D9B790 /* FAXLightImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXLightImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXLightImport.cpp; sourceTree = "<group>"; };
+		544C3F1714246F0400D9B790 /* FAXMaterialExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXMaterialExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXMaterialExport.cpp; sourceTree = "<group>"; };
+		544C3F1814246F0400D9B790 /* FAXMaterialImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXMaterialImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXMaterialImport.cpp; sourceTree = "<group>"; };
+		544C3F1914246F0400D9B790 /* FAXPhysicsExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXPhysicsExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXPhysicsExport.cpp; sourceTree = "<group>"; };
+		544C3F1A14246F0400D9B790 /* FAXPhysicsImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXPhysicsImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXPhysicsImport.cpp; sourceTree = "<group>"; };
+		544C3F1B14246F0400D9B790 /* FAXSceneExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXSceneExport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXSceneExport.cpp; sourceTree = "<group>"; };
+		544C3F1C14246F0400D9B790 /* FAXSceneImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FAXSceneImport.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/FAXSceneImport.cpp; sourceTree = "<group>"; };
+		544C3F1D14246F0400D9B790 /* StdAfx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StdAfx.cpp; path = FCollada_FREE_3.05B/FColladaPlugins/FArchiveXML/StdAfx.cpp; sourceTree = "<group>"; };
+		544C3F3B14246F1300D9B790 /* StdAfx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StdAfx.cpp; path = FCollada_FREE_3.05B/FCollada/StdAfx.cpp; sourceTree = "<group>"; };
+		544C3F3E142470FE00D9B790 /* FCDAnimated.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimated.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAnimated.cpp; sourceTree = "<group>"; };
+		544C3F3F142470FE00D9B790 /* FCDAnimation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimation.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAnimation.cpp; sourceTree = "<group>"; };
+		544C3F40142470FE00D9B790 /* FCDAnimationChannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimationChannel.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAnimationChannel.cpp; sourceTree = "<group>"; };
+		544C3F41142470FE00D9B790 /* FCDAnimationClip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimationClip.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAnimationClip.cpp; sourceTree = "<group>"; };
+		544C3F42142470FE00D9B790 /* FCDAnimationClipTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimationClipTools.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAnimationClipTools.cpp; sourceTree = "<group>"; };
+		544C3F43142470FE00D9B790 /* FCDAnimationCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimationCurve.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAnimationCurve.cpp; sourceTree = "<group>"; };
+		544C3F44142470FE00D9B790 /* FCDAnimationCurveTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimationCurveTools.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAnimationCurveTools.cpp; sourceTree = "<group>"; };
+		544C3F45142470FE00D9B790 /* FCDAnimationKey.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimationKey.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAnimationKey.cpp; sourceTree = "<group>"; };
+		544C3F46142470FE00D9B790 /* FCDAnimationMultiCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimationMultiCurve.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAnimationMultiCurve.cpp; sourceTree = "<group>"; };
+		544C3F47142470FE00D9B790 /* FCDAsset.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAsset.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDAsset.cpp; sourceTree = "<group>"; };
+		544C3F48142470FE00D9B790 /* FCDCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDCamera.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDCamera.cpp; sourceTree = "<group>"; };
+		544C3F49142470FE00D9B790 /* FCDController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDController.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDController.cpp; sourceTree = "<group>"; };
+		544C3F4A142470FE00D9B790 /* FCDControllerInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDControllerInstance.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDControllerInstance.cpp; sourceTree = "<group>"; };
+		544C3F4B142470FE00D9B790 /* FCDControllerTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDControllerTools.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDControllerTools.cpp; sourceTree = "<group>"; };
+		544C3F4C142470FE00D9B790 /* FCDEffect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffect.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffect.cpp; sourceTree = "<group>"; };
+		544C3F4D142470FE00D9B790 /* FCDEffectCode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectCode.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectCode.cpp; sourceTree = "<group>"; };
+		544C3F4E142470FE00D9B790 /* FCDEffectParameter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectParameter.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectParameter.cpp; sourceTree = "<group>"; };
+		544C3F4F142470FE00D9B790 /* FCDEffectParameterFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectParameterFactory.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectParameterFactory.cpp; sourceTree = "<group>"; };
+		544C3F50142470FE00D9B790 /* FCDEffectParameterSampler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectParameterSampler.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectParameterSampler.cpp; sourceTree = "<group>"; };
+		544C3F51142470FE00D9B790 /* FCDEffectParameterSurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectParameterSurface.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectParameterSurface.cpp; sourceTree = "<group>"; };
+		544C3F52142470FE00D9B790 /* FCDEffectPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectPass.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectPass.cpp; sourceTree = "<group>"; };
+		544C3F53142470FE00D9B790 /* FCDEffectPassShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectPassShader.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectPassShader.cpp; sourceTree = "<group>"; };
+		544C3F54142470FE00D9B790 /* FCDEffectPassState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectPassState.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectPassState.cpp; sourceTree = "<group>"; };
+		544C3F55142470FE00D9B790 /* FCDEffectProfile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectProfile.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectProfile.cpp; sourceTree = "<group>"; };
+		544C3F56142470FE00D9B790 /* FCDEffectProfileFX.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectProfileFX.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectProfileFX.cpp; sourceTree = "<group>"; };
+		544C3F57142470FE00D9B790 /* FCDEffectStandard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectStandard.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectStandard.cpp; sourceTree = "<group>"; };
+		544C3F58142470FE00D9B790 /* FCDEffectTechnique.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectTechnique.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectTechnique.cpp; sourceTree = "<group>"; };
+		544C3F59142470FE00D9B790 /* FCDEffectTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEffectTools.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEffectTools.cpp; sourceTree = "<group>"; };
+		544C3F5A142470FE00D9B790 /* FCDEmitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEmitter.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEmitter.cpp; sourceTree = "<group>"; };
+		544C3F5B142470FE00D9B790 /* FCDEmitterInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEmitterInstance.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEmitterInstance.cpp; sourceTree = "<group>"; };
+		544C3F5C142470FE00D9B790 /* FCDEmitterObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEmitterObject.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEmitterObject.cpp; sourceTree = "<group>"; };
+		544C3F5D142470FE00D9B790 /* FCDEmitterParticle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEmitterParticle.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEmitterParticle.cpp; sourceTree = "<group>"; };
+		544C3F5E142470FE00D9B790 /* FCDEntity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEntity.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEntity.cpp; sourceTree = "<group>"; };
+		544C3F5F142470FE00D9B790 /* FCDEntityInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEntityInstance.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEntityInstance.cpp; sourceTree = "<group>"; };
+		544C3F60142470FE00D9B790 /* FCDEntityReference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDEntityReference.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDEntityReference.cpp; sourceTree = "<group>"; };
+		544C3F61142470FE00D9B790 /* FCDExternalReferenceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDExternalReferenceManager.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDExternalReferenceManager.cpp; sourceTree = "<group>"; };
+		544C3F62142470FE00D9B790 /* FCDExtra.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDExtra.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDExtra.cpp; sourceTree = "<group>"; };
+		544C3F63142470FE00D9B790 /* FCDForceDeflector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDForceDeflector.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDForceDeflector.cpp; sourceTree = "<group>"; };
+		544C3F64142470FE00D9B790 /* FCDForceDrag.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDForceDrag.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDForceDrag.cpp; sourceTree = "<group>"; };
+		544C3F65142470FE00D9B790 /* FCDForceField.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDForceField.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDForceField.cpp; sourceTree = "<group>"; };
+		544C3F66142470FE00D9B790 /* FCDForceGravity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDForceGravity.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDForceGravity.cpp; sourceTree = "<group>"; };
+		544C3F67142470FE00D9B790 /* FCDForcePBomb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDForcePBomb.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDForcePBomb.cpp; sourceTree = "<group>"; };
+		544C3F68142470FE00D9B790 /* FCDForceWind.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDForceWind.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDForceWind.cpp; sourceTree = "<group>"; };
+		544C3F69142470FE00D9B790 /* FCDGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDGeometry.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDGeometry.cpp; sourceTree = "<group>"; };
+		544C3F6A142470FE00D9B790 /* FCDGeometryInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDGeometryInstance.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDGeometryInstance.cpp; sourceTree = "<group>"; };
+		544C3F6B142470FE00D9B790 /* FCDGeometryMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDGeometryMesh.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDGeometryMesh.cpp; sourceTree = "<group>"; };
+		544C3F6C142470FE00D9B790 /* FCDGeometryNURBSSurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDGeometryNURBSSurface.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDGeometryNURBSSurface.cpp; sourceTree = "<group>"; };
+		544C3F6D142470FE00D9B790 /* FCDGeometryPolygons.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDGeometryPolygons.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDGeometryPolygons.cpp; sourceTree = "<group>"; };
+		544C3F6E142470FE00D9B790 /* FCDGeometryPolygonsInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDGeometryPolygonsInput.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDGeometryPolygonsInput.cpp; sourceTree = "<group>"; };
+		544C3F6F142470FE00D9B790 /* FCDGeometryPolygonsTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDGeometryPolygonsTools.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDGeometryPolygonsTools.cpp; sourceTree = "<group>"; };
+		544C3F70142470FE00D9B790 /* FCDGeometrySource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDGeometrySource.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDGeometrySource.cpp; sourceTree = "<group>"; };
+		544C3F71142470FE00D9B790 /* FCDGeometrySpline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDGeometrySpline.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDGeometrySpline.cpp; sourceTree = "<group>"; };
+		544C3F72142470FE00D9B790 /* FCDImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDImage.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDImage.cpp; sourceTree = "<group>"; };
+		544C3F73142470FE00D9B790 /* FCDLibrary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDLibrary.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDLibrary.cpp; sourceTree = "<group>"; };
+		544C3F74142470FE00D9B790 /* FCDLight.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDLight.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDLight.cpp; sourceTree = "<group>"; };
+		544C3F75142470FE00D9B790 /* FCDLightTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDLightTools.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDLightTools.cpp; sourceTree = "<group>"; };
+		544C3F76142470FE00D9B790 /* FCDMaterial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDMaterial.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDMaterial.cpp; sourceTree = "<group>"; };
+		544C3F77142470FE00D9B790 /* FCDMaterialInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDMaterialInstance.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDMaterialInstance.cpp; sourceTree = "<group>"; };
+		544C3F78142470FE00D9B790 /* FCDMorphController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDMorphController.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDMorphController.cpp; sourceTree = "<group>"; };
+		544C3F79142470FE00D9B790 /* FCDObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDObject.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDObject.cpp; sourceTree = "<group>"; };
+		544C3F7A142470FE00D9B790 /* FCDObjectWithId.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDObjectWithId.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDObjectWithId.cpp; sourceTree = "<group>"; };
+		544C3F7B142470FE00D9B790 /* FCDocument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDocument.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDocument.cpp; sourceTree = "<group>"; };
+		544C3F7C142470FE00D9B790 /* FCDocumentTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDocumentTools.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDocumentTools.cpp; sourceTree = "<group>"; };
+		544C3F7D142470FE00D9B790 /* FCDParameterAnimatable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDParameterAnimatable.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDParameterAnimatable.cpp; sourceTree = "<group>"; };
+		544C3F7E142470FE00D9B790 /* FCDParticleModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDParticleModifier.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDParticleModifier.cpp; sourceTree = "<group>"; };
+		544C3F7F142470FE00D9B790 /* FCDPhysicsAnalyticalGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsAnalyticalGeometry.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsAnalyticalGeometry.cpp; sourceTree = "<group>"; };
+		544C3F80142470FE00D9B790 /* FCDPhysicsForceFieldInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsForceFieldInstance.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsForceFieldInstance.cpp; sourceTree = "<group>"; };
+		544C3F81142470FE00D9B790 /* FCDPhysicsMaterial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsMaterial.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsMaterial.cpp; sourceTree = "<group>"; };
+		544C3F82142470FE00D9B790 /* FCDPhysicsModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsModel.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsModel.cpp; sourceTree = "<group>"; };
+		544C3F83142470FE00D9B790 /* FCDPhysicsModelInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsModelInstance.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsModelInstance.cpp; sourceTree = "<group>"; };
+		544C3F84142470FE00D9B790 /* FCDPhysicsRigidBody.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsRigidBody.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsRigidBody.cpp; sourceTree = "<group>"; };
+		544C3F85142470FE00D9B790 /* FCDPhysicsRigidBodyInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsRigidBodyInstance.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsRigidBodyInstance.cpp; sourceTree = "<group>"; };
+		544C3F86142470FE00D9B790 /* FCDPhysicsRigidBodyParameters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsRigidBodyParameters.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsRigidBodyParameters.cpp; sourceTree = "<group>"; };
+		544C3F87142470FE00D9B790 /* FCDPhysicsRigidConstraint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsRigidConstraint.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsRigidConstraint.cpp; sourceTree = "<group>"; };
+		544C3F88142470FE00D9B790 /* FCDPhysicsRigidConstraintInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsRigidConstraintInstance.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsRigidConstraintInstance.cpp; sourceTree = "<group>"; };
+		544C3F89142470FE00D9B790 /* FCDPhysicsScene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsScene.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsScene.cpp; sourceTree = "<group>"; };
+		544C3F8A142470FE00D9B790 /* FCDPhysicsShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPhysicsShape.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPhysicsShape.cpp; sourceTree = "<group>"; };
+		544C3F8B142470FE00D9B790 /* FCDPlaceHolder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDPlaceHolder.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDPlaceHolder.cpp; sourceTree = "<group>"; };
+		544C3F8C142470FE00D9B790 /* FCDSceneNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDSceneNode.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDSceneNode.cpp; sourceTree = "<group>"; };
+		544C3F8D142470FE00D9B790 /* FCDSceneNodeIterator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDSceneNodeIterator.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDSceneNodeIterator.cpp; sourceTree = "<group>"; };
+		544C3F8E142470FE00D9B790 /* FCDSceneNodeTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDSceneNodeTools.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDSceneNodeTools.cpp; sourceTree = "<group>"; };
+		544C3F8F142470FE00D9B790 /* FCDSkinController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDSkinController.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDSkinController.cpp; sourceTree = "<group>"; };
+		544C3F90142470FE00D9B790 /* FCDTargetedEntity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDTargetedEntity.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDTargetedEntity.cpp; sourceTree = "<group>"; };
+		544C3F91142470FE00D9B790 /* FCDTexture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDTexture.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDTexture.cpp; sourceTree = "<group>"; };
+		544C3F92142470FE00D9B790 /* FCDTransform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDTransform.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDTransform.cpp; sourceTree = "<group>"; };
+		544C3F93142470FE00D9B790 /* FCDVersion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDVersion.cpp; path = FCollada_FREE_3.05B/FCollada/FCDocument/FCDVersion.cpp; sourceTree = "<group>"; };
+		544C3FEA14249F1F00D9B790 /* FCollada.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCollada.cpp; path = FCollada_FREE_3.05B/FCollada/FCollada.cpp; sourceTree = "<group>"; };
+		544C3FEB14249F1F00D9B790 /* FColladaPlugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FColladaPlugin.cpp; path = FCollada_FREE_3.05B/FCollada/FColladaPlugin.cpp; sourceTree = "<group>"; };
+		544C3FEF14249F6900D9B790 /* FMAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMAllocator.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMAllocator.cpp; sourceTree = "<group>"; };
+		544C3FF014249F6900D9B790 /* FMAngleAxis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMAngleAxis.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMAngleAxis.cpp; sourceTree = "<group>"; };
+		544C3FF114249F6900D9B790 /* FMColor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMColor.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMColor.cpp; sourceTree = "<group>"; };
+		544C3FF214249F6900D9B790 /* FMInterpolation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMInterpolation.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMInterpolation.cpp; sourceTree = "<group>"; };
+		544C3FF314249F6900D9B790 /* FMLookAt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMLookAt.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMLookAt.cpp; sourceTree = "<group>"; };
+		544C3FF414249F6900D9B790 /* FMMatrix33.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMMatrix33.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMMatrix33.cpp; sourceTree = "<group>"; };
+		544C3FF514249F6900D9B790 /* FMMatrix44.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMMatrix44.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMMatrix44.cpp; sourceTree = "<group>"; };
+		544C3FF614249F6900D9B790 /* FMQuaternion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMQuaternion.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMQuaternion.cpp; sourceTree = "<group>"; };
+		544C3FF714249F6900D9B790 /* FMRandom.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMRandom.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMRandom.cpp; sourceTree = "<group>"; };
+		544C3FF814249F6900D9B790 /* FMSkew.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMSkew.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMSkew.cpp; sourceTree = "<group>"; };
+		544C3FF914249F6900D9B790 /* FMVector3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMVector3.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMVector3.cpp; sourceTree = "<group>"; };
+		544C3FFA14249F6900D9B790 /* FMVolume.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMVolume.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/FMVolume.cpp; sourceTree = "<group>"; };
+		544C3FFB14249F6900D9B790 /* StdAfx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StdAfx.cpp; path = FCollada_FREE_3.05B/FCollada/FMath/StdAfx.cpp; sourceTree = "<group>"; };
+		544C400A1424A01B00D9B790 /* FUAssert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUAssert.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUAssert.cpp; sourceTree = "<group>"; };
+		544C400B1424A01B00D9B790 /* FUBase64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUBase64.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUBase64.cpp; sourceTree = "<group>"; };
+		544C400C1424A01B00D9B790 /* FUBoundingBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUBoundingBox.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUBoundingBox.cpp; sourceTree = "<group>"; };
+		544C400D1424A01B00D9B790 /* FUBoundingSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUBoundingSphere.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUBoundingSphere.cpp; sourceTree = "<group>"; };
+		544C400E1424A01B00D9B790 /* FUCrc32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUCrc32.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUCrc32.cpp; sourceTree = "<group>"; };
+		544C400F1424A01B00D9B790 /* FUCriticalSection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUCriticalSection.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUCriticalSection.cpp; sourceTree = "<group>"; };
+		544C40101424A01B00D9B790 /* FUDaeEnum.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUDaeEnum.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUDaeEnum.cpp; sourceTree = "<group>"; };
+		544C40111424A01B00D9B790 /* FUDateTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUDateTime.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUDateTime.cpp; sourceTree = "<group>"; };
+		544C40121424A01B00D9B790 /* FUDebug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUDebug.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUDebug.cpp; sourceTree = "<group>"; };
+		544C40131424A01B00D9B790 /* FUError.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUError.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUError.cpp; sourceTree = "<group>"; };
+		544C40141424A01B00D9B790 /* FUErrorLog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUErrorLog.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUErrorLog.cpp; sourceTree = "<group>"; };
+		544C40151424A01B00D9B790 /* FUFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUFile.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUFile.cpp; sourceTree = "<group>"; };
+		544C40161424A01B00D9B790 /* FUFileManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUFileManager.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUFileManager.cpp; sourceTree = "<group>"; };
+		544C40171424A01B00D9B790 /* FULogFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FULogFile.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FULogFile.cpp; sourceTree = "<group>"; };
+		544C40181424A01B00D9B790 /* FUObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUObject.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUObject.cpp; sourceTree = "<group>"; };
+		544C40191424A01B00D9B790 /* FUObjectType.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUObjectType.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUObjectType.cpp; sourceTree = "<group>"; };
+		544C401A1424A01B00D9B790 /* FUParameter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUParameter.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUParameter.cpp; sourceTree = "<group>"; };
+		544C401B1424A01B00D9B790 /* FUParameterizable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUParameterizable.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUParameterizable.cpp; sourceTree = "<group>"; };
+		544C401C1424A01B00D9B790 /* FUPluginManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUPluginManager.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUPluginManager.cpp; sourceTree = "<group>"; };
+		544C401D1424A01B00D9B790 /* FUSemaphore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUSemaphore.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUSemaphore.cpp; sourceTree = "<group>"; };
+		544C401E1424A01B00D9B790 /* FUStringBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUStringBuilder.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUStringBuilder.cpp; sourceTree = "<group>"; };
+		544C401F1424A01B00D9B790 /* FUStringConversion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUStringConversion.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUStringConversion.cpp; sourceTree = "<group>"; };
+		544C40201424A01B00D9B790 /* FUSynchronizableObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUSynchronizableObject.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUSynchronizableObject.cpp; sourceTree = "<group>"; };
+		544C40211424A01B00D9B790 /* FUThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUThread.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUThread.cpp; sourceTree = "<group>"; };
+		544C40221424A01B00D9B790 /* FUTracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUTracker.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUTracker.cpp; sourceTree = "<group>"; };
+		544C40231424A01B00D9B790 /* FUUniqueStringMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUUniqueStringMap.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUUniqueStringMap.cpp; sourceTree = "<group>"; };
+		544C40241424A01B00D9B790 /* FUUri.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUUri.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUUri.cpp; sourceTree = "<group>"; };
+		544C40251424A01B00D9B790 /* FUXmlDocument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUXmlDocument.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUXmlDocument.cpp; sourceTree = "<group>"; };
+		544C40261424A01B00D9B790 /* FUXmlParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUXmlParser.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUXmlParser.cpp; sourceTree = "<group>"; };
+		544C40271424A01B00D9B790 /* FUXmlWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FUXmlWriter.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/FUXmlWriter.cpp; sourceTree = "<group>"; };
+		544C40281424A01B00D9B790 /* StdAfx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StdAfx.cpp; path = FCollada_FREE_3.05B/FCollada/FUtils/StdAfx.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		544C3E9A1424699D00D9B790 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		544C3E921424699D00D9B790 = {
+			isa = PBXGroup;
+			children = (
+				544C3EA21424699D00D9B790 /* FCollada */,
+				544C3E9E1424699D00D9B790 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		544C3E9E1424699D00D9B790 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				544C3E9D1424699D00D9B790 /* libFCollada.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		544C3EA21424699D00D9B790 /* FCollada */ = {
+			isa = PBXGroup;
+			children = (
+				544C400914249F8E00D9B790 /* FUtils */,
+				544C3FEE14249F2B00D9B790 /* FMath */,
+				544C3FEA14249F1F00D9B790 /* FCollada.cpp */,
+				544C3FEB14249F1F00D9B790 /* FColladaPlugin.cpp */,
+				544C3F3D1424706900D9B790 /* FCDocument */,
+				544C3F0014246EC900D9B790 /* FArchiveXML */,
+				544C3EB114246BC100D9B790 /* LibXML */,
+			);
+			name = FCollada;
+			sourceTree = "<group>";
+		};
+		544C3EB114246BC100D9B790 /* LibXML */ = {
+			isa = PBXGroup;
+			children = (
+				544C3F3B14246F1300D9B790 /* StdAfx.cpp */,
+				544C3EB214246C1800D9B790 /* c14n.c */,
+				544C3EB314246C1800D9B790 /* catalog.c */,
+				544C3EB414246C1800D9B790 /* chvalid.c */,
+				544C3EB514246C1800D9B790 /* debugXML.c */,
+				544C3EB614246C1800D9B790 /* dict.c */,
+				544C3EB714246C1800D9B790 /* DOCBparser.c */,
+				544C3EB814246C1800D9B790 /* encoding.c */,
+				544C3EB914246C1800D9B790 /* entities.c */,
+				544C3EBA14246C1800D9B790 /* error.c */,
+				544C3EBB14246C1800D9B790 /* globals.c */,
+				544C3EBC14246C1800D9B790 /* hash.c */,
+				544C3EBD14246C1800D9B790 /* HTMLparser.c */,
+				544C3EBE14246C1800D9B790 /* HTMLtree.c */,
+				544C3EBF14246C1800D9B790 /* legacy.c */,
+				544C3EC014246C1800D9B790 /* list.c */,
+				544C3EC114246C1800D9B790 /* nanoftp.c */,
+				544C3EC214246C1800D9B790 /* nanohttp.c */,
+				544C3EC314246C1800D9B790 /* parser.c */,
+				544C3EC414246C1800D9B790 /* parserInternals.c */,
+				544C3EC514246C1800D9B790 /* pattern.c */,
+				544C3EC614246C1800D9B790 /* relaxng.c */,
+				544C3EC714246C1800D9B790 /* SAX.c */,
+				544C3EC814246C1800D9B790 /* SAX2.c */,
+				544C3EC914246C1800D9B790 /* threads.c */,
+				544C3ECA14246C1800D9B790 /* tree.c */,
+				544C3ECB14246C1800D9B790 /* uri.c */,
+				544C3ECC14246C1800D9B790 /* valid.c */,
+				544C3ECD14246C1800D9B790 /* xinclude.c */,
+				544C3ECE14246C1800D9B790 /* xlink.c */,
+				544C3ECF14246C1800D9B790 /* xmlcatalog.c */,
+				544C3ED014246C1800D9B790 /* xmlIO.c */,
+				544C3ED114246C1800D9B790 /* xmlmemory.c */,
+				544C3ED214246C1800D9B790 /* xmlmodule.c */,
+				544C3ED314246C1800D9B790 /* xmlreader.c */,
+				544C3ED414246C1800D9B790 /* xmlregexp.c */,
+				544C3ED514246C1800D9B790 /* xmlsave.c */,
+				544C3ED614246C1800D9B790 /* xmlstring.c */,
+				544C3ED714246C1800D9B790 /* xmlunicode.c */,
+				544C3ED814246C1800D9B790 /* xmlwriter.c */,
+			);
+			name = LibXML;
+			sourceTree = "<group>";
+		};
+		544C3F0014246EC900D9B790 /* FArchiveXML */ = {
+			isa = PBXGroup;
+			children = (
+				544C3F0114246F0400D9B790 /* FArchiveXML.cpp */,
+				544C3F0214246F0400D9B790 /* FAXAnimationExport.cpp */,
+				544C3F0314246F0400D9B790 /* FAXAnimationImport.cpp */,
+				544C3F0414246F0400D9B790 /* FAXCameraExport.cpp */,
+				544C3F0514246F0400D9B790 /* FAXCameraImport.cpp */,
+				544C3F0614246F0400D9B790 /* FAXColladaParser.cpp */,
+				544C3F0714246F0400D9B790 /* FAXColladaWriter.cpp */,
+				544C3F0814246F0400D9B790 /* FAXControllerExport.cpp */,
+				544C3F0914246F0400D9B790 /* FAXControllerImport.cpp */,
+				544C3F0A14246F0400D9B790 /* FAXEmitterExport.cpp */,
+				544C3F0B14246F0400D9B790 /* FAXEmitterImport.cpp */,
+				544C3F0C14246F0400D9B790 /* FAXEntityExport.cpp */,
+				544C3F0D14246F0400D9B790 /* FAXEntityImport.cpp */,
+				544C3F0E14246F0400D9B790 /* FAXForceFieldExport.cpp */,
+				544C3F0F14246F0400D9B790 /* FAXForceFieldImport.cpp */,
+				544C3F1014246F0400D9B790 /* FAXGeometryExport.cpp */,
+				544C3F1114246F0400D9B790 /* FAXGeometryImport.cpp */,
+				544C3F1214246F0400D9B790 /* FAXImportLinking.cpp */,
+				544C3F1314246F0400D9B790 /* FAXInstanceExport.cpp */,
+				544C3F1414246F0400D9B790 /* FAXInstanceImport.cpp */,
+				544C3F1514246F0400D9B790 /* FAXLightExport.cpp */,
+				544C3F1614246F0400D9B790 /* FAXLightImport.cpp */,
+				544C3F1714246F0400D9B790 /* FAXMaterialExport.cpp */,
+				544C3F1814246F0400D9B790 /* FAXMaterialImport.cpp */,
+				544C3F1914246F0400D9B790 /* FAXPhysicsExport.cpp */,
+				544C3F1A14246F0400D9B790 /* FAXPhysicsImport.cpp */,
+				544C3F1B14246F0400D9B790 /* FAXSceneExport.cpp */,
+				544C3F1C14246F0400D9B790 /* FAXSceneImport.cpp */,
+				544C3F1D14246F0400D9B790 /* StdAfx.cpp */,
+			);
+			name = FArchiveXML;
+			sourceTree = "<group>";
+		};
+		544C3F3D1424706900D9B790 /* FCDocument */ = {
+			isa = PBXGroup;
+			children = (
+				544C3F3E142470FE00D9B790 /* FCDAnimated.cpp */,
+				544C3F3F142470FE00D9B790 /* FCDAnimation.cpp */,
+				544C3F40142470FE00D9B790 /* FCDAnimationChannel.cpp */,
+				544C3F41142470FE00D9B790 /* FCDAnimationClip.cpp */,
+				544C3F42142470FE00D9B790 /* FCDAnimationClipTools.cpp */,
+				544C3F43142470FE00D9B790 /* FCDAnimationCurve.cpp */,
+				544C3F44142470FE00D9B790 /* FCDAnimationCurveTools.cpp */,
+				544C3F45142470FE00D9B790 /* FCDAnimationKey.cpp */,
+				544C3F46142470FE00D9B790 /* FCDAnimationMultiCurve.cpp */,
+				544C3F47142470FE00D9B790 /* FCDAsset.cpp */,
+				544C3F48142470FE00D9B790 /* FCDCamera.cpp */,
+				544C3F49142470FE00D9B790 /* FCDController.cpp */,
+				544C3F4A142470FE00D9B790 /* FCDControllerInstance.cpp */,
+				544C3F4B142470FE00D9B790 /* FCDControllerTools.cpp */,
+				544C3F4C142470FE00D9B790 /* FCDEffect.cpp */,
+				544C3F4D142470FE00D9B790 /* FCDEffectCode.cpp */,
+				544C3F4E142470FE00D9B790 /* FCDEffectParameter.cpp */,
+				544C3F4F142470FE00D9B790 /* FCDEffectParameterFactory.cpp */,
+				544C3F50142470FE00D9B790 /* FCDEffectParameterSampler.cpp */,
+				544C3F51142470FE00D9B790 /* FCDEffectParameterSurface.cpp */,
+				544C3F52142470FE00D9B790 /* FCDEffectPass.cpp */,
+				544C3F53142470FE00D9B790 /* FCDEffectPassShader.cpp */,
+				544C3F54142470FE00D9B790 /* FCDEffectPassState.cpp */,
+				544C3F55142470FE00D9B790 /* FCDEffectProfile.cpp */,
+				544C3F56142470FE00D9B790 /* FCDEffectProfileFX.cpp */,
+				544C3F57142470FE00D9B790 /* FCDEffectStandard.cpp */,
+				544C3F58142470FE00D9B790 /* FCDEffectTechnique.cpp */,
+				544C3F59142470FE00D9B790 /* FCDEffectTools.cpp */,
+				544C3F5A142470FE00D9B790 /* FCDEmitter.cpp */,
+				544C3F5B142470FE00D9B790 /* FCDEmitterInstance.cpp */,
+				544C3F5C142470FE00D9B790 /* FCDEmitterObject.cpp */,
+				544C3F5D142470FE00D9B790 /* FCDEmitterParticle.cpp */,
+				544C3F5E142470FE00D9B790 /* FCDEntity.cpp */,
+				544C3F5F142470FE00D9B790 /* FCDEntityInstance.cpp */,
+				544C3F60142470FE00D9B790 /* FCDEntityReference.cpp */,
+				544C3F61142470FE00D9B790 /* FCDExternalReferenceManager.cpp */,
+				544C3F62142470FE00D9B790 /* FCDExtra.cpp */,
+				544C3F63142470FE00D9B790 /* FCDForceDeflector.cpp */,
+				544C3F64142470FE00D9B790 /* FCDForceDrag.cpp */,
+				544C3F65142470FE00D9B790 /* FCDForceField.cpp */,
+				544C3F66142470FE00D9B790 /* FCDForceGravity.cpp */,
+				544C3F67142470FE00D9B790 /* FCDForcePBomb.cpp */,
+				544C3F68142470FE00D9B790 /* FCDForceWind.cpp */,
+				544C3F69142470FE00D9B790 /* FCDGeometry.cpp */,
+				544C3F6A142470FE00D9B790 /* FCDGeometryInstance.cpp */,
+				544C3F6B142470FE00D9B790 /* FCDGeometryMesh.cpp */,
+				544C3F6C142470FE00D9B790 /* FCDGeometryNURBSSurface.cpp */,
+				544C3F6D142470FE00D9B790 /* FCDGeometryPolygons.cpp */,
+				544C3F6E142470FE00D9B790 /* FCDGeometryPolygonsInput.cpp */,
+				544C3F6F142470FE00D9B790 /* FCDGeometryPolygonsTools.cpp */,
+				544C3F70142470FE00D9B790 /* FCDGeometrySource.cpp */,
+				544C3F71142470FE00D9B790 /* FCDGeometrySpline.cpp */,
+				544C3F72142470FE00D9B790 /* FCDImage.cpp */,
+				544C3F73142470FE00D9B790 /* FCDLibrary.cpp */,
+				544C3F74142470FE00D9B790 /* FCDLight.cpp */,
+				544C3F75142470FE00D9B790 /* FCDLightTools.cpp */,
+				544C3F76142470FE00D9B790 /* FCDMaterial.cpp */,
+				544C3F77142470FE00D9B790 /* FCDMaterialInstance.cpp */,
+				544C3F78142470FE00D9B790 /* FCDMorphController.cpp */,
+				544C3F79142470FE00D9B790 /* FCDObject.cpp */,
+				544C3F7A142470FE00D9B790 /* FCDObjectWithId.cpp */,
+				544C3F7B142470FE00D9B790 /* FCDocument.cpp */,
+				544C3F7C142470FE00D9B790 /* FCDocumentTools.cpp */,
+				544C3F7D142470FE00D9B790 /* FCDParameterAnimatable.cpp */,
+				544C3F7E142470FE00D9B790 /* FCDParticleModifier.cpp */,
+				544C3F7F142470FE00D9B790 /* FCDPhysicsAnalyticalGeometry.cpp */,
+				544C3F80142470FE00D9B790 /* FCDPhysicsForceFieldInstance.cpp */,
+				544C3F81142470FE00D9B790 /* FCDPhysicsMaterial.cpp */,
+				544C3F82142470FE00D9B790 /* FCDPhysicsModel.cpp */,
+				544C3F83142470FE00D9B790 /* FCDPhysicsModelInstance.cpp */,
+				544C3F84142470FE00D9B790 /* FCDPhysicsRigidBody.cpp */,
+				544C3F85142470FE00D9B790 /* FCDPhysicsRigidBodyInstance.cpp */,
+				544C3F86142470FE00D9B790 /* FCDPhysicsRigidBodyParameters.cpp */,
+				544C3F87142470FE00D9B790 /* FCDPhysicsRigidConstraint.cpp */,
+				544C3F88142470FE00D9B790 /* FCDPhysicsRigidConstraintInstance.cpp */,
+				544C3F89142470FE00D9B790 /* FCDPhysicsScene.cpp */,
+				544C3F8A142470FE00D9B790 /* FCDPhysicsShape.cpp */,
+				544C3F8B142470FE00D9B790 /* FCDPlaceHolder.cpp */,
+				544C3F8C142470FE00D9B790 /* FCDSceneNode.cpp */,
+				544C3F8D142470FE00D9B790 /* FCDSceneNodeIterator.cpp */,
+				544C3F8E142470FE00D9B790 /* FCDSceneNodeTools.cpp */,
+				544C3F8F142470FE00D9B790 /* FCDSkinController.cpp */,
+				544C3F90142470FE00D9B790 /* FCDTargetedEntity.cpp */,
+				544C3F91142470FE00D9B790 /* FCDTexture.cpp */,
+				544C3F92142470FE00D9B790 /* FCDTransform.cpp */,
+				544C3F93142470FE00D9B790 /* FCDVersion.cpp */,
+			);
+			name = FCDocument;
+			sourceTree = "<group>";
+		};
+		544C3FEE14249F2B00D9B790 /* FMath */ = {
+			isa = PBXGroup;
+			children = (
+				544C3FEF14249F6900D9B790 /* FMAllocator.cpp */,
+				544C3FF014249F6900D9B790 /* FMAngleAxis.cpp */,
+				544C3FF114249F6900D9B790 /* FMColor.cpp */,
+				544C3FF214249F6900D9B790 /* FMInterpolation.cpp */,
+				544C3FF314249F6900D9B790 /* FMLookAt.cpp */,
+				544C3FF414249F6900D9B790 /* FMMatrix33.cpp */,
+				544C3FF514249F6900D9B790 /* FMMatrix44.cpp */,
+				544C3FF614249F6900D9B790 /* FMQuaternion.cpp */,
+				544C3FF714249F6900D9B790 /* FMRandom.cpp */,
+				544C3FF814249F6900D9B790 /* FMSkew.cpp */,
+				544C3FF914249F6900D9B790 /* FMVector3.cpp */,
+				544C3FFA14249F6900D9B790 /* FMVolume.cpp */,
+				544C3FFB14249F6900D9B790 /* StdAfx.cpp */,
+			);
+			name = FMath;
+			sourceTree = "<group>";
+		};
+		544C400914249F8E00D9B790 /* FUtils */ = {
+			isa = PBXGroup;
+			children = (
+				544C400A1424A01B00D9B790 /* FUAssert.cpp */,
+				544C400B1424A01B00D9B790 /* FUBase64.cpp */,
+				544C400C1424A01B00D9B790 /* FUBoundingBox.cpp */,
+				544C400D1424A01B00D9B790 /* FUBoundingSphere.cpp */,
+				544C400E1424A01B00D9B790 /* FUCrc32.cpp */,
+				544C400F1424A01B00D9B790 /* FUCriticalSection.cpp */,
+				544C40101424A01B00D9B790 /* FUDaeEnum.cpp */,
+				544C40111424A01B00D9B790 /* FUDateTime.cpp */,
+				544C40121424A01B00D9B790 /* FUDebug.cpp */,
+				544C40131424A01B00D9B790 /* FUError.cpp */,
+				544C40141424A01B00D9B790 /* FUErrorLog.cpp */,
+				544C40151424A01B00D9B790 /* FUFile.cpp */,
+				544C40161424A01B00D9B790 /* FUFileManager.cpp */,
+				544C40171424A01B00D9B790 /* FULogFile.cpp */,
+				544C40181424A01B00D9B790 /* FUObject.cpp */,
+				544C40191424A01B00D9B790 /* FUObjectType.cpp */,
+				544C401A1424A01B00D9B790 /* FUParameter.cpp */,
+				544C401B1424A01B00D9B790 /* FUParameterizable.cpp */,
+				544C401C1424A01B00D9B790 /* FUPluginManager.cpp */,
+				544C401D1424A01B00D9B790 /* FUSemaphore.cpp */,
+				544C401E1424A01B00D9B790 /* FUStringBuilder.cpp */,
+				544C401F1424A01B00D9B790 /* FUStringConversion.cpp */,
+				544C40201424A01B00D9B790 /* FUSynchronizableObject.cpp */,
+				544C40211424A01B00D9B790 /* FUThread.cpp */,
+				544C40221424A01B00D9B790 /* FUTracker.cpp */,
+				544C40231424A01B00D9B790 /* FUUniqueStringMap.cpp */,
+				544C40241424A01B00D9B790 /* FUUri.cpp */,
+				544C40251424A01B00D9B790 /* FUXmlDocument.cpp */,
+				544C40261424A01B00D9B790 /* FUXmlParser.cpp */,
+				544C40271424A01B00D9B790 /* FUXmlWriter.cpp */,
+				544C40281424A01B00D9B790 /* StdAfx.cpp */,
+			);
+			name = FUtils;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		544C3E9B1424699D00D9B790 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		544C3E9C1424699D00D9B790 /* FCollada */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 544C3EA71424699D00D9B790 /* Build configuration list for PBXNativeTarget "FCollada" */;
+			buildPhases = (
+				544C3E991424699D00D9B790 /* Sources */,
+				544C3E9A1424699D00D9B790 /* Frameworks */,
+				544C3E9B1424699D00D9B790 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FCollada;
+			productName = FCollada;
+			productReference = 544C3E9D1424699D00D9B790 /* libFCollada.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		544C3E941424699D00D9B790 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				ORGANIZATIONNAME = "-";
+			};
+			buildConfigurationList = 544C3E971424699D00D9B790 /* Build configuration list for PBXProject "FCollada" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 544C3E921424699D00D9B790;
+			productRefGroup = 544C3E9E1424699D00D9B790 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				544C3E9C1424699D00D9B790 /* FCollada */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		544C3E991424699D00D9B790 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				544C3ED914246C1800D9B790 /* c14n.c in Sources */,
+				544C3EDA14246C1800D9B790 /* catalog.c in Sources */,
+				544C3EDB14246C1800D9B790 /* chvalid.c in Sources */,
+				544C3EDC14246C1800D9B790 /* debugXML.c in Sources */,
+				544C3EDD14246C1800D9B790 /* dict.c in Sources */,
+				544C3EDE14246C1800D9B790 /* DOCBparser.c in Sources */,
+				544C3EDF14246C1800D9B790 /* encoding.c in Sources */,
+				544C3EE014246C1800D9B790 /* entities.c in Sources */,
+				544C3EE114246C1800D9B790 /* error.c in Sources */,
+				544C3EE214246C1800D9B790 /* globals.c in Sources */,
+				544C3EE314246C1800D9B790 /* hash.c in Sources */,
+				544C3EE414246C1800D9B790 /* HTMLparser.c in Sources */,
+				544C3EE514246C1800D9B790 /* HTMLtree.c in Sources */,
+				544C3EE614246C1800D9B790 /* legacy.c in Sources */,
+				544C3EE714246C1800D9B790 /* list.c in Sources */,
+				544C3EE814246C1800D9B790 /* nanoftp.c in Sources */,
+				544C3EE914246C1800D9B790 /* nanohttp.c in Sources */,
+				544C3EEA14246C1800D9B790 /* parser.c in Sources */,
+				544C3EEB14246C1800D9B790 /* parserInternals.c in Sources */,
+				544C3EEC14246C1800D9B790 /* pattern.c in Sources */,
+				544C3EED14246C1800D9B790 /* relaxng.c in Sources */,
+				544C3EEE14246C1800D9B790 /* SAX.c in Sources */,
+				544C3EEF14246C1800D9B790 /* SAX2.c in Sources */,
+				544C3EF014246C1800D9B790 /* threads.c in Sources */,
+				544C3EF114246C1800D9B790 /* tree.c in Sources */,
+				544C3EF214246C1800D9B790 /* uri.c in Sources */,
+				544C3EF314246C1800D9B790 /* valid.c in Sources */,
+				544C3EF414246C1800D9B790 /* xinclude.c in Sources */,
+				544C3EF514246C1800D9B790 /* xlink.c in Sources */,
+				544C3EF614246C1800D9B790 /* xmlcatalog.c in Sources */,
+				544C3EF714246C1800D9B790 /* xmlIO.c in Sources */,
+				544C3EF814246C1800D9B790 /* xmlmemory.c in Sources */,
+				544C3EF914246C1800D9B790 /* xmlmodule.c in Sources */,
+				544C3EFA14246C1800D9B790 /* xmlreader.c in Sources */,
+				544C3EFB14246C1800D9B790 /* xmlregexp.c in Sources */,
+				544C3EFC14246C1800D9B790 /* xmlsave.c in Sources */,
+				544C3EFD14246C1800D9B790 /* xmlstring.c in Sources */,
+				544C3EFE14246C1800D9B790 /* xmlunicode.c in Sources */,
+				544C3EFF14246C1800D9B790 /* xmlwriter.c in Sources */,
+				544C3F1E14246F0400D9B790 /* FArchiveXML.cpp in Sources */,
+				544C3F1F14246F0400D9B790 /* FAXAnimationExport.cpp in Sources */,
+				544C3F2014246F0400D9B790 /* FAXAnimationImport.cpp in Sources */,
+				544C3F2114246F0400D9B790 /* FAXCameraExport.cpp in Sources */,
+				544C3F2214246F0400D9B790 /* FAXCameraImport.cpp in Sources */,
+				544C3F2314246F0400D9B790 /* FAXColladaParser.cpp in Sources */,
+				544C3F2414246F0400D9B790 /* FAXColladaWriter.cpp in Sources */,
+				544C3F2514246F0400D9B790 /* FAXControllerExport.cpp in Sources */,
+				544C3F2614246F0400D9B790 /* FAXControllerImport.cpp in Sources */,
+				544C3F2714246F0400D9B790 /* FAXEmitterExport.cpp in Sources */,
+				544C3F2814246F0400D9B790 /* FAXEmitterImport.cpp in Sources */,
+				544C3F2914246F0400D9B790 /* FAXEntityExport.cpp in Sources */,
+				544C3F2A14246F0400D9B790 /* FAXEntityImport.cpp in Sources */,
+				544C3F2B14246F0400D9B790 /* FAXForceFieldExport.cpp in Sources */,
+				544C3F2C14246F0400D9B790 /* FAXForceFieldImport.cpp in Sources */,
+				544C3F2D14246F0400D9B790 /* FAXGeometryExport.cpp in Sources */,
+				544C3F2E14246F0400D9B790 /* FAXGeometryImport.cpp in Sources */,
+				544C3F2F14246F0400D9B790 /* FAXImportLinking.cpp in Sources */,
+				544C3F3014246F0400D9B790 /* FAXInstanceExport.cpp in Sources */,
+				544C3F3114246F0400D9B790 /* FAXInstanceImport.cpp in Sources */,
+				544C3F3214246F0400D9B790 /* FAXLightExport.cpp in Sources */,
+				544C3F3314246F0400D9B790 /* FAXLightImport.cpp in Sources */,
+				544C3F3414246F0400D9B790 /* FAXMaterialExport.cpp in Sources */,
+				544C3F3514246F0400D9B790 /* FAXMaterialImport.cpp in Sources */,
+				544C3F3614246F0400D9B790 /* FAXPhysicsExport.cpp in Sources */,
+				544C3F3714246F0400D9B790 /* FAXPhysicsImport.cpp in Sources */,
+				544C3F3814246F0400D9B790 /* FAXSceneExport.cpp in Sources */,
+				544C3F3914246F0400D9B790 /* FAXSceneImport.cpp in Sources */,
+				544C3F3A14246F0400D9B790 /* StdAfx.cpp in Sources */,
+				544C3F3C14246F1300D9B790 /* StdAfx.cpp in Sources */,
+				544C3F94142470FE00D9B790 /* FCDAnimated.cpp in Sources */,
+				544C3F95142470FE00D9B790 /* FCDAnimation.cpp in Sources */,
+				544C3F96142470FE00D9B790 /* FCDAnimationChannel.cpp in Sources */,
+				544C3F97142470FE00D9B790 /* FCDAnimationClip.cpp in Sources */,
+				544C3F98142470FE00D9B790 /* FCDAnimationClipTools.cpp in Sources */,
+				544C3F99142470FE00D9B790 /* FCDAnimationCurve.cpp in Sources */,
+				544C3F9A142470FE00D9B790 /* FCDAnimationCurveTools.cpp in Sources */,
+				544C3F9B142470FE00D9B790 /* FCDAnimationKey.cpp in Sources */,
+				544C3F9C142470FE00D9B790 /* FCDAnimationMultiCurve.cpp in Sources */,
+				544C3F9D142470FE00D9B790 /* FCDAsset.cpp in Sources */,
+				544C3F9E142470FE00D9B790 /* FCDCamera.cpp in Sources */,
+				544C3F9F142470FE00D9B790 /* FCDController.cpp in Sources */,
+				544C3FA0142470FE00D9B790 /* FCDControllerInstance.cpp in Sources */,
+				544C3FA1142470FE00D9B790 /* FCDControllerTools.cpp in Sources */,
+				544C3FA2142470FE00D9B790 /* FCDEffect.cpp in Sources */,
+				544C3FA3142470FE00D9B790 /* FCDEffectCode.cpp in Sources */,
+				544C3FA4142470FE00D9B790 /* FCDEffectParameter.cpp in Sources */,
+				544C3FA5142470FE00D9B790 /* FCDEffectParameterFactory.cpp in Sources */,
+				544C3FA6142470FE00D9B790 /* FCDEffectParameterSampler.cpp in Sources */,
+				544C3FA7142470FE00D9B790 /* FCDEffectParameterSurface.cpp in Sources */,
+				544C3FA8142470FE00D9B790 /* FCDEffectPass.cpp in Sources */,
+				544C3FA9142470FE00D9B790 /* FCDEffectPassShader.cpp in Sources */,
+				544C3FAA142470FE00D9B790 /* FCDEffectPassState.cpp in Sources */,
+				544C3FAB142470FE00D9B790 /* FCDEffectProfile.cpp in Sources */,
+				544C3FAC142470FE00D9B790 /* FCDEffectProfileFX.cpp in Sources */,
+				544C3FAD142470FE00D9B790 /* FCDEffectStandard.cpp in Sources */,
+				544C3FAE142470FE00D9B790 /* FCDEffectTechnique.cpp in Sources */,
+				544C3FAF142470FE00D9B790 /* FCDEffectTools.cpp in Sources */,
+				544C3FB0142470FE00D9B790 /* FCDEmitter.cpp in Sources */,
+				544C3FB1142470FE00D9B790 /* FCDEmitterInstance.cpp in Sources */,
+				544C3FB2142470FE00D9B790 /* FCDEmitterObject.cpp in Sources */,
+				544C3FB3142470FE00D9B790 /* FCDEmitterParticle.cpp in Sources */,
+				544C3FB4142470FE00D9B790 /* FCDEntity.cpp in Sources */,
+				544C3FB5142470FE00D9B790 /* FCDEntityInstance.cpp in Sources */,
+				544C3FB6142470FE00D9B790 /* FCDEntityReference.cpp in Sources */,
+				544C3FB7142470FE00D9B790 /* FCDExternalReferenceManager.cpp in Sources */,
+				544C3FB8142470FE00D9B790 /* FCDExtra.cpp in Sources */,
+				544C3FB9142470FE00D9B790 /* FCDForceDeflector.cpp in Sources */,
+				544C3FBA142470FE00D9B790 /* FCDForceDrag.cpp in Sources */,
+				544C3FBB142470FE00D9B790 /* FCDForceField.cpp in Sources */,
+				544C3FBC142470FE00D9B790 /* FCDForceGravity.cpp in Sources */,
+				544C3FBD142470FE00D9B790 /* FCDForcePBomb.cpp in Sources */,
+				544C3FBE142470FE00D9B790 /* FCDForceWind.cpp in Sources */,
+				544C3FBF142470FE00D9B790 /* FCDGeometry.cpp in Sources */,
+				544C3FC0142470FE00D9B790 /* FCDGeometryInstance.cpp in Sources */,
+				544C3FC1142470FE00D9B790 /* FCDGeometryMesh.cpp in Sources */,
+				544C3FC2142470FE00D9B790 /* FCDGeometryNURBSSurface.cpp in Sources */,
+				544C3FC3142470FE00D9B790 /* FCDGeometryPolygons.cpp in Sources */,
+				544C3FC4142470FE00D9B790 /* FCDGeometryPolygonsInput.cpp in Sources */,
+				544C3FC5142470FE00D9B790 /* FCDGeometryPolygonsTools.cpp in Sources */,
+				544C3FC6142470FE00D9B790 /* FCDGeometrySource.cpp in Sources */,
+				544C3FC7142470FE00D9B790 /* FCDGeometrySpline.cpp in Sources */,
+				544C3FC8142470FE00D9B790 /* FCDImage.cpp in Sources */,
+				544C3FC9142470FE00D9B790 /* FCDLibrary.cpp in Sources */,
+				544C3FCA142470FE00D9B790 /* FCDLight.cpp in Sources */,
+				544C3FCB142470FE00D9B790 /* FCDLightTools.cpp in Sources */,
+				544C3FCC142470FE00D9B790 /* FCDMaterial.cpp in Sources */,
+				544C3FCD142470FE00D9B790 /* FCDMaterialInstance.cpp in Sources */,
+				544C3FCE142470FE00D9B790 /* FCDMorphController.cpp in Sources */,
+				544C3FCF142470FE00D9B790 /* FCDObject.cpp in Sources */,
+				544C3FD0142470FE00D9B790 /* FCDObjectWithId.cpp in Sources */,
+				544C3FD1142470FE00D9B790 /* FCDocument.cpp in Sources */,
+				544C3FD2142470FE00D9B790 /* FCDocumentTools.cpp in Sources */,
+				544C3FD3142470FE00D9B790 /* FCDParameterAnimatable.cpp in Sources */,
+				544C3FD4142470FE00D9B790 /* FCDParticleModifier.cpp in Sources */,
+				544C3FD5142470FE00D9B790 /* FCDPhysicsAnalyticalGeometry.cpp in Sources */,
+				544C3FD6142470FE00D9B790 /* FCDPhysicsForceFieldInstance.cpp in Sources */,
+				544C3FD7142470FE00D9B790 /* FCDPhysicsMaterial.cpp in Sources */,
+				544C3FD8142470FE00D9B790 /* FCDPhysicsModel.cpp in Sources */,
+				544C3FD9142470FE00D9B790 /* FCDPhysicsModelInstance.cpp in Sources */,
+				544C3FDA142470FE00D9B790 /* FCDPhysicsRigidBody.cpp in Sources */,
+				544C3FDB142470FE00D9B790 /* FCDPhysicsRigidBodyInstance.cpp in Sources */,
+				544C3FDC142470FE00D9B790 /* FCDPhysicsRigidBodyParameters.cpp in Sources */,
+				544C3FDD142470FE00D9B790 /* FCDPhysicsRigidConstraint.cpp in Sources */,
+				544C3FDE142470FE00D9B790 /* FCDPhysicsRigidConstraintInstance.cpp in Sources */,
+				544C3FDF142470FE00D9B790 /* FCDPhysicsScene.cpp in Sources */,
+				544C3FE0142470FE00D9B790 /* FCDPhysicsShape.cpp in Sources */,
+				544C3FE1142470FE00D9B790 /* FCDPlaceHolder.cpp in Sources */,
+				544C3FE2142470FE00D9B790 /* FCDSceneNode.cpp in Sources */,
+				544C3FE3142470FE00D9B790 /* FCDSceneNodeIterator.cpp in Sources */,
+				544C3FE4142470FE00D9B790 /* FCDSceneNodeTools.cpp in Sources */,
+				544C3FE5142470FE00D9B790 /* FCDSkinController.cpp in Sources */,
+				544C3FE6142470FE00D9B790 /* FCDTargetedEntity.cpp in Sources */,
+				544C3FE7142470FE00D9B790 /* FCDTexture.cpp in Sources */,
+				544C3FE8142470FE00D9B790 /* FCDTransform.cpp in Sources */,
+				544C3FE9142470FE00D9B790 /* FCDVersion.cpp in Sources */,
+				544C3FEC14249F1F00D9B790 /* FCollada.cpp in Sources */,
+				544C3FED14249F1F00D9B790 /* FColladaPlugin.cpp in Sources */,
+				544C3FFC14249F6900D9B790 /* FMAllocator.cpp in Sources */,
+				544C3FFD14249F6900D9B790 /* FMAngleAxis.cpp in Sources */,
+				544C3FFE14249F6900D9B790 /* FMColor.cpp in Sources */,
+				544C3FFF14249F6900D9B790 /* FMInterpolation.cpp in Sources */,
+				544C400014249F6900D9B790 /* FMLookAt.cpp in Sources */,
+				544C400114249F6900D9B790 /* FMMatrix33.cpp in Sources */,
+				544C400214249F6900D9B790 /* FMMatrix44.cpp in Sources */,
+				544C400314249F6900D9B790 /* FMQuaternion.cpp in Sources */,
+				544C400414249F6900D9B790 /* FMRandom.cpp in Sources */,
+				544C400514249F6900D9B790 /* FMSkew.cpp in Sources */,
+				544C400614249F6900D9B790 /* FMVector3.cpp in Sources */,
+				544C400714249F6900D9B790 /* FMVolume.cpp in Sources */,
+				544C400814249F6900D9B790 /* StdAfx.cpp in Sources */,
+				544C40291424A01B00D9B790 /* FUAssert.cpp in Sources */,
+				544C402A1424A01B00D9B790 /* FUBase64.cpp in Sources */,
+				544C402B1424A01B00D9B790 /* FUBoundingBox.cpp in Sources */,
+				544C402C1424A01B00D9B790 /* FUBoundingSphere.cpp in Sources */,
+				544C402D1424A01B00D9B790 /* FUCrc32.cpp in Sources */,
+				544C402E1424A01B00D9B790 /* FUCriticalSection.cpp in Sources */,
+				544C402F1424A01B00D9B790 /* FUDaeEnum.cpp in Sources */,
+				544C40301424A01B00D9B790 /* FUDateTime.cpp in Sources */,
+				544C40311424A01B00D9B790 /* FUDebug.cpp in Sources */,
+				544C40321424A01B00D9B790 /* FUError.cpp in Sources */,
+				544C40331424A01B00D9B790 /* FUErrorLog.cpp in Sources */,
+				544C40341424A01B00D9B790 /* FUFile.cpp in Sources */,
+				544C40351424A01B00D9B790 /* FUFileManager.cpp in Sources */,
+				544C40361424A01B00D9B790 /* FULogFile.cpp in Sources */,
+				544C40371424A01B00D9B790 /* FUObject.cpp in Sources */,
+				544C40381424A01B00D9B790 /* FUObjectType.cpp in Sources */,
+				544C40391424A01B00D9B790 /* FUParameter.cpp in Sources */,
+				544C403A1424A01B00D9B790 /* FUParameterizable.cpp in Sources */,
+				544C403B1424A01B00D9B790 /* FUPluginManager.cpp in Sources */,
+				544C403C1424A01B00D9B790 /* FUSemaphore.cpp in Sources */,
+				544C403D1424A01B00D9B790 /* FUStringBuilder.cpp in Sources */,
+				544C403E1424A01B00D9B790 /* FUStringConversion.cpp in Sources */,
+				544C403F1424A01B00D9B790 /* FUSynchronizableObject.cpp in Sources */,
+				544C40401424A01B00D9B790 /* FUThread.cpp in Sources */,
+				544C40411424A01B00D9B790 /* FUTracker.cpp in Sources */,
+				544C40421424A01B00D9B790 /* FUUniqueStringMap.cpp in Sources */,
+				544C40431424A01B00D9B790 /* FUUri.cpp in Sources */,
+				544C40441424A01B00D9B790 /* FUXmlDocument.cpp in Sources */,
+				544C40451424A01B00D9B790 /* FUXmlParser.cpp in Sources */,
+				544C40461424A01B00D9B790 /* FUXmlWriter.cpp in Sources */,
+				544C40471424A01B00D9B790 /* StdAfx.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		544C3EA51424699D00D9B790 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					NDEBUG,
+					RETAIL,
+					"FCOLLADA_EXCEPTION=0",
+					HAVE_UNISTD_H,
+					HAVE_STDLIB_H,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO = NO;
+				GCC_WARN_ABOUT_POINTER_SIGNEDNESS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					include/FCollada,
+					include/FCollada/LibXML/include,
+					include/FColladaPlugins,
+					../..,
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				ONLY_ACTIVE_ARCH = YES;
+				"OTHER_CFLAGS[arch=armv7]" = (
+					"-mcpu=cortex-a8",
+					"-mfloat-abi=softfp",
+					"-mfpu=neon",
+					"-ftree-vectorize",
+				);
+				"OTHER_CFLAGS[sdk=iphonesimulator*][arch=*]" = (
+					"-march=i686",
+					"-msse3",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility-inlines-hidden",
+				);
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		544C3EA61424699D00D9B790 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					NDEBUG,
+					RETAIL,
+					"FCOLLADA_EXCEPTION=0",
+					HAVE_UNISTD_H,
+					HAVE_STDLIB_H,
+				);
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO = NO;
+				GCC_WARN_ABOUT_POINTER_SIGNEDNESS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					include/FCollada,
+					include/FCollada/LibXML/include,
+					include/FColladaPlugins,
+					../..,
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				ONLY_ACTIVE_ARCH = YES;
+				"OTHER_CFLAGS[arch=armv7]" = (
+					"-mcpu=cortex-a8",
+					"-mfloat-abi=softfp",
+					"-mfpu=neon",
+					"-ftree-vectorize",
+				);
+				"OTHER_CFLAGS[sdk=iphonesimulator*][arch=*]" = (
+					"-march=i686",
+					"-msse3",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility-inlines-hidden",
+				);
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		544C3EA81424699D00D9B790 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DSTROOT = /tmp/FCollada.dst;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		544C3EA91424699D00D9B790 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DSTROOT = /tmp/FCollada.dst;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		544C3E971424699D00D9B790 /* Build configuration list for PBXProject "FCollada" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				544C3EA51424699D00D9B790 /* Debug */,
+				544C3EA61424699D00D9B790 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		544C3EA71424699D00D9B790 /* Build configuration list for PBXNativeTarget "FCollada" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				544C3EA81424699D00D9B790 /* Debug */,
+				544C3EA91424699D00D9B790 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 544C3E941424699D00D9B790 /* Project object */;
+}

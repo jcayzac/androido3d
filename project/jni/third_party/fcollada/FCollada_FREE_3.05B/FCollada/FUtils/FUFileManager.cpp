@@ -22,6 +22,7 @@
 #if defined(WIN32)
 	#include <direct.h>
 #elif defined(__APPLE__)
+    #include <assert.h>
 	#include <mach-o/dyld.h>
 	typedef int (*NSGetExecutablePathProcPtr)(char *buf, size_t *bufsize);
 #elif defined(LINUX)
